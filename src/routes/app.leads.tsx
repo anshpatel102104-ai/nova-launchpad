@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Crosshair, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/leads")({ component: LeadsPage });
 
@@ -57,12 +58,14 @@ function LeadsPage() {
   }, [leads, search, stageFilter]);
 
   const updateStage = async (id: string, stage: Stage) => {
+    if (blockIfGuest("Sign up to update your live pipeline.")) return;
     const { error } = await supabase.from("leads").update({ stage }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Stage updated"); qc.invalidateQueries({ queryKey: ["leads", currentOrgId] }); }
   };
 
   const deleteLead = async (id: string) => {
+    if (blockIfGuest("Sign up to manage your real pipeline.")) return;
     const { error } = await supabase.from("leads").delete().eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Target removed"); qc.invalidateQueries({ queryKey: ["leads", currentOrgId] }); }
