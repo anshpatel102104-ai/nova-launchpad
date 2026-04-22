@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Vault, Rocket, FileText, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/assets")({ component: AssetsPage });
 
@@ -49,6 +50,7 @@ function AssetsPage() {
   };
 
   const deleteAsset = async (id: string) => {
+    if (blockIfGuest("Sign up to manage your real vault.")) return;
     const { error } = await supabase.from("generated_assets").delete().eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Removed from vault"); qc.invalidateQueries({ queryKey: ["generated_assets", currentOrgId] }); }
