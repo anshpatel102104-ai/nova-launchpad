@@ -1,5 +1,5 @@
 // Client-side guest/demo mode. No Supabase calls. No persistence beyond sessionStorage.
-import { create } from "zustand";
+import { useSyncExternalStore } from "react";
 
 export const GUEST_USER = {
   id: "guest-commander",
@@ -17,36 +17,63 @@ type GuestState = {
   isGuest: boolean;
   gateOpen: boolean;
   gateReason: string | null;
-  enable: () => void;
-  disable: () => void;
-  openGate: (reason?: string) => void;
-  closeGate: () => void;
 };
 
-function readInitial(): boolean {
-  if (typeof window === "undefined") return false;
-  try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
-}
-
-export const useGuest = create<GuestState>((set) => ({
-  isGuest: readInitial(),
+let state: GuestState = {
+  isGuest: (() => {
+    if (typeof window === "undefined") return false;
+    try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+  })(),
   gateOpen: false,
   gateReason: null,
+};
+
+const listeners = new Set<() => void>();
+function emit() { listeners.forEach((l) => l()); }
+function setState(patch: Partial<GuestState>) {
+  state = { ...state, ...patch };
+  emit();
+}
+
+export const guestStore = {
+  get: () => state,
+  subscribe: (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; },
   enable: () => {
     try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
-    set({ isGuest: true });
+    setState({ isGuest: true });
   },
   disable: () => {
     try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
-    set({ isGuest: false, gateOpen: false });
+    setState({ isGuest: false, gateOpen: false });
   },
-  openGate: (reason) => set({ gateOpen: true, gateReason: reason ?? null }),
-  closeGate: () => set({ gateOpen: false }),
-}));
+  openGate: (reason?: string) => setState({ gateOpen: true, gateReason: reason ?? null }),
+  closeGate: () => setState({ gateOpen: false }),
+};
 
-// Mock data for the demo. Realistic enough to feel real.
+export function useGuest() {
+  const snap = useSyncExternalStore(guestStore.subscribe, guestStore.get, guestStore.get);
+  return {
+    ...snap,
+    enable: guestStore.enable,
+    disable: guestStore.disable,
+    openGate: guestStore.openGate,
+    closeGate: guestStore.closeGate,
+  };
+}
+
+/** Helper for action handlers: returns true if blocked (caller should bail). */
+export function blockIfGuest(reason?: string): boolean {
+  if (state.isGuest) {
+    guestStore.openGate(reason);
+    return true;
+  }
+  return false;
+}
+
+// ─────────── Mock data ───────────
 const now = Date.now();
 const day = 86400000;
+const period = new Date().toISOString().slice(0, 7);
 
 export const GUEST_LEADS = [
   { id: "g-l1", organization_id: GUEST_ORG_ID, user_id: GUEST_USER.id, name: "Sarah Chen",   email: "sarah@northwind.io",   phone: "+1 415 555 0114", source: "LinkedIn",  stage: "Qualified", value: 4800, notes: null, created_at: new Date(now - 1*day).toISOString(),  updated_at: new Date(now - 1*day).toISOString() },
@@ -98,6 +125,8 @@ export const GUEST_SUBSCRIPTION = {
 };
 
 export const GUEST_USAGE = [
-  { id: "gu1", organization_id: GUEST_ORG_ID, tool_key: "validate-idea", count: 4, period: new Date().toISOString().slice(0, 7), last_used_at: new Date().toISOString() },
-  { id: "gu2", organization_id: GUEST_ORG_ID, tool_key: "generate-pitch", count: 3, period: new Date().toISOString().slice(0, 7), last_used_at: new Date().toISOString() },
+  { id: "gu1", organization_id: GUEST_ORG_ID, tool_key: "validate-idea",  count: 4, period, last_used_at: new Date().toISOString() },
+  { id: "gu2", organization_id: GUEST_ORG_ID, tool_key: "generate-pitch", count: 3, period, last_used_at: new Date().toISOString() },
 ];
+
+export const GUEST_INTEGRATIONS: { id: string; user_id: string; integration_key: string; value: string | null; status: string; created_at: string; updated_at: string }[] = [];
