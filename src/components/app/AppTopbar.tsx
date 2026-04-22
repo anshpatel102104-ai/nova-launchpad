@@ -126,7 +126,7 @@ export function AppTopbar() {
                 <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={UserIcon}>Profile</MenuItem>
                 <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={SettingsIcon}>Settings</MenuItem>
                 <div className="my-1 h-px bg-border" />
-                <MenuItem onClick={handleSignOut} icon={LogOut} destructive>Sign out</MenuItem>
+                <MenuItem onClick={handleSignOut} icon={LogOut} destructive>{isGuest ? "Exit demo" : "Sign out"}</MenuItem>
               </div>
             </div>
           )}
