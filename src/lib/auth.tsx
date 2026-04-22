@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { useGuest, GUEST_USER, GUEST_ORG_ID } from "@/lib/guest";
 
 type Profile = {
   id: string;
@@ -103,5 +104,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  const { isGuest } = useGuest();
+  if (isGuest) {
+    return {
+      ...ctx,
+      session: null,
+      user: { id: GUEST_USER.id, email: GUEST_USER.email } as unknown as User,
+      profile: { id: GUEST_USER.id, email: GUEST_USER.email, full_name: GUEST_USER.full_name, onboarding_complete: true },
+      currentOrgId: GUEST_ORG_ID,
+      currentOrg: { id: GUEST_ORG_ID, name: "Demo Operations Co." },
+      loading: false,
+    };
+  }
   return ctx;
 }

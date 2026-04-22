@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Rocket, Cpu, Inbox, FolderOpen, Settings,
-  ChevronsLeft, ChevronsRight, Sparkles,
+  ChevronsLeft, ChevronsRight, Sparkles, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useGuest } from "@/lib/guest";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; match?: (p: string) => boolean };
 
@@ -23,7 +24,14 @@ const STORAGE = "nova-sidebar-collapsed";
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { currentOrg } = useAuth();
+  const { isGuest, disable } = useGuest();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  const exitDemo = () => {
+    disable();
+    navigate({ to: "/signup", search: { plan: undefined } });
+  };
 
   useEffect(() => {
     try {
@@ -91,7 +99,20 @@ export function AppSidebar() {
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
-        {!collapsed && currentOrg && (
+        {isGuest && (
+          <button
+            onClick={exitDemo}
+            className={cn(
+              "mb-2 flex w-full items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-[0.14em] text-warning transition hover:border-warning hover:bg-warning/15 hover:shadow-[0_0_18px_-4px_hsl(var(--warning))]",
+              collapsed && "justify-center px-0"
+            )}
+            title={collapsed ? "Exit Demo" : undefined}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="truncate">Exit Demo → Sign Up</span>}
+          </button>
+        )}
+        {!collapsed && !isGuest && currentOrg && (
           <div className="mb-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-2.5">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Workspace</div>
             <div className="mt-0.5 truncate text-sm font-medium">{currentOrg.name}</div>

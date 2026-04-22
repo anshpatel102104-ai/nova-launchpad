@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, Lock, Trash2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
@@ -80,6 +81,7 @@ function ProfileTab() {
   useEffect(() => { if (profile?.full_name) setFullName(profile.full_name); }, [profile]);
 
   const save = async () => {
+    if (blockIfGuest("Sign up to update your operator profile.")) return;
     if (!user) return;
     const { error } = await supabase.from("profiles").update({ full_name: fullName, ...(avatarUrl ? { avatar_url: avatarUrl } : {}) }).eq("id", user.id);
     if (error) toast.error(error.message);
@@ -119,6 +121,7 @@ function OrgTab() {
   }, [orgQ.data]);
 
   const save = async () => {
+    if (blockIfGuest("Sign up to manage your organization.")) return;
     if (!currentOrgId) return;
     const { error } = await supabase.from("organizations").update({
       name, niche, business_type: businessType, target_customer: target,
@@ -243,6 +246,7 @@ function ConnectorCard({
   const isConnected = !!existing?.value && existing.status === "connected";
 
   const save = async () => {
+    if (blockIfGuest("Sign up to connect real integrations.")) return;
     if (!user) return;
     const { error } = await supabase.from("user_integrations").upsert(
       { user_id: user.id, integration_key: conn.key, value: val, status: val ? "connected" : "disabled" },
@@ -292,6 +296,7 @@ function DangerTab() {
   const [confirm, setConfirm] = useState("");
 
   const remove = async () => {
+    if (blockIfGuest("This is just a demo — no account to delete.")) return;
     if (!user) return;
     if (confirm !== "DELETE") { toast.error('Type "DELETE" to confirm'); return; }
     // Delete profile-side data; auth user removal requires service role (handled separately).

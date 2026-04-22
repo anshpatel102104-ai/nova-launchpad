@@ -2,10 +2,14 @@ import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/rea
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { AppTopbar } from "@/components/app/AppTopbar";
 import { MobileTabBar } from "@/components/app/MobileTabBar";
+import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { supabase } from "@/integrations/supabase/client";
+import { guestStore } from "@/lib/guest";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async ({ location }) => {
+    // Guest mode bypasses auth — purely client-side demo.
+    if (guestStore.get().isGuest) return;
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
@@ -28,6 +32,7 @@ function AppLayout() {
         </main>
       </div>
       <MobileTabBar />
+      <GuestGateModal />
     </div>
   );
 }

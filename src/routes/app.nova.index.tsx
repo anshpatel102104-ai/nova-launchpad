@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Lock, Settings2, Inbox, Mail, UserCheck, Receipt, Star, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/nova/")({ component: NovaOverview });
 
@@ -84,6 +85,7 @@ function NovaOverview() {
                     <Switch
                       checked={online}
                       onCheckedChange={async (v) => {
+                        if (blockIfGuest("Sign up to deploy automation modules.")) return;
                         if (!unlocked || !user) return;
                         const { error } = await supabase.from("user_integrations").upsert(
                           {
@@ -157,6 +159,7 @@ function ConfigureSheet({
   useState(() => { setUrl(existing?.value ?? ""); });
 
   const save = async () => {
+    if (blockIfGuest("Sign up to wire automation webhooks.")) return;
     if (!user || !mod) return;
     const { error } = await supabase.from("user_integrations").upsert(
       {

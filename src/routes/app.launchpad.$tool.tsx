@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/launchpad/$tool")({
   loader: ({ params }) => {
@@ -51,6 +52,7 @@ function ToolPage() {
   const typed = useTypewriter(outputText, 6);
 
   const handleGenerate = async () => {
+    if (blockIfGuest("Sign up to run AI tools and unlock real outputs.")) return;
     if (!tool.wired) { toast.error("This tool is locked."); return; }
     if (!context.trim()) { toast.error("Add some context first."); return; }
     setGenerating(true);
@@ -75,6 +77,7 @@ function ToolPage() {
   };
 
   const saveToAssets = async () => {
+    if (blockIfGuest("Sign up to save assets to your vault.")) return;
     if (!currentOrgId || !user || !output) return;
     const { error } = await supabase.from("generated_assets").insert([{
       organization_id: currentOrgId,

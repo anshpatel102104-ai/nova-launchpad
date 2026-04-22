@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { LogOut, Sun, Moon, ChevronDown, Sparkles, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useGuest } from "@/lib/guest";
 import { useQuery } from "@tanstack/react-query";
 import { subscriptionQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export function AppTopbar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user, profile, currentOrgId, signOut } = useAuth();
   const { theme, toggle } = useTheme();
+  const { isGuest, disable } = useGuest();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +49,11 @@ export function AppTopbar() {
     .split(/[\s@]/).filter(Boolean).map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const handleSignOut = async () => {
+    if (isGuest) {
+      disable();
+      navigate({ to: "/" });
+      return;
+    }
     await signOut();
     navigate({ to: "/auth/sign-in" });
   };
@@ -75,6 +82,13 @@ export function AppTopbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        {/* Demo badge */}
+        {isGuest && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-1 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-warning">
+            <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
+            Demo Mode
+          </span>
+        )}
         {/* Plan badge */}
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -112,7 +126,7 @@ export function AppTopbar() {
                 <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={UserIcon}>Profile</MenuItem>
                 <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={SettingsIcon}>Settings</MenuItem>
                 <div className="my-1 h-px bg-border" />
-                <MenuItem onClick={handleSignOut} icon={LogOut} destructive>Sign out</MenuItem>
+                <MenuItem onClick={handleSignOut} icon={LogOut} destructive>{isGuest ? "Exit demo" : "Sign out"}</MenuItem>
               </div>
             </div>
           )}
