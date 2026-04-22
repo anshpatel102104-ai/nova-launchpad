@@ -1,41 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/app/PageHeader";
-import { workflows } from "@/lib/mock";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Workflow as WorkflowIcon } from "lucide-react";
+import { Workflow as WorkflowIcon } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { automationSettingsQuery } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/app/nova/workflows")({
-  component: Workflows,
-});
+export const Route = createFileRoute("/app/nova/workflows")({ component: Workflows });
 
 function Workflows() {
-  const [state, setState] = useState(workflows.map((w) => ({ ...w })));
+  const { currentOrgId } = useAuth();
+  const qc = useQueryClient();
+  const q = useQuery({ ...automationSettingsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const items = q.data ?? [];
+
+  const toggle = async (id: string, enabled: boolean) => {
+    const { error } = await supabase.from("automation_settings").update({ enabled }).eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success(enabled ? "Enabled" : "Disabled"); qc.invalidateQueries({ queryKey: ["automation_settings", currentOrgId] }); }
+  };
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Nova OS"
-        title="Automation Workflows"
-        description="Trigger → Action → Output. Move leads, send replies, kick off onboarding."
-        actions={<Button size="sm"><Plus className="h-4 w-4" /> New workflow</Button>}
-      />
-
+      <PageHeader eyebrow="Nova OS" title="Automation Workflows" description="Trigger → Action → Output." />
       <div className="rounded-xl border border-border bg-card divide-y divide-border">
-        {state.map((w, i) => (
+        {items.length === 0 && <div className="px-4 py-6 text-center text-sm text-muted-foreground">No automations configured yet.</div>}
+        {items.map((w) => (
           <div key={w.id} className="flex items-center gap-4 px-4 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-nova/10 text-nova">
-              <WorkflowIcon className="h-4 w-4" />
-            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-nova/10 text-nova"><WorkflowIcon className="h-4 w-4" /></div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold">{w.name}</div>
-              <div className="text-xs text-muted-foreground">Trigger: {w.trigger} · {w.actions} actions · {w.runs} runs</div>
+              <div className="text-sm font-semibold">{w.key}</div>
             </div>
-            <Switch
-              checked={w.enabled}
-              onCheckedChange={(v) => setState((s) => s.map((x, j) => j === i ? { ...x, enabled: v } : x))}
-            />
+            <Switch checked={w.enabled} onCheckedChange={(v) => toggle(w.id, v)} />
           </div>
         ))}
       </div>
