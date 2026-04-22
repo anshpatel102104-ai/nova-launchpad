@@ -6,61 +6,73 @@ import {
   Sparkles, ArrowRight, Rocket, Zap, KanbanSquare, Inbox, Workflow,
   UserCheck, BarChart3, Settings as SettingsIcon, CreditCard, FileText,
   History, Lightbulb, Target, Mail, Megaphone, ScrollText, Globe,
+  CornerDownLeft,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import { parseOperatorIntent } from "@/lib/operatorIntent";
+
+type Group = "Action" | "Recent" | "Tool" | "Page";
 
 type Item = {
   id: string;
-  group: "Action" | "Tool" | "Page" | "Recent";
+  group: Group;
   label: string;
   hint?: string;
-  to: string;
-  // Optional contextual prefill via query string (?context= / ?title=)
-  search?: Record<string, string>;
   icon: React.ComponentType<{ className?: string }>;
+  /** Where to navigate */
+  to: string;
+  /** Tool slug for /app/launchpad/$tool routes */
+  toolSlug?: string;
+  /** Optional search params (used by /app/launchpad/$tool to prefill) */
+  search?: { context?: string; title?: string };
+  /** Match keywords / regex for static filtering */
   match: RegExp;
 };
 
-const ITEMS: Item[] = [
-  // Tools
-  { id: "t-validate", group: "Tool", label: "Idea Validator", hint: "Pressure-test an idea", to: "/app/launchpad/$tool", icon: Lightbulb, match: /validat|idea|test/i },
-  { id: "t-pitch",    group: "Tool", label: "Pitch Generator", hint: "Investor-ready pitch", to: "/app/launchpad/$tool", icon: ScrollText, match: /pitch|deck|investor/i },
-  { id: "t-gtm",      group: "Tool", label: "GTM Strategy", hint: "Channels, ICP, messaging", to: "/app/launchpad/$tool", icon: Target, match: /gtm|go-?to-?market|strategy|channel/i },
-  { id: "t-offer",    group: "Tool", label: "Offer Builder", hint: "Irresistible offer + risk reversal", to: "/app/launchpad/$tool", icon: Megaphone, match: /offer|pricing|package/i },
-  { id: "t-ops",      group: "Tool", label: "Ops Plan", hint: "Workflows, automations, KPIs", to: "/app/launchpad/$tool", icon: Workflow, match: /ops|operations|plan|workflow/i },
-  { id: "t-followup", group: "Tool", label: "Follow-Up Sequence", hint: "Multi-touch follow-ups", to: "/app/launchpad/$tool", icon: Mail, match: /follow|sequence|email/i },
-  { id: "t-audit",    group: "Tool", label: "Website Auditor", hint: "Live site audit", to: "/app/launchpad/$tool", icon: Globe, match: /website|audit|seo/i },
-  { id: "t-first10",  group: "Tool", label: "First 10 Customers", hint: "Tactical acquisition roadmap", to: "/app/launchpad/$tool", icon: Rocket, match: /first|10|customers|acquisition/i },
-
-  // Pages — Nova
-  { id: "p-pipeline", group: "Page", label: "Pipeline (CRM)", to: "/app/nova/crm", icon: KanbanSquare, match: /pipeline|crm|deals|kanban/i },
-  { id: "p-leads",    group: "Page", label: "Lead Capture", to: "/app/nova/leads", icon: Inbox, match: /lead|capture|inbound/i },
-  { id: "p-flows",    group: "Page", label: "Automation Workflows", to: "/app/nova/workflows", icon: Workflow, match: /automation|workflow|trigger/i },
-  { id: "p-onboard",  group: "Page", label: "Client Onboarding", to: "/app/nova/clients", icon: UserCheck, match: /onboard|client|kickoff/i },
-  { id: "p-reports",  group: "Page", label: "Reporting", to: "/app/nova/reports", icon: BarChart3, match: /report|analytics|metrics|kpi/i },
-
-  // Pages — Account
-  { id: "p-launchpad", group: "Page", label: "Launchpad", to: "/app/launchpad", icon: Rocket, match: /launchpad|tools/i },
-  { id: "p-nova",      group: "Page", label: "Nova OS",   to: "/app/nova",      icon: Zap, match: /nova/i },
-  { id: "p-history",   group: "Page", label: "Run history", to: "/app/launchpad/history", icon: History, match: /history|past|runs/i },
-  { id: "p-assets",    group: "Page", label: "Assets",     to: "/app/assets",   icon: FileText, match: /asset|outputs|library/i },
-  { id: "p-billing",   group: "Page", label: "Billing & plans", to: "/app/billing", icon: CreditCard, match: /billing|plan|upgrade|invoice/i },
-  { id: "p-settings",  group: "Page", label: "Settings",  to: "/app/settings",  icon: SettingsIcon, match: /settings|account|integration/i },
+const STATIC_TOOLS: Item[] = [
+  { id: "t-validate", group: "Tool", label: "Idea Validator", hint: "Pressure-test an idea",   icon: Lightbulb,  to: "/app/launchpad/$tool", toolSlug: "idea-validator",     match: /validat|idea|test/i },
+  { id: "t-pitch",    group: "Tool", label: "Pitch Generator", hint: "Investor-ready pitch",   icon: ScrollText, to: "/app/launchpad/$tool", toolSlug: "pitch-generator",    match: /pitch|deck|investor/i },
+  { id: "t-gtm",      group: "Tool", label: "GTM Strategy", hint: "Channels, ICP, messaging",  icon: Target,     to: "/app/launchpad/$tool", toolSlug: "gtm-strategy",       match: /gtm|go-?to-?market|strategy|channel/i },
+  { id: "t-offer",    group: "Tool", label: "Offer Builder", hint: "Irresistible offer",       icon: Megaphone,  to: "/app/launchpad/$tool", toolSlug: "offer",              match: /offer|pricing|package/i },
+  { id: "t-ops",      group: "Tool", label: "Ops Plan", hint: "Workflows, automations, KPIs", icon: Workflow,   to: "/app/launchpad/$tool", toolSlug: "ops-plan",           match: /ops|operations|plan|workflow/i },
+  { id: "t-followup", group: "Tool", label: "Follow-Up Sequence", hint: "Multi-touch emails", icon: Mail,       to: "/app/launchpad/$tool", toolSlug: "followup",           match: /follow|sequence|email/i },
+  { id: "t-audit",    group: "Tool", label: "Website Auditor", hint: "Live site audit",        icon: Globe,      to: "/app/launchpad/$tool", toolSlug: "website-audit",      match: /website|audit|seo|site/i },
+  { id: "t-first10",  group: "Tool", label: "First 10 Customers", hint: "Acquisition roadmap",icon: Rocket,     to: "/app/launchpad/$tool", toolSlug: "first-10-customers", match: /first|10|customers|acquisition/i },
 ];
 
-// Maps natural-language tool hits to their Launchpad tool slug
-const TOOL_SLUG: Record<string, string> = {
-  "t-validate": "idea-validator",
-  "t-pitch": "pitch-generator",
-  "t-gtm": "gtm-strategy",
-  "t-offer": "offer",
-  "t-ops": "ops-plan",
-  "t-followup": "followup",
-  "t-audit": "website-audit",
-  "t-first10": "first-10-customers",
+const STATIC_PAGES: Item[] = [
+  { id: "p-pipeline", group: "Page", label: "Pipeline (CRM)",     icon: KanbanSquare, to: "/app/nova/crm",        match: /pipeline|crm|deals|kanban/i },
+  { id: "p-leads",    group: "Page", label: "Lead Capture",       icon: Inbox,        to: "/app/nova/leads",      match: /lead|capture|inbound/i },
+  { id: "p-flows",    group: "Page", label: "Automation Workflows", icon: Workflow,   to: "/app/nova/workflows",  match: /automation|workflow|trigger/i },
+  { id: "p-onboard",  group: "Page", label: "Client Onboarding",  icon: UserCheck,    to: "/app/nova/clients",    match: /onboard|client|kickoff/i },
+  { id: "p-reports",  group: "Page", label: "Reporting",          icon: BarChart3,    to: "/app/nova/reports",    match: /report|analytics|metrics|kpi/i },
+  { id: "p-launchpad",group: "Page", label: "Launchpad",          icon: Rocket,       to: "/app/launchpad",       match: /launchpad|tools/i },
+  { id: "p-nova",     group: "Page", label: "Nova OS",            icon: Zap,          to: "/app/nova",            match: /nova/i },
+  { id: "p-history",  group: "Page", label: "Run history",        icon: History,      to: "/app/launchpad/history", match: /history|past|runs/i },
+  { id: "p-assets",   group: "Page", label: "Assets",             icon: FileText,     to: "/app/assets",          match: /asset|outputs|library/i },
+  { id: "p-billing",  group: "Page", label: "Billing & plans",    icon: CreditCard,   to: "/app/billing",         match: /billing|plan|upgrade|invoice/i },
+  { id: "p-settings", group: "Page", label: "Settings",           icon: SettingsIcon, to: "/app/settings",        match: /settings|account|integration/i },
+];
+
+// Map server tool_key (edge function name) → Launchpad tool slug
+const TOOL_KEY_TO_SLUG: Record<string, string> = {
+  "validate-idea": "idea-validator",
+  "generate-pitch": "pitch-generator",
+  "generate-gtm-strategy": "gtm-strategy",
+  "generate-offer": "offer",
+  "generate-ops-plan": "ops-plan",
+  "generate-followup-sequence": "followup",
+  "analyze-website": "website-audit",
 };
+
+function prettyToolName(toolKey: string): string {
+  const slug = TOOL_KEY_TO_SLUG[toolKey] ?? toolKey;
+  return slug
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [q, setQ] = useState("");
@@ -70,84 +82,87 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
 
   const { currentOrgId } = useAuth();
   const recentQ = useQuery({
-    ...toolRunsQuery(currentOrgId ?? "", 5),
+    ...toolRunsQuery(currentOrgId ?? "", 8),
     enabled: !!currentOrgId && open,
   });
 
-  // Build dynamic action items (tool-specific actions inferred from query)
+  // Build dynamic Action(s) from natural language
   const dynamicActions = useMemo<Item[]>(() => {
-    if (!q.trim()) return [];
-    const lower = q.toLowerCase();
-    // "validate <X>" or "for <X>" → prefill Idea Validator with context
-    const validateMatch = lower.match(/validat(?:e|ion)?\s+(.+)/i)
-      || lower.match(/^idea\s+for\s+(.+)/i)
-      || lower.match(/^for\s+(.+)/i);
-    if (validateMatch) {
-      const ctx = validateMatch[1].trim();
-      return [{
-        id: "act-validate",
-        group: "Action",
-        label: `Validate idea: ${ctx}`,
-        hint: "Opens Idea Validator with this context prefilled",
-        to: "/app/launchpad/$tool",
-        search: { context: ctx, title: ctx.slice(0, 60) },
-        icon: Sparkles,
-        match: /.*/,
-      }];
-    }
-    return [];
+    const intent = parseOperatorIntent(q);
+    if (!intent) return [];
+    return [{
+      id: "intent-" + intent.toolSlug,
+      group: "Action",
+      label: intent.label,
+      hint: intent.hint,
+      icon: Sparkles,
+      to: "/app/launchpad/$tool",
+      toolSlug: intent.toolSlug,
+      search: intent.search,
+      match: /.*/,
+    }];
   }, [q]);
 
-  // Build "recent" items (only when no query)
+  // Recent run items — clicking restores the original input via search params
   const recentItems = useMemo<Item[]>(() => {
     if (q.trim()) return [];
     const runs = recentQ.data ?? [];
     const seen = new Set<string>();
-    return runs
-      .filter((r) => {
-        if (seen.has(r.tool_key)) return false;
-        seen.add(r.tool_key);
-        return true;
-      })
-      .slice(0, 4)
-      .map((r) => {
-        // Map server tool_key (e.g. validate-idea) back to a Launchpad slug
-        const slugMap: Record<string, string> = {
-          "validate-idea": "idea-validator",
-          "generate-pitch": "pitch-generator",
-          "generate-gtm-strategy": "gtm-strategy",
-          "generate-offer": "offer",
-          "generate-ops-plan": "ops-plan",
-          "generate-followup-sequence": "followup",
-          "analyze-website": "website-audit",
-        };
-        const _slug = slugMap[r.tool_key] ?? r.tool_key;
-        return {
-          _slug,
-          id: `recent-${r.id}`,
-          group: "Recent" as const,
-          label: r.tool_key.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-          hint: new Date(r.created_at).toLocaleDateString(),
-          to: "/app/launchpad/$tool",
-          icon: History,
-          match: /.*/,
-        };
-      })
-      // attach slug into a side map for navigation below
-      .map((it, i) => Object.assign(it, { _slug: TOOL_SLUG[it.id] ?? Object.values(TOOL_SLUG)[i % Object.values(TOOL_SLUG).length] })) as unknown as Item[];
+    const out: Item[] = [];
+    for (const r of runs) {
+      const slug = TOOL_KEY_TO_SLUG[r.tool_key];
+      if (!slug) continue;
+      const input = (r.input as Record<string, unknown> | null) ?? {};
+      const ctx =
+        (typeof input.context === "string" && input.context) ||
+        (typeof input.idea === "string" && input.idea) ||
+        (typeof input.business === "string" && input.business) ||
+        (typeof input.url === "string" && input.url) ||
+        "";
+      const dedupeKey = slug + ":" + ctx.slice(0, 30);
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+
+      const titleHint = ctx
+        ? ctx.slice(0, 56) + (ctx.length > 56 ? "…" : "")
+        : new Date(r.created_at).toLocaleDateString();
+
+      out.push({
+        id: "recent-" + r.id,
+        group: "Recent",
+        label: prettyToolName(r.tool_key),
+        hint: titleHint,
+        icon: History,
+        to: "/app/launchpad/$tool",
+        toolSlug: slug,
+        search: ctx ? { context: ctx, title: ctx.slice(0, 60) } : {},
+        match: /.*/,
+      });
+      if (out.length >= 4) break;
+    }
+    return out;
   }, [q, recentQ.data]);
 
-  // Filter base items
-  const filtered = useMemo(() => {
+  // Filter static lists by query
+  const filtered = useMemo<Item[]>(() => {
     const term = q.trim();
-    if (!term) return [...recentItems, ...ITEMS];
-    return [...dynamicActions, ...ITEMS.filter((i) => i.match.test(term) || i.label.toLowerCase().includes(term.toLowerCase()))];
+    if (!term) {
+      return [...recentItems, ...STATIC_TOOLS, ...STATIC_PAGES];
+    }
+    const t = term.toLowerCase();
+    const matches = (it: Item) =>
+      it.match.test(term) || it.label.toLowerCase().includes(t) || (it.hint?.toLowerCase().includes(t) ?? false);
+    return [
+      ...dynamicActions,
+      ...STATIC_TOOLS.filter(matches),
+      ...STATIC_PAGES.filter(matches),
+    ];
   }, [q, dynamicActions, recentItems]);
 
-  // Group results in stable order
+  // Group in stable order
   const grouped = useMemo(() => {
-    const order: Item["group"][] = ["Action", "Recent", "Tool", "Page"];
-    const out: { group: Item["group"]; items: Item[] }[] = [];
+    const order: Group[] = ["Action", "Recent", "Tool", "Page"];
+    const out: { group: Group; items: Item[] }[] = [];
     for (const g of order) {
       const items = filtered.filter((i) => i.group === g);
       if (items.length) out.push({ group: g, items });
@@ -164,10 +179,12 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
   const execute = (it: Item) => {
     onOpenChange(false);
     setQ("");
-    if (it.to === "/app/launchpad/$tool") {
-      const slug = TOOL_SLUG[it.id] ?? (it as unknown as { _slug?: string })._slug ?? "idea-validator";
-      const search = it.search ?? {};
-      navigate({ to: "/app/launchpad/$tool", params: { tool: slug }, search });
+    if (it.to === "/app/launchpad/$tool" && it.toolSlug) {
+      navigate({
+        to: "/app/launchpad/$tool",
+        params: { tool: it.toolSlug },
+        search: it.search ?? {},
+      });
     } else {
       navigate({ to: it.to });
     }
@@ -216,7 +233,9 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
           {grouped.length === 0 ? (
             <div className="px-3 py-8 text-center text-[12.5px] text-muted-foreground">
               <p>No matches.</p>
-              <p className="mt-1 text-[11.5px]">Try “build my GTM”, “show pipeline”, or “validate a SaaS for dentists”.</p>
+              <p className="mt-1 text-[11.5px]">
+                Try “build my GTM for solo lawyers”, “audit https://my.site”, or “first 10 customers for an AI bookkeeper”.
+              </p>
             </div>
           ) : (
             grouped.map(({ group, items }) => (
@@ -228,6 +247,7 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
                   renderIdx++;
                   const active = renderIdx === activeIdx;
                   const Icon = it.icon;
+                  const showsPrefill = !!it.search?.context;
                   return (
                     <button
                       key={it.id}
@@ -241,7 +261,9 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
                     >
                       <span className={cn(
                         "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
-                        active ? "bg-primary/15 text-primary" : "bg-surface-2 text-muted-foreground",
+                        active
+                          ? group === "Action" ? "bg-accent/15 text-accent" : "bg-primary/15 text-primary"
+                          : "bg-surface-2 text-muted-foreground",
                       )}>
                         <Icon className="h-3.5 w-3.5" />
                       </span>
@@ -251,10 +273,16 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
                           <span className="block truncate text-[11px] text-muted-foreground">{it.hint}</span>
                         )}
                       </span>
-                      <ArrowRight className={cn(
-                        "h-3.5 w-3.5 shrink-0 transition-opacity",
-                        active ? "opacity-100 text-primary" : "opacity-0",
-                      )} />
+                      {showsPrefill && (
+                        <span className="hidden sm:inline rounded-full bg-accent/10 px-1.5 py-0.5 text-[9.5px] font-medium uppercase tracking-wider text-accent">
+                          Prefill
+                        </span>
+                      )}
+                      {active ? (
+                        <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      ) : (
+                        <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-0" />
+                      )}
                     </button>
                   );
                 })}
@@ -268,7 +296,7 @@ export function AiOperator({ open, onOpenChange }: { open: boolean; onOpenChange
             <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono">↑↓</kbd> navigate
             <kbd className="rounded border border-border bg-background px-1 py-0.5 font-mono">↵</kbd> open
           </span>
-          <span>Operator routes you to the right module — and prefills context.</span>
+          <span>Operator routes you, prefills context, and resumes recent runs.</span>
         </div>
       </DialogContent>
     </Dialog>
