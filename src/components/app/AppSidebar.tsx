@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Rocket, Cpu, Inbox, FolderOpen, Settings,
-  ChevronsLeft, ChevronsRight, Sparkles,
+  ChevronsLeft, ChevronsRight, Sparkles, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { useGuest } from "@/lib/guest";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; match?: (p: string) => boolean };
 
@@ -23,7 +24,14 @@ const STORAGE = "nova-sidebar-collapsed";
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { currentOrg } = useAuth();
+  const { isGuest, disable } = useGuest();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+
+  const exitDemo = () => {
+    disable();
+    navigate({ to: "/signup", search: { plan: undefined } });
+  };
 
   useEffect(() => {
     try {
