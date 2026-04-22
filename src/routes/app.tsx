@@ -1,6 +1,7 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { AppTopbar } from "@/components/app/AppTopbar";
+import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
@@ -14,17 +15,19 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppLayout() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar />
-        <main className="flex-1 overflow-x-hidden">
-          <div className="mx-auto max-w-7xl px-6 py-6">
+        <main className="flex-1 overflow-x-hidden pb-20 lg:pb-0">
+          <div key={path} className="page-in mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
             <Outlet />
           </div>
         </main>
       </div>
+      <MobileTabBar />
     </div>
   );
 }

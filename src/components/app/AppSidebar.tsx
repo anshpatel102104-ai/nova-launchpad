@@ -1,92 +1,113 @@
+import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Rocket, Cpu, Users, Inbox, Workflow, UserCheck,
-  BarChart3, CreditCard, Settings, Sparkles,
+  LayoutDashboard, Rocket, Cpu, Inbox, FolderOpen, Settings,
+  ChevronsLeft, ChevronsRight, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
-const launchpadItems = [
-  { to: "/app/launchpad", label: "Overview" },
-  { to: "/app/launchpad/idea-validator", label: "Idea Validator" },
-  { to: "/app/launchpad/pitch-generator", label: "Pitch Generator" },
-  { to: "/app/launchpad/gtm-strategy", label: "GTM Strategy" },
-  { to: "/app/launchpad/offer", label: "Offer Builder" },
-  { to: "/app/launchpad/ops-plan", label: "Ops Plan" },
-  { to: "/app/launchpad/followup", label: "Follow-up Sequence" },
-  { to: "/app/launchpad/website-audit", label: "Website Audit" },
-  { to: "/app/launchpad/history", label: "History" },
+type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; match?: (p: string) => boolean };
+
+const NAV: NavItem[] = [
+  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app/launchpad", label: "Launchpad", icon: Rocket, match: (p) => p.startsWith("/app/launchpad") },
+  { to: "/app/nova", label: "Nova OS", icon: Cpu, match: (p) => p === "/app/nova" || p.startsWith("/app/nova/workflows") || p.startsWith("/app/nova/clients") || p.startsWith("/app/nova/reports") || p.startsWith("/app/nova/crm") },
+  { to: "/app/leads", label: "Leads", icon: Inbox, match: (p) => p.startsWith("/app/leads") || p === "/app/nova/leads" },
+  { to: "/app/assets", label: "Assets", icon: FolderOpen, match: (p) => p.startsWith("/app/assets") },
+  { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-const novaItems = [
-  { to: "/app/nova", label: "Overview" },
-  { to: "/app/nova/crm", label: "CRM Pipeline" },
-  { to: "/app/nova/leads", label: "Leads" },
-  { to: "/app/nova/workflows", label: "Workflows" },
-  { to: "/app/nova/clients", label: "Clients" },
-  { to: "/app/nova/reports", label: "Reports" },
-];
+const STORAGE = "nova-sidebar-collapsed";
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { currentOrg } = useAuth();
-  const isActive = (to: string) => path === to;
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(STORAGE);
+      if (v === "1") setCollapsed(true);
+    } catch { /* ignore */ }
+  }, []);
+
+  const toggle = () => {
+    setCollapsed((c) => {
+      const n = !c;
+      try { localStorage.setItem(STORAGE, n ? "1" : "0"); } catch { /* ignore */ }
+      return n;
+    });
+  };
 
   return (
-    <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex h-14 items-center gap-2 px-4 border-b border-sidebar-border">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Sparkles className="h-4 w-4" />
+    <aside
+      className={cn(
+        "hidden lg:flex shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+        collapsed ? "w-[72px]" : "w-64"
+      )}
+    >
+      {/* Brand */}
+      <div className={cn("flex h-16 items-center gap-2.5 border-b border-sidebar-border px-4", collapsed && "justify-center px-0")}>
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary glow-primary">
+          <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
         </div>
-        <div className="font-display text-sm font-semibold tracking-tight">Launchpad Nova</div>
+        {!collapsed && (
+          <div className="leading-tight">
+            <div className="font-display text-sm font-semibold tracking-tight">Nova OPS</div>
+            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">AI Business OS</div>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 py-3 text-sm">
-        <SidebarLink to="/app/dashboard" icon={LayoutDashboard} active={isActive("/app/dashboard")}>Dashboard</SidebarLink>
-        <SidebarSection icon={Rocket} label="Launchpad" color="text-launchpad" items={launchpadItems} activePath={path} />
-        <SidebarSection icon={Cpu} label="Nova OS" color="text-nova" items={novaItems} activePath={path} />
-        <div className="my-3 h-px bg-sidebar-border" />
-        <SidebarLink to="/app/nova/crm" icon={Users} active={isActive("/app/nova/crm")}>CRM</SidebarLink>
-        <SidebarLink to="/app/nova/leads" icon={Inbox} active={isActive("/app/nova/leads")}>Leads</SidebarLink>
-        <SidebarLink to="/app/nova/workflows" icon={Workflow} active={isActive("/app/nova/workflows")}>Workflows</SidebarLink>
-        <SidebarLink to="/app/nova/clients" icon={UserCheck} active={isActive("/app/nova/clients")}>Clients</SidebarLink>
-        <SidebarLink to="/app/nova/reports" icon={BarChart3} active={isActive("/app/nova/reports")}>Reports</SidebarLink>
-        <div className="my-3 h-px bg-sidebar-border" />
-        <SidebarLink to="/app/billing" icon={CreditCard} active={isActive("/app/billing")}>Billing</SidebarLink>
-        <SidebarLink to="/app/settings" icon={Settings} active={isActive("/app/settings")}>Settings</SidebarLink>
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-2 py-4 text-sm">
+        <div className="space-y-0.5">
+          {NAV.map((item) => {
+            const active = item.match ? item.match(path) : path === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+                  collapsed && "justify-center px-0",
+                  active
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                )}
+                title={collapsed ? item.label : undefined}
+              >
+                {active && !collapsed && (
+                  <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
+                )}
+                <item.icon className={cn("h-[18px] w-[18px] shrink-0", active && "text-primary")} />
+                {!collapsed && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
+      {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
-        <div className="rounded-md border border-sidebar-border bg-sidebar-accent/40 p-3">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Workspace</div>
-          <div className="mt-0.5 text-sm font-medium truncate">{currentOrg?.name ?? "—"}</div>
-        </div>
+        {!collapsed && currentOrg && (
+          <div className="mb-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Workspace</div>
+            <div className="mt-0.5 truncate text-sm font-medium">{currentOrg.name}</div>
+          </div>
+        )}
+        <button
+          onClick={toggle}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs text-muted-foreground transition hover:bg-sidebar-accent hover:text-sidebar-foreground",
+            collapsed && "justify-center"
+          )}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <ChevronsRight className="h-4 w-4" /> : <><ChevronsLeft className="h-4 w-4" /> Collapse</>}
+        </button>
       </div>
     </aside>
-  );
-}
-
-function SidebarLink({ to, icon: Icon, active, children }: { to: string; icon: React.ComponentType<{ className?: string }>; active: boolean; children: React.ReactNode }) {
-  return (
-    <Link to={to} className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors", active ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground")}>
-      <Icon className="h-4 w-4" />{children}
-    </Link>
-  );
-}
-
-function SidebarSection({ icon: Icon, label, color, items, activePath }: { icon: React.ComponentType<{ className?: string }>; label: string; color: string; items: { to: string; label: string }[]; activePath: string }) {
-  return (
-    <div className="mt-3">
-      <div className="flex items-center gap-2 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <Icon className={cn("h-3.5 w-3.5", color)} />{label}
-      </div>
-      <div className="mt-0.5 space-y-0.5">
-        {items.map((item) => (
-          <Link key={item.to} to={item.to} className={cn("block rounded-md px-2.5 py-1.5 text-[13px] transition-colors", activePath === item.to ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground")}>
-            {item.label}
-          </Link>
-        ))}
-      </div>
-    </div>
   );
 }
