@@ -364,7 +364,8 @@ function Dashboard() {
               return (
                 <Link
                   key={t.key}
-                  to={t.to}
+                  to="/app/launchpad/$tool"
+                  params={{ tool: t.key }}
                   className="group flex items-center gap-2 rounded-md border border-border bg-surface-2 p-2.5 transition hover:border-primary/40"
                 >
                   <span className={cn(
