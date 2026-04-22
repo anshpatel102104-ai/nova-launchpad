@@ -99,7 +99,20 @@ export function AppSidebar() {
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3">
-        {!collapsed && currentOrg && (
+        {isGuest && (
+          <button
+            onClick={exitDemo}
+            className={cn(
+              "mb-2 flex w-full items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-[0.14em] text-warning transition hover:border-warning hover:bg-warning/15 hover:shadow-[0_0_18px_-4px_hsl(var(--warning))]",
+              collapsed && "justify-center px-0"
+            )}
+            title={collapsed ? "Exit Demo" : undefined}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="truncate">Exit Demo → Sign Up</span>}
+          </button>
+        )}
+        {!collapsed && !isGuest && currentOrg && (
           <div className="mb-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-2.5">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Workspace</div>
             <div className="mt-0.5 truncate text-sm font-medium">{currentOrg.name}</div>

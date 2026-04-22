@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { LogOut, Sun, Moon, ChevronDown, Sparkles, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useGuest } from "@/lib/guest";
 import { useQuery } from "@tanstack/react-query";
 import { subscriptionQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
