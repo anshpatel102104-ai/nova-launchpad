@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-type Theme = "dark" | "light";
+type Theme = "dark" | "light" | "system";
+type ResolvedTheme = "dark" | "light";
 
 type ThemeContextValue = {
   theme: Theme;
+  resolvedTheme: ResolvedTheme;
   toggle: () => void;
   setTheme: (t: Theme) => void;
 };
@@ -12,7 +14,12 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "nova-theme";
 
-function applyTheme(t: Theme) {
+function systemPref(): ResolvedTheme {
+  if (typeof window === "undefined" || !window.matchMedia) return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(t: ResolvedTheme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.classList.remove("dark", "light");
@@ -22,28 +29,46 @@ function applyTheme(t: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   // Initial sync from localStorage (client only)
   useEffect(() => {
     let initial: Theme = "light";
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === "light" || stored === "dark") initial = stored;
+      if (stored === "light" || stored === "dark" || stored === "system") initial = stored;
     } catch { /* ignore */ }
     setThemeState(initial);
-    applyTheme(initial);
+    const resolved = initial === "system" ? systemPref() : initial;
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
   }, []);
+
+  // Listen to system changes when in "system" mode
+  useEffect(() => {
+    if (theme !== "system" || typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      const r = mql.matches ? "dark" : "light";
+      setResolvedTheme(r);
+      applyTheme(r);
+    };
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [theme]);
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
-    applyTheme(t);
+    const resolved = t === "system" ? systemPref() : t;
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
     try { localStorage.setItem(STORAGE_KEY, t); } catch { /* ignore */ }
   };
 
-  const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggle = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, toggle, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
