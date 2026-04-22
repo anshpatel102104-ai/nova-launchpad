@@ -9,38 +9,288 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
+import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
+import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
+import { Route as AppNovaWorkflowsRouteImport } from './routes/app.nova.workflows'
+import { Route as AppNovaReportsRouteImport } from './routes/app.nova.reports'
+import { Route as AppNovaLeadsRouteImport } from './routes/app.nova.leads'
+import { Route as AppNovaCrmRouteImport } from './routes/app.nova.crm'
+import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
+import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
+import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/auth/sign-up',
+  path: '/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/auth/sign-in',
+  path: '/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
+  id: '/nova/',
+  path: '/nova/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadIndexRoute = AppLaunchpadIndexRouteImport.update({
+  id: '/launchpad/',
+  path: '/launchpad/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaWorkflowsRoute = AppNovaWorkflowsRouteImport.update({
+  id: '/nova/workflows',
+  path: '/nova/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaReportsRoute = AppNovaReportsRouteImport.update({
+  id: '/nova/reports',
+  path: '/nova/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaLeadsRoute = AppNovaLeadsRouteImport.update({
+  id: '/nova/leads',
+  path: '/nova/leads',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaCrmRoute = AppNovaCrmRouteImport.update({
+  id: '/nova/crm',
+  path: '/nova/crm',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaClientsRoute = AppNovaClientsRouteImport.update({
+  id: '/nova/clients',
+  path: '/nova/clients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadHistoryRoute = AppLaunchpadHistoryRouteImport.update({
+  id: '/launchpad/history',
+  path: '/launchpad/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
+  id: '/launchpad/$tool',
+  path: '/launchpad/$tool',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app/': typeof AppIndexRoute
+  '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/nova/clients': typeof AppNovaClientsRoute
+  '/app/nova/crm': typeof AppNovaCrmRoute
+  '/app/nova/leads': typeof AppNovaLeadsRoute
+  '/app/nova/reports': typeof AppNovaReportsRoute
+  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/launchpad/': typeof AppLaunchpadIndexRoute
+  '/app/nova/': typeof AppNovaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app': typeof AppIndexRoute
+  '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/nova/clients': typeof AppNovaClientsRoute
+  '/app/nova/crm': typeof AppNovaCrmRoute
+  '/app/nova/leads': typeof AppNovaLeadsRoute
+  '/app/nova/reports': typeof AppNovaReportsRoute
+  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/launchpad': typeof AppLaunchpadIndexRoute
+  '/app/nova': typeof AppNovaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/onboarding': typeof OnboardingRoute
+  '/app/billing': typeof AppBillingRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app/': typeof AppIndexRoute
+  '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/nova/clients': typeof AppNovaClientsRoute
+  '/app/nova/crm': typeof AppNovaCrmRoute
+  '/app/nova/leads': typeof AppNovaLeadsRoute
+  '/app/nova/reports': typeof AppNovaReportsRoute
+  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/launchpad/': typeof AppLaunchpadIndexRoute
+  '/app/nova/': typeof AppNovaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/onboarding'
+    | '/app/billing'
+    | '/app/dashboard'
+    | '/app/settings'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app/'
+    | '/app/launchpad/$tool'
+    | '/app/launchpad/history'
+    | '/app/nova/clients'
+    | '/app/nova/crm'
+    | '/app/nova/leads'
+    | '/app/nova/reports'
+    | '/app/nova/workflows'
+    | '/app/launchpad/'
+    | '/app/nova/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/onboarding'
+    | '/app/billing'
+    | '/app/dashboard'
+    | '/app/settings'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app'
+    | '/app/launchpad/$tool'
+    | '/app/launchpad/history'
+    | '/app/nova/clients'
+    | '/app/nova/crm'
+    | '/app/nova/leads'
+    | '/app/nova/reports'
+    | '/app/nova/workflows'
+    | '/app/launchpad'
+    | '/app/nova'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/onboarding'
+    | '/app/billing'
+    | '/app/dashboard'
+    | '/app/settings'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app/'
+    | '/app/launchpad/$tool'
+    | '/app/launchpad/history'
+    | '/app/nova/clients'
+    | '/app/nova/crm'
+    | '/app/nova/leads'
+    | '/app/nova/reports'
+    | '/app/nova/workflows'
+    | '/app/launchpad/'
+    | '/app/nova/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  OnboardingRoute: typeof OnboardingRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+  AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,21 +298,171 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/auth/sign-up': {
+      id: '/auth/sign-up'
+      path: '/auth/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/auth/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/': {
+      id: '/app/nova/'
+      path: '/nova'
+      fullPath: '/app/nova/'
+      preLoaderRoute: typeof AppNovaIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/': {
+      id: '/app/launchpad/'
+      path: '/launchpad'
+      fullPath: '/app/launchpad/'
+      preLoaderRoute: typeof AppLaunchpadIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/workflows': {
+      id: '/app/nova/workflows'
+      path: '/nova/workflows'
+      fullPath: '/app/nova/workflows'
+      preLoaderRoute: typeof AppNovaWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/reports': {
+      id: '/app/nova/reports'
+      path: '/nova/reports'
+      fullPath: '/app/nova/reports'
+      preLoaderRoute: typeof AppNovaReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/leads': {
+      id: '/app/nova/leads'
+      path: '/nova/leads'
+      fullPath: '/app/nova/leads'
+      preLoaderRoute: typeof AppNovaLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/crm': {
+      id: '/app/nova/crm'
+      path: '/nova/crm'
+      fullPath: '/app/nova/crm'
+      preLoaderRoute: typeof AppNovaCrmRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova/clients': {
+      id: '/app/nova/clients'
+      path: '/nova/clients'
+      fullPath: '/app/nova/clients'
+      preLoaderRoute: typeof AppNovaClientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/history': {
+      id: '/app/launchpad/history'
+      path: '/launchpad/history'
+      fullPath: '/app/launchpad/history'
+      preLoaderRoute: typeof AppLaunchpadHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/$tool': {
+      id: '/app/launchpad/$tool'
+      path: '/launchpad/$tool'
+      fullPath: '/app/launchpad/$tool'
+      preLoaderRoute: typeof AppLaunchpadToolRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBillingRoute: typeof AppBillingRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
+  AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
+  AppNovaClientsRoute: typeof AppNovaClientsRoute
+  AppNovaCrmRoute: typeof AppNovaCrmRoute
+  AppNovaLeadsRoute: typeof AppNovaLeadsRoute
+  AppNovaReportsRoute: typeof AppNovaReportsRoute
+  AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
+  AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
+  AppNovaIndexRoute: typeof AppNovaIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBillingRoute: AppBillingRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppLaunchpadToolRoute: AppLaunchpadToolRoute,
+  AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
+  AppNovaClientsRoute: AppNovaClientsRoute,
+  AppNovaCrmRoute: AppNovaCrmRoute,
+  AppNovaLeadsRoute: AppNovaLeadsRoute,
+  AppNovaReportsRoute: AppNovaReportsRoute,
+  AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
+  AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
+  AppNovaIndexRoute: AppNovaIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  OnboardingRoute: OnboardingRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthSignInRoute: AuthSignInRoute,
+  AuthSignUpRoute: AuthSignUpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
