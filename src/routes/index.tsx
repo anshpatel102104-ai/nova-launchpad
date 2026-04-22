@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Rocket, Cpu, Inbox, FolderOpen, ArrowRight, Zap } from "lucide-react";
+import { Sparkles, Rocket, Cpu, Inbox, FolderOpen, ArrowRight } from "lucide-react";
 import { guestStore } from "@/lib/guest";
 
 export const Route = createFileRoute("/")({
@@ -28,20 +28,25 @@ function LandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* ambient glow */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" aria-hidden />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 h-[380px] w-[380px] rounded-full bg-launchpad/15 blur-3xl" aria-hidden />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px" }} aria-hidden />
+      {/* Subtle ambient — no neon, no grid */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-60"
+        style={{
+          background:
+            "radial-gradient(60rem 28rem at 50% -20%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 70%)",
+        }}
+        aria-hidden
+      />
 
       {/* nav */}
-      <header className="relative z-10 flex h-16 items-center justify-between px-6 md:px-10">
+      <header className="relative z-10 mx-auto flex h-16 max-w-6xl items-center justify-between px-6 md:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary glow-primary">
-            <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Sparkles className="h-4 w-4" />
           </div>
           <div className="leading-tight">
-            <div className="font-display text-sm font-semibold tracking-tight">Nova OPS</div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">AI Business OS</div>
+            <div className="font-display text-[15px] font-semibold tracking-tight">Nova OPS</div>
+            <div className="text-[10.5px] tracking-wide text-muted-foreground">AI Business OS</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -49,56 +54,61 @@ function LandingPage() {
             <Button variant="ghost" size="sm">Sign in</Button>
           </Link>
           <Link to="/signup" search={{ plan: undefined }}>
-            <Button size="sm" className="btn-execute gap-1.5">Get started <ArrowRight className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" className="gap-1.5">
+              Get started <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
           </Link>
         </div>
       </header>
 
       {/* hero */}
-      <main className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 pb-20 pt-16 text-center md:pt-24">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-display text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-          Mission Control for Solo Founders
+      <main className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-16 text-center md:pt-24">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          The AI operating system for business owners
         </span>
 
-        <h1 className="mt-6 font-display text-4xl font-bold tracking-tight md:text-6xl">
-          Run your business like a <span className="text-gradient">mission control</span>.
+        <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight md:text-[3.25rem] md:leading-[1.05]">
+          Run your entire business{" "}
+          <span className="text-gradient">from one workspace.</span>
         </h1>
-        <p className="mt-5 max-w-2xl text-base text-muted-foreground md:text-lg">
-          Experience Nova OPS before you commit. AI specialists, lead pipelines, and automation modules — all in one tactical command center.
+        <p className="mt-5 max-w-xl text-base text-muted-foreground md:text-[17px]">
+          Nova OPS combines AI tools, automations, and a lightweight CRM so founders
+          can move from idea to revenue without juggling ten tabs.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button onClick={startDemo} size="lg" className="btn-execute gap-2 px-8 text-sm">
-            <Zap className="h-4 w-4" /> TRY DEMO — No account needed
+          <Button onClick={startDemo} size="lg" className="gap-2 px-7">
+            Try the live demo
           </Button>
           <Link to="/signup" search={{ plan: undefined }}>
-            <Button size="lg" variant="outline" className="gap-2 px-8 text-sm">
-              <Sparkles className="h-4 w-4" /> Sign Up Free
+            <Button size="lg" variant="outline" className="gap-2 px-7">
+              Sign up free
             </Button>
           </Link>
         </div>
 
-        <div className="mt-3 font-display text-[10px] tracking-[0.18em] text-muted-foreground">
-          NO CREDIT CARD · INSTANT ACCESS · CANCEL ANYTIME
+        <div className="mt-3 text-[12px] text-muted-foreground">
+          No credit card · Instant access · Cancel anytime
         </div>
 
         {/* preview tiles */}
-        <div className="mt-16 grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { icon: Rocket, label: "Launchpad", desc: "10 AI tools" },
             { icon: Cpu, label: "Nova OS", desc: "6 automations" },
             { icon: Inbox, label: "Leads", desc: "Pipeline tracker" },
-            { icon: FolderOpen, label: "Vault", desc: "Generated assets" },
+            { icon: FolderOpen, label: "Assets", desc: "Generated outputs" },
           ].map((t) => (
-            <div key={t.label} className="tactical-card scanlines relative overflow-hidden rounded-xl border border-border bg-card/60 p-4 text-left">
-              <div className="relative z-[2]">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-                  <t.icon className="h-4.5 w-4.5" />
-                </div>
-                <div className="mt-3 font-display text-sm font-semibold">{t.label}</div>
-                <div className="text-[11px] text-muted-foreground">{t.desc}</div>
+            <div
+              key={t.label}
+              className="rounded-xl border border-border bg-card p-4 text-left shadow-soft transition hover:border-foreground/15 hover:shadow-elevated"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <t.icon className="h-4.5 w-4.5" />
               </div>
+              <div className="mt-3 text-[14px] font-medium">{t.label}</div>
+              <div className="text-[12px] text-muted-foreground">{t.desc}</div>
             </div>
           ))}
         </div>
