@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PageHeader } from "@/components/app/PageHeader";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { Button } from "@/components/ui/button";
 import { Check, Sparkles, Zap, Crown, Rocket, CreditCard } from "lucide-react";

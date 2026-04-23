@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { MissionHeader, StatusBadge, XpBar } from "@/components/app/MissionHeader";
+import { StatusBadge, XpBar } from "@/components/app/MissionHeader";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MissionHeader, StatusBadge } from "@/components/app/MissionHeader";
+import { StatusBadge } from "@/components/app/MissionHeader";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { novaSystemsCatalog, type NovaModule } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Lock, Settings2, Inbox, Mail, UserCheck, Receipt, Star, BarChart3 } from "lucide-react";
+import { Lock, Settings2, Inbox, Mail, UserCheck, Receipt, Star, BarChart3, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { blockIfGuest } from "@/lib/guest";
 
