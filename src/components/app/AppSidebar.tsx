@@ -4,13 +4,14 @@ import {
   LayoutDashboard, Rocket, Zap, Users, GitBranch, CheckSquare, BarChart2,
   Settings, CreditCard, ChevronsLeft, ChevronsRight, ChevronDown, ArrowUpRight,
   Lightbulb, Megaphone, Target, Skull, Trophy, UserPlus, FileText, Mail,
-  GitCompare, Globe, Inbox, Workflow, ListChecks, UserCheck, LineChart,
+  GitCompare, Globe, Inbox, Workflow, ListChecks, UserCheck, LineChart, Shield,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
 import { subscriptionQuery } from "@/lib/queries";
+import { useIsAdmin } from "@/lib/admin";
 
 type SubItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
 type NavItem = {
