@@ -9,8 +9,31 @@ Deno.serve(async (req) => {
 
   let input: { url?: string };
   try { input = await req.json(); } catch { return jsonResponse({ error: "Invalid JSON" }, 400); }
-  const url = (input.url || "").trim();
-  if (!/^https?:\/\//.test(url)) return jsonResponse({ error: "Invalid URL" }, 400);
+  const rawUrl = (input.url || "").trim();
+  let parsedUrl: URL;
+  try { parsedUrl = new URL(rawUrl); } catch { return jsonResponse({ error: "Invalid URL" }, 400); }
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    return jsonResponse({ error: "Invalid URL" }, 400);
+  }
+  // SSRF guard: block private/loopback/link-local hostnames and bare IPs in those ranges.
+  const host = parsedUrl.hostname.toLowerCase();
+  const isBlockedHost =
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".internal") ||
+    host.endsWith(".local") ||
+    /^127\./.test(host) ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^0\./.test(host) ||
+    host === "::1" ||
+    host.startsWith("[::1") ||
+    host.startsWith("fc") || host.startsWith("fd") || // unique local IPv6
+    host.startsWith("fe80"); // link-local IPv6
+  if (isBlockedHost) return jsonResponse({ error: "URL not allowed" }, 400);
+  const url = parsedUrl.toString();
 
   const { data: run } = await ctx.supabase.from("tool_runs").insert({
     organization_id: ctx.organizationId,
@@ -72,9 +95,10 @@ Deno.serve(async (req) => {
     return jsonResponse({ run_id: run!.id, analysis_id: analysis?.id, output });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    console.error("[analyze-website] error", msg);
     await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run!.id);
     if (msg === "RATE_LIMIT") return jsonResponse({ error: "Rate limit exceeded." }, 429);
     if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted." }, 402);
-    return jsonResponse({ error: msg }, 500);
+    return jsonResponse({ error: "Failed to analyze website. Please try again." }, 500);
   }
 });

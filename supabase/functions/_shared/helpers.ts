@@ -213,9 +213,10 @@ export async function runTool(opts: {
     return jsonResponse({ run_id: run.id, output });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[tool-run-error:${opts.toolKey}]`, msg);
     await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run.id);
     if (msg === "RATE_LIMIT") return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
     if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted. Add funds in Settings." }, 402);
-    return jsonResponse({ error: msg }, 500);
+    return jsonResponse({ error: "An internal error occurred. Please try again." }, 500);
   }
 }
