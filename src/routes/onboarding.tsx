@@ -118,33 +118,7 @@ function Onboarding() {
   };
 
   if (completed) {
-    // Goal-aware activation: send users straight to their most useful first action.
-    const isOps = stage === "Operate" || stage === "Scale";
-    let dest: string;
-    let destLabel: string;
-    if (goal === "validate") { dest = "/app/launchpad/idea-validator"; destLabel = "Validate your idea"; }
-    else if (goal === "launch") { dest = "/app/launchpad/pitch-generator"; destLabel = "Generate your pitch"; }
-    else if (goal === "automate") { dest = "/app/nova"; destLabel = "Open Nova OS"; }
-    else if (goal === "scale") { dest = "/app/nova/reports"; destLabel = "Open reporting"; }
-    else { dest = isOps ? "/app/nova" : "/app/launchpad"; destLabel = `Open ${isOps ? "Nova OS" : "Launchpad"}`; }
-    return (
-      <div className="boot-grid relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
-        <div className="text-center max-w-md">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-primary text-white shadow-card glow-primary">
-            <Check className="h-7 w-7" />
-          </div>
-          <h1 className="mt-6 font-display text-[2rem] font-semibold tracking-tight">
-            Welcome to <span className="text-gradient-brand">LaunchpadNOVA</span>
-          </h1>
-          <p className="mt-3 text-[14px] text-muted-foreground">
-            Your workspace is ready. Let's get to work — your first recommended action is queued.
-          </p>
-          <Button onClick={() => navigate({ to: dest })} className="mt-8 h-11 gap-2">
-            {destLabel} <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
+    return <BuildingDashboard onDone={() => navigate({ to: "/app/dashboard" })} />;
   }
 
   return (
