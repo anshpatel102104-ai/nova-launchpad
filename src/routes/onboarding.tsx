@@ -60,7 +60,6 @@ function Onboarding() {
   ];
 
   const current = steps[step];
-  const progress = ((step + 1) / steps.length) * 100;
 
   const saveResponse = async (key: string, val: string) => {
     const { data: { user } } = await supabase.auth.getUser();
