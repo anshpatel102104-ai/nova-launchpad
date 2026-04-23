@@ -210,6 +210,15 @@ function Billing() {
           );
         })}
       </div>
+
+      <CheckoutDialog
+        open={!!checkoutPriceId}
+        onOpenChange={(v) => !v && setCheckoutPriceId(null)}
+        priceId={checkoutPriceId}
+        customerEmail={user?.email ?? undefined}
+        userId={user?.id}
+        organizationId={currentOrgId ?? undefined}
+      />
     </div>
   );
 }
