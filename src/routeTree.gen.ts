@@ -35,6 +35,7 @@ import { Route as AppNovaCrmRouteImport } from './routes/app.nova.crm'
 import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
+import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -166,6 +167,11 @@ const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
   path: '/launchpad/$tool',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
+  id: '/return',
+  path: '/return',
+  getParentRoute: () => AppBillingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -176,7 +182,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/assets': typeof AppAssetsRoute
-  '/app/billing': typeof AppBillingRoute
+  '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/app/billing/return': typeof AppBillingReturnRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -203,7 +210,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/assets': typeof AppAssetsRoute
-  '/app/billing': typeof AppBillingRoute
+  '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app': typeof AppIndexRoute
+  '/app/billing/return': typeof AppBillingReturnRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -232,7 +240,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/assets': typeof AppAssetsRoute
-  '/app/billing': typeof AppBillingRoute
+  '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/app/billing/return': typeof AppBillingReturnRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/app/billing/return'
     | '/app/launchpad/$tool'
     | '/app/launchpad/history'
     | '/app/nova/clients'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app'
+    | '/app/billing/return'
     | '/app/launchpad/$tool'
     | '/app/launchpad/history'
     | '/app/nova/clients'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/app/billing/return'
     | '/app/launchpad/$tool'
     | '/app/launchpad/history'
     | '/app/nova/clients'
@@ -535,12 +547,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadToolRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/billing/return': {
+      id: '/app/billing/return'
+      path: '/return'
+      fullPath: '/app/billing/return'
+      preLoaderRoute: typeof AppBillingReturnRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
   }
 }
 
+interface AppBillingRouteChildren {
+  AppBillingReturnRoute: typeof AppBillingReturnRoute
+}
+
+const AppBillingRouteChildren: AppBillingRouteChildren = {
+  AppBillingReturnRoute: AppBillingReturnRoute,
+}
+
+const AppBillingRouteWithChildren = AppBillingRoute._addFileChildren(
+  AppBillingRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAssetsRoute: typeof AppAssetsRoute
-  AppBillingRoute: typeof AppBillingRoute
+  AppBillingRoute: typeof AppBillingRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -558,7 +589,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAssetsRoute: AppAssetsRoute,
-  AppBillingRoute: AppBillingRoute,
+  AppBillingRoute: AppBillingRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppSettingsRoute: AppSettingsRoute,
