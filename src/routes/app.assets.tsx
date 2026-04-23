@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MissionHeader } from "@/components/app/MissionHeader";
+import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { useAuth } from "@/lib/auth";
 import { generatedAssetsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,8 +61,10 @@ function AssetsPage() {
 
   return (
     <div className="space-y-6">
-      <MissionHeader
-        label="Assets"
+      <WorkspaceHeader
+        variant="assets"
+        icon={FolderOpen}
+        eyebrow="Assets · creative studio"
         title="Asset library"
         description="Every output your AI tools have generated, in one place."
       />

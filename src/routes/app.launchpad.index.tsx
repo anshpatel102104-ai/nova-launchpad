@@ -9,6 +9,7 @@ import {
   ArrowUpRight, Search, Lightbulb, Skull, Trophy, UserPlus, FileText, GitCompare, History,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
@@ -65,25 +66,21 @@ function LaunchpadOverview() {
 
   return (
     <div className="space-y-7">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.10em] text-muted-foreground">
-            Launchpad
-          </div>
-          <h1 className="mt-2 font-display text-[1.75rem] font-semibold tracking-tight">
-            AI tools for founders
-          </h1>
-          <p className="mt-1 max-w-2xl text-[13.5px] text-muted-foreground">
-            Each tool generates a polished, ready-to-use asset for your business. Drafts auto-save as you type.
-          </p>
-        </div>
-        <Link
-          to="/app/launchpad/history"
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-2 px-3 py-1.5 text-[12px] font-medium text-foreground/85 hover:border-foreground/20 transition"
-        >
-          <History className="h-3.5 w-3.5" /> View history
-        </Link>
-      </div>
+      <WorkspaceHeader
+        variant="launchpad"
+        icon={Rocket}
+        eyebrow="Launchpad · creation lab"
+        title="AI tools for founders"
+        description="Each tool generates a polished, ready-to-use asset for your business. Drafts auto-save as you type."
+        actions={
+          <Link
+            to="/app/launchpad/history"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/80 backdrop-blur px-3 py-1.5 text-[12px] font-medium text-foreground/85 hover:border-primary/40 transition"
+          >
+            <History className="h-3.5 w-3.5" /> View history
+          </Link>
+        }
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">

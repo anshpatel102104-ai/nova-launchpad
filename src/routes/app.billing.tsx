@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PageHeader } from "@/components/app/PageHeader";
+import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Zap, Crown, Rocket } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, Rocket, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { planEntitlementsQuery, subscriptionQuery, usageQuery } from "@/lib/queries";
@@ -86,8 +86,10 @@ function Billing() {
   return (
     <div className="space-y-6">
       <PaymentTestModeBanner />
-      <PageHeader
-        eyebrow="Account"
+      <WorkspaceHeader
+        variant="billing"
+        icon={CreditCard}
+        eyebrow="Account · billing"
         title="Billing & usage"
         description="Plans translate to platform access. Upgrade unlocks more tools and higher generation limits."
       />

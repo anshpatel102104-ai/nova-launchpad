@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { MissionHeader, StatusBadge, XpBar } from "@/components/app/MissionHeader";
+import { StatusBadge, XpBar } from "@/components/app/MissionHeader";
+import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { organizationQuery, subscriptionQuery, planEntitlementsQuery, integrationsQuery, usageQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Lock, Trash2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Check, Lock, Trash2, ShieldCheck, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { blockIfGuest } from "@/lib/guest";
@@ -30,9 +31,11 @@ const INTEGRATIONS = [
 function SettingsPage() {
   return (
     <div className="space-y-6">
-      <MissionHeader
-        label="Settings"
-        title="Account & workspace"
+      <WorkspaceHeader
+        variant="settings"
+        icon={SettingsIcon}
+        eyebrow="Account"
+        title="Settings"
         description="Manage your profile, organization, plan, and integrations."
       />
       <Tabs defaultValue="profile" className="w-full">
