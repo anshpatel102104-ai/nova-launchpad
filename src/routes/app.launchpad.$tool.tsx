@@ -13,12 +13,13 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
-import { toolRunsQuery } from "@/lib/queries";
+import { toolRunsQuery, subscriptionQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRenderer";
 import { EmptyState } from "@/components/app/EmptyState";
 import { HANDOFFS } from "@/lib/handoffs";
 import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/draftStore";
+import { PaywallModal } from "@/components/app/PaywallModal";
 
 type Search = { context?: string; title?: string };
 
@@ -55,6 +56,10 @@ function ToolPage() {
   const [title, setTitle] = useState("");
   const [context, setContext] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+
+  const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const planTier = subQ.data?.plan ?? "starter";
 
   // Restore draft / handoff prefill — runs once per tool change
   useEffect(() => {
