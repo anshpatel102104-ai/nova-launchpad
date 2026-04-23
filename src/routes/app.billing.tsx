@@ -455,7 +455,7 @@ function Billing() {
                   will drop to Starter. You can resume anytime before then.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <Link to="/app/billing" />
+              
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={busy}>Keep plan</AlertDialogCancel>
                 <AlertDialogAction
