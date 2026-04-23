@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 /* ───────────────────────────── Theme bindings ───────────────────────────── */
 @theme inline {
@@ -79,10 +79,10 @@
   --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
 
   /* Shadows — spec */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2);
-  --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.3);
-  --shadow-glow-primary: 0 0 0 1px rgba(108, 99, 255, 0.3), 0 4px 24px rgba(108, 99, 255, 0.15);
-  --shadow-glow-secondary: 0 0 0 1px rgba(0, 212, 170, 0.3), 0 4px 24px rgba(0, 212, 170, 0.12);
+  --shadow-card: 0 1px 2px rgba(14, 22, 20, 0.04), 0 8px 24px rgba(14, 22, 20, 0.06);
+  --shadow-hover: 0 2px 6px rgba(14, 22, 20, 0.06), 0 18px 40px rgba(14, 22, 20, 0.10);
+  --shadow-glow-primary: 0 0 0 1px rgba(13, 91, 84, 0.22), 0 6px 24px rgba(13, 91, 84, 0.14);
+  --shadow-glow-secondary: 0 0 0 1px rgba(47, 184, 166, 0.28), 0 6px 24px rgba(47, 184, 166, 0.14);
 
   /* Legacy aliases (kept so older components keep rendering) */
   --shadow-soft: 0 1px 2px 0 rgba(0, 0, 0, 0.18);
@@ -90,124 +90,129 @@
   --shadow-glow: var(--shadow-glow-primary);
 }
 
-/* ───────────────────────────── Dark theme (default — spec) ───────────────────────────── */
+/* ───────────────────────────── Light theme (default) ───────────────────────────── */
 :root {
-  /* Surfaces */
-  --background: #0a0a0b;
-  --foreground: #f0f0f2;
-  --surface: #111113;
-  --surface-2: #16161a;
-  --surface-offset: #1c1c22;
+  /* Surfaces — cream/mist palette */
+  --background: #f7f6f2;
+  --foreground: #0e1614;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --surface-offset: #e7e4dc;
 
   --card: var(--surface);
   --card-foreground: var(--foreground);
   --popover: var(--surface);
   --popover-foreground: var(--foreground);
 
-  /* Brand */
-  --primary: #6c63ff;
+  /* Brand — deep teal primary */
+  --primary: #0d5b54;
   --primary-foreground: #ffffff;
-  --primary-hover: #7c75ff;
-  --primary-glow: rgba(108, 99, 255, 0.15);
+  --primary-hover: #0a4a44;
+  --primary-glow: rgba(13, 91, 84, 0.16);
 
   --secondary: var(--surface-2);
   --secondary-foreground: var(--foreground);
-  --accent: #00d4aa;
-  --accent-foreground: #07120e;
-  --accent-glow: rgba(0, 212, 170, 0.12);
+  --accent: #2fb8a6;
+  --accent-foreground: #07221e;
+  --accent-glow: rgba(47, 184, 166, 0.16);
 
   --muted: var(--surface-2);
-  --muted-foreground: #7a7a8a;
-  --text-faint: #3a3a4a;
+  --muted-foreground: #5b655f;
+  --text-faint: #a6ada6;
 
   /* Status */
-  --success: #10b981;
-  --success-foreground: #04140d;
-  --warning: #f59e0b;
-  --warning-foreground: #1a1208;
-  --destructive: #ef4444;
+  --success: #0d8a5f;
+  --success-foreground: #ffffff;
+  --warning: #b16a00;
+  --warning-foreground: #ffffff;
+  --destructive: #c0392b;
   --destructive-foreground: #ffffff;
 
   /* Borders / inputs */
-  --border: rgba(255, 255, 255, 0.07);
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --input: rgba(255, 255, 255, 0.07);
-  --ring: #6c63ff;
+  --border: rgba(14, 22, 20, 0.08);
+  --border-subtle: rgba(14, 22, 20, 0.05);
+  --input: rgba(14, 22, 20, 0.10);
+  --ring: #0d5b54;
 
   /* Workspace signals */
-  --launchpad: #6c63ff;
-  --nova: #00d4aa;
+  --launchpad: #0d5b54;
+  --nova: #2fb8a6;
 
-  /* Charts (teal-leaning for Nova reports per spec) */
-  --chart-1: #00d4aa;
-  --chart-2: #6c63ff;
-  --chart-3: #f59e0b;
-  --chart-4: #38bdf8;
-  --chart-5: #ef4444;
+  /* Charts */
+  --chart-1: #0d5b54;
+  --chart-2: #2fb8a6;
+  --chart-3: #b16a00;
+  --chart-4: #2563a8;
+  --chart-5: #c0392b;
 
-  /* Sidebar — slightly deeper than background for separation */
-  --sidebar: #0c0c0e;
-  --sidebar-foreground: #f0f0f2;
-  --sidebar-primary: #6c63ff;
+  /* Sidebar — slightly warmer than background */
+  --sidebar: #fbfaf6;
+  --sidebar-foreground: #0e1614;
+  --sidebar-primary: #0d5b54;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #16161a;
-  --sidebar-accent-foreground: #f0f0f2;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: #6c63ff;
+  --sidebar-accent: #efece4;
+  --sidebar-accent-foreground: #0e1614;
+  --sidebar-border: rgba(14, 22, 20, 0.07);
+  --sidebar-ring: #0d5b54;
 }
 
-/* ───────────────────────────── Light theme (derived) ───────────────────────────── */
-.light {
-  --background: #fafafb;
-  --foreground: #0f0f12;
-  --surface: #ffffff;
-  --surface-2: #f4f4f7;
-  --surface-offset: #ececf2;
+/* ───────────────────────────── Dark theme (opt-in) ───────────────────────────── */
+.dark {
+  --background: #0b0d0d;
+  --foreground: #ecedea;
+  --surface: #121514;
+  --surface-2: #181c1b;
+  --surface-offset: #1f2423;
 
   --card: var(--surface);
   --card-foreground: var(--foreground);
   --popover: var(--surface);
   --popover-foreground: var(--foreground);
 
-  --primary: #6c63ff;
-  --primary-foreground: #ffffff;
-  --primary-hover: #5a52e6;
-  --primary-glow: rgba(108, 99, 255, 0.18);
+  --primary: #2fb8a6;
+  --primary-foreground: #07221e;
+  --primary-hover: #46c8b6;
+  --primary-glow: rgba(47, 184, 166, 0.18);
 
   --secondary: var(--surface-2);
   --secondary-foreground: var(--foreground);
-  --accent: #00b894;
-  --accent-foreground: #ffffff;
+  --accent: #2fb8a6;
+  --accent-foreground: #07221e;
+  --accent-glow: rgba(47, 184, 166, 0.14);
 
   --muted: var(--surface-2);
-  --muted-foreground: #6a6a78;
+  --muted-foreground: #8a948f;
+  --text-faint: #3a4441;
 
-  --success: #059669;
-  --warning: #d97706;
-  --destructive: #dc2626;
+  --success: #2fb8a6;
+  --success-foreground: #07221e;
+  --warning: #f0a040;
+  --warning-foreground: #1a1208;
+  --destructive: #ef5350;
+  --destructive-foreground: #ffffff;
 
-  --border: rgba(15, 15, 18, 0.08);
-  --border-subtle: rgba(15, 15, 18, 0.05);
-  --input: rgba(15, 15, 18, 0.10);
-  --ring: #6c63ff;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --input: rgba(255, 255, 255, 0.07);
+  --ring: #2fb8a6;
 
-  --launchpad: #6c63ff;
-  --nova: #00b894;
+  --launchpad: #2fb8a6;
+  --nova: #2fb8a6;
 
-  --chart-1: #00b894;
-  --chart-2: #6c63ff;
-  --chart-3: #d97706;
-  --chart-4: #0284c7;
-  --chart-5: #dc2626;
+  --chart-1: #2fb8a6;
+  --chart-2: #6cdfcf;
+  --chart-3: #f0a040;
+  --chart-4: #5aa9e6;
+  --chart-5: #ef5350;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0f0f12;
-  --sidebar-primary: #6c63ff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f7;
-  --sidebar-accent-foreground: #0f0f12;
-  --sidebar-border: rgba(15, 15, 18, 0.06);
-  --sidebar-ring: #6c63ff;
+  --sidebar: #0e1110;
+  --sidebar-foreground: #ecedea;
+  --sidebar-primary: #2fb8a6;
+  --sidebar-primary-foreground: #07221e;
+  --sidebar-accent: #181c1b;
+  --sidebar-accent-foreground: #ecedea;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #2fb8a6;
 }
 
 /* ───────────────────────────── Base ───────────────────────────── */
@@ -243,27 +248,27 @@
 
   /* Brand gradient text */
   .text-gradient-brand {
-    background: linear-gradient(110deg, #6c63ff 0%, #9b8bff 40%, #00d4aa 100%);
+    background: linear-gradient(110deg, #0d5b54 0%, #2fb8a6 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
   /* Backwards compat */
   .text-gradient {
-    background: linear-gradient(110deg, #6c63ff 0%, #00d4aa 100%);
+    background: linear-gradient(110deg, #0d5b54 0%, #2fb8a6 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
   .bg-gradient-primary {
-    background: linear-gradient(135deg, #6c63ff, #7c75ff);
+    background: linear-gradient(135deg, #0d5b54, #2fb8a6);
   }
 
   /* Subtle grid background — used on auth + onboarding */
   .bg-grid-faint {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      linear-gradient(to right, color-mix(in oklab, var(--foreground) 4%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 4%, transparent) 1px, transparent 1px);
     background-size: 48px 48px;
     background-position: -1px -1px;
   }
@@ -297,7 +302,7 @@
     50% { background-position: 100% 50%; }
   }
   .text-brand-cycle {
-    background: linear-gradient(110deg, #6c63ff 0%, #9b8bff 35%, #00d4aa 70%, #6c63ff 100%);
+    background: linear-gradient(110deg, #0d5b54 0%, #2fb8a6 50%, #0d5b54 100%);
     background-size: 250% 100%;
     -webkit-background-clip: text;
     background-clip: text;
