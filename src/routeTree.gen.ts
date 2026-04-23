@@ -26,6 +26,7 @@ import { Route as AppLeadsRouteImport } from './routes/app.leads'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
 import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
 import { Route as AppNovaWorkflowsRouteImport } from './routes/app.nova.workflows'
@@ -122,6 +123,11 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
   id: '/nova/',
   path: '/nova/',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/app/admin'
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/app/admin'
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/app/admin'
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
@@ -484,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova/': {
       id: '/app/nova/'
       path: '/nova'
@@ -570,6 +589,7 @@ const AppBillingRouteWithChildren = AppBillingRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAssetsRoute: typeof AppAssetsRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
@@ -588,6 +608,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAssetsRoute: AppAssetsRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,

@@ -155,7 +155,7 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <section className="rise-in flex flex-col gap-3 md:flex-row md:items-end md:justify-between" style={{ ["--i" as string]: 0 }}>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-0.5 text-[10.5px] font-medium text-foreground/80">
@@ -177,7 +177,7 @@ function Dashboard() {
 
       {/* Onboarding checklist — disappears once everything is done */}
       {!checklistComplete && (
-        <section className="rounded-lg border border-border bg-surface shadow-card overflow-hidden">
+        <section className="rise-in rounded-lg border border-border bg-surface shadow-card overflow-hidden" style={{ ["--i" as string]: 1 }}>
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div className="flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary">
@@ -221,7 +221,7 @@ function Dashboard() {
       )}
 
       {/* Stat row — 4 cards (12-col grid: 3 each) */}
-      <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="rise-in grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ ["--i" as string]: 2 }}>
         <StatCard
           label="Business Stage"
           value={orgStage}
@@ -280,7 +280,7 @@ function Dashboard() {
       </section>
 
       {/* 8 + 4 split: activity feed + next action */}
-      <section className="grid gap-4 lg:grid-cols-12">
+      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 3 }}>
         <div className="lg:col-span-8 rounded-lg border border-border bg-surface shadow-card">
           <div className="flex items-center justify-between border-b border-border p-4">
             <div>
@@ -378,7 +378,7 @@ function Dashboard() {
       </section>
 
       {/* Quick actions bar */}
-      <section className="rounded-lg border border-border bg-surface shadow-card">
+      <section className="rise-in rounded-lg border border-border bg-surface shadow-card" style={{ ["--i" as string]: 4 }}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">Quick Actions</div>
           <span className="text-[11px] text-muted-foreground hidden sm:inline">Or press <kbd className="font-mono text-[10px] rounded border border-border bg-background px-1 py-0.5">⌘K</kbd></span>
@@ -398,7 +398,7 @@ function Dashboard() {
       </section>
 
       {/* 6 + 6 split: Launchpad tile grid + Nova system status */}
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 5 }}>
         {/* Launchpad */}
         <div className="rounded-lg border border-border bg-surface shadow-card">
           <div className="flex items-center justify-between border-b border-border p-4">

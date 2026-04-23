@@ -4,13 +4,14 @@ import {
   LayoutDashboard, Rocket, Zap, Users, GitBranch, CheckSquare, BarChart2,
   Settings, CreditCard, ChevronsLeft, ChevronsRight, ChevronDown, ArrowUpRight,
   Lightbulb, Megaphone, Target, Skull, Trophy, UserPlus, FileText, Mail,
-  GitCompare, Globe, Inbox, Workflow, ListChecks, UserCheck, LineChart,
+  GitCompare, Globe, Inbox, Workflow, ListChecks, UserCheck, LineChart, Shield,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
 import { subscriptionQuery } from "@/lib/queries";
+import { useIsAdmin } from "@/lib/admin";
 
 type SubItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
 type NavItem = {
@@ -70,6 +71,7 @@ export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { currentOrg, currentOrgId, profile, user } = useAuth();
   const { isGuest, disable } = useGuest();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -79,6 +81,11 @@ export function AppSidebar() {
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plan = subQ.data?.plan ?? "starter";
+
+  const footerNav: NavItem[] = [
+    ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield } as NavItem] : []),
+    ...FOOTER_NAV,
+  ];
 
   const exitDemo = () => {
     disable();
@@ -183,7 +190,7 @@ export function AppSidebar() {
         )}
 
         <div className="space-y-0.5">
-          {FOOTER_NAV.map((item) => (
+          {footerNav.map((item) => (
             <NavRow key={item.to} item={item} path={path} collapsed={collapsed} open={false} onToggle={() => {}} />
           ))}
         </div>

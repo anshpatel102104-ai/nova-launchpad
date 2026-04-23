@@ -324,6 +324,16 @@
 }
 .animate-scale-in { animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+/* Subtle stagger fade-up. Use with style={{ '--i': N }} on each child. */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise-in {
+  animation: riseIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
