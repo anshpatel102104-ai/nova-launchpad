@@ -190,7 +190,7 @@ export function AppSidebar() {
         )}
 
         <div className="space-y-0.5">
-          {FOOTER_NAV.map((item) => (
+          {footerNav.map((item) => (
             <NavRow key={item.to} item={item} path={path} collapsed={collapsed} open={false} onToggle={() => {}} />
           ))}
         </div>
