@@ -5,8 +5,7 @@ import { StatusBadge } from "@/components/app/MissionHeader";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { novaSystemsCatalog, type NovaModule } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
-import { subscriptionQuery, integrationsQuery } from "@/lib/queries";
-import { supabase } from "@/integrations/supabase/client";
+import { subscriptionQuery, integrationsQuery, saveIntegration } from "@/lib/queries";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +60,7 @@ function NovaOverview() {
         {novaSystemsCatalog.map((mod) => {
           const Icon = ICONS[mod.key] ?? Settings2;
           const status = moduleStatus(mod.key);
-          const online = status?.status === "connected" && !!status?.value;
+          const online = status?.status === "connected" && !!status?.is_connected;
 
           return (
             <div key={mod.key} className="relative">
@@ -90,17 +89,19 @@ function NovaOverview() {
                       onCheckedChange={async (v) => {
                         if (blockIfGuest("Sign up to deploy automation modules.")) return;
                         if (!unlocked || !user) return;
-                        const { error } = await supabase.from("user_integrations").upsert(
-                          {
-                            user_id: user.id,
-                            integration_key: KEY_PREFIX + mod.key,
-                            value: status?.value ?? "",
-                            status: v ? "connected" : "disabled",
-                          },
-                          { onConflict: "user_id,integration_key" },
-                        );
-                        if (error) toast.error(error.message);
-                        else qc.invalidateQueries({ queryKey: ["user_integrations", user.id] });
+                        // Toggle without overwriting the encrypted webhook value:
+                        // if turning off and a webhook is configured, just clear it.
+                        if (!v) {
+                          try {
+                            await saveIntegration(KEY_PREFIX + mod.key, "");
+                            qc.invalidateQueries({ queryKey: ["user_integrations", user.id] });
+                          } catch (e) {
+                            toast.error(e instanceof Error ? e.message : "Failed to update");
+                          }
+                        } else {
+                          // Need a webhook URL to enable — open the configure sheet.
+                          setActive(mod);
+                        }
                       }}
                       disabled={!unlocked}
                     />
@@ -159,28 +160,26 @@ function ConfigureSheet({
   const existing = mod && intQ.data?.find((i) => i.integration_key === KEY_PREFIX + mod.key);
   const [url, setUrl] = useState("");
 
-  // Sync when sheet opens
-  useState(() => { setUrl(existing?.value ?? ""); });
+  // Sync when sheet opens — for security, the previous webhook URL is never
+  // returned to the client. Show the last-4 hint as placeholder instead.
+  useState(() => { setUrl(""); });
 
   const save = async () => {
     if (blockIfGuest("Sign up to wire automation webhooks.")) return;
     if (!user || !mod) return;
-    const { error } = await supabase.from("user_integrations").upsert(
-      {
-        user_id: user.id,
-        integration_key: KEY_PREFIX + mod.key,
-        value: url,
-        status: url ? "connected" : "disabled",
-      },
-      { onConflict: "user_id,integration_key" },
-    );
-    if (error) toast.error(error.message);
-    else {
+    try {
+      await saveIntegration(KEY_PREFIX + mod.key, url);
       toast.success("Module saved");
       qc.invalidateQueries({ queryKey: ["user_integrations", user.id] });
       onOpenChange(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
     }
   };
+
+  const placeholder = existing?.value_last4
+    ? `Currently set · ending …${existing.value_last4}`
+    : "https://hooks.example.com/...";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -198,13 +197,13 @@ function ConfigureSheet({
           <div>
             <div className="mb-1.5 text-[12.5px] font-medium text-foreground">Webhook URL</div>
             <Input
-              placeholder="https://hooks.example.com/..."
+              placeholder={placeholder}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              defaultValue={existing?.value ?? ""}
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              We'll POST events to this URL when the module fires.
+              We'll POST events to this URL when the module fires. For security, the existing
+              URL isn't shown — re-enter to update, or leave blank and save to disconnect.
             </p>
           </div>
           <Button onClick={save} className="w-full">Save module</Button>

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { organizationQuery, subscriptionQuery, planEntitlementsQuery, integrationsQuery, usageQuery } from "@/lib/queries";
+import { organizationQuery, subscriptionQuery, planEntitlementsQuery, integrationsQuery, usageQuery, saveIntegration } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertTriangle, Check, Lock, Trash2, ShieldCheck, Settings as SettingsIcon } from "lucide-react";
@@ -250,7 +250,7 @@ function ConnectorsTab() {
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-success" />
-          {integrations.filter((i) => i.value).length} connected
+          {integrations.filter((i) => i.is_connected).length} connected
         </span>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -274,24 +274,27 @@ function ConnectorCard({
   conn, existing, onSaved,
 }: {
   conn: typeof INTEGRATIONS[number];
-  existing?: { value: string | null; status: string };
+  existing?: { is_connected: boolean; value_last4: string | null; status: string };
   onSaved: () => void;
 }) {
   const { user } = useAuth();
-  const [val, setVal] = useState(existing?.value ?? "");
-  useEffect(() => { setVal(existing?.value ?? ""); }, [existing?.value]);
+  const [val, setVal] = useState("");
+  // For security, never prefill the secret. Show last-4 as placeholder.
+  useEffect(() => { setVal(""); }, [existing?.value_last4]);
 
-  const isConnected = !!existing?.value && existing.status === "connected";
+  const isConnected = !!existing?.is_connected && existing.status === "connected";
 
   const save = async () => {
     if (blockIfGuest("Sign up to connect real integrations.")) return;
     if (!user) return;
-    const { error } = await supabase.from("user_integrations").upsert(
-      { user_id: user.id, integration_key: conn.key, value: val, status: val ? "connected" : "disabled" },
-      { onConflict: "user_id,integration_key" },
-    );
-    if (error) toast.error(error.message);
-    else { toast.success(`${conn.name} ${val ? "connected" : "cleared"}`); onSaved(); }
+    try {
+      await saveIntegration(conn.key, val);
+      toast.success(`${conn.name} ${val ? "connected" : "cleared"}`);
+      setVal("");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
+    }
   };
 
   return (
