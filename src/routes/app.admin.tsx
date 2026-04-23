@@ -112,9 +112,10 @@ function AdminHub() {
   const onboardedUsers = profiles.filter((p) => p.onboarding_complete).length;
   const totalOrgs = orgs.length;
   const paidSubs = subs.filter((s) => s.plan !== "starter" && s.status === "active").length;
+  const PLAN_PRICES = { starter: 0, launch: 49, operate: 149, scale: 299 } as const;
   const mrr = subs
     .filter((s) => s.status === "active")
-    .reduce((sum, s) => sum + ({ starter: 0, launch: 49, operate: 149, scale: 299 } as const)[s.plan as "starter" | "launch" | "operate" | "scale"] ?? 0, 0);
+    .reduce((sum, s) => sum + (PLAN_PRICES[s.plan as keyof typeof PLAN_PRICES] ?? 0), 0);
   const succeededRuns = runs.filter((r) => r.status === "succeeded").length;
   const last7d = runs.filter((r) => Date.now() - new Date(r.created_at).getTime() < 7 * 86400e3).length;
 
