@@ -175,6 +175,51 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* Onboarding checklist — disappears once everything is done */}
+      {!checklistComplete && (
+        <section className="rounded-lg border border-border bg-surface shadow-card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary">
+                <ListChecks className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <div className="font-display text-[13.5px] font-semibold tracking-tight">Get your workspace live</div>
+                <div className="text-[11px] text-muted-foreground">{checklistDone} of {checklist.length} complete · keep going to unlock the full dashboard</div>
+              </div>
+            </div>
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="h-1.5 w-32 overflow-hidden rounded-full bg-surface-2">
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(checklistDone / checklist.length) * 100}%` }} />
+              </div>
+              <span className="text-[11px] font-medium tabular-nums text-muted-foreground">{Math.round((checklistDone / checklist.length) * 100)}%</span>
+            </div>
+          </div>
+          <ul className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
+            {checklist.map((c) => (
+              <li key={c.id} className="bg-surface">
+                <Link
+                  to={c.to}
+                  className="flex items-center gap-2.5 px-4 py-2.5 transition hover:bg-surface-2"
+                >
+                  <span className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+                    c.done ? "border-success bg-success/15 text-success" : "border-border bg-surface-2 text-muted-foreground/60",
+                  )}>
+                    {c.done ? <Check className="h-3 w-3" /> : <Clock className="h-2.5 w-2.5" />}
+                  </span>
+                  <span className={cn(
+                    "flex-1 text-[12.5px]",
+                    c.done ? "text-muted-foreground line-through" : "text-foreground/90",
+                  )}>{c.label}</span>
+                  {!c.done && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Stat row — 4 cards (12-col grid: 3 each) */}
       <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
