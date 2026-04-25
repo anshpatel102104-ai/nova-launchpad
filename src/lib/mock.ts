@@ -27,7 +27,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
   { key: "followup",          toolKey: "generate-followup-sequence", name: "Follow-Up Sequence",       desc: "Multi-touch follow-ups that convert.",            wired: true, difficulty: "Beginner",     xp: 50 },
   { key: "website-audit",     toolKey: "analyze-website",            name: "Website Auditor",          desc: "AI audit of your live site.",                     wired: true, difficulty: "Intermediate", xp: 75 },
   // Coming soon — visible in catalog, gracefully gated until edge functions ship
-  { key: "kill-my-idea",      toolKey: "",                            name: "Kill My Idea",             desc: "Stress-test your idea against the harshest objections.", wired: false, difficulty: "Intermediate", xp: 75 },
+  { key: "kill-my-idea",      toolKey: "kill-my-idea",               name: "Kill My Idea",             desc: "Stress-test your idea against the harshest objections.", wired: true, difficulty: "Intermediate", xp: 75 },
   { key: "funding-score",     toolKey: "",                            name: "Funding Score",            desc: "Score how investable your idea is right now.",    wired: false, difficulty: "Advanced",     xp: 100 },
   { key: "first-10-customers",toolKey: "",                            name: "First 10 Customers",       desc: "Tactical roadmap to your first 10 paying customers.", wired: false, difficulty: "Intermediate", xp: 75 },
   { key: "business-plan",     toolKey: "",                            name: "Business Plan",            desc: "Document-style operating plan ready to share.",   wired: false, difficulty: "Advanced",     xp: 100 },

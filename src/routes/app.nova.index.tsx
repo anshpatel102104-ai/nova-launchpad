@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { StatusBadge } from "@/components/app/MissionHeader";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
@@ -162,7 +162,7 @@ function ConfigureSheet({
 
   // Sync when sheet opens — for security, the previous webhook URL is never
   // returned to the client. Show the last-4 hint as placeholder instead.
-  useState(() => { setUrl(""); });
+  useEffect(() => { setUrl(""); }, [open]);
 
   const save = async () => {
     if (blockIfGuest("Sign up to wire automation webhooks.")) return;

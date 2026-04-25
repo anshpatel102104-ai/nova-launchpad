@@ -250,6 +250,10 @@
 @layer utilities {
   .font-mono { font-family: var(--font-mono); }
 
+  /* Primary tint helpers used on landing */
+  .bg-primary\/8 { background-color: color-mix(in oklab, var(--primary) 8%, transparent); }
+  .bg-primary\/12 { background-color: color-mix(in oklab, var(--primary) 12%, transparent); }
+
   /* Orange — exposed because it's in the new system but not a default Tailwind token */
   .text-orange { color: var(--orange); }
   .bg-orange { background-color: var(--orange); }

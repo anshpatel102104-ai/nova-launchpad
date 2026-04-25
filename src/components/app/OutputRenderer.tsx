@@ -171,6 +171,7 @@ export function OutputBody({ toolKey, output }: { toolKey: string; output: Out }
     case "generate-ops-plan":     return <OpsOut o={o} />;
     case "generate-followup-sequence": return <FollowupOut o={o} />;
     case "analyze-website":       return <WebsiteOut o={o} />;
+    case "kill-my-idea":          return <KillMyIdeaOut o={o} />;
     default:                      return <GenericOut o={o} />;
   }
 }
@@ -376,6 +377,95 @@ function WebsiteOut({ o }: { o: Record<string, unknown> }) {
       )}
       {seo && <Block title="SEO notes">{seo}</Block>}
       {ux && <Block title="UX notes">{ux}</Block>}
+    </div>
+  );
+}
+
+function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
+  const score = num(o.survival_score, 0);
+  const verdict = str(o.verdict);
+  const killShot = str(o.the_kill_shot);
+  const fatalFlaws = arr(o.fatal_flaws);
+  const marketRisks = arr(o.market_risks);
+  const executionRisks = arr(o.execution_risks);
+  const assumptions = arr(o.dangerous_assumptions);
+  const ifYouProceed = arr(o.if_you_proceed);
+
+  const tone = score >= 65 ? "text-warning" : score >= 40 ? "text-destructive" : "text-destructive";
+  const barColor = score >= 65 ? "bg-warning" : "bg-destructive";
+
+  return (
+    <div className="space-y-3">
+      {/* Survival score */}
+      <div className="flex items-center gap-4 rounded-md border border-border bg-surface-2/60 p-4">
+        <div className={cn("font-display text-[2.4rem] font-semibold leading-none tabular-nums", tone)}>
+          {Math.round(score)}
+          <span className="ml-0.5 text-sm font-normal text-muted-foreground">/100</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          {verdict && <div className="text-[12px] font-medium text-foreground/90">{verdict}</div>}
+          <div className="mt-1.5 h-1.5 rounded-full bg-surface-offset">
+            <div className={cn("h-full rounded-full", barColor)} style={{ width: `${Math.max(0, Math.min(100, score))}%` }} />
+          </div>
+          <div className="mt-1 text-[10.5px] text-muted-foreground">Survival score — lower = higher failure risk</div>
+        </div>
+      </div>
+
+      {/* The kill shot */}
+      {killShot && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
+          <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-destructive">The kill shot</div>
+          <div className="text-[13.5px] leading-relaxed text-foreground/90">{killShot}</div>
+        </div>
+      )}
+
+      {fatalFlaws.length > 0 && (
+        <Block title="Fatal flaws" accent="destructive">
+          <BulletList items={fatalFlaws} accent="destructive" />
+        </Block>
+      )}
+      {marketRisks.length > 0 && (
+        <Block title="Market risks" accent="warning">
+          <BulletList items={marketRisks} accent="warning" />
+        </Block>
+      )}
+      {executionRisks.length > 0 && (
+        <Block title="Execution risks" accent="warning">
+          <BulletList items={executionRisks} accent="warning" />
+        </Block>
+      )}
+
+      {/* Dangerous assumptions table */}
+      {assumptions.length > 0 && (
+        <div className="rounded-md border border-border bg-surface-2/60 p-4">
+          <div className="mb-3 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Dangerous assumptions
+          </div>
+          <div className="space-y-3">
+            {assumptions.map((a, i) => {
+              const item = typeof a === "object" && a ? a as Record<string, unknown> : {};
+              return (
+                <div key={i} className="grid gap-1 rounded border border-border bg-surface p-3 sm:grid-cols-2">
+                  <div>
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-warning">You assume</div>
+                    <div className="text-[12.5px] text-foreground/90">{str(item.assumption)}</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-destructive">Reality</div>
+                    <div className="text-[12.5px] text-foreground/90">{str(item.reality)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {ifYouProceed.length > 0 && (
+        <Block title="If you proceed — fix these first" accent="primary">
+          <BulletList items={ifYouProceed} accent="primary" />
+        </Block>
+      )}
     </div>
   );
 }

@@ -460,6 +460,8 @@ function placeholderFor(key: string): string {
       return "Who is the lead? What did they show interest in? What outcome do you want?";
     case "website-audit":
       return "Paste your live URL and any context about who visits and what you want them to do.";
+    case "kill-my-idea":
+      return "Describe your startup idea in detail — what it does, who it's for, the business model, and why you think it'll work. The more confident you sound, the better the critique.";
     default:
       return "Describe your business, audience, and goal. The more specific, the better the output.";
   }
