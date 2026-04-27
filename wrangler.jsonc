@@ -4,4 +4,10 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // Required secrets — set via: wrangler secret put <NAME>
+  // VITE_SUPABASE_URL          — Supabase project URL (Project Settings → API)
+  // VITE_SUPABASE_ANON_KEY     — Supabase anon key (safe to expose)
+  // SUPABASE_SERVICE_ROLE_KEY  — Supabase service role key (keep secret)
+  // VITE_ANTHROPIC_API_KEY     — Anthropic API key (used by runToolLocally for all 17 tools)
+  // VITE_PAYMENTS_CLIENT_TOKEN — Stripe publishable key (pk_live_... or pk_test_...)
 }
