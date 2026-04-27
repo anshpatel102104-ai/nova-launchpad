@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const ALLOWED_FLAT = new Set([
   "stripe", "gohighlevel", "airtable", "n8n", "zapier", "slack",
-  "google_calendar", "gmail",
+  "google_calendar", "gmail", "anthropic",
 ]);
 // Nova module webhooks use the "nova:webhook:<module>" prefix.
 const NOVA_WEBHOOK_RE = /^nova:webhook:[a-z0-9_-]{1,64}$/;
