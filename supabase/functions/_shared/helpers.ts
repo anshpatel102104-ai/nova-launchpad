@@ -120,23 +120,27 @@ export async function callClaude(systemPrompt: string, userPrompt: string, schem
   description: string;
   parameters: Record<string, unknown>;
 }): Promise<Record<string, unknown>> {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
 
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      tools: [{ type: "function", function: schema }],
-      tool_choice: { type: "function", function: { name: schema.name } },
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 8096,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+      tools: [{
+        name: schema.name,
+        description: schema.description,
+        input_schema: schema.parameters,
+      }],
+      tool_choice: { type: "tool", name: schema.name },
     }),
   });
 
@@ -144,13 +148,13 @@ export async function callClaude(systemPrompt: string, userPrompt: string, schem
     if (resp.status === 429) throw new Error("RATE_LIMIT");
     if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
     const t = await resp.text();
-    throw new Error(`AI gateway error: ${resp.status} ${t}`);
+    throw new Error(`Anthropic API error: ${resp.status} ${t}`);
   }
 
   const data = await resp.json();
-  const tc = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!tc) throw new Error("No tool call in AI response");
-  return JSON.parse(tc.function.arguments);
+  const toolUse = data.content?.find((c: { type: string }) => c.type === "tool_use");
+  if (!toolUse) throw new Error("No tool_use in Anthropic response");
+  return toolUse.input;
 }
 
 export async function runTool(opts: {
