@@ -23,17 +23,17 @@ function applyTheme(t: ResolvedTheme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.classList.remove("dark", "light");
-  root.classList.add(t);
+  if (t === "light") root.classList.add("light");
   root.style.colorScheme = t;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
 
   // Initial sync from localStorage (client only)
   useEffect(() => {
-    let initial: Theme = "light";
+    let initial: Theme = "dark";
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === "light" || stored === "dark" || stored === "system") initial = stored;

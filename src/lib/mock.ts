@@ -18,25 +18,23 @@ export type LaunchpadTool = {
 };
 
 export const launchpadCatalog: LaunchpadTool[] = [
-  // 7 wired (have live edge functions)
-  { key: "idea-validator",    toolKey: "validate-idea",              name: "Business Idea Validator",  desc: "Pressure-test your idea against market signal.",  wired: true, difficulty: "Beginner",     xp: 50 },
-  { key: "pitch-generator",   toolKey: "generate-pitch",             name: "Pitch Generator",          desc: "Investor-ready pitch in minutes.",                wired: true, difficulty: "Intermediate", xp: 75 },
-  { key: "gtm-strategy",      toolKey: "generate-gtm-strategy",      name: "GTM Strategy",             desc: "Channel plan, ICP, and messaging map.",           wired: true, difficulty: "Advanced",     xp: 100 },
-  { key: "offer",             toolKey: "generate-offer",             name: "Offer Builder",            desc: "Irresistible offer with risk reversal.",          wired: true, difficulty: "Intermediate", xp: 75 },
-  { key: "ops-plan",          toolKey: "generate-ops-plan",          name: "Ops Plan",                 desc: "Workflows, automations, KPIs.",                   wired: true, difficulty: "Advanced",     xp: 100 },
-  { key: "followup",          toolKey: "generate-followup-sequence", name: "Follow-Up Sequence",       desc: "Multi-touch follow-ups that convert.",            wired: true, difficulty: "Beginner",     xp: 50 },
-  { key: "website-audit",     toolKey: "analyze-website",            name: "Website Auditor",          desc: "AI audit of your live site.",                     wired: true, difficulty: "Intermediate", xp: 75 },
-  // Coming soon — visible in catalog, gracefully gated until edge functions ship
-  { key: "kill-my-idea",      toolKey: "",                            name: "Kill My Idea",             desc: "Stress-test your idea against the harshest objections.", wired: false, difficulty: "Intermediate", xp: 75 },
-  { key: "funding-score",     toolKey: "",                            name: "Funding Score",            desc: "Score how investable your idea is right now.",    wired: false, difficulty: "Advanced",     xp: 100 },
-  { key: "first-10-customers",toolKey: "",                            name: "First 10 Customers",       desc: "Tactical roadmap to your first 10 paying customers.", wired: false, difficulty: "Intermediate", xp: 75 },
-  { key: "business-plan",     toolKey: "",                            name: "Business Plan",            desc: "Document-style operating plan ready to share.",   wired: false, difficulty: "Advanced",     xp: 100 },
-  { key: "investor-emails",   toolKey: "",                            name: "Investor Emails",          desc: "Cold investor outreach that gets replies.",       wired: false, difficulty: "Intermediate", xp: 75 },
-  { key: "idea-vs-idea",      toolKey: "",                            name: "Idea vs Idea",             desc: "Side-by-side comparison of two business ideas.",  wired: false, difficulty: "Beginner",     xp: 50 },
-  { key: "landing-page",      toolKey: "",                            name: "Landing Page",             desc: "Generate hero, benefits, CTA, and offer copy.",   wired: false, difficulty: "Intermediate", xp: 75 },
-  { key: "competitor",        toolKey: "",                            name: "Competitor Analyzer",      desc: "Map rivals, gaps, and angles to win.",            wired: false, difficulty: "Advanced",    xp: 120, requiredPlan: "Scale" },
-  { key: "pricing",           toolKey: "",                            name: "Pricing Strategy Builder", desc: "Tiered pricing with anchor + value math.",        wired: false, difficulty: "Advanced",    xp: 120, requiredPlan: "Scale" },
-  { key: "revenue-projector", toolKey: "",                            name: "Revenue Projector",        desc: "Forecast MRR, CAC, LTV with scenarios.",          wired: false, difficulty: "Advanced",    xp: 150, requiredPlan: "Scale" },
+  { key: "idea-validator",     toolKey: "validate-idea",              name: "Business Idea Validator",   desc: "Pressure-test your idea against real market signal.",              wired: true, difficulty: "Beginner",     xp: 50  },
+  { key: "pitch-generator",    toolKey: "generate-pitch",             name: "Pitch Generator",            desc: "Investor-ready pitch deck copy in minutes.",                      wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "gtm-strategy",       toolKey: "generate-gtm-strategy",      name: "GTM Strategy",               desc: "Channel plan, ICP, and messaging map.",                           wired: true, difficulty: "Advanced",     xp: 100 },
+  { key: "offer",              toolKey: "generate-offer",             name: "Offer Builder",              desc: "Irresistible offer with risk reversal built in.",                 wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "ops-plan",           toolKey: "generate-ops-plan",          name: "Ops Plan",                   desc: "Workflows, automations, and KPIs for your team.",                 wired: true, difficulty: "Advanced",     xp: 100 },
+  { key: "followup",           toolKey: "generate-followup-sequence", name: "Follow-Up Sequence",         desc: "Multi-touch follow-ups that convert cold leads.",                 wired: true, difficulty: "Beginner",     xp: 50  },
+  { key: "website-audit",      toolKey: "analyze-website",            name: "Website Auditor",            desc: "AI conversion + UX + SEO audit of your live site.",               wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "kill-my-idea",       toolKey: "kill-my-idea",               name: "Kill My Idea",               desc: "Brutally stress-test your idea against the harshest objections.",  wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "funding-score",      toolKey: "funding-score",              name: "Funding Score",              desc: "Score how investable your startup is with a VC-lens breakdown.",  wired: true, difficulty: "Advanced",     xp: 100 },
+  { key: "first-10-customers", toolKey: "first-10-customers",         name: "First 10 Customers",         desc: "Tactical week-by-week roadmap to your first 10 paying customers.", wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "business-plan",      toolKey: "business-plan",              name: "Business Plan",              desc: "Investor-ready operating plan with milestones and financials.",    wired: true, difficulty: "Advanced",     xp: 100 },
+  { key: "investor-emails",    toolKey: "investor-emails",            name: "Investor Emails",            desc: "Cold investor outreach sequences that actually get replies.",      wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "idea-vs-idea",       toolKey: "idea-vs-idea",               name: "Idea vs Idea",               desc: "Side-by-side scoring of two startup ideas to find your winner.",  wired: true, difficulty: "Beginner",     xp: 50  },
+  { key: "landing-page",       toolKey: "landing-page",               name: "Landing Page Copy",          desc: "Hero, problem, benefits, CTA — every word earns its place.",      wired: true, difficulty: "Intermediate", xp: 75  },
+  { key: "competitor",         toolKey: "competitor-analysis",        name: "Competitor Analyzer",        desc: "Map rivals, identify gaps, and find your unfair angle to win.",   wired: true, difficulty: "Advanced",     xp: 120, requiredPlan: "Scale" },
+  { key: "pricing",            toolKey: "pricing-strategy",           name: "Pricing Strategy",           desc: "Tiered pricing architecture with anchor logic and value math.",   wired: true, difficulty: "Advanced",     xp: 120, requiredPlan: "Scale" },
+  { key: "revenue-projector",  toolKey: "revenue-projector",          name: "Revenue Projector",          desc: "12-month MRR forecast with CAC, LTV, and scenario modeling.",     wired: true, difficulty: "Advanced",     xp: 150, requiredPlan: "Scale" },
 ];
 
 export type NovaModule = {

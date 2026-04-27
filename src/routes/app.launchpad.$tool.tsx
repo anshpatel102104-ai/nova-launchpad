@@ -1,13 +1,13 @@
 import { createFileRoute, Link, notFound, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { launchpadCatalog } from "@/lib/mock";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Loader2, FileText, Sparkles, ArrowLeft, ArrowRight, Lock, History as HistoryIcon,
-  RotateCcw,
+  RotateCcw, KeyRound,
 } from "lucide-react";
+import { NovaThinking } from "@/components/app/NovaThinking";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,8 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { HANDOFFS } from "@/lib/handoffs";
 import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/draftStore";
 import { PaywallModal } from "@/components/app/PaywallModal";
+import { runToolLocally, hasLocalAiKey } from "@/lib/runToolLocally";
+import { useOwnerMode } from "@/lib/ownerMode";
 
 type Search = { context?: string; title?: string };
 
@@ -50,6 +52,7 @@ function ToolPage() {
   const qc = useQueryClient();
 
   const [generating, setGenerating] = useState(false);
+  const [streamText, setStreamText] = useState("");
   const [output, setOutput] = useState<Record<string, unknown> | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
@@ -58,10 +61,14 @@ function ToolPage() {
   const [draftRestored, setDraftRestored] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
 
+  const isOwner = useOwnerMode();
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const planTier = subQ.data?.plan ?? "starter";
 
-  // Restore draft / handoff prefill — runs once per tool change
+  // Owner mode: treat every tool as wired and bypass all plan gates
+  const effectiveWired = isOwner ? true : tool.wired;
+  const effectiveToolKey = tool.toolKey || (isOwner ? tool.key : "");
+
   useEffect(() => {
     setOutput(null);
     setRunId(null);
@@ -89,38 +96,38 @@ function ToolPage() {
   const savedAt = useDraftAutosave(currentOrgId, tool.key, { title, context });
   const savedLabel = draftRestored ? "Draft restored" : formatSavedAgo(savedAt);
 
-  // Recent runs for this tool
-  const runsQ = useQuery({
-    ...toolRunsQuery(currentOrgId ?? "", 50),
-    enabled: !!currentOrgId,
-  });
+  const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 50), enabled: !!currentOrgId });
   const toolRuns = useMemo(
-    () => (runsQ.data ?? []).filter((r) => r.tool_key === tool.toolKey).slice(0, 6),
-    [runsQ.data, tool.toolKey],
+    () => (runsQ.data ?? []).filter((r) => r.tool_key === effectiveToolKey).slice(0, 6),
+    [runsQ.data, effectiveToolKey],
   );
 
   const handoffs = HANDOFFS[tool.key] ?? [];
 
-  // Hard paywall: Starter tier can only run Idea Validator 3 times
   const ideaValidatorRuns = useMemo(
     () => (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded").length,
     [runsQ.data],
   );
-  const isFreeStarter = planTier === "starter";
-  const isIdeaValidator = tool.toolKey === "validate-idea";
-  const ideaValidatorBlocked = isFreeStarter && isIdeaValidator && ideaValidatorRuns >= 3;
-  const isPastDue = subQ.data?.status === "past_due";
+  const isFreeStarter = isOwner ? false : planTier === "starter";
+  const isIdeaValidator = effectiveToolKey === "validate-idea";
+  const ideaValidatorBlocked = !isOwner && isFreeStarter && isIdeaValidator && ideaValidatorRuns >= 3;
+  const isPastDue = !isOwner && subQ.data?.status === "past_due";
 
   const handleGenerate = async () => {
     if (blockIfGuest("Sign up to run AI tools and unlock real outputs.")) return;
-    if (!tool.wired) { toast.error("This tool is launching soon."); return; }
+    if (!effectiveWired) { toast.error("This tool is launching soon."); return; }
     if (isPastDue) {
       toast.error("Payment failed — update your card in Billing to keep using AI tools.");
       return;
     }
     if (!context.trim()) { toast.error("Add some context first."); return; }
+    if (!hasLocalAiKey()) {
+      toast.error("Add your Anthropic API key to VITE_ANTHROPIC_API_KEY in .env, then restart the dev server.");
+      return;
+    }
     if (ideaValidatorBlocked) { setPaywallOpen(true); return; }
     setGenerating(true);
+    setStreamText("");
     setOutput(null);
     setRunId(null);
     setFeedback(null);
@@ -129,11 +136,15 @@ function ToolPage() {
         idea: context, business: title || context, target: title,
         context, goal: context, offer: context, url: context,
       };
-      const { data, error } = await supabase.functions.invoke(tool.toolKey, { body: payload });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setOutput(data.output);
-      if (data?.run_id) setRunId(String(data.run_id));
+      const result = await runToolLocally(
+        effectiveToolKey,
+        payload,
+        { orgId: currentOrgId, userId: user?.id },
+        (chunk) => setStreamText((t) => t + chunk),
+      );
+      setStreamText("");
+      setOutput(result.output);
+      if (result.run_id) setRunId(result.run_id);
       toast.success("Output ready");
       if (currentOrgId) {
         qc.invalidateQueries({ queryKey: ["tool_runs", currentOrgId] });
@@ -192,38 +203,89 @@ function ToolPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handoffHref = (h: { to: string }) => h.to;
-
   return (
     <div className="space-y-6">
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
-      {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-          <Link to="/app/launchpad" className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+
+      {/* Missing API key banner */}
+      {!hasLocalAiKey() && (
+        <div
+          className="flex items-start gap-3 rounded-2xl p-4"
+          style={{
+            background: "color-mix(in oklab, var(--warning) 8%, var(--surface))",
+            border: "1px solid color-mix(in oklab, var(--warning) 30%, transparent)",
+          }}
+        >
+          <KeyRound className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--warning)" }} />
+          <div>
+            <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+              Anthropic API key required
+            </div>
+            <p className="mt-0.5 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+              Add <code className="rounded px-1 py-0.5 font-mono text-[11.5px]" style={{ background: "var(--surface-2)" }}>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> to your{" "}
+              <code className="rounded px-1 py-0.5 font-mono text-[11.5px]" style={{ background: "var(--surface-2)" }}>.env</code> file and restart the dev server.
+              Get a key at <span className="font-medium" style={{ color: "var(--primary)" }}>console.anthropic.com</span>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Breadcrumb + header */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+          <Link
+            to="/app/launchpad"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
             <ArrowLeft className="h-3 w-3" /> Launchpad
           </Link>
-          <span className="text-muted-foreground/50">/</span>
-          <span className="text-foreground">{tool.name}</span>
+          <span style={{ opacity: 0.4 }}>/</span>
+          <span style={{ color: "var(--foreground)" }}>{tool.name}</span>
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-[1.75rem] font-semibold tracking-tight">{tool.name}</h1>
-            <p className="mt-1 max-w-2xl text-[13.5px] text-muted-foreground">{tool.desc}</p>
+            <h1 className="font-display text-[1.75rem] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+              {tool.name}
+            </h1>
+            <p className="mt-1 max-w-2xl text-[13.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+              {tool.desc}
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            {!tool.wired ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning">
+            {!effectiveWired ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                style={{
+                  background: "color-mix(in oklab, var(--warning) 12%, transparent)",
+                  border: "1px solid color-mix(in oklab, var(--warning) 30%, transparent)",
+                  color: "var(--warning)",
+                }}
+              >
                 <Lock className="h-3 w-3" /> Launching soon
               </span>
             ) : output ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" /> Output ready
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                style={{
+                  background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                  border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
+                  color: "var(--success)",
+                }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-current" /> Output ready
               </span>
-            ) : (savedLabel) ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/60" /> {savedLabel}
+            ) : savedLabel ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                style={{
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
+                  color: "var(--muted-foreground)",
+                }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: "color-mix(in oklab, var(--primary) 60%, transparent)" }} />
+                {savedLabel}
               </span>
             ) : null}
           </div>
@@ -232,15 +294,36 @@ function ToolPage() {
 
       {/* 60/40 workspace */}
       <div className="grid gap-5 lg:grid-cols-5">
-        {/* LEFT — inputs (60%) */}
-        <div className="lg:col-span-3">
-          <div className="rounded-xl border border-border bg-surface shadow-card">
-            <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        {/* LEFT — inputs */}
+        <div className="lg:col-span-3 space-y-4">
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid rgba(59,130,246,0.15)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.05)",
+            }}
+          >
+            {/* Neon top edge */}
+            <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.3), transparent)" }} />
+            {/* Panel header */}
+            <div
+              className="flex items-center justify-between px-5 py-3"
+              style={{
+                borderBottom: "1px solid rgba(59,130,246,0.1)",
+                background: "rgba(59,130,246,0.03)",
+              }}
+            >
+              <div
+                className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Inputs
               </div>
               {savedLabel && (
-                <span className="text-[10.5px] text-muted-foreground">{savedLabel}</span>
+                <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+                  {savedLabel}
+                </span>
               )}
             </div>
 
@@ -250,7 +333,11 @@ function ToolPage() {
                   placeholder="e.g. Northwind Labs — initial launch"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-surface-2"
+                  className="rounded-xl"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                  }}
                 />
               </Section>
 
@@ -260,15 +347,22 @@ function ToolPage() {
                   placeholder={placeholderFor(tool.key)}
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
-                  className="bg-surface-2"
+                  className="rounded-xl resize-none"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                  }}
                 />
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
+                <div
+                  className="mt-1.5 flex items-center justify-between text-[11px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   <span>{context.length} characters</span>
                   {context && (
                     <button
                       type="button"
                       onClick={() => { setContext(""); setTitle(""); clearDraft(currentOrgId, tool.key); }}
-                      className="inline-flex items-center gap-1 hover:text-foreground transition"
+                      className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
                     >
                       <RotateCcw className="h-3 w-3" /> Clear
                     </button>
@@ -276,10 +370,30 @@ function ToolPage() {
                 </div>
               </Section>
 
-              <Button
+              {/* Generate button */}
+              <button
                 onClick={handleGenerate}
-                disabled={generating || !context || !tool.wired}
-                className="w-full gap-2 h-11"
+                disabled={generating || !context || !effectiveWired}
+                className={cn(
+                  "relative w-full h-11 rounded-xl text-[13.5px] font-semibold transition-all duration-200",
+                  "flex items-center justify-center gap-2 overflow-hidden",
+                  (generating || !context || !effectiveWired) && "opacity-50 cursor-not-allowed",
+                )}
+                style={{
+                  background: "linear-gradient(135deg, var(--primary), var(--accent))",
+                  color: "white",
+                  boxShadow: "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!generating && context && effectiveWired) {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "none";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
+                }}
               >
                 {generating ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Generating with AI…</>
@@ -288,14 +402,15 @@ function ToolPage() {
                 ) : (
                   <><Sparkles className="h-4 w-4" /> Generate with AI</>
                 )}
-              </Button>
+              </button>
+
               {isFreeStarter && isIdeaValidator && (
-                <p className="text-center text-[11.5px] text-muted-foreground">
+                <p className="text-center text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
                   Free plan · {Math.min(ideaValidatorRuns, 3)} of 3 free validations used
                 </p>
               )}
-              {!tool.wired && (
-                <p className="text-center text-[11.5px] text-muted-foreground">
+              {!effectiveWired && (
+                <p className="text-center text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
                   This tool is launching soon. Inputs save as drafts.
                 </p>
               )}
@@ -303,22 +418,41 @@ function ToolPage() {
           </div>
 
           {/* Recent runs */}
-          {tool.wired && (
-            <div className="mt-5 rounded-xl border border-border bg-surface shadow-card">
-              <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3">
-                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          {effectiveWired && (
+            <div
+              className="overflow-hidden rounded-2xl"
+              style={{ background: "var(--surface)", border: "1px solid rgba(59,130,246,0.12)", boxShadow: "0 2px 12px rgba(0,0,0,0.3)" }}
+            >
+              <div
+                className="flex items-center justify-between px-5 py-3"
+                style={{
+                  borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+                  background: "color-mix(in oklab, var(--surface-2) 40%, transparent)",
+                }}
+              >
+                <div
+                  className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   <HistoryIcon className="h-3 w-3" /> Recent runs
                 </div>
-                <Link to="/app/launchpad/history" className="text-[11px] text-muted-foreground hover:text-foreground transition">
+                <Link
+                  to="/app/launchpad/history"
+                  className="text-[11px] transition-colors hover:text-foreground"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   See all →
                 </Link>
               </div>
               {toolRuns.length === 0 ? (
-                <div className="px-5 py-6 text-center text-[12.5px] text-muted-foreground">
+                <div className="px-5 py-6 text-center text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
                   No runs yet. Your first generation will appear here.
                 </div>
               ) : (
-                <div className="divide-y divide-border-subtle">
+                <div
+                  className="divide-y"
+                  style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}
+                >
                   {toolRuns.map((r) => (
                     <button
                       key={r.id}
@@ -329,19 +463,22 @@ function ToolPage() {
                         const meta = (r.metadata ?? {}) as Record<string, unknown>;
                         setFeedback(meta.feedback === "up" ? "up" : meta.feedback === "down" ? "down" : null);
                       }}
-                      className="flex w-full items-center justify-between px-5 py-2.5 text-left transition hover:bg-surface-2"
+                      className="flex w-full items-center justify-between px-5 py-2.5 text-left transition"
+                      style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-[13px] font-medium">
+                        <div className="truncate text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
                           {(r.input as { business?: string; title?: string })?.business ||
                            (r.input as { title?: string })?.title ||
                            "Untitled run"}
                         </div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                           {new Date(r.created_at).toLocaleString()} · {r.status}
                         </div>
                       </div>
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
                     </button>
                   ))}
                 </div>
@@ -350,10 +487,26 @@ function ToolPage() {
           )}
         </div>
 
-        {/* RIGHT — output (40%) */}
+        {/* RIGHT — output */}
         <div className="lg:col-span-2">
-          <div className="sticky top-[72px] rounded-xl border border-border bg-surface shadow-card">
-            <div className="px-5 py-4">
+          <div
+            className="sticky overflow-hidden rounded-2xl"
+            style={{
+              top: "72px",
+              background: "var(--surface)",
+              border: "1px solid rgba(139,92,246,0.15)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.05)",
+            }}
+          >
+            {/* Neon top edge — violet */}
+            <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(59,130,246,0.3), transparent)" }} />
+            <div
+              className="px-5 py-4"
+              style={{
+                borderBottom: "1px solid rgba(139,92,246,0.1)",
+                background: "rgba(139,92,246,0.03)",
+              }}
+            >
               <OutputHeader
                 onCopy={output ? handleCopy : undefined}
                 onDownload={output ? downloadJSON : undefined}
@@ -363,14 +516,14 @@ function ToolPage() {
               />
             </div>
 
-            <div className="px-5 pb-5">
+            <div className="px-5 pb-5 pt-4">
               {!output && !generating && (
                 <EmptyState
                   variant="inline"
                   icon={FileText}
                   title="No output yet"
                   description={
-                    tool.wired
+                    effectiveWired
                       ? "Add context on the left, then generate to see your structured output here."
                       : "This tool is launching soon. Your inputs are auto-saved as a draft."
                   }
@@ -379,27 +532,26 @@ function ToolPage() {
               )}
 
               {generating && (
-                <div className="space-y-3 py-2 animate-pulse">
-                  <div className="h-3 w-2/3 rounded bg-surface-2" />
-                  <div className="h-3 w-full rounded bg-surface-2" />
-                  <div className="h-3 w-5/6 rounded bg-surface-2" />
-                  <div className="mt-4 h-20 w-full rounded-md bg-surface-2" />
-                  <div className="h-3 w-3/4 rounded bg-surface-2" />
-                  <div className="h-3 w-full rounded bg-surface-2" />
-                </div>
+                <NovaThinking streamText={streamText} toolName={tool.name} />
               )}
 
               {output && !generating && (
                 <div className="max-h-[68vh] overflow-y-auto pr-1">
-                  <OutputBody toolKey={tool.toolKey || tool.key} output={output} />
+                  <OutputBody toolKey={effectiveToolKey || tool.key} output={output} />
                 </div>
               )}
             </div>
 
             {/* Cross-tool handoffs */}
             {output && handoffs.length > 0 && (
-              <div className="border-t border-border-subtle px-5 py-4">
-                <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              <div
+                className="px-5 py-4"
+                style={{ borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)" }}
+              >
+                <div
+                  className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Continue with
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -412,10 +564,25 @@ function ToolPage() {
                           ? ({ context, title } as never)
                           : undefined
                       }
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-3 py-1.5 text-[12px] font-medium text-foreground/85 transition",
-                        "hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
-                      )}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-medium transition"
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                        opacity: 0.85,
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
+                        (e.currentTarget as HTMLElement).style.background = "color-mix(in oklab, var(--primary) 8%, var(--surface-2))";
+                        (e.currentTarget as HTMLElement).style.color = "var(--primary)";
+                        (e.currentTarget as HTMLElement).style.opacity = "1";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                        (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                        (e.currentTarget as HTMLElement).style.opacity = "0.85";
+                      }}
                     >
                       {h.label} <ArrowRight className="h-3 w-3" />
                     </Link>
@@ -436,8 +603,8 @@ function Section({
   return (
     <div>
       <div className="mb-2">
-        <div className="text-[12.5px] font-semibold text-foreground">{label}</div>
-        {hint && <div className="text-[11.5px] text-muted-foreground">{hint}</div>}
+        <div className="text-[12.5px] font-semibold" style={{ color: "var(--foreground)" }}>{label}</div>
+        {hint && <div className="mt-0.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{hint}</div>}
       </div>
       {children}
     </div>
@@ -460,6 +627,8 @@ function placeholderFor(key: string): string {
       return "Who is the lead? What did they show interest in? What outcome do you want?";
     case "website-audit":
       return "Paste your live URL and any context about who visits and what you want them to do.";
+    case "kill-my-idea":
+      return "Describe your startup idea in detail — what it does, who it's for, the business model, and why you think it'll work. The more confident you sound, the better the critique.";
     default:
       return "Describe your business, audience, and goal. The more specific, the better the output.";
   }
