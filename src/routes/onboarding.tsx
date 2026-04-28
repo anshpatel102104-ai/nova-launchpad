@@ -1,13 +1,8 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import {
-  ArrowRight, ArrowLeft, Check, Lightbulb, Search, Rocket, Settings as SettingsIcon, TrendingUp,
-  Workflow, Sparkles,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Lightbulb, Hammer, DollarSign, TrendingUp, Rocket, Users, Package, Megaphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboarding")({
@@ -18,350 +13,410 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-type Stage = "Idea" | "Validate" | "Launch" | "Operate" | "Scale";
-type Goal = "validate" | "launch" | "automate" | "scale";
-
-const STAGE_OPTIONS: { id: Stage; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
-  { id: "Idea",     icon: Lightbulb,   desc: "Just a concept. Need clarity." },
-  { id: "Validate", icon: Search,      desc: "Testing demand and positioning." },
-  { id: "Launch",   icon: Rocket,      desc: "Building, going to market." },
-  { id: "Operate",  icon: SettingsIcon, desc: "Running, refining systems." },
-  { id: "Scale",    icon: TrendingUp,  desc: "Growing revenue and team." },
+const STAGES = [
+  { id: "Idea",     label: "Idea",     desc: "Just a concept, nothing built",    icon: Lightbulb  },
+  { id: "Building", label: "Building", desc: "Actively building the product",    icon: Hammer     },
+  { id: "Revenue",  label: "Revenue",  desc: "I have paying customers",          icon: DollarSign },
+  { id: "Scaling",  label: "Scaling",  desc: "Growing revenue and team",         icon: TrendingUp },
 ];
 
-const GOAL_OPTIONS: { id: Goal; label: string; desc: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "validate", label: "Validate Idea",        desc: "Pressure-test demand before you build.", icon: Lightbulb },
-  { id: "launch",   label: "Build & Launch",       desc: "Ship the offer, pitch, and GTM.",         icon: Rocket },
-  { id: "automate", label: "Automate Operations",  desc: "Wire CRM, follow-ups, onboarding.",       icon: Workflow },
-  { id: "scale",    label: "Scale Revenue",        desc: "Grow pipeline and reporting.",            icon: TrendingUp },
+const CHALLENGES = [
+  { id: "fundraising", label: "Fundraising",        desc: "Raising capital from investors",    icon: Rocket   },
+  { id: "customers",   label: "Getting customers",  desc: "Finding my first buyers",           icon: Users    },
+  { id: "product",     label: "Building product",   desc: "Shipping fast enough",              icon: Package  },
+  { id: "marketing",   label: "Marketing",          desc: "Getting visibility and awareness",  icon: Megaphone},
 ];
+
+const ANIM_CSS = `
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(52px) scale(0.98); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes bootLine {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes nameReveal {
+    from { opacity: 0; transform: scale(0.9) translateY(28px); filter: blur(18px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  }
+  @keyframes lineExpand {
+    from { width: 0; opacity: 0; }
+    to   { width: 140px; opacity: 1; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ambientPulse {
+    0%   { opacity: 0.3; }
+    50%  { opacity: 0.7; }
+    100% { opacity: 0.3; }
+  }
+  .ob-step   { animation: stepIn 0.55s cubic-bezier(0.16,1,0.3,1) both; }
+  .ob-input  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f0f4ff; font-size: 14px; outline: none; width: 100%; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; font-family: inherit; }
+  .ob-input:focus { border-color: rgba(59,130,246,0.65); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+  .ob-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; text-align: left; width: 100%; }
+  .ob-card:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
+  .ob-card-sel { border-color: rgba(59,130,246,0.65) !important; background: rgba(59,130,246,0.09) !important; box-shadow: 0 0 28px rgba(59,130,246,0.2), inset 0 0 16px rgba(59,130,246,0.04) !important; }
+`;
 
 function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [stepKey, setStepKey] = useState(0);
+  const [name, setName] = useState("");
+  const [idea, setIdea] = useState("");
+  const [stage, setStage] = useState("");
+  const [challenge, setChallenge] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
 
-  const [fullName, setFullName] = useState("");
-  const [company, setCompany] = useState("");
-  const [stage, setStage] = useState<Stage | "">("");
-  const [niche, setNiche] = useState("");
-  const [offer, setOffer] = useState("");
-  const [targetCustomer, setTargetCustomer] = useState("");
-  const [location, setLocation] = useState("");
-  const [goal, setGoal] = useState<Goal | "">("");
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      const m = user?.user_metadata;
+      const n = m?.full_name || m?.name || "";
+      if (n) setName(n);
+    });
+  }, []);
 
-  const steps = [
-    { key: "identity", title: "What's your name and company?",      valid: () => fullName.trim() && company.trim() },
-    { key: "stage",    title: "What stage are you at?",              valid: () => !!stage },
-    { key: "offer",    title: "What's your niche and offer?",        valid: () => niche.trim() && offer.trim() },
-    { key: "customer", title: "Who's your target customer?",         valid: () => targetCustomer.trim() },
-    { key: "goal",     title: "What's your primary goal right now?", valid: () => !!goal },
-  ];
+  const canAdvance = step === 0 ? name.trim().length > 0 && idea.trim().length > 0
+    : step === 1 ? !!stage
+    : !!challenge;
 
-  const current = steps[step];
-
-  const saveResponse = async (key: string, val: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("onboarding_responses").upsert(
-      { user_id: user.id, question_key: key, answer: val },
-      { onConflict: "user_id,question_key" },
-    );
-  };
-
-  const finish = async () => {
-    setSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      // Save responses
-      await Promise.all([
-        saveResponse("fullName", fullName),
-        saveResponse("company", company),
-        saveResponse("stage", stage),
-        saveResponse("niche", niche),
-        saveResponse("offer", offer),
-        saveResponse("targetCustomer", targetCustomer),
-        saveResponse("location", location),
-        saveResponse("goal", goal),
-      ]);
-
-      await supabase.from("profiles").update({ onboarding_complete: true, full_name: fullName }).eq("id", user.id);
-
-      const { data: member } = await supabase
-        .from("organization_members").select("organization_id").eq("user_id", user.id)
-        .order("created_at", { ascending: true }).limit(1).maybeSingle();
-
-      if (member?.organization_id) {
-        await supabase.from("organizations").update({
-          name: company,
-          niche, offer, target_customer: targetCustomer, location, goal,
-          stage: (stage || "Idea") as Stage,
-        }).eq("id", member.organization_id);
+  const advance = async () => {
+    if (!canAdvance) return;
+    if (step < 2) {
+      setStep(s => s + 1);
+      setStepKey(k => k + 1);
+    } else {
+      setSaving(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+        await Promise.all([
+          supabase.from("onboarding_responses").upsert(
+            [
+              { user_id: user.id, question_key: "fullName",  answer: name },
+              { user_id: user.id, question_key: "idea",      answer: idea },
+              { user_id: user.id, question_key: "stage",     answer: stage },
+              { user_id: user.id, question_key: "challenge", answer: challenge },
+            ],
+            { onConflict: "user_id,question_key" },
+          ),
+          supabase.from("profiles").update({ onboarding_complete: true, full_name: name }).eq("id", user.id),
+        ]);
+        setDone(true);
+        setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        setSaving(false);
       }
-
-      setCompleted(true);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Onboarding failed");
-    } finally {
-      setSubmitting(false);
     }
   };
 
-  const next = () => {
-    if (!current.valid()) return;
-    if (step < steps.length - 1) setStep(step + 1);
-    else void finish();
-  };
-
-  if (completed) {
-    return <BuildingDashboard onDone={() => navigate({ to: "/app/dashboard" })} />;
-  }
+  if (done) return <WelcomeScreen name={name} />;
 
   return (
-    <div className="boot-grid relative flex min-h-screen flex-col">
-      {/* Header */}
-      <header className="relative z-10 flex h-14 items-center gap-2 border-b border-border bg-background/85 px-6 backdrop-blur">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-primary text-white font-bold text-[11px]">LN</div>
-        <span className="font-display text-[14px] font-semibold tracking-tight">LaunchpadNOVA</span>
-        <span className="ml-3 text-[11.5px] text-muted-foreground hidden sm:inline">Set up your workspace</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          {steps.map((_, i) => (
-            <span
-              key={i}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i < step && "w-6 bg-primary",
-                i === step && "w-8 bg-primary",
-                i > step && "w-6 bg-surface-2",
-              )}
-            />
-          ))}
-          <span className="ml-2 text-[11px] text-muted-foreground tabular-nums">{step + 1} / {steps.length}</span>
-        </div>
-      </header>
+    <div style={{ position: "fixed", inset: 0, background: "#080810", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{ANIM_CSS}</style>
 
-      {/* Body */}
-      <main className="relative z-10 flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-2xl">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-primary">Step {step + 1}</div>
-          <h1 className="mt-2 font-display text-[1.85rem] font-semibold tracking-tight md:text-[2.1rem]">
-            {current.title}
-          </h1>
+      {/* Neural canvas */}
+      <div style={{ position: "absolute", inset: 0, opacity: 0.3 }}>
+        <NeuralCanvas className="w-full h-full" />
+      </div>
 
-          <div className="mt-8">
-            {step === 0 && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Your name"><Input autoFocus value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Alex Founder" className="h-11 bg-surface-2" /></Field>
-                <Field label="Company"><Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Inc." className="h-11 bg-surface-2" /></Field>
-              </div>
-            )}
+      {/* Center ambient glow */}
+      <div style={{
+        position: "absolute", width: 700, height: 500, borderRadius: "50%",
+        background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)",
+        animation: "ambientPulse 4s ease-in-out infinite",
+        pointerEvents: "none",
+      }} />
 
-            {step === 1 && (
-              <div className="grid gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
-                {STAGE_OPTIONS.map(({ id, icon: Icon, desc }) => {
-                  const sel = stage === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setStage(id)}
-                      className={cn(
-                        "group flex flex-col items-start gap-2 rounded-md border p-3 text-left transition",
-                        sel
-                          ? "border-primary bg-primary/8 glow-primary"
-                          : "border-border bg-surface hover:border-foreground/20 hover:bg-surface-2",
-                      )}
-                    >
-                      <span className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-md transition",
-                        sel ? "bg-primary text-primary-foreground" : "bg-surface-2 text-muted-foreground group-hover:text-foreground",
-                      )}>
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <div className="text-[13px] font-semibold">{id}</div>
-                        <div className="mt-0.5 text-[11px] text-muted-foreground leading-snug">{desc}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-4">
-                <Field label="Niche or industry"><Input autoFocus value={niche} onChange={(e) => setNiche(e.target.value)} placeholder="e.g. Sales enablement for fintech" className="h-11 bg-surface-2" /></Field>
-                <Field label="What you sell (or plan to sell)"><Input value={offer} onChange={(e) => setOffer(e.target.value)} placeholder="e.g. AI-powered sales playbooks" className="h-11 bg-surface-2" /></Field>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-4">
-                <Field label="Target customer"><Input autoFocus value={targetCustomer} onChange={(e) => setTargetCustomer(e.target.value)} placeholder="e.g. Series A founders, ops leaders" className="h-11 bg-surface-2" /></Field>
-                <Field label="Where are you based? (optional)"><Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Austin, TX" className="h-11 bg-surface-2" /></Field>
-              </div>
-            )}
-
-            {step === 4 && (
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {GOAL_OPTIONS.map(({ id, label, desc, icon: Icon }) => {
-                  const sel = goal === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setGoal(id)}
-                      className={cn(
-                        "flex items-start gap-3 rounded-md border p-4 text-left transition",
-                        sel
-                          ? "border-primary bg-primary/8 glow-primary"
-                          : "border-border bg-surface hover:border-foreground/20 hover:bg-surface-2",
-                      )}
-                    >
-                      <span className={cn(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
-                        sel ? "bg-primary text-primary-foreground" : "bg-surface-2 text-muted-foreground",
-                      )}>
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-[13.5px] font-semibold">{label}</div>
-                        <div className="mt-0.5 text-[12px] text-muted-foreground leading-snug">{desc}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+      {/* Card */}
+      <div style={{
+        position: "relative", zIndex: 10, width: "100%", maxWidth: 560, margin: "0 20px",
+        background: "rgba(11,11,26,0.88)", backdropFilter: "blur(28px) saturate(1.4)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 22,
+        boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
+        padding: "38px 38px 34px",
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 34 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+              fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: "0.02em",
+            }}>N</div>
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f0f4ff", letterSpacing: "-0.01em" }}>Nova OS</span>
           </div>
-
-          <div className="mt-10 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              disabled={step === 0 || submitting}
-              onClick={() => setStep(step - 1)}
-              className="gap-1.5"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Button>
-            <Button onClick={next} disabled={submitting || !current.valid()} className="h-11 gap-1.5 px-6">
-              {step === steps.length - 1 ? (
-                <>{submitting ? "Setting up…" : "Complete setup"} <Sparkles className="h-4 w-4" /></>
-              ) : (
-                <>Continue <ArrowRight className="h-4 w-4" /></>
-              )}
-            </Button>
+          {/* Progress dots */}
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                height: 6, borderRadius: 99,
+                transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
+                width: i === step ? 28 : 6,
+                background: i < step ? "#3b82f6" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                boxShadow: i === step ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)" : "none",
+              }} />
+            ))}
           </div>
         </div>
-      </main>
+
+        {/* Animated step */}
+        <div key={stepKey} className="ob-step">
+          {step === 0 && <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} />}
+          {step === 1 && <Step2 stage={stage} onStage={setStage} />}
+          {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
+        </div>
+
+        {/* Continue button */}
+        <button
+          onClick={advance}
+          disabled={!canAdvance || saving}
+          style={{
+            marginTop: 28, width: "100%", height: 52, borderRadius: 12, border: "none",
+            cursor: canAdvance && !saving ? "pointer" : "default",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em",
+            background: canAdvance && !saving
+              ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
+              : "rgba(255,255,255,0.06)",
+            color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
+            transition: "all 0.25s",
+            boxShadow: canAdvance && !saving
+              ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
+              : "none",
+            fontFamily: "inherit",
+          }}
+        >
+          {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
+          {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
+        </button>
+      </div>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Heading({ step: s }: { step: number }) {
   return (
-    <label className="block">
-      <div className="mb-1.5 text-[11.5px] font-medium text-muted-foreground">{label}</div>
-      {children}
-    </label>
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 8 }}>
+        Step {s} of 3
+      </div>
+      <h2 style={{
+        fontSize: "clamp(1.7rem, 5vw, 2.3rem)", fontWeight: 800, color: "#f0f4ff",
+        lineHeight: 1.08, letterSpacing: "-0.04em", margin: 0,
+      }}>
+        {s === 1 && <>What's your<br /><span style={{ color: "#3b82f6" }}>startup idea</span>?</>}
+        {s === 2 && <>What stage<br /><span style={{ color: "#8b5cf6" }}>are you at</span>?</>}
+        {s === 3 && <>What's your<br /><span style={{ color: "#06b6d4" }}>biggest challenge</span>?</>}
+      </h2>
+    </div>
   );
 }
 
-const BUILD_STEPS = [
-  "Analyzing your business",
-  "Researching your industry",
-  "Mapping your goals",
-  "Building your command center",
-  "Preparing your next actions",
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}>{children}</div>;
+}
+
+function Step1({ name, idea, onName, onIdea, onSubmit }: {
+  name: string; idea: string;
+  onName: (v: string) => void; onIdea: (v: string) => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <div>
+      <Heading step={1} />
+      <div style={{ marginBottom: 14 }}>
+        <FieldLabel>Your name</FieldLabel>
+        <input
+          autoFocus
+          value={name}
+          onChange={e => onName(e.target.value)}
+          placeholder="Alex Founder"
+          className="ob-input"
+          style={{ height: 44, padding: "0 14px" }}
+        />
+      </div>
+      <div>
+        <FieldLabel>Describe it in one sentence</FieldLabel>
+        <textarea
+          value={idea}
+          onChange={e => onIdea(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit(); }}
+          placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
+          rows={3}
+          className="ob-input"
+          style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
+        />
+        <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>⌘+Enter to continue</div>
+      </div>
+    </div>
+  );
+}
+
+function Step2({ stage, onStage }: { stage: string; onStage: (v: string) => void }) {
+  return (
+    <div>
+      <Heading step={2} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {STAGES.map(({ id, label, desc, icon: Icon }) => (
+          <button key={id} onClick={() => onStage(id)} className={`ob-card${stage === id ? " ob-card-sel" : ""}`}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
+              background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
+              transition: "background 0.2s",
+            }}>
+              <Icon style={{ width: 16, height: 16, color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Step3({ challenge, onChallenge }: { challenge: string; onChallenge: (v: string) => void }) {
+  return (
+    <div>
+      <Heading step={3} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {CHALLENGES.map(({ id, label, desc, icon: Icon }) => (
+          <button key={id} onClick={() => onChallenge(id)} className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
+              background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
+              transition: "background 0.2s",
+            }}>
+              <Icon style={{ width: 16, height: 16, color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const BOOT_LINES = [
+  "nova_os://init — kernel loaded",
+  "scanning founder profile…",
+  "calibrating AI tools for your stage…",
+  "building your command center…",
 ];
 
-function BuildingDashboard({ onDone }: { onDone: () => void }) {
-  const [active, setActive] = useState(0);
-  const [progress, setProgress] = useState(0);
+function WelcomeScreen({ name }: { name: string }) {
+  const [phase, setPhase] = useState<"boot" | "reveal">("boot");
+  const [lineIdx, setLineIdx] = useState(0);
 
   useEffect(() => {
-    const total = BUILD_STEPS.length;
-    const stepMs = 850;
-    const tickMs = 25;
-    const totalMs = stepMs * total;
-    const start = Date.now();
-    const id = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const pct = Math.min(100, (elapsed / totalMs) * 100);
-      setProgress(pct);
-      const idx = Math.min(total - 1, Math.floor(elapsed / stepMs));
-      setActive(idx);
-      if (elapsed >= totalMs) {
-        clearInterval(id);
-        setTimeout(onDone, 450);
-      }
-    }, tickMs);
-    return () => clearInterval(id);
-  }, [onDone]);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    BOOT_LINES.forEach((_, i) => {
+      timers.push(setTimeout(() => setLineIdx(i + 1), i * 380 + 200));
+    });
+    timers.push(setTimeout(() => setPhase("reveal"), BOOT_LINES.length * 380 + 600));
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
-    <div className="boot-grid relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
-      <div className="w-full max-w-lg">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-primary text-white shadow-card glow-primary">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-primary">System boot</div>
-            <div className="font-display text-[15px] font-semibold tracking-tight">Building your command center</div>
-          </div>
-        </div>
+    <div style={{ position: "fixed", inset: 0, background: "#080810", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <style>{ANIM_CSS}</style>
 
-        <div className="mt-6 rounded-lg border border-border bg-surface/85 backdrop-blur p-5 shadow-card">
-          <ul className="space-y-2.5 font-mono text-[12px]">
-            {BUILD_STEPS.map((label, i) => {
-              const done = i < active;
-              const live = i === active;
-              return (
-                <li key={label} className="flex items-center gap-2.5">
-                  <span className={cn(
-                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border text-[9px]",
-                    done && "border-success bg-success/15 text-success",
-                    live && "border-primary bg-primary/15 text-primary",
-                    !done && !live && "border-border bg-surface-2 text-muted-foreground/60",
-                  )}>
-                    {done ? <Check className="h-2.5 w-2.5" /> : live ? <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> : null}
-                  </span>
-                  <span className={cn(
-                    "tabular-nums",
-                    done && "text-muted-foreground",
-                    live && "text-foreground",
-                    !done && !live && "text-muted-foreground/50",
-                  )}>
-                    [{String(i + 1).padStart(2, "0")}] {label}
-                    {live && <span className="text-primary animate-pulse">…</span>}
-                    {done && <span className="text-success"> ok</span>}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+      <div style={{ position: "absolute", inset: 0, opacity: phase === "reveal" ? 0.15 : 0.25, transition: "opacity 1s" }}>
+        <NeuralCanvas className="w-full h-full" />
+      </div>
 
-          <div className="mt-5">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary transition-[width] duration-100 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+      {/* Radial glow — intensifies on reveal */}
+      <div style={{
+        position: "absolute", width: 800, height: 600, borderRadius: "50%",
+        background: "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
+        transition: "opacity 1s",
+        opacity: phase === "reveal" ? 1 : 0.4,
+        animation: "ambientPulse 4s ease-in-out infinite",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: 600 }}>
+        {phase === "boot" && (
+          <div style={{ fontFamily: "monospace", textAlign: "left", display: "inline-block" }}>
+            {BOOT_LINES.slice(0, lineIdx).map((line, i) => (
+              <div key={line} style={{
+                fontSize: 13, color: "rgba(59,130,246,0.85)", lineHeight: 2.1,
+                animation: "bootLine 0.35s ease both",
+              }}>
+                <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>{line}
+                {i === lineIdx - 1 && <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {phase === "reveal" && (
+          <div style={{ animation: "nameReveal 1s cubic-bezier(0.16,1,0.3,1) both" }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase",
+              color: "#3b82f6", marginBottom: 20,
+              animation: "fadeUp 0.6s ease 0.15s both", opacity: 0,
+            }}>
+              System ready
             </div>
-            <div className="mt-2 flex items-center justify-between text-[10.5px] font-mono text-muted-foreground">
-              <span>nova_os://provisioning</span>
-              <span className="tabular-nums">{Math.round(progress)}%</span>
+
+            <h1 style={{
+              fontSize: "clamp(2.6rem, 7vw, 4.5rem)", fontWeight: 900,
+              letterSpacing: "-0.05em", lineHeight: 1.04, color: "#f0f4ff", margin: "0 0 8px",
+              textShadow: "0 0 60px rgba(59,130,246,0.25)",
+            }}>
+              Nova is ready<br />for you,{" "}
+              <span style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>
+                {name || "Founder"}
+              </span>
+            </h1>
+
+            <div style={{
+              margin: "22px auto 0",
+              height: 2, borderRadius: 2,
+              background: "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
+              boxShadow: "0 0 20px rgba(59,130,246,0.7)",
+              animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
+            }} />
+
+            <p style={{
+              marginTop: 22, fontSize: 16, color: "rgba(240,244,255,0.45)", lineHeight: 1.65,
+              animation: "fadeUp 0.6s ease 0.5s both", opacity: 0,
+            }}>
+              Your AI founder OS is online.<br />Let's build something remarkable.
+            </p>
+
+            <div style={{
+              marginTop: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              animation: "fadeUp 0.6s ease 0.75s both", opacity: 0,
+            }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: "50%", background: "#3b82f6",
+                boxShadow: "0 0 10px #3b82f6", animation: "ambientPulse 1.4s ease-in-out infinite",
+              }} />
+              <span style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}>
+                loading dashboard…
+              </span>
             </div>
           </div>
-        </div>
-
-        <div className="mt-4 text-center text-[11px] text-muted-foreground">
-          Personalizing your dashboard from your onboarding answers…
-        </div>
+        )}
       </div>
     </div>
   );

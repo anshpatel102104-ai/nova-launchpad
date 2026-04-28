@@ -557,7 +557,6 @@ function HeroSection({ startDemo }: { startDemo: () => void }) {
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   color: "transparent",
-                  animation2: "brandShift 6s ease-in-out infinite",
                 }}>
                   {w}
                 </span>

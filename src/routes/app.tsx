@@ -14,6 +14,15 @@ export const Route = createFileRoute("/app")({
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
     }
+    // Redirect to onboarding if not yet complete
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_complete")
+      .eq("id", session.user.id)
+      .maybeSingle();
+    if (!profile?.onboarding_complete) {
+      throw redirect({ to: "/onboarding" });
+    }
   },
   component: AppLayout,
 });
