@@ -1,22 +1,318 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import {
   Sparkles, Rocket, Zap, ArrowRight, Check, Lightbulb, Target, Megaphone,
   Inbox, Globe, Mail, Skull, Trophy, UserPlus, FileText, GitCompare,
-  Settings2, TrendingUp, Cpu, FolderOpen, Star, Users, Workflow,
+  Settings2, TrendingUp, Cpu, FolderOpen, Star, Users, Workflow, Tags, LineChart,
 } from "lucide-react";
 import { guestStore } from "@/lib/guest";
-import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
-  component: LandingPage,
-});
+export const Route = createFileRoute("/")({ component: LandingPage });
+
+/* ─────────────────────────── HOOKS ─────────────────────────── */
+
+function useInView(threshold = 0.12) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView] as const;
+}
+
+/* ─────────────────────────── CUSTOM CURSOR ─────────────────────────── */
+
+function CustomCursor() {
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const mouse = useRef({ x: -200, y: -200 });
+  const ring = useRef({ x: -200, y: -200 });
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    // Hide on touch devices
+    if (window.matchMedia("(pointer: coarse)").matches) { setHidden(true); return; }
+    document.body.style.cursor = "none";
+
+    const onMove = (e: MouseEvent) => {
+      mouse.current = { x: e.clientX, y: e.clientY };
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      }
+    };
+
+    let raf: number;
+    const animate = () => {
+      ring.current.x += (mouse.current.x - ring.current.x) * 0.11;
+      ring.current.y += (mouse.current.y - ring.current.y) * 0.11;
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate(${ring.current.x}px, ${ring.current.y}px)`;
+      }
+      raf = requestAnimationFrame(animate);
+    };
+
+    const onEnter = (e: Event) => {
+      if ((e.target as HTMLElement).closest("a, button")) {
+        if (ringRef.current) { ringRef.current.style.scale = "2.2"; ringRef.current.style.opacity = "0.7"; }
+        if (dotRef.current) dotRef.current.style.scale = "0.4";
+      }
+    };
+    const onLeave = () => {
+      if (ringRef.current) { ringRef.current.style.scale = "1"; ringRef.current.style.opacity = "1"; }
+      if (dotRef.current) dotRef.current.style.scale = "1";
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseover", onEnter);
+    window.addEventListener("mouseout", onLeave);
+    raf = requestAnimationFrame(animate);
+    return () => {
+      document.body.style.cursor = "";
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseover", onEnter);
+      window.removeEventListener("mouseout", onLeave);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  if (hidden) return null;
+  return (
+    <>
+      <div
+        ref={dotRef}
+        className="pointer-events-none fixed left-0 top-0 z-[9999] -translate-x-1/2 -translate-y-1/2 will-change-transform"
+        style={{
+          width: 8, height: 8, borderRadius: "50%", background: "#3b82f6",
+          boxShadow: "0 0 10px rgba(59,130,246,1), 0 0 22px rgba(59,130,246,0.6)",
+          transition: "scale 0.2s ease",
+        }}
+      />
+      <div
+        ref={ringRef}
+        className="pointer-events-none fixed left-0 top-0 z-[9998] -translate-x-1/2 -translate-y-1/2 will-change-transform"
+        style={{
+          width: 40, height: 40, borderRadius: "50%",
+          border: "1.5px solid rgba(139,92,246,0.75)",
+          boxShadow: "0 0 14px rgba(139,92,246,0.25), inset 0 0 14px rgba(139,92,246,0.08)",
+          transition: "scale 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease",
+        }}
+      />
+    </>
+  );
+}
+
+/* ─────────────────────────── FADE-IN WRAPPER ─────────────────────────── */
+
+function FadeIn({
+  children, delay = 0, className = "", direction = "up",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+  direction?: "up" | "left" | "right" | "none";
+}) {
+  const [ref, inView] = useInView();
+  const tx = direction === "left" ? "-40px" : direction === "right" ? "40px" : "0px";
+  const ty = direction === "up" ? "40px" : "0px";
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "none" : `translate(${tx}, ${ty})`,
+        filter: inView ? "blur(0px)" : "blur(8px)",
+        transition: `opacity 0.85s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) ${delay}ms, filter 0.7s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─────────────────────────── MAGNETIC BUTTON ─────────────────────────── */
+
+function MagneticBtn({
+  children, onClick, className = "", style = {},
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - (r.left + r.width / 2)) * 0.32;
+    const y = (e.clientY - (r.top + r.height / 2)) * 0.32;
+    el.style.transform = `translate(${x}px, ${y}px)`;
+    el.style.transition = "transform 0.1s ease";
+  };
+  const onLeave = () => {
+    if (!ref.current) return;
+    ref.current.style.transform = "translate(0,0)";
+    ref.current.style.transition = "transform 0.65s cubic-bezier(0.16,1,0.3,1)";
+  };
+  return (
+    <button ref={ref} onClick={onClick} onMouseMove={onMove} onMouseLeave={onLeave}
+      className={className} style={style}>
+      {children}
+    </button>
+  );
+}
+
+/* ─────────────────────────── COUNTER ─────────────────────────── */
+
+function Counter({ value, prefix, suffix, started }: {
+  value: number; prefix: string; suffix: string; started: boolean;
+}) {
+  const [count, setCount] = useState(0);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!started) return;
+    let startTs: number;
+    const step = (ts: number) => {
+      if (!startTs) startTs = ts;
+      const progress = Math.min((ts - startTs) / 2200, 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.round(eased * value));
+      if (progress < 1) requestAnimationFrame(step);
+      else setDone(true);
+    };
+    requestAnimationFrame(step);
+  }, [started, value]);
+
+  return (
+    <span style={done ? {
+      animation: "statGlow 0.8s ease-out both",
+      display: "inline-block",
+    } : { display: "inline-block" }}>
+      {prefix}{count}{suffix}
+    </span>
+  );
+}
+
+/* ─────────────────────────── SECTION HEADER ─────────────────────────── */
+
+function SectionHeader({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
+  return (
+    <div className="text-center">
+      <FadeIn>
+        <div style={{
+          display: "inline-block",
+          fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.2em",
+          textTransform: "uppercase", color: "#3b82f6",
+          padding: "4px 14px",
+          borderRadius: "999px",
+          border: "1px solid rgba(59,130,246,0.3)",
+          background: "rgba(59,130,246,0.08)",
+          marginBottom: "16px",
+        }}>
+          {eyebrow}
+        </div>
+      </FadeIn>
+      <FadeIn delay={80}>
+        <h2 style={{
+          fontFamily: "Inter Display, Inter, sans-serif",
+          fontSize: "clamp(1.8rem, 4vw, 3rem)",
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          lineHeight: 1.1,
+          color: "#f0f4ff",
+          marginTop: 0,
+        }}>
+          {title}
+        </h2>
+      </FadeIn>
+      <FadeIn delay={160}>
+        <p style={{
+          marginTop: "16px",
+          fontSize: "15.5px",
+          lineHeight: 1.7,
+          color: "rgba(240,244,255,0.55)",
+          maxWidth: "600px",
+          margin: "16px auto 0",
+        }}>
+          {desc}
+        </p>
+      </FadeIn>
+    </div>
+  );
+}
+
+/* ─────────────────────────── DATA ─────────────────────────── */
+
+const STATS = [
+  { value: 14,  prefix: "$", suffix: "k",    label: "Avg. month-1 revenue recovered", icon: TrendingUp },
+  { value: 6,   prefix: "",  suffix: " hrs",  label: "Saved per week on follow-up",    icon: Cpu        },
+  { value: 90,  prefix: "",  suffix: " sec",  label: "Average lead response time",     icon: Inbox      },
+  { value: 14,  prefix: "",  suffix: " days", label: "From idea to live business",     icon: FolderOpen },
+];
+
+const TOOLS = [
+  { icon: Lightbulb,  name: "Idea Validator",     desc: "Pressure-test market fit in 60 sec",          live: true  },
+  { icon: Megaphone,  name: "Pitch Generator",    desc: "Investor-ready deck copy, instantly",          live: true  },
+  { icon: Target,     name: "GTM Strategy",       desc: "Channel plan + ICP messaging map",            live: true  },
+  { icon: Zap,        name: "Offer Builder",      desc: "Irresistible offer with risk reversal",        live: true  },
+  { icon: Settings2,  name: "Ops Plan",           desc: "Workflows, automations, KPIs",                 live: true  },
+  { icon: Mail,       name: "Follow-Up Sequence", desc: "Multi-touch email + DM sequences",             live: true  },
+  { icon: Globe,      name: "Website Auditor",    desc: "AI audit of your live site",                   live: true  },
+  { icon: Skull,      name: "Kill My Idea",       desc: "Stress-test every fatal flaw",                 live: true  },
+  { icon: Trophy,     name: "Funding Score",      desc: "How investable is your idea right now",        live: false },
+  { icon: UserPlus,   name: "First 10 Customers", desc: "Tactical roadmap to first revenue",            live: false },
+  { icon: FileText,   name: "Business Plan",      desc: "Shareable document-style operating plan",      live: false },
+  { icon: GitCompare, name: "Idea vs Idea",       desc: "Side-by-side comparison of two ideas",         live: false },
+  { icon: Tags,       name: "Pricing Strategy",   desc: "Tiered pricing model for your offer",          live: false },
+  { icon: LineChart,  name: "Revenue Projector",  desc: "12-month ARR forecast with milestones",        live: false },
+];
+
+const PILLARS = [
+  {
+    id: "launchpad", label: "Launchpad", icon: Rocket,
+    gradient: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+    glow: "rgba(59,130,246,0.2)", border: "rgba(59,130,246,0.25)",
+    title: "AI tools that do the thinking",
+    desc: "17 specialized generators produce investor pitches, GTM strategies, offer blueprints, and more — in under 60 seconds.",
+    features: ["Business Idea Validator", "Pitch Generator", "GTM Strategy Builder", "Offer & Pricing Designer", "Kill My Idea (stress-test)", "Investor Email Sequences"],
+  },
+  {
+    id: "nova", label: "Nova OS", icon: Zap,
+    gradient: "linear-gradient(135deg, #8b5cf6, #f97316)",
+    glow: "rgba(139,92,246,0.2)", border: "rgba(139,92,246,0.25)",
+    title: "Automation that runs your ops",
+    desc: "Six business modules handle lead capture, follow-up sequences, client onboarding, and more — all on autopilot.",
+    features: ["Lead Capture & Routing", "Multi-touch Follow-Up", "Client Onboarding Flow", "Invoice & Payment Tracker", "Reputation Manager", "Reporting Dashboard"],
+  },
+  {
+    id: "crm", label: "Pipeline CRM", icon: Users,
+    gradient: "linear-gradient(135deg, #f97316, #3b82f6)",
+    glow: "rgba(249,115,22,0.15)", border: "rgba(249,115,22,0.22)",
+    title: "Track every deal, close more",
+    desc: "A lightweight CRM built into the same workspace — no exports or integrations required. Visual pipeline, activity log, revenue forecasting.",
+    features: ["Visual Kanban Pipeline", "Lead Stage Automation", "Activity Timeline", "Won/Lost Analytics", "Source Attribution", "Revenue Forecasting"],
+  },
+];
+
+const STEPS = [
+  { n: "01", icon: Lightbulb, title: "Start with your idea",  desc: "Describe your business, target customer, and goals. Nova's AI immediately pressure-tests and shapes it into something real." },
+  { n: "02", icon: Rocket,    title: "Generate every asset",  desc: "Run Launchpad tools in sequence — pitch, GTM, offer, ops plan, investor emails. Each tool builds on the last." },
+  { n: "03", icon: Workflow,  title: "Automate and scale",    desc: "Wire Nova OS to your existing stack. Lead capture, follow-up, onboarding, invoicing — all on autopilot while you focus on growth." },
+];
+
+/* ─────────────────────────── LANDING PAGE ─────────────────────────── */
 
 function LandingPage() {
   const navigate = useNavigate();
-
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -25,58 +321,94 @@ function LandingPage() {
     return () => { cancelled = true; };
   }, [navigate]);
 
-  const startDemo = () => {
-    guestStore.enable();
-    navigate({ to: "/app/dashboard" });
-  };
+  const startDemo = () => { guestStore.enable(); navigate({ to: "/app/dashboard" }); };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      <LandingNav />
-      <HeroSection startDemo={startDemo} />
-      <LogoStrip />
-      <PillarsSection />
-      <ToolsSection />
-      <HowItWorks />
-      <StatsSection />
-      <CtaSection startDemo={startDemo} />
-      <LandingFooter />
-    </div>
+    <>
+      <CustomCursor />
+      <style>{`
+        @keyframes wordIn {
+          from { opacity: 0; transform: translateY(110%) skewY(4deg); filter: blur(12px); }
+          to   { opacity: 1; transform: translateY(0) skewY(0); filter: blur(0); }
+        }
+        @keyframes statGlow {
+          0%   { text-shadow: none; }
+          40%  { text-shadow: 0 0 40px rgba(59,130,246,0.9), 0 0 80px rgba(139,92,246,0.5); }
+          100% { text-shadow: 0 0 12px rgba(59,130,246,0.3); }
+        }
+        @keyframes heroFloat {
+          0%,100% { transform: translateY(0px); }
+          50%     { transform: translateY(-18px); }
+        }
+        @keyframes badgePulse {
+          0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+          50%     { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+        }
+        @keyframes scrollHint {
+          0%,100% { opacity: 0.3; transform: translateY(0); }
+          50%     { opacity: 0.8; transform: translateY(6px); }
+        }
+        * { cursor: none !important; }
+        @media (pointer: coarse) { * { cursor: auto !important; } }
+      `}</style>
+
+      <div style={{ background: "#080810", color: "#f0f4ff", overflowX: "hidden", minHeight: "100vh" }}>
+        <LandingNav startDemo={startDemo} />
+        <HeroSection startDemo={startDemo} />
+        <LogoStrip />
+        <PillarsSection />
+        <HorizontalToolsSection />
+        <HowItWorks />
+        <StatsSection />
+        <CtaSection startDemo={startDemo} />
+        <LandingFooter />
+      </div>
+    </>
   );
 }
 
-/* ─────────────────────────────── NAV ─────────────────────────────── */
+/* ─────────────────────────── NAV ─────────────────────────── */
 
-function LandingNav() {
+function LandingNav({ startDemo }: { startDemo: () => void }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16">
-      <div className="absolute inset-0 border-b border-border/50 bg-background/80 backdrop-blur-xl" />
-      <div className="relative mx-auto flex h-full max-w-7xl items-center justify-between px-6 md:px-8">
+    <header style={{
+      position: "fixed", inset: "0 0 auto 0", zIndex: 50, height: 64,
+      background: scrolled ? "rgba(8,8,16,0.88)" : "transparent",
+      backdropFilter: scrolled ? "blur(24px) saturate(1.8)" : "none",
+      borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+      transition: "background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease",
+    }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px" }}>
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-card"
-            style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
-          >
-            <Sparkles className="h-4 w-4" />
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            boxShadow: "0 0 20px rgba(59,130,246,0.4)",
+          }}>
+            <Sparkles style={{ width: 16, height: 16, color: "#fff" }} />
           </div>
-          <div className="leading-tight">
-            <div className="font-display text-[14px] font-semibold tracking-tight">Nova OPS</div>
-            <div className="hidden text-[10px] text-muted-foreground sm:block">AI Business OS</div>
-          </div>
+          <span style={{ fontFamily: "Inter Display, Inter, sans-serif", fontWeight: 700, fontSize: 15, letterSpacing: "-0.02em" }}>
+            Nova <span style={{ color: "rgba(240,244,255,0.4)", fontWeight: 400 }}>OPS</span>
+          </span>
         </div>
 
-        {/* Center links */}
-        <nav className="hidden items-center gap-7 md:flex">
-          {[
-            { label: "Features", href: "#features" },
-            { label: "Tools", href: "#tools" },
-            { label: "How it works", href: "#how" },
-          ].map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="text-[13.5px] text-muted-foreground transition-colors hover:text-foreground"
+        {/* Center nav */}
+        <nav style={{ display: "flex", gap: 32, alignItems: "center" }}>
+          {[{ label: "Features", href: "#features" }, { label: "Tools", href: "#tools" }, { label: "How it works", href: "#how" }].map((l) => (
+            <a key={l.label} href={l.href} style={{
+              fontSize: 13.5, color: "rgba(240,244,255,0.55)", textDecoration: "none",
+              transition: "color 0.2s",
+            }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.color = "#f0f4ff"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.color = "rgba(240,244,255,0.55)"; }}
             >
               {l.label}
             </a>
@@ -84,612 +416,771 @@ function LandingNav() {
         </nav>
 
         {/* CTAs */}
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <Link to="/auth/sign-in">
-            <Button variant="ghost" size="sm" className="h-8 text-[13px]">Sign in</Button>
-          </Link>
-          <Link to="/auth/sign-up">
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 text-white shadow-card transition-opacity hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+            <button style={{
+              height: 36, padding: "0 16px", borderRadius: 10, fontSize: 13, fontWeight: 500,
+              background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,244,255,0.7)",
+              transition: "border-color 0.2s, color 0.2s",
+            }}
+              onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = "rgba(59,130,246,0.5)"; el.style.color = "#f0f4ff"; }}
+              onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = "rgba(255,255,255,0.1)"; el.style.color = "rgba(240,244,255,0.7)"; }}
             >
-              Get started <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
+              Sign in
+            </button>
           </Link>
+          <MagneticBtn
+            onClick={startDemo}
+            style={{
+              height: 36, padding: "0 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+              color: "#fff", border: "none",
+              boxShadow: "0 4px 16px rgba(59,130,246,0.35)",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            Get started <ArrowRight style={{ width: 13, height: 13 }} />
+          </MagneticBtn>
         </div>
       </div>
     </header>
   );
 }
 
-/* ─────────────────────────────── HERO ─────────────────────────────── */
+/* ─────────────────────────── HERO ─────────────────────────── */
 
 function HeroSection({ startDemo }: { startDemo: () => void }) {
-  return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-28 text-center">
-      {/* Animated mesh */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-mesh-animated opacity-70" />
-      <div className="pointer-events-none absolute inset-0 bg-dotgrid opacity-30" />
+  const scrollY = useScrollY();
+  const orbRef1 = useRef<HTMLDivElement>(null);
+  const orbRef2 = useRef<HTMLDivElement>(null);
+  const meshRef = useRef<HTMLDivElement>(null);
 
-      {/* Floating orbs */}
-      <div
-        className="pointer-events-none absolute -left-48 top-1/4 h-[640px] w-[640px] rounded-full opacity-25"
-        style={{
-          background: "radial-gradient(circle, color-mix(in oklab, var(--primary) 35%, transparent), transparent 70%)",
-          filter: "blur(72px)",
-          animation: "meshDrift 18s ease-in-out infinite",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute -right-48 top-1/3 h-[540px] w-[540px] rounded-full opacity-20"
-        style={{
-          background: "radial-gradient(circle, color-mix(in oklab, var(--accent) 35%, transparent), transparent 70%)",
-          filter: "blur(72px)",
-          animation: "meshDrift 22s ease-in-out infinite reverse",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 left-1/2 h-[360px] w-[640px] -translate-x-1/2 rounded-full opacity-20"
-        style={{
-          background: "radial-gradient(circle, color-mix(in oklab, var(--orange) 30%, transparent), transparent 70%)",
-          filter: "blur(80px)",
-        }}
-      />
+  useEffect(() => {
+    if (meshRef.current) meshRef.current.style.transform = `translateY(${scrollY * 0.3}px)`;
+    if (orbRef1.current) orbRef1.current.style.transform = `translateY(${scrollY * 0.18}px)`;
+    if (orbRef2.current) orbRef2.current.style.transform = `translateY(${scrollY * 0.24}px)`;
+  }, [scrollY]);
+
+  const words1 = "The AI operating system".split(" ");
+  const words2 = "built for founders.".split(" ");
+
+  return (
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "112px 24px 80px", overflow: "hidden" }}>
+
+      {/* Parallax mesh */}
+      <div ref={meshRef} style={{
+        position: "absolute", inset: "-20%", pointerEvents: "none", willChange: "transform",
+        background: "radial-gradient(80rem 50rem at 20% 30%, rgba(59,130,246,0.14), transparent 60%), radial-gradient(60rem 40rem at 80% 20%, rgba(139,92,246,0.12), transparent 60%), radial-gradient(50rem 35rem at 50% 80%, rgba(6,182,212,0.08), transparent 60%)",
+      }} />
+
+      {/* Dot grid */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.25,
+        backgroundImage: "radial-gradient(rgba(59,130,246,0.5) 1px, transparent 1px)",
+        backgroundSize: "28px 28px",
+      }} />
+
+      {/* Orb 1 */}
+      <div ref={orbRef1} style={{
+        position: "absolute", top: "15%", left: "-10%", width: 600, height: 600,
+        borderRadius: "50%", pointerEvents: "none", willChange: "transform",
+        background: "radial-gradient(circle, rgba(59,130,246,0.22), transparent 70%)",
+        filter: "blur(64px)", animation: "heroFloat 20s ease-in-out infinite",
+      }} />
+
+      {/* Orb 2 */}
+      <div ref={orbRef2} style={{
+        position: "absolute", top: "25%", right: "-12%", width: 500, height: 500,
+        borderRadius: "50%", pointerEvents: "none", willChange: "transform",
+        background: "radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%)",
+        filter: "blur(64px)", animation: "heroFloat 26s ease-in-out infinite reverse",
+      }} />
+
+      {/* Orange bottom orb */}
+      <div style={{
+        position: "absolute", bottom: "-5%", left: "50%", transform: "translateX(-50%)",
+        width: 700, height: 320, borderRadius: "50%", pointerEvents: "none",
+        background: "radial-gradient(circle, rgba(249,115,22,0.1), transparent 70%)",
+        filter: "blur(60px)",
+      }} />
 
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-4xl">
-        {/* Announcement badge */}
-        <div className="page-in inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 text-[12px] font-medium text-primary backdrop-blur-sm">
-          <span className="relative flex h-2 w-2 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+      <div style={{ position: "relative", zIndex: 10, maxWidth: 900, margin: "0 auto" }}>
+
+        {/* Badge */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          borderRadius: 999, border: "1px solid rgba(59,130,246,0.3)",
+          background: "rgba(59,130,246,0.08)", padding: "6px 18px",
+          fontSize: 12, fontWeight: 600, color: "#60a5fa",
+          backdropFilter: "blur(12px)",
+          animation: "badgePulse 3s ease-in-out infinite, pageIn 0.6s both",
+          marginBottom: 32,
+        }}>
+          <span style={{
+            position: "relative", display: "inline-flex", width: 8, height: 8,
+          }}>
+            <span style={{
+              position: "absolute", inset: 0, borderRadius: "50%", background: "#3b82f6",
+              animation: "ping 1.4s cubic-bezier(0,0,0.2,1) infinite", opacity: 0.6,
+            }} />
+            <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
           </span>
           Kill My Idea tool is now live — try it free
-          <ChevronArrow />
+          <ArrowRight style={{ width: 13, height: 13, opacity: 0.6 }} />
         </div>
 
-        {/* Headline */}
-        <h1
-          className="page-in mt-8 font-display font-semibold tracking-tight"
-          style={{
-            fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-            lineHeight: 1.04,
-            animationDelay: "60ms",
-          }}
-        >
-          The AI operating system
-          <br className="hidden sm:block" />
-          <span className="text-brand-cycle"> built for founders.</span>
+        {/* Split-word headline */}
+        <h1 style={{
+          fontFamily: "Inter Display, Inter, sans-serif",
+          fontSize: "clamp(2.6rem, 6.5vw, 5rem)",
+          fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.03,
+          margin: 0,
+        }}>
+          <span style={{ display: "block", overflow: "hidden" }}>
+            {words1.map((w, i) => (
+              <span key={i} style={{ display: "inline-block", overflow: "hidden", verticalAlign: "bottom", marginRight: "0.28em" }}>
+                <span style={{ display: "inline-block", animation: `wordIn 0.9s cubic-bezier(0.16,1,0.3,1) ${i * 90}ms both` }}>
+                  {w}
+                </span>
+              </span>
+            ))}
+          </span>
+          <span style={{ display: "block", overflow: "hidden" }}>
+            {words2.map((w, i) => (
+              <span key={i} style={{ display: "inline-block", overflow: "hidden", verticalAlign: "bottom", marginRight: "0.28em" }}>
+                <span style={{
+                  display: "inline-block",
+                  animation: `wordIn 0.9s cubic-bezier(0.16,1,0.3,1) ${(words1.length + i) * 90 + 80}ms both`,
+                  background: "linear-gradient(110deg, #3b82f6 0%, #6366f1 40%, #8b5cf6 70%, #06b6d4 100%)",
+                  backgroundSize: "300% 100%",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  animation2: "brandShift 6s ease-in-out infinite",
+                }}>
+                  {w}
+                </span>
+              </span>
+            ))}
+          </span>
         </h1>
 
         {/* Subheadline */}
-        <p
-          className="page-in mx-auto mt-6 max-w-2xl leading-relaxed text-muted-foreground"
-          style={{ fontSize: "clamp(1rem, 2vw, 1.175rem)", animationDelay: "120ms" }}
-        >
+        <p style={{
+          maxWidth: 640, margin: "28px auto 0", fontSize: "clamp(1rem, 2vw, 1.2rem)",
+          lineHeight: 1.7, color: "rgba(240,244,255,0.55)",
+          animation: "pageIn 0.9s cubic-bezier(0.16,1,0.3,1) 600ms both",
+        }}>
           Go from idea to automated revenue without juggling ten tools.
           Nova OPS combines AI generation, automation pipelines, and a
           lightweight CRM into one intelligent workspace.
         </p>
 
         {/* CTAs */}
-        <div
-          className="page-in mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
-          style={{ animationDelay: "180ms" }}
-        >
-          <button
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginTop: 44,
+          animation: "pageIn 0.9s cubic-bezier(0.16,1,0.3,1) 700ms both",
+        }}>
+          <MagneticBtn
             onClick={startDemo}
-            className="group relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-xl px-8 text-[15px] font-semibold text-white shadow-[0_0_0_1px_rgba(37,99,235,0.35),0_8px_32px_rgba(37,99,235,0.30)] transition-all hover:shadow-[0_0_0_1px_rgba(37,99,235,0.5),0_14px_44px_rgba(37,99,235,0.38)]"
-            style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" }}
+            style={{
+              height: 52, padding: "0 36px", borderRadius: 14, fontSize: 15.5, fontWeight: 700,
+              color: "#fff", border: "none",
+              background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)",
+              boxShadow: "0 0 0 1px rgba(59,130,246,0.4), 0 8px 32px rgba(59,130,246,0.35), 0 0 60px rgba(59,130,246,0.1)",
+              display: "flex", alignItems: "center", gap: 8,
+            }}
           >
-            <span>Try the live demo</span>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </button>
+            Try the live demo <ArrowRight style={{ width: 16, height: 16 }} />
+          </MagneticBtn>
           <Link to="/auth/sign-up">
-            <button className="inline-flex h-12 items-center gap-2 rounded-xl border border-border/70 bg-surface/60 px-8 text-[15px] font-medium backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-primary/5">
+            <MagneticBtn style={{
+              height: 52, padding: "0 32px", borderRadius: 14, fontSize: 15.5, fontWeight: 600,
+              background: "rgba(255,255,255,0.04)", color: "#f0f4ff",
+              border: "1px solid rgba(255,255,255,0.12)",
+              backdropFilter: "blur(12px)",
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
               Sign up free
-            </button>
+            </MagneticBtn>
           </Link>
         </div>
 
-        <p
-          className="page-in mt-4 text-[12px] text-muted-foreground"
-          style={{ animationDelay: "220ms" }}
-        >
+        <p style={{
+          fontSize: 12, color: "rgba(240,244,255,0.3)", marginTop: 16,
+          animation: "pageIn 0.9s cubic-bezier(0.16,1,0.3,1) 800ms both",
+        }}>
           No credit card · Instant access · Cancel anytime
         </p>
 
-        {/* Stats pill row */}
-        <div
-          className="page-in mx-auto mt-16 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-border/60 shadow-card"
-          style={{ animationDelay: "300ms" }}
-        >
-          {[
-            { n: "10+", label: "AI tools" },
-            { n: "6", label: "OS modules" },
-            { n: "14 days", label: "To go live" },
-          ].map((s) => (
-            <div
-              key={s.n}
-              className="flex flex-col items-center justify-center bg-surface/90 px-5 py-5 backdrop-blur-sm"
-            >
-              <div className="text-gradient font-display text-[1.75rem] font-semibold leading-none tracking-tight">
-                {s.n}
-              </div>
-              <div className="mt-1.5 text-[11.5px] text-muted-foreground">{s.label}</div>
+        {/* Stats pill */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
+          maxWidth: 480, margin: "64px auto 0",
+          borderRadius: 18, overflow: "hidden",
+          border: "1px solid rgba(59,130,246,0.15)",
+          boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 8px 32px rgba(0,0,0,0.5)",
+          animation: "pageIn 0.9s cubic-bezier(0.16,1,0.3,1) 900ms both",
+        }}>
+          {[{ n: "14+", label: "AI tools" }, { n: "6", label: "OS modules" }, { n: "14 days", label: "To go live" }].map((s, i) => (
+            <div key={s.n} style={{
+              background: "rgba(13,13,30,0.8)", backdropFilter: "blur(20px)",
+              padding: "20px 16px", textAlign: "center",
+              borderRight: i < 2 ? "1px solid rgba(59,130,246,0.1)" : "none",
+            }}>
+              <div style={{
+                fontFamily: "Inter Display, Inter, sans-serif",
+                fontSize: "1.8rem", fontWeight: 700, letterSpacing: "-0.03em",
+                background: "linear-gradient(110deg, #3b82f6, #8b5cf6)",
+                WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+              }}>{s.n}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.45)", marginTop: 4 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Scroll hint */}
-      <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-muted-foreground/40">
-        <div className="h-10 w-px bg-gradient-to-b from-transparent via-border to-transparent" />
-        <span className="text-[9px] uppercase tracking-widest">Scroll</span>
+      <div style={{
+        position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+        color: "rgba(240,244,255,0.25)",
+      }}>
+        <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, transparent, rgba(59,130,246,0.5), transparent)", animation: "scrollHint 2s ease-in-out infinite" }} />
+        <span style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase" }}>Scroll</span>
       </div>
     </section>
   );
 }
 
-function ChevronArrow() {
-  return <ArrowRight className="h-3.5 w-3.5 opacity-60" />;
+function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    let ticking = false;
+    const fn = () => {
+      if (!ticking) { requestAnimationFrame(() => { setY(window.scrollY); ticking = false; }); ticking = true; }
+    };
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  return y;
 }
 
-/* ─────────────────────────────── LOGO STRIP ─────────────────────────────── */
+/* ─────────────────────────── LOGO STRIP ─────────────────────────── */
 
 function LogoStrip() {
   const items = ["Founders", "Consultants", "Agencies", "Coaches", "SaaS builders", "Service businesses", "Solopreneurs"];
   return (
-    <div className="border-y border-border/50 bg-surface/50 py-5 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
-            Built for
-          </span>
-          {items.map((item) => (
-            <span key={item} className="text-[13px] font-medium text-foreground/60">{item}</span>
-          ))}
-        </div>
+    <div style={{
+      borderTop: "1px solid rgba(255,255,255,0.05)",
+      borderBottom: "1px solid rgba(255,255,255,0.05)",
+      background: "rgba(13,13,30,0.5)", backdropFilter: "blur(12px)",
+      padding: "20px 24px",
+    }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "8px 32px" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,244,255,0.2)" }}>Built for</span>
+        {items.map((item) => (
+          <span key={item} style={{ fontSize: 13.5, fontWeight: 500, color: "rgba(240,244,255,0.45)" }}>{item}</span>
+        ))}
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────── PILLARS ─────────────────────────────── */
-
-const PILLARS = [
-  {
-    id: "launchpad",
-    label: "Launchpad",
-    icon: Rocket,
-    iconGrad: ["var(--primary)", "var(--accent)"] as [string, string],
-    glowColor: "rgba(37,99,235,0.15)",
-    borderGlow: "rgba(37,99,235,0.25)",
-    title: "AI tools that do the thinking",
-    desc: "10 specialized generators produce investor pitches, GTM strategies, offer blueprints, and more — in under 60 seconds.",
-    features: [
-      "Business Idea Validator",
-      "Pitch Generator",
-      "GTM Strategy Builder",
-      "Offer & Pricing Designer",
-      "Kill My Idea (stress-test)",
-      "Investor Email Sequences",
-    ],
-  },
-  {
-    id: "nova",
-    label: "Nova OS",
-    icon: Zap,
-    iconGrad: ["var(--accent)", "var(--orange)"] as [string, string],
-    glowColor: "rgba(139,92,246,0.15)",
-    borderGlow: "rgba(139,92,246,0.25)",
-    title: "Automation that runs your ops",
-    desc: "Six business modules handle lead capture, follow-up sequences, client onboarding, and more — all on autopilot.",
-    features: [
-      "Lead Capture & Routing",
-      "Multi-touch Follow-Up",
-      "Client Onboarding Flow",
-      "Invoice & Payment Tracker",
-      "Reputation Manager",
-      "Reporting Dashboard",
-    ],
-  },
-  {
-    id: "crm",
-    label: "Pipeline CRM",
-    icon: Users,
-    iconGrad: ["var(--orange)", "var(--primary)"] as [string, string],
-    glowColor: "rgba(255,122,41,0.12)",
-    borderGlow: "rgba(255,122,41,0.22)",
-    title: "Track every deal, close more",
-    desc: "A lightweight CRM built into the same workspace — no exports or integrations required. Visual pipeline, activity log, revenue forecasting.",
-    features: [
-      "Visual Kanban Pipeline",
-      "Lead Stage Automation",
-      "Activity Timeline",
-      "Won/Lost Analytics",
-      "Source Attribution",
-      "Revenue Forecasting",
-    ],
-  },
-];
+/* ─────────────────────────── PILLARS ─────────────────────────── */
 
 function PillarsSection() {
   return (
-    <section id="features" className="relative py-28 px-6">
-      <div className="mx-auto max-w-7xl">
+    <section id="features" style={{ padding: "120px 24px", position: "relative" }}>
+      {/* Top fade */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 120, pointerEvents: "none", background: "linear-gradient(to bottom, #080810, transparent)" }} />
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <SectionHeader
           eyebrow="Platform"
           title="Everything a founder needs. Nothing they don't."
           desc="Three tightly integrated systems that replace the ten-tab workflow most founders are stuck in."
         />
-
-        <div className="mt-16 grid gap-6 lg:grid-cols-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20, marginTop: 64 }}>
           {PILLARS.map((p, i) => (
-            <div
-              key={p.id}
-              className="rise-in group relative overflow-hidden rounded-2xl border bg-surface p-8 shadow-card transition-all duration-300 hover:shadow-hover"
-              style={{
-                ["--i" as string]: i,
-                borderColor: p.borderGlow,
-              } as React.CSSProperties}
-            >
-              {/* Corner glow that appears on hover */}
-              <div
-                className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                style={{
-                  background: `radial-gradient(circle, ${p.glowColor}, transparent 70%)`,
-                  filter: "blur(16px)",
-                }}
-              />
-
-              {/* Icon */}
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-card"
-                style={{ background: `linear-gradient(135deg, ${p.iconGrad[0]}, ${p.iconGrad[1]})` }}
-              >
-                <p.icon className="h-6 w-6" />
-              </div>
-
-              <div className="mt-5 text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                {p.label}
-              </div>
-              <h3 className="mt-2 font-display text-[1.2rem] font-semibold leading-snug tracking-tight">
-                {p.title}
-              </h3>
-              <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">{p.desc}</p>
-
-              <ul className="mt-7 space-y-2.5">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-[13px]">
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
-                      <Check className="h-2.5 w-2.5" />
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-8">
-                <Link to="/auth/sign-up">
-                  <button className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-surface-2 px-4 py-2 text-[12.5px] font-medium transition-all hover:border-primary/40 hover:text-primary">
-                    Get started <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                </Link>
-              </div>
-            </div>
+            <FadeIn key={p.id} delay={i * 120}>
+              <PillarCard pillar={p} />
+            </FadeIn>
           ))}
         </div>
       </div>
+      {/* Bottom fade */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, pointerEvents: "none", background: "linear-gradient(to top, #080810, transparent)" }} />
     </section>
   );
 }
 
-/* ─────────────────────────────── TOOLS ─────────────────────────────── */
+function PillarCard({ pillar: p }: { pillar: typeof PILLARS[0] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
 
-const TOOLS = [
-  { icon: Lightbulb,  name: "Idea Validator",     desc: "Pressure-test market fit in 60 sec",    live: true  },
-  { icon: Megaphone,  name: "Pitch Generator",    desc: "Investor-ready deck copy",              live: true  },
-  { icon: Target,     name: "GTM Strategy",       desc: "Channel plan + ICP messaging map",      live: true  },
-  { icon: Zap,        name: "Offer Builder",      desc: "Irresistible offer with risk reversal", live: true  },
-  { icon: Settings2,  name: "Ops Plan",           desc: "Workflows, automations, KPIs",          live: true  },
-  { icon: Mail,       name: "Follow-Up Sequence", desc: "Multi-touch email + DM sequences",      live: true  },
-  { icon: Globe,      name: "Website Auditor",    desc: "AI audit of your live site",            live: true  },
-  { icon: Skull,      name: "Kill My Idea",       desc: "Stress-test against the harshest objections", live: true  },
-  { icon: Trophy,     name: "Funding Score",      desc: "How investable is your idea right now", live: false },
-  { icon: UserPlus,   name: "First 10 Customers", desc: "Tactical roadmap to first revenue",     live: false },
-  { icon: FileText,   name: "Business Plan",      desc: "Shareable document-style operating plan",live: false },
-  { icon: GitCompare, name: "Idea vs Idea",       desc: "Side-by-side comparison of two ideas",  live: false },
-];
-
-function ToolsSection() {
   return (
-    <section id="tools" className="relative overflow-hidden py-28 px-6">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          background:
-            "radial-gradient(80rem 44rem at 50% 100%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 60%)",
-        }}
-      />
-      <div className="relative mx-auto max-w-7xl">
-        <SectionHeader
-          eyebrow="AI Launchpad"
-          title="12 tools. Every founder workflow."
-          desc="From validating your idea to generating investor emails — each tool ships a polished, ready-to-use asset in under a minute."
-        />
+    <div
+      ref={ref}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 24, padding: 36, position: "relative", overflow: "hidden",
+        background: "rgba(13,13,30,0.8)",
+        border: `1px solid ${hovered ? p.border : "rgba(255,255,255,0.06)"}`,
+        boxShadow: hovered ? `0 0 0 1px ${p.border}, 0 20px 60px rgba(0,0,0,0.6), 0 0 80px ${p.glow}` : "0 4px 24px rgba(0,0,0,0.4)",
+        transform: hovered ? "translateY(-4px)" : "none",
+        transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
+        backdropFilter: "blur(16px)",
+      }}
+    >
+      {/* Top neon line */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 1,
+        background: `linear-gradient(90deg, transparent, ${p.border}, transparent)`,
+        opacity: hovered ? 1 : 0.4, transition: "opacity 0.4s",
+      }} />
 
-        <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {TOOLS.map((t, i) => (
+      {/* Corner glow */}
+      <div style={{
+        position: "absolute", top: -60, right: -60, width: 200, height: 200,
+        borderRadius: "50%", background: `radial-gradient(circle, ${p.glow}, transparent 70%)`,
+        filter: "blur(20px)", opacity: hovered ? 1 : 0, transition: "opacity 0.5s",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{
+        width: 48, height: 48, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+        background: p.gradient, boxShadow: `0 4px 20px ${p.glow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+        transform: hovered ? "scale(1.1) rotate(-3deg)" : "none",
+        transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+      }}>
+        <p.icon style={{ width: 22, height: 22, color: "#fff" }} />
+      </div>
+
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,244,255,0.35)", marginTop: 20 }}>{p.label}</div>
+      <h3 style={{ fontFamily: "Inter Display, Inter, sans-serif", fontSize: "1.25rem", fontWeight: 700, letterSpacing: "-0.02em", color: "#f0f4ff", marginTop: 8, lineHeight: 1.25 }}>{p.title}</h3>
+      <p style={{ fontSize: 13.5, lineHeight: 1.65, color: "rgba(240,244,255,0.5)", marginTop: 12 }}>{p.desc}</p>
+
+      <ul style={{ listStyle: "none", padding: 0, margin: "24px 0 0", display: "flex", flexDirection: "column", gap: 10 }}>
+        {p.features.map((f) => (
+          <li key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+            <span style={{
+              flexShrink: 0, width: 18, height: 18, borderRadius: "50%",
+              background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Check style={{ width: 10, height: 10, color: "#10b981" }} />
+            </span>
+            <span style={{ color: "rgba(240,244,255,0.75)" }}>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div style={{ marginTop: 32 }}>
+        <Link to="/auth/sign-up">
+          <button style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+            background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+            color: "rgba(240,244,255,0.7)", transition: "all 0.2s",
+          }}
+            onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = p.border; el.style.color = "#f0f4ff"; el.style.background = `${p.glow.replace("0.2)", "0.08)")}`; }}
+            onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = "rgba(255,255,255,0.1)"; el.style.color = "rgba(240,244,255,0.7)"; el.style.background = "rgba(255,255,255,0.05)"; }}
+          >
+            Get started <ArrowRight style={{ width: 13, height: 13 }} />
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── HORIZONTAL TOOLS SCROLL ─────────────────────────── */
+
+function HorizontalToolsSection() {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const update = () => {
+      const outer = outerRef.current;
+      const track = trackRef.current;
+      if (!outer || !track) return;
+      const rect = outer.getBoundingClientRect();
+      const scrollableH = outer.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, -rect.top);
+      const progress = Math.min(1, scrolled / scrollableH);
+      const maxTravel = track.scrollWidth - window.innerWidth + 96;
+      track.style.transform = `translateX(${-progress * Math.max(0, maxTravel)}px)`;
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+
+  return (
+    <section id="tools" style={{ position: "relative" }}>
+      {/* Top section fade */}
+      <div style={{ position: "absolute", inset: "0 0 auto 0", height: 140, pointerEvents: "none", zIndex: 2, background: "linear-gradient(to bottom, #080810, transparent)" }} />
+
+      <div ref={outerRef} style={{ height: "420vh", position: "relative" }}>
+        <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+
+          <div style={{ textAlign: "center", padding: "0 24px 40px" }}>
+            <FadeIn>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 12, display: "inline-block", padding: "4px 14px", borderRadius: 999, border: "1px solid rgba(59,130,246,0.3)", background: "rgba(59,130,246,0.08)" }}>
+                AI Launchpad
+              </div>
+            </FadeIn>
+            <FadeIn delay={80}>
+              <h2 style={{ fontFamily: "Inter Display, Inter, sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#f0f4ff", margin: "0 0 12px" }}>
+                14 tools. Every founder workflow.
+              </h2>
+            </FadeIn>
+            <FadeIn delay={160}>
+              <p style={{ fontSize: 14.5, color: "rgba(240,244,255,0.45)", maxWidth: 520, margin: "0 auto" }}>
+                Scroll to explore. Each tool ships a polished asset in under 60 seconds.
+              </p>
+            </FadeIn>
+          </div>
+
+          {/* Scroll track */}
+          <div style={{ overflow: "visible", position: "relative" }}>
+            {/* Left fade */}
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 80, zIndex: 4, background: "linear-gradient(to right, #080810, transparent)", pointerEvents: "none" }} />
+            {/* Right fade */}
+            <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 80, zIndex: 4, background: "linear-gradient(to left, #080810, transparent)", pointerEvents: "none" }} />
+
             <div
-              key={t.name}
-              className="rise-in group relative rounded-xl border border-border bg-surface p-5 shadow-card transition-all hover:border-primary/25 hover:shadow-hover"
-              style={{ ["--i" as string]: Math.floor(i / 4) } as React.CSSProperties}
+              ref={trackRef}
+              style={{
+                display: "flex", gap: 20, padding: "8px 48px 20px",
+                willChange: "transform", transition: "none",
+                width: "max-content",
+              }}
             >
-              <div
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110",
-                  t.live ? "bg-primary/10 text-primary" : "bg-surface-2 text-muted-foreground/60",
-                )}
-              >
-                <t.icon className="h-4 w-4" />
-              </div>
-              <div className="mt-3.5 text-[13.5px] font-semibold leading-tight">{t.name}</div>
-              <div className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{t.desc}</div>
-              <div className="mt-4">
-                {t.live ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary">
-                    Available now <ArrowRight className="h-3 w-3" />
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-medium text-muted-foreground/50">Coming soon</span>
-                )}
-              </div>
+              {TOOLS.map((tool, i) => <HToolCard key={tool.name} tool={tool} index={i} />)}
             </div>
-          ))}
+          </div>
         </div>
       </div>
+
+      {/* Bottom fade */}
+      <div style={{ position: "absolute", inset: "auto 0 0 0", height: 140, pointerEvents: "none", zIndex: 2, background: "linear-gradient(to top, #080810, transparent)" }} />
     </section>
   );
 }
 
-/* ─────────────────────────────── HOW IT WORKS ─────────────────────────────── */
+function HToolCard({ tool, index }: { tool: typeof TOOLS[0]; index: number }) {
+  const [hovered, setHovered] = useState(false);
+  const iconGrads = [
+    "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+    "linear-gradient(135deg, #8b5cf6, #c084fc)",
+    "linear-gradient(135deg, #3b82f6, #38bdf8)",
+    "linear-gradient(135deg, #10b981, #3b82f6)",
+    "linear-gradient(135deg, #f97316, #8b5cf6)",
+    "linear-gradient(135deg, #06b6d4, #3b82f6)",
+    "linear-gradient(135deg, #3b82f6, #6366f1)",
+    "linear-gradient(135deg, #ef4444, #f97316)",
+  ];
+  const grad = tool.live ? iconGrads[index % iconGrads.length] : "rgba(255,255,255,0.05)";
 
-const STEPS = [
-  {
-    n: "01",
-    icon: Lightbulb,
-    title: "Start with your idea",
-    desc: "Describe your business, target customer, and goals. Nova's AI immediately pressure-tests and shapes it into something real.",
-  },
-  {
-    n: "02",
-    icon: Rocket,
-    title: "Generate every asset",
-    desc: "Run Launchpad tools in sequence — pitch, GTM, offer, ops plan, investor emails. Each tool builds on the last.",
-  },
-  {
-    n: "03",
-    icon: Workflow,
-    title: "Automate and scale",
-    desc: "Wire Nova OS to your existing stack. Lead capture, follow-up, onboarding, invoicing — all on autopilot while you focus on growth.",
-  },
-];
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 260, flexShrink: 0, borderRadius: 20, padding: 24,
+        background: hovered ? "rgba(17,17,40,0.95)" : "rgba(13,13,30,0.7)",
+        border: hovered && tool.live ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(255,255,255,0.06)",
+        boxShadow: hovered && tool.live
+          ? "0 0 0 1px rgba(59,130,246,0.15), 0 20px 60px rgba(0,0,0,0.5), 0 0 50px rgba(59,130,246,0.1)"
+          : "0 4px 20px rgba(0,0,0,0.3)",
+        transform: hovered ? "translateY(-6px) scale(1.02)" : "none",
+        transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
+        backdropFilter: "blur(20px)",
+        position: "relative", overflow: "hidden",
+      }}
+    >
+      {/* Neon top edge */}
+      {tool.live && (
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.6), transparent)",
+          opacity: hovered ? 1 : 0.3, transition: "opacity 0.4s",
+        }} />
+      )}
+
+      {/* Icon */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+        background: grad,
+        boxShadow: tool.live ? "0 4px 16px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.2)" : "none",
+        transform: hovered ? "scale(1.12) rotate(-5deg)" : "none",
+        transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+        marginBottom: 16,
+      }}>
+        <tool.icon style={{ width: 20, height: 20, color: tool.live ? "#fff" : "rgba(240,244,255,0.25)" }} />
+      </div>
+
+      <div style={{ fontSize: 14.5, fontWeight: 700, color: tool.live ? "#f0f4ff" : "rgba(240,244,255,0.4)", letterSpacing: "-0.01em", marginBottom: 6 }}>
+        {tool.name}
+      </div>
+      <div style={{ fontSize: 12.5, color: "rgba(240,244,255,0.45)", lineHeight: 1.55, marginBottom: 16 }}>
+        {tool.desc}
+      </div>
+
+      {/* Badge */}
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999,
+        background: tool.live ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${tool.live ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.08)"}`,
+        color: tool.live ? "#10b981" : "rgba(240,244,255,0.25)",
+      }}>
+        {tool.live && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981", display: "inline-block" }} />}
+        {tool.live ? "Live" : "Coming soon"}
+      </span>
+    </div>
+  );
+}
+
+/* ─────────────────────────── HOW IT WORKS ─────────────────────────── */
 
 function HowItWorks() {
   return (
-    <section id="how" className="relative py-28 px-6">
-      <div className="mx-auto max-w-7xl">
+    <section id="how" style={{ padding: "120px 24px", position: "relative" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 120, pointerEvents: "none", background: "linear-gradient(to bottom, #080810, transparent)" }} />
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <SectionHeader
           eyebrow="How it works"
           title="Idea to revenue. In days, not months."
           desc="A three-step sequence that takes you from zero to a running, automated business — without hiring an ops team."
         />
-
-        <div className="mt-16 grid gap-10 lg:grid-cols-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 40, marginTop: 72 }}>
           {STEPS.map((s, i) => (
-            <div
-              key={s.n}
-              className="rise-in relative"
-              style={{ ["--i" as string]: i } as React.CSSProperties}
-            >
-              {/* Connector */}
-              {i < STEPS.length - 1 && (
-                <div className="pointer-events-none absolute left-[calc(100%+1rem)] top-7 hidden h-px w-8 bg-gradient-to-r from-border to-transparent lg:block" />
-              )}
+            <FadeIn key={s.n} delay={i * 140}>
+              <div style={{ position: "relative" }}>
+                {/* Connector line */}
+                {i < STEPS.length - 1 && (
+                  <div style={{
+                    position: "absolute", top: 28, left: "calc(100% + 20px)", width: 40, height: 1,
+                    background: "linear-gradient(to right, rgba(59,130,246,0.4), transparent)",
+                    display: "none", // shown via CSS on lg
+                  }} />
+                )}
 
-              {/* Step icon */}
-              <div className="relative mb-6 inline-flex">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl shadow-card"
-                  style={{ background: "color-mix(in oklab, var(--primary) 10%, var(--surface))", border: "1px solid color-mix(in oklab, var(--primary) 20%, transparent)" }}
-                >
-                  <s.icon className="h-6 w-6 text-primary" />
+                <div style={{ position: "relative", marginBottom: 24, display: "inline-flex" }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)",
+                    boxShadow: "0 0 30px rgba(59,130,246,0.1)",
+                  }}>
+                    <s.icon style={{ width: 24, height: 24, color: "#3b82f6" }} />
+                  </div>
+                  <span style={{
+                    position: "absolute", top: -8, right: -8,
+                    width: 22, height: 22, borderRadius: "50%",
+                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 800, color: "#fff",
+                    boxShadow: "0 0 12px rgba(59,130,246,0.5)",
+                  }}>{i + 1}</span>
                 </div>
-                {/* Step number badge */}
-                <span
-                  className="absolute -right-2.5 -top-2.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
-                >
-                  {i + 1}
-                </span>
-              </div>
 
-              <div className="font-mono text-[10.5px] font-bold tracking-widest text-muted-foreground/40">
-                {s.n}
+                <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(240,244,255,0.2)", marginBottom: 8 }}>
+                  {s.n}
+                </div>
+                <h3 style={{ fontFamily: "Inter Display, Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.02em", color: "#f0f4ff", margin: "0 0 10px" }}>
+                  {s.title}
+                </h3>
+                <p style={{ fontSize: 13.5, lineHeight: 1.65, color: "rgba(240,244,255,0.5)", margin: 0 }}>
+                  {s.desc}
+                </p>
               </div>
-              <h3 className="mt-2 font-display text-[1.2rem] font-semibold tracking-tight">{s.title}</h3>
-              <p className="mt-2.5 text-[13.5px] leading-relaxed text-muted-foreground">{s.desc}</p>
-            </div>
+            </FadeIn>
           ))}
         </div>
       </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, pointerEvents: "none", background: "linear-gradient(to top, #080810, transparent)" }} />
     </section>
   );
 }
 
-/* ─────────────────────────────── STATS ─────────────────────────────── */
-
-const STATS = [
-  { n: "$14k",    label: "Avg. month-1 revenue recovered",  icon: TrendingUp },
-  { n: "6 hrs",   label: "Saved per week on follow-up",     icon: Cpu },
-  { n: "90 sec",  label: "Average lead response time",      icon: Inbox },
-  { n: "14 days", label: "From idea to live business",      icon: FolderOpen },
-];
+/* ─────────────────────────── STATS ─────────────────────────── */
 
 function StatsSection() {
+  const [sectionRef, inView] = useInView(0.3);
   return (
-    <section className="relative overflow-hidden py-20 px-6">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-50"
-        style={{
-          background:
-            "linear-gradient(135deg, color-mix(in oklab, var(--primary) 6%, transparent), color-mix(in oklab, var(--accent) 6%, transparent))",
-        }}
-      />
-      <div className="relative mx-auto max-w-7xl">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {STATS.map((s, i) => (
-            <div
-              key={s.n}
-              className="rise-in card-lift rounded-2xl border border-border bg-surface p-6 text-center shadow-card"
-              style={{ ["--i" as string]: i } as React.CSSProperties}
-            >
-              <div
-                className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl text-primary"
-                style={{ background: "color-mix(in oklab, var(--primary) 10%, var(--surface-2))" }}
-              >
-                <s.icon className="h-5 w-5" />
-              </div>
-              <div className="text-gradient mt-5 font-display text-[2.25rem] font-semibold leading-none tracking-tight">
-                {s.n}
-              </div>
-              <div className="mt-2.5 text-[12.5px] text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
+    <section style={{ padding: "80px 24px", position: "relative" }}>
+      {/* Gradient BG */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "linear-gradient(135deg, rgba(59,130,246,0.05), rgba(139,92,246,0.05))",
+        borderTop: "1px solid rgba(59,130,246,0.08)",
+        borderBottom: "1px solid rgba(59,130,246,0.08)",
+      }} />
+
+      <div ref={sectionRef} style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, position: "relative" }}>
+        {STATS.map((s, i) => (
+          <FadeIn key={s.label} delay={i * 100}>
+            <StatCard stat={s} started={inView} />
+          </FadeIn>
+        ))}
       </div>
     </section>
   );
 }
 
-/* ─────────────────────────────── CTA ─────────────────────────────── */
+function StatCard({ stat, started }: { stat: typeof STATS[0]; started: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius: 20, padding: "28px 24px", textAlign: "center",
+        background: hovered ? "rgba(17,17,40,0.9)" : "rgba(13,13,30,0.6)",
+        border: "1px solid rgba(59,130,246,0.12)",
+        boxShadow: hovered ? "0 0 40px rgba(59,130,246,0.12), 0 8px 32px rgba(0,0,0,0.4)" : "0 4px 20px rgba(0,0,0,0.3)",
+        transform: hovered ? "translateY(-3px)" : "none",
+        transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, margin: "0 auto 20px",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)",
+      }}>
+        <stat.icon style={{ width: 20, height: 20, color: "#3b82f6" }} />
+      </div>
+      <div style={{
+        fontFamily: "Inter Display, Inter, sans-serif",
+        fontSize: "2.4rem", fontWeight: 800, letterSpacing: "-0.04em",
+        background: "linear-gradient(110deg, #3b82f6, #8b5cf6)",
+        WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+        lineHeight: 1,
+      }}>
+        <Counter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} started={started} />
+      </div>
+      <div style={{ fontSize: 12.5, color: "rgba(240,244,255,0.45)", marginTop: 10, lineHeight: 1.4 }}>
+        {stat.label}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── CTA ─────────────────────────── */
 
 function CtaSection({ startDemo }: { startDemo: () => void }) {
   return (
-    <section className="relative overflow-hidden px-6 py-28">
-      {/* Background */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-mesh-animated opacity-60" />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          background:
-            "radial-gradient(80rem 50rem at 50% 50%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 65%)",
-        }}
-      />
-      <div className="pointer-events-none absolute inset-0 bg-dotgrid opacity-20" />
+    <section style={{ padding: "120px 24px", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(80rem 50rem at 50% 50%, rgba(59,130,246,0.1), transparent 65%)" }} />
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(rgba(59,130,246,0.12) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.2 }} />
 
-      {/* Card */}
-      <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border/60 bg-surface/80 p-12 text-center shadow-hover backdrop-blur-sm">
-        {/* Inner glow */}
-        <div
-          className="pointer-events-none absolute inset-0 rounded-3xl opacity-40"
-          style={{
-            background:
-              "radial-gradient(40rem 24rem at 50% 0%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%)",
-          }}
-        />
+      <FadeIn>
+        <div style={{ maxWidth: 720, margin: "0 auto", borderRadius: 28, overflow: "hidden", position: "relative" }}>
+          {/* Neon card */}
+          <div style={{
+            background: "rgba(13,13,30,0.85)", backdropFilter: "blur(32px)",
+            border: "1px solid rgba(59,130,246,0.2)",
+            boxShadow: "0 0 0 1px rgba(59,130,246,0.08), 0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 rgba(59,130,246,0.15)",
+            padding: "60px 48px", textAlign: "center",
+          }}>
+            {/* Top neon edge */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.7), rgba(139,92,246,0.5), transparent)" }} />
 
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-1.5 text-[12px] font-medium text-success">
-            <Star className="h-3.5 w-3.5" />
-            Free to start — no credit card needed
-          </div>
+            {/* Inner glow */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 200, pointerEvents: "none", background: "radial-gradient(60rem 16rem at 50% 0%, rgba(59,130,246,0.12), transparent 70%)" }} />
 
-          <h2
-            className="mt-8 font-display font-semibold tracking-tight"
-            style={{ fontSize: "clamp(1.9rem, 5vw, 3.25rem)", lineHeight: 1.08 }}
-          >
-            Ready to run your business{" "}
-            <span className="text-gradient">like an OS?</span>
-          </h2>
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 999, border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.1)", padding: "5px 16px", fontSize: 12, fontWeight: 600, color: "#10b981" }}>
+                <Star style={{ width: 13, height: 13 }} />
+                Free to start — no credit card needed
+              </div>
 
-          <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-relaxed text-muted-foreground">
-            Join founders who've replaced their ten-tab workflow with one intelligent system.
-            Start with the live demo — no setup, no credit card.
-          </p>
+              <h2 style={{
+                fontFamily: "Inter Display, Inter, sans-serif",
+                fontSize: "clamp(2rem, 5vw, 3.25rem)",
+                fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.05,
+                color: "#f0f4ff", marginTop: 28, marginBottom: 0,
+              }}>
+                Ready to run your business{" "}
+                <span style={{
+                  background: "linear-gradient(110deg, #3b82f6, #8b5cf6)",
+                  WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+                }}>
+                  like an OS?
+                </span>
+              </h2>
 
-          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <button
-              onClick={startDemo}
-              className="group inline-flex h-12 items-center gap-2 rounded-xl px-8 text-[15px] font-semibold text-white shadow-[0_8px_32px_rgba(37,99,235,0.30)] transition-all hover:shadow-[0_14px_44px_rgba(37,99,235,0.40)]"
-              style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" }}
-            >
-              Try live demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
-            <Link to="/auth/sign-up">
-              <button className="inline-flex h-12 items-center gap-2 rounded-xl border border-border/70 bg-surface-2 px-8 text-[15px] font-medium transition-all hover:border-primary/40 hover:text-primary">
-                Create free account
-              </button>
-            </Link>
-          </div>
+              <p style={{ fontSize: 15.5, lineHeight: 1.65, color: "rgba(240,244,255,0.5)", maxWidth: 480, margin: "20px auto 0" }}>
+                Join founders who've replaced their ten-tab workflow with one intelligent system. Start with the live demo — no setup, no credit card.
+              </p>
 
-          <div className="mt-7 flex items-center justify-center gap-7 text-[12px] text-muted-foreground">
-            {["No credit card", "Instant access", "Cancel anytime"].map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-success" />
-                {t}
-              </span>
-            ))}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginTop: 44 }}>
+                <MagneticBtn
+                  onClick={startDemo}
+                  style={{
+                    height: 52, padding: "0 36px", borderRadius: 14,
+                    fontSize: 15, fontWeight: 700, color: "#fff", border: "none",
+                    background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)",
+                    boxShadow: "0 0 0 1px rgba(59,130,246,0.4), 0 8px 32px rgba(59,130,246,0.4)",
+                    display: "flex", alignItems: "center", gap: 8,
+                  }}
+                >
+                  Try live demo <ArrowRight style={{ width: 16, height: 16 }} />
+                </MagneticBtn>
+                <Link to="/auth/sign-up">
+                  <MagneticBtn style={{
+                    height: 52, padding: "0 32px", borderRadius: 14,
+                    fontSize: 15, fontWeight: 600,
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "rgba(240,244,255,0.8)",
+                    display: "flex", alignItems: "center", gap: 8,
+                  }}>
+                    Create free account
+                  </MagneticBtn>
+                </Link>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 28px", justifyContent: "center", marginTop: 28, fontSize: 12.5, color: "rgba(240,244,255,0.35)" }}>
+                {["No credit card", "Instant access", "Cancel anytime"].map((t) => (
+                  <span key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Check style={{ width: 13, height: 13, color: "#10b981" }} />{t}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </FadeIn>
     </section>
   );
 }
 
-/* ─────────────────────────────── FOOTER ─────────────────────────────── */
+/* ─────────────────────────── FOOTER ─────────────────────────── */
 
 function LandingFooter() {
   return (
-    <footer className="border-t border-border/50 px-6 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-5 md:flex-row md:justify-between">
-        <div className="flex items-center gap-2.5">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-md text-white"
-            style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
-          >
-            <Sparkles className="h-3.5 w-3.5" />
+    <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "40px 32px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", boxShadow: "0 0 16px rgba(59,130,246,0.3)" }}>
+            <Sparkles style={{ width: 14, height: 14, color: "#fff" }} />
           </div>
-          <span className="font-display text-[13px] font-semibold">Nova OPS</span>
-          <span className="text-[11px] text-muted-foreground">— AI Business OS</span>
+          <span style={{ fontFamily: "Inter Display, Inter, sans-serif", fontWeight: 700, fontSize: 14 }}>Nova OPS</span>
+          <span style={{ fontSize: 11.5, color: "rgba(240,244,255,0.3)" }}>— AI Business OS</span>
         </div>
-
-        <div className="flex items-center gap-6 text-[12.5px] text-muted-foreground">
-          <Link to="/auth/sign-in" className="transition hover:text-foreground">Sign in</Link>
-          <Link to="/auth/sign-up" className="transition hover:text-foreground">Sign up free</Link>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 24px", fontSize: 13, color: "rgba(240,244,255,0.35)" }}>
+          <Link to="/auth/sign-in" style={{ color: "inherit", textDecoration: "none" }}>Sign in</Link>
+          <Link to="/auth/sign-up" style={{ color: "inherit", textDecoration: "none" }}>Sign up free</Link>
           <span>© {new Date().getFullYear()} Nova OPS</span>
         </div>
       </div>
     </footer>
-  );
-}
-
-/* ─────────────────────────────── SHARED ─────────────────────────────── */
-
-function SectionHeader({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
-  return (
-    <div className="text-center">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</div>
-      <h2
-        className="mt-3 font-display font-semibold tracking-tight leading-tight"
-        style={{ fontSize: "clamp(1.7rem, 4vw, 2.9rem)" }}
-      >
-        {title}
-      </h2>
-      <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{desc}</p>
-    </div>
   );
 }
