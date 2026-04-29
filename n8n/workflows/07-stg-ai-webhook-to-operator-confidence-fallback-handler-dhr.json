@@ -122,7 +122,7 @@
       ],
       "parameters": {
         "method": "PATCH",
-        "url": "=https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/operator_sessions?session_id=eq.{{ $json.session_id }}",
+        "url": "=https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_sessions?session_id=eq.{{ $json.session_id }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,

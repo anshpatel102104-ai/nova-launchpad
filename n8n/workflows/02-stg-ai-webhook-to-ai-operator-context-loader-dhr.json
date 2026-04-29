@@ -63,7 +63,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/profiles",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/profiles",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,
@@ -110,7 +110,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/ai_operator_config",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/ai_operator_config",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,
@@ -157,7 +157,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/operator_sessions",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_sessions",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,
@@ -208,7 +208,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/onboarding_responses",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/onboarding_responses",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,

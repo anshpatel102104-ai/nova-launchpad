@@ -76,10 +76,10 @@ jobs:
 
 # ─── Required GitHub Secrets ──────────────────────────────────────────────
 # SUPABASE_ACCESS_TOKEN   — Supabase Dashboard → Account → Access Tokens
-# SUPABASE_PROJECT_ID     — snnnbzhopsajrhimhgje
+# SUPABASE_PROJECT_ID     — ipidfqwlszuhjgjygbvx
 # CLOUDFLARE_API_TOKEN    — Cloudflare Dashboard → My Profile → API Tokens
 # CLOUDFLARE_ACCOUNT_ID   — Cloudflare Dashboard → right sidebar
-# VITE_SUPABASE_URL       — https://snnnbzhopsajrhimhgje.supabase.co
+# VITE_SUPABASE_URL       — https://ipidfqwlszuhjgjygbvx.supabase.co
 # VITE_SUPABASE_PUBLISHABLE_KEY  — Supabase anon public key
-# VITE_SUPABASE_PROJECT_ID       — snnnbzhopsajrhimhgje
+# VITE_SUPABASE_PROJECT_ID       — ipidfqwlszuhjgjygbvx
 # VITE_PAYMENTS_CLIENT_TOKEN     — Stripe publishable key

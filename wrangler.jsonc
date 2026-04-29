@@ -9,8 +9,8 @@
   "vars": {
     // Public env vars available at runtime on the Worker
     "VITE_N8N_BASE_URL": "/api/n8n",
-    "VITE_SUPABASE_URL": "https://snnnbzhopsajrhimhgje.supabase.co",
-    "VITE_SUPABASE_PROJECT_ID": "snnnbzhopsajrhimhgje"
+    "VITE_SUPABASE_URL": "https://ipidfqwlszuhjgjygbvx.supabase.co",
+    "VITE_SUPABASE_PROJECT_ID": "ipidfqwlszuhjgjygbvx"
   }
   // Secret bindings (never in source control — set via wrangler CLI):
   //   npx wrangler secret put VITE_SUPABASE_PUBLISHABLE_KEY
