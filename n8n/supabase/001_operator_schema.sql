@@ -1,19 +1,48 @@
 -- ════════════════════════════════════════════════════════════════════
--- Nova OPS · AI Operator schema
--- Generated for the 10 STG n8n workflows in /n8n/workflows
--- Run order: extensions → tables → indexes → RLS → seeds
+-- Nova OPS · AI Operator schema (STG operator stack)
+-- Generated for the 10 n8n workflows in /n8n/workflows
+-- Target project: ipidfqwlszuhjgjygbvx.supabase.co  (hardcoded in workflows)
 -- ════════════════════════════════════════════════════════════════════
--- Target project: hardcoded as ipidfqwlszuhjgjygbvx in workflows.
--- If you choose a different project, also update every n8n HTTP node URL.
+-- Idempotent — safe to re-run. Uses IF NOT EXISTS / on conflict do nothing.
 -- ════════════════════════════════════════════════════════════════════
 
--- ── Extensions ──────────────────────────────────────────────────────
 create extension if not exists "uuid-ossp";
 create extension if not exists "pgcrypto";
 
 -- ════════════════════════════════════════════════════════════════════
--- 1. operator_prompts  (hot-swappable Claude system prompts)
---    Used by: 10-prompt-swap (write), all Claude workflows (read).
+-- 0. ai_operator_configs  (plural — referenced by older nova_ops workflows)
+--    + ai_operator_config view (singular — referenced by these STG workflows)
+-- ════════════════════════════════════════════════════════════════════
+create table if not exists public.ai_operator_configs (
+  id                       uuid primary key default gen_random_uuid(),
+  user_id                  uuid not null references auth.users(id) on delete cascade,
+  operator_name            text,
+  operator_tone            text,
+  primary_niche            text,
+  recommended_tools        jsonb default '[]'::jsonb,
+  gtm_strategy_summary     text,
+  brand_voice_keywords     jsonb default '[]'::jsonb,
+  top_3_pain_points        jsonb default '[]'::jsonb,
+  source_intake_id         uuid,
+  llm_model                text default 'claude-sonnet-4-6',
+  llm_prompt_version       text,
+  raw_llm_response         jsonb,
+  status                   text not null default 'draft' check (status in ('draft','active','archived')),
+  created_at               timestamptz not null default now(),
+  updated_at               timestamptz not null default now(),
+  unique (user_id)
+);
+create index if not exists ai_operator_configs_user_id_idx on public.ai_operator_configs(user_id);
+create index if not exists ai_operator_configs_status_idx  on public.ai_operator_configs(status);
+
+-- Singular alias view for the new STG workflows that query `ai_operator_config`
+create or replace view public.ai_operator_config as
+  select * from public.ai_operator_configs;
+grant select, insert, update, delete on public.ai_operator_config
+      to anon, authenticated, service_role;
+
+-- ════════════════════════════════════════════════════════════════════
+-- 1. operator_prompts  — hot-swappable Claude system prompts
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.operator_prompts (
   id                  uuid primary key default uuid_generate_v4(),
@@ -27,8 +56,7 @@ create table if not exists public.operator_prompts (
 create index if not exists idx_operator_prompts_component on public.operator_prompts(component);
 
 -- ════════════════════════════════════════════════════════════════════
--- 2. operator_memory  (semantic recall for past sessions)
---    Used by: 05-memory-write, 06-memory-read.
+-- 2. operator_memory  — semantic recall for past sessions
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.operator_memory (
   id            uuid primary key default uuid_generate_v4(),
@@ -45,8 +73,7 @@ create index if not exists idx_operator_memory_session   on public.operator_memo
 create index if not exists idx_operator_memory_pruned    on public.operator_memory(pruned);
 
 -- ════════════════════════════════════════════════════════════════════
--- 3. operator_sessions  (active session state + clarification rounds)
---    Used by: main router, confidence fallback handler.
+-- 3. operator_sessions  — active session state + clarification rounds
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.operator_sessions (
   id                   uuid primary key default uuid_generate_v4(),
@@ -64,8 +91,7 @@ create table if not exists public.operator_sessions (
 create index if not exists idx_operator_sessions_user on public.operator_sessions(user_id);
 
 -- ════════════════════════════════════════════════════════════════════
--- 4. tool_outputs  (formatted Claude output per tool run)
---    Used by: 04-response-formatter.
+-- 4. tool_outputs  — formatted Claude output per tool run
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.tool_outputs (
   id                 uuid primary key default uuid_generate_v4(),
@@ -83,8 +109,7 @@ create index if not exists idx_tool_outputs_session on public.tool_outputs(sessi
 create index if not exists idx_tool_outputs_tool    on public.tool_outputs(tool_id);
 
 -- ════════════════════════════════════════════════════════════════════
--- 5. notifications  (in-app notifications for users)
---    Used by: 04-response-formatter (insert).
+-- 5. notifications  — in-app notifications
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.notifications (
   id           uuid primary key default uuid_generate_v4(),
@@ -100,8 +125,7 @@ create index if not exists idx_notifications_user on public.notifications(user_i
 create index if not exists idx_notifications_unread on public.notifications(user_id, read) where read = false;
 
 -- ════════════════════════════════════════════════════════════════════
--- 6. support_tickets  (escalations to human admin)
---    Used by: 08-operator-escalation.
+-- 6. support_tickets  — escalations to human admin
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.support_tickets (
   id              uuid primary key default uuid_generate_v4(),
@@ -115,8 +139,7 @@ create index if not exists idx_support_tickets_user   on public.support_tickets(
 create index if not exists idx_support_tickets_status on public.support_tickets(status);
 
 -- ════════════════════════════════════════════════════════════════════
--- 7. health_checks  (operator endpoint uptime log)
---    Used by: 09-health-check (cron every 15 min).
+-- 7. health_checks  — operator endpoint uptime log (15-min cron)
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.health_checks (
   id                 uuid primary key default uuid_generate_v4(),
@@ -130,9 +153,7 @@ create index if not exists idx_health_checks_endpoint on public.health_checks(en
 create index if not exists idx_health_checks_status   on public.health_checks(status);
 
 -- ════════════════════════════════════════════════════════════════════
--- 8. n8n_error_log  (catches Error Trigger payloads from every workflow)
---    Used by: every workflow's Error Trigger → HTTP - Notify Error Router.
---    Optional: hook this up if you don't have a separate error router.
+-- 8. n8n_error_log  — central Error Trigger sink
 -- ════════════════════════════════════════════════════════════════════
 create table if not exists public.n8n_error_log (
   id              uuid primary key default uuid_generate_v4(),
@@ -146,62 +167,7 @@ create index if not exists idx_n8n_error_log_time on public.n8n_error_log(occurr
 create index if not exists idx_n8n_error_log_wf   on public.n8n_error_log(workflow_name);
 
 -- ════════════════════════════════════════════════════════════════════
--- READ-ONLY tables that the workflows EXPECT to already exist on your
--- platform. If you don't already have them, these are minimal scaffolds.
--- ════════════════════════════════════════════════════════════════════
-
--- 9. ai_operator_config  (per-user operator settings)
-create table if not exists public.ai_operator_config (
-  id                 uuid primary key default uuid_generate_v4(),
-  user_id            uuid unique not null,
-  business_context   text,
-  default_tone       text default 'professional',
-  enabled_tools      text[] default array['lead_gen','copywriting','offer_building']::text[],
-  created_at         timestamptz not null default now(),
-  updated_at         timestamptz not null default now()
-);
-
--- 10. plan_entitlements  (Free/49/149/299 → tool limits)
-create table if not exists public.plan_entitlements (
-  id                  uuid primary key default uuid_generate_v4(),
-  plan_name           text unique not null,
-  monthly_credits     int not null default 0,
-  max_seats           int not null default 1,
-  enabled_tools       text[] default array[]::text[],
-  features            jsonb default '{}'::jsonb,
-  created_at          timestamptz not null default now()
-);
-
--- 11. tool_runs  (per-tool usage / credit consumption ledger)
-create table if not exists public.tool_runs (
-  id           uuid primary key default uuid_generate_v4(),
-  user_id      uuid not null,
-  tool_id      text not null,
-  credits_used int not null default 1,
-  status       text not null default 'success',
-  created_at   timestamptz not null default now()
-);
-create index if not exists idx_tool_runs_user on public.tool_runs(user_id, created_at desc);
-
--- 12. profiles  (user profile join target — usually already exists)
-create table if not exists public.profiles (
-  id           uuid primary key,
-  email        text,
-  full_name    text,
-  display_name text,
-  created_at   timestamptz not null default now()
-);
-
--- 13. onboarding_responses  (used by context loader)
-create table if not exists public.onboarding_responses (
-  id           uuid primary key default uuid_generate_v4(),
-  user_id      uuid not null unique,
-  responses    jsonb not null default '{}'::jsonb,
-  created_at   timestamptz not null default now()
-);
-
--- ════════════════════════════════════════════════════════════════════
--- RLS — service-role bypasses; deny everything else by default.
+-- RLS — service-role bypasses; deny by default for anon/authenticated.
 -- (n8n hits these with the service role; users go through your API.)
 -- ════════════════════════════════════════════════════════════════════
 do $$
@@ -209,13 +175,10 @@ declare t text;
 begin
   for t in select unnest(array[
     'operator_prompts','operator_memory','operator_sessions','tool_outputs',
-    'notifications','support_tickets','health_checks','n8n_error_log',
-    'ai_operator_config','plan_entitlements','tool_runs','profiles',
-    'onboarding_responses'
+    'notifications','support_tickets','health_checks','n8n_error_log'
   ])
   loop
     execute format('alter table public.%I enable row level security;', t);
-    -- service role always allowed
     execute format($f$
       drop policy if exists service_role_all on public.%I;
       create policy service_role_all on public.%I
@@ -225,25 +188,38 @@ begin
 end $$;
 
 -- User-readable policies for tables joined to user_id
-create policy if not exists own_rows_read on public.notifications
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.tool_outputs
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.operator_memory
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.support_tickets
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.tool_runs
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.ai_operator_config
-  for select to authenticated using (user_id = auth.uid());
-create policy if not exists own_rows_read on public.profiles
-  for select to authenticated using (id = auth.uid());
+do $$
+begin
+  -- notifications
+  if not exists (select 1 from pg_policies where polname='own_rows_read'
+                 and tablename='notifications') then
+    create policy own_rows_read on public.notifications
+      for select to authenticated using (user_id = auth.uid());
+  end if;
+  -- tool_outputs
+  if not exists (select 1 from pg_policies where polname='own_rows_read'
+                 and tablename='tool_outputs') then
+    create policy own_rows_read on public.tool_outputs
+      for select to authenticated using (user_id = auth.uid());
+  end if;
+  -- operator_memory
+  if not exists (select 1 from pg_policies where polname='own_rows_read'
+                 and tablename='operator_memory') then
+    create policy own_rows_read on public.operator_memory
+      for select to authenticated using (user_id = auth.uid());
+  end if;
+  -- support_tickets
+  if not exists (select 1 from pg_policies where polname='own_rows_read'
+                 and tablename='support_tickets') then
+    create policy own_rows_read on public.support_tickets
+      for select to authenticated using (user_id = auth.uid());
+  end if;
+end $$;
 
 -- ════════════════════════════════════════════════════════════════════
--- SEED: 22 default Claude system prompts (one per known component)
--- These let the workflows fire on day 1 without needing a manual swap.
--- Update them anytime via POST /webhook/operator-prompt-swap.
+-- SEED — 22 default Claude system prompts so workflows fire on day 1
+-- without needing the prompt-swap webhook to be hit.
+-- Update anytime via POST /webhook/operator-prompt-swap.
 -- ════════════════════════════════════════════════════════════════════
 insert into public.operator_prompts (component, system_prompt, version) values
   ('main_router',          'You are the Nova OPS AI operator router. Classify the user message intent and return JSON.', 'v1'),
@@ -270,16 +246,12 @@ insert into public.operator_prompts (component, system_prompt, version) values
   ('general_question',     'You are the Nova OPS general AI assistant. Answer concisely.', 'v1')
 on conflict (component) do nothing;
 
--- SEED: pricing tiers
-insert into public.plan_entitlements (plan_name, monthly_credits, max_seats, enabled_tools) values
-  ('free',  50,    1, array['general_question']),
-  ('49',    1000,  1, array['lead_gen','copywriting','offer_building','funnel_mapping','general_question']),
-  ('149',   5000,  3, array['lead_gen','copywriting','offer_building','funnel_mapping','content_calendar','ad_strategy','email_sequence','seo_brief','competitor_research','general_question']),
-  ('299',   20000, 10, array['lead_gen','copywriting','offer_building','funnel_mapping','content_calendar','ad_strategy','email_sequence','seo_brief','competitor_research','social_planning','sales_script','brand_voice','analytics','automation_build','client_reporting','general_question'])
-on conflict (plan_name) do nothing;
-
 -- ════════════════════════════════════════════════════════════════════
--- DONE. Verify with:
---   select table_name from information_schema.tables where table_schema='public';
+-- DONE.
+-- Verify:
 --   select component, version from public.operator_prompts order by component;
+--   select tablename from pg_tables where schemaname='public'
+--     and tablename in ('operator_prompts','operator_memory','operator_sessions',
+--                       'tool_outputs','notifications','support_tickets',
+--                       'health_checks','n8n_error_log');
 -- ════════════════════════════════════════════════════════════════════
