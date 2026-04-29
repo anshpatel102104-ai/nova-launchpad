@@ -223,7 +223,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/health_checks",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/health_checks",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,

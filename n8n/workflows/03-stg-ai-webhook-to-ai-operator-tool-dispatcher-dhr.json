@@ -63,7 +63,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/plan_entitlements",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/plan_entitlements",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,

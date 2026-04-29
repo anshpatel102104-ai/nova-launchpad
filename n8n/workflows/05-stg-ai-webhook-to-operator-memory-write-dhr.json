@@ -63,7 +63,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_memory",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/operator_memory",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,
@@ -109,7 +109,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_memory",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/operator_memory",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,
@@ -205,7 +205,7 @@
       ],
       "parameters": {
         "method": "DELETE",
-        "url": "=https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_memory?id=in.{{ $json.prune_param }}&user_id=eq.{{ $json.user_id }}",
+        "url": "=https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/operator_memory?id=in.{{ $json.prune_param }}&user_id=eq.{{ $json.user_id }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,

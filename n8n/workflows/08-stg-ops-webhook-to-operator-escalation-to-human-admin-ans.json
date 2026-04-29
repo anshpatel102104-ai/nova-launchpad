@@ -60,7 +60,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/support_tickets",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/support_tickets",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,
@@ -106,7 +106,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/profiles",
+        "url": "https://snnnbzhopsajrhimhgje.supabase.co/rest/v1/profiles",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendQuery": true,
