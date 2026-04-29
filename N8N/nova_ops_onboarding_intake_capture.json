@@ -12,7 +12,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 400],
+      "position": [
+        240,
+        400
+      ],
       "webhookId": "nova-ops-onboarding-intake"
     },
     {
@@ -23,59 +26,88 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 400]
+      "position": [
+        480,
+        400
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/onboarding_responses",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type",  "value": "application/json" },
-            { "name": "Prefer",        "value": "resolution=merge-duplicates,return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"business_name\": {{ JSON.stringify($json.business_name) }},\n  \"niche\": {{ JSON.stringify($json.niche) }},\n  \"target_customer\": {{ JSON.stringify($json.target_customer) }},\n  \"primary_goal\": {{ JSON.stringify($json.primary_goal) }},\n  \"monthly_revenue_range\": {{ JSON.stringify($json.monthly_revenue_range) }},\n  \"biggest_challenge\": {{ JSON.stringify($json.biggest_challenge) }},\n  \"website_url\": {{ $json.website_url ? JSON.stringify($json.website_url) : 'null' }},\n  \"completed_at\": \"{{ $json.now }}\",\n  \"updated_at\": \"{{ $json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "k1000001-0003-0003-0003-000000000003",
       "name": "Upsert onboarding_responses",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 240]
+      "position": [
+        720,
+        240
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
         "method": "PATCH",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/users?user_id=eq.{{ $('Parse & Validate').first().json.user_id }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type",  "value": "application/json" },
-            { "name": "Prefer",        "value": "return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"onboarding_completed\": true,\n  \"onboarding_completed_at\": \"{{ $('Parse & Validate').first().json.now }}\",\n  \"updated_at\": \"{{ $('Parse & Validate').first().json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "k1000001-0004-0004-0004-000000000004",
       "name": "PATCH users: onboarding_completed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 560]
+      "position": [
+        720,
+        560
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
@@ -85,7 +117,10 @@
       "name": "Merge Parallel Writes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 400]
+      "position": [
+        960,
+        400
+      ]
     },
     {
       "parameters": {
@@ -94,7 +129,10 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
@@ -113,99 +151,173 @@
       "name": "Trigger: AI Profile Builder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1200, 400]
+      "position": [
+        1200,
+        400
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const triggerResult = $input.first().json;\nconst origin = $('Merge Parallel Writes').first().json;\n\n// AI Profile Builder runs async — we don't block on its result\n// Just capture whether it was reachable\nconst ai_builder_triggered = !triggerResult?.error;\n\nreturn [{\n  json: {\n    ...origin,\n    ai_builder_triggered\n  }\n}];"
+        "jsCode": "const triggerResult = $input.first().json;\nconst origin = $('Merge Parallel Writes').first().json;\n\n// AI Profile Builder runs async \u2014 we don't block on its result\n// Just capture whether it was reachable\nconst ai_builder_triggered = !triggerResult?.error;\n\nreturn [{\n  json: {\n    ...origin,\n    ai_builder_triggered\n  }\n}];"
       },
       "id": "k1000001-0007-0007-0007-000000000007",
       "name": "Confirm AI Builder Triggered",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1440, 400]
+      "position": [
+        1440,
+        400
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/admin_audit_log",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type",  "value": "application/json" },
-            { "name": "Prefer",        "value": "return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"event_type\": \"onboarding_completed\",\n  \"metadata\": {{ JSON.stringify({ business_name: $json.business_name, niche: $json.niche, primary_goal: $json.primary_goal, monthly_revenue_range: $json.monthly_revenue_range, website_url: $json.website_url, ai_builder_triggered: $json.ai_builder_triggered }) }},\n  \"created_at\": \"{{ $json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "k1000001-0008-0008-0008-000000000008",
       "name": "INSERT admin_audit_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1680, 400]
+      "position": [
+        1680,
+        400
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={\n  \"success\": true,\n  \"next_step\": \"dashboard_creation\",\n  \"user_id\": \"{{ $('Confirm AI Builder Triggered').first().json.user_id }}\",\n  \"onboarding_completed\": true,\n  \"ai_profile_build_queued\": {{ $('Confirm AI Builder Triggered').first().json.ai_builder_triggered }},\n  \"completed_at\": \"{{ $('Confirm AI Builder Triggered').first().json.now }}\"\n}",
-        "options": { "responseCode": 200 }
+        "options": {
+          "responseCode": 200
+        }
       },
       "id": "k1000001-0009-0009-0009-000000000009",
       "name": "Return: Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1920, 400]
+      "position": [
+        1920,
+        400
+      ]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Parse & Validate", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Parse & Validate": {
       "main": [
         [
-          { "node": "Upsert onboarding_responses",       "type": "main", "index": 0 },
-          { "node": "PATCH users: onboarding_completed",  "type": "main", "index": 0 }
+          {
+            "node": "Upsert onboarding_responses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "PATCH users: onboarding_completed",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Upsert onboarding_responses": {
       "main": [
-        [{ "node": "Merge Parallel Writes", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Parallel Writes",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "PATCH users: onboarding_completed": {
       "main": [
-        [{ "node": "Merge Parallel Writes", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Parallel Writes",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Merge Parallel Writes": {
       "main": [
-        [{ "node": "Trigger: AI Profile Builder", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Trigger: AI Profile Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Trigger: AI Profile Builder": {
       "main": [
-        [{ "node": "Confirm AI Builder Triggered", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Confirm AI Builder Triggered",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Confirm AI Builder Triggered": {
       "main": [
-        [{ "node": "INSERT admin_audit_log", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "INSERT admin_audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "INSERT admin_audit_log": {
       "main": [
-        [{ "node": "Return: Success", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Return: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -218,9 +330,15 @@
   },
   "staticData": null,
   "tags": [
-    { "name": "nova-ops" },
-    { "name": "onboarding" },
-    { "name": "intake" }
+    {
+      "name": "nova-ops"
+    },
+    {
+      "name": "onboarding"
+    },
+    {
+      "name": "intake"
+    }
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-28T00:00:00.000Z",

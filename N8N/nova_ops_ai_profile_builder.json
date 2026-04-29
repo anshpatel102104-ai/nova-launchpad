@@ -12,29 +12,42 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 400],
+      "position": [
+        240,
+        400
+      ],
       "webhookId": "nova-ops-ai-profile-builder"
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst user_id       = body.user_id       || null;\n\n// Accept optional pre-passed context from Onboarding Intake (avoids extra DB fetch)\nconst business_name         = body.business_name         || null;\nconst niche                 = body.niche                 || null;\nconst target_customer       = body.target_customer       || null;\nconst primary_goal          = body.primary_goal          || null;\nconst monthly_revenue_range = body.monthly_revenue_range || null;\nconst biggest_challenge     = body.biggest_challenge     || null;\nconst website_url           = body.website_url           || null;\n\nif (!user_id) throw new Error('Missing required field: user_id');\n\nconst has_context = !!(business_name && niche && target_customer && primary_goal);\n\nreturn [{\n  json: {\n    user_id,\n    has_context,\n    // Pre-passed context (may be null — will be fetched from DB if so)\n    prefilled: {\n      business_name,\n      niche,\n      target_customer,\n      primary_goal,\n      monthly_revenue_range,\n      biggest_challenge,\n      website_url\n    },\n    now: new Date().toISOString()\n  }\n}];"
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst user_id       = body.user_id       || null;\n\n// Accept optional pre-passed context from Onboarding Intake (avoids extra DB fetch)\nconst business_name         = body.business_name         || null;\nconst niche                 = body.niche                 || null;\nconst target_customer       = body.target_customer       || null;\nconst primary_goal          = body.primary_goal          || null;\nconst monthly_revenue_range = body.monthly_revenue_range || null;\nconst biggest_challenge     = body.biggest_challenge     || null;\nconst website_url           = body.website_url           || null;\n\nif (!user_id) throw new Error('Missing required field: user_id');\n\nconst has_context = !!(business_name && niche && target_customer && primary_goal);\n\nreturn [{\n  json: {\n    user_id,\n    has_context,\n    // Pre-passed context (may be null \u2014 will be fetched from DB if so)\n    prefilled: {\n      business_name,\n      niche,\n      target_customer,\n      primary_goal,\n      monthly_revenue_range,\n      biggest_challenge,\n      website_url\n    },\n    now: new Date().toISOString()\n  }\n}];"
       },
       "id": "l1000001-0002-0002-0002-000000000002",
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 400]
+      "position": [
+        480,
+        400
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "id": "has-context",
               "leftValue": "={{ $json.has_context }}",
               "rightValue": true,
-              "operator": { "type": "boolean", "operation": "equals" }
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
             }
           ],
           "combinator": "and"
@@ -45,38 +58,47 @@
       "name": "Context Pre-Passed?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [720, 400]
+      "position": [
+        720,
+        400
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Context was passed directly — no DB fetch needed\nconst origin = $input.first().json;\nconst p = origin.prefilled;\n\nreturn [{\n  json: {\n    user_id:               origin.user_id,\n    now:                   origin.now,\n    business_name:         p.business_name,\n    niche:                 p.niche,\n    target_customer:       p.target_customer,\n    primary_goal:          p.primary_goal,\n    monthly_revenue_range: p.monthly_revenue_range,\n    biggest_challenge:     p.biggest_challenge,\n    website_url:           p.website_url\n  }\n}];"
+        "jsCode": "// Context was passed directly \u2014 no DB fetch needed\nconst origin = $input.first().json;\nconst p = origin.prefilled;\n\nreturn [{\n  json: {\n    user_id:               origin.user_id,\n    now:                   origin.now,\n    business_name:         p.business_name,\n    niche:                 p.niche,\n    target_customer:       p.target_customer,\n    primary_goal:          p.primary_goal,\n    monthly_revenue_range: p.monthly_revenue_range,\n    biggest_challenge:     p.biggest_challenge,\n    website_url:           p.website_url\n  }\n}];"
       },
       "id": "l1000001-0004-0004-0004-000000000004",
       "name": "Use Pre-Passed Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 240]
+      "position": [
+        960,
+        240
+      ]
     },
     {
       "parameters": {
         "method": "GET",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/onboarding_responses?user_id=eq.{{ $json.user_id }}&select=*",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
-          ]
-        },
-        "options": {}
+        "authentication": "predefinedCredentialType",
+        "sendHeaders": false,
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "l1000001-0005-0005-0005-000000000005",
       "name": "GET onboarding_responses",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [960, 560]
+      "position": [
+        960,
+        560
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
@@ -86,17 +108,23 @@
       "name": "Extract Onboarding Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1200, 560]
+      "position": [
+        1200,
+        560
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Merge both paths (pre-passed context OR DB fetch) into single shape\nconst items = $input.all();\nif (!items || items.length === 0) throw new Error('No onboarding data available to build AI prompt');\n\nconst d = items[0].json;\n\nconst websiteLine = d.website_url ? `\\n- Website: ${d.website_url}` : '';\n\nconst userMessage = `Here is the business profile for this Nova OPS user. Generate their operator config:\n\n- Business Name: ${d.business_name}\n- Niche / Industry: ${d.niche}\n- Target Customer: ${d.target_customer}\n- Primary Goal with Nova OPS: ${d.primary_goal}\n- Monthly Revenue Range: ${d.monthly_revenue_range}\n- Biggest Challenge: ${d.biggest_challenge}${websiteLine}\n\nRespond ONLY with a valid JSON object — no markdown, no backticks, no explanation. Use this exact schema:\n{\n  \"operator_name\": \"<business_name>-based operator name, 2-4 words>\",\n  \"operator_tone\": \"<professional|casual|aggressive>\",\n  \"primary_niche\": \"<1 sentence>\",\n  \"target_customer_profile\": \"<2-3 sentences describing the ICP>\",\n  \"top_3_pain_points\": [\"<pain 1>\", \"<pain 2>\", \"<pain 3>\"],\n  \"recommended_tools\": [\"launchpad_tool_X\", \"launchpad_tool_Y\", \"launchpad_tool_Z\"],\n  \"gtm_strategy_summary\": \"<exactly 2 sentences>\",\n  \"brand_voice_keywords\": [\"<word1>\", \"<word2>\", \"<word3>\", \"<word4>\", \"<word5>\"]\n}`;\n\nreturn [{\n  json: {\n    ...d,\n    user_message: userMessage\n  }\n}];"
+        "jsCode": "// Merge both paths (pre-passed context OR DB fetch) into single shape\nconst items = $input.all();\nif (!items || items.length === 0) throw new Error('No onboarding data available to build AI prompt');\n\nconst d = items[0].json;\n\nconst websiteLine = d.website_url ? `\\n- Website: ${d.website_url}` : '';\n\nconst userMessage = `Here is the business profile for this Nova OPS user. Generate their operator config:\n\n- Business Name: ${d.business_name}\n- Niche / Industry: ${d.niche}\n- Target Customer: ${d.target_customer}\n- Primary Goal with Nova OPS: ${d.primary_goal}\n- Monthly Revenue Range: ${d.monthly_revenue_range}\n- Biggest Challenge: ${d.biggest_challenge}${websiteLine}\n\nRespond ONLY with a valid JSON object \u2014 no markdown, no backticks, no explanation. Use this exact schema:\n{\n  \"operator_name\": \"<business_name>-based operator name, 2-4 words>\",\n  \"operator_tone\": \"<professional|casual|aggressive>\",\n  \"primary_niche\": \"<1 sentence>\",\n  \"target_customer_profile\": \"<2-3 sentences describing the ICP>\",\n  \"top_3_pain_points\": [\"<pain 1>\", \"<pain 2>\", \"<pain 3>\"],\n  \"recommended_tools\": [\"launchpad_tool_X\", \"launchpad_tool_Y\", \"launchpad_tool_Z\"],\n  \"gtm_strategy_summary\": \"<exactly 2 sentences>\",\n  \"brand_voice_keywords\": [\"<word1>\", \"<word2>\", \"<word3>\", \"<word4>\", \"<word5>\"]\n}`;\n\nreturn [{\n  json: {\n    ...d,\n    user_message: userMessage\n  }\n}];"
       },
       "id": "l1000001-0007-0007-0007-000000000007",
       "name": "Merge Context + Build Claude Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1440, 400]
+      "position": [
+        1440,
+        400
+      ]
     },
     {
       "parameters": {
@@ -105,23 +133,39 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "x-api-key",          "value": "={{ $env.ANTHROPIC_API_KEY }}" },
-            { "name": "anthropic-version",   "value": "2023-06-01" },
-            { "name": "content-type",        "value": "application/json" }
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 1024,\n  \"system\": \"You are an AI business configuration engine for Nova OPS. Given a user's business profile, generate a JSON operator config with: operator_name, operator_tone (professional/casual/aggressive), primary_niche, target_customer_profile, top_3_pain_points (array of 3 strings), recommended_tools (array of 3 tool IDs chosen from launchpad_tool_1 through launchpad_tool_10 based on the business need), gtm_strategy_summary (exactly 2 sentences), and brand_voice_keywords (array of exactly 5 single words). Respond ONLY with raw valid JSON — no markdown fences, no explanation, no preamble. Your entire response must be parseable by JSON.parse().\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.user_message) }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 1024,\n  \"system\": \"You are an AI business configuration engine for Nova OPS. Given a user's business profile, generate a JSON operator config with: operator_name, operator_tone (professional/casual/aggressive), primary_niche, target_customer_profile, top_3_pain_points (array of 3 strings), recommended_tools (array of 3 tool IDs chosen from launchpad_tool_1 through launchpad_tool_10 based on the business need), gtm_strategy_summary (exactly 2 sentences), and brand_voice_keywords (array of exactly 5 single words). Respond ONLY with raw valid JSON \u2014 no markdown fences, no explanation, no preamble. Your entire response must be parseable by JSON.parse().\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.user_message) }}\n    }\n  ]\n}",
         "options": {
           "timeout": 30000
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "l1000001-0008-0008-0008-000000000008",
       "name": "Call Claude API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1700, 400]
+      "position": [
+        1700,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "eW91XpbDik7WWUjo",
+          "name": "ANTHROPIC_PROD_API"
+        }
+      }
     },
     {
       "parameters": {
@@ -131,33 +175,49 @@
       "name": "Parse & Validate Claude JSON",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1960, 400]
+      "position": [
+        1960,
+        400
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/ai_operator_configs",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type",  "value": "application/json" },
-            { "name": "Prefer",        "value": "resolution=merge-duplicates,return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"operator_name\": {{ JSON.stringify($json.config.operator_name) }},\n  \"operator_tone\": {{ JSON.stringify($json.config.operator_tone) }},\n  \"primary_niche\": {{ JSON.stringify($json.config.primary_niche) }},\n  \"target_customer_profile\": {{ JSON.stringify($json.config.target_customer_profile) }},\n  \"top_3_pain_points\": {{ JSON.stringify($json.config.top_3_pain_points) }},\n  \"recommended_tools\": {{ JSON.stringify($json.config.recommended_tools) }},\n  \"gtm_strategy_summary\": {{ JSON.stringify($json.config.gtm_strategy_summary) }},\n  \"brand_voice_keywords\": {{ JSON.stringify($json.config.brand_voice_keywords) }},\n  \"raw_claude_response\": {{ JSON.stringify($json.config) }},\n  \"created_at\": \"{{ $json.now }}\",\n  \"updated_at\": \"{{ $json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "l1000001-0010-0010-0010-000000000010",
       "name": "INSERT ai_operator_configs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2200, 400]
+      "position": [
+        2200,
+        400
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
@@ -167,7 +227,10 @@
       "name": "Confirm Config Saved",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2440, 400]
+      "position": [
+        2440,
+        400
+      ]
     },
     {
       "parameters": {
@@ -176,7 +239,10 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
@@ -195,7 +261,10 @@
       "name": "Trigger: Dashboard Init",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2680, 400]
+      "position": [
+        2680,
+        400
+      ]
     },
     {
       "parameters": {
@@ -205,86 +274,178 @@
       "name": "Confirm Dashboard Triggered",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2920, 400]
+      "position": [
+        2920,
+        400
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={\n  \"success\": true,\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"config_id\": \"{{ $json.config_id }}\",\n  \"dashboard_init_triggered\": {{ $json.dashboard_triggered }},\n  \"operator_config\": {{ JSON.stringify($json.config) }},\n  \"generated_at\": \"{{ $json.now }}\"\n}",
-        "options": { "responseCode": 200 }
+        "options": {
+          "responseCode": 200
+        }
       },
       "id": "l1000001-0014-0014-0014-000000000014",
       "name": "Return: Config Built",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [3160, 400]
+      "position": [
+        3160,
+        400
+      ]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Parse & Validate", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Parse & Validate": {
       "main": [
-        [{ "node": "Context Pre-Passed?", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Context Pre-Passed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Context Pre-Passed?": {
       "main": [
-        [{ "node": "Use Pre-Passed Context",   "type": "main", "index": 0 }],
-        [{ "node": "GET onboarding_responses", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Use Pre-Passed Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET onboarding_responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Use Pre-Passed Context": {
       "main": [
-        [{ "node": "Merge Context + Build Claude Prompt", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Context + Build Claude Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "GET onboarding_responses": {
       "main": [
-        [{ "node": "Extract Onboarding Data", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Extract Onboarding Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Extract Onboarding Data": {
       "main": [
-        [{ "node": "Merge Context + Build Claude Prompt", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Context + Build Claude Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Merge Context + Build Claude Prompt": {
       "main": [
-        [{ "node": "Call Claude API", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Call Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Call Claude API": {
       "main": [
-        [{ "node": "Parse & Validate Claude JSON", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse & Validate Claude JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Parse & Validate Claude JSON": {
       "main": [
-        [{ "node": "INSERT ai_operator_configs", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "INSERT ai_operator_configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "INSERT ai_operator_configs": {
       "main": [
-        [{ "node": "Confirm Config Saved", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Confirm Config Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Confirm Config Saved": {
       "main": [
-        [{ "node": "Trigger: Dashboard Init", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Trigger: Dashboard Init",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Trigger: Dashboard Init": {
       "main": [
-        [{ "node": "Confirm Dashboard Triggered", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Confirm Dashboard Triggered",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Confirm Dashboard Triggered": {
       "main": [
-        [{ "node": "Return: Config Built", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Return: Config Built",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -297,10 +458,18 @@
   },
   "staticData": null,
   "tags": [
-    { "name": "nova-ops" },
-    { "name": "onboarding" },
-    { "name": "ai" },
-    { "name": "config-builder" }
+    {
+      "name": "nova-ops"
+    },
+    {
+      "name": "onboarding"
+    },
+    {
+      "name": "ai"
+    },
+    {
+      "name": "config-builder"
+    }
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-28T00:00:00.000Z",

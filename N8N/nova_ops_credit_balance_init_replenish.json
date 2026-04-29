@@ -12,7 +12,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 400],
+      "position": [
+        240,
+        400
+      ],
       "webhookId": "nova-ops-credit-balance"
     },
     {
@@ -23,7 +26,10 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 400]
+      "position": [
+        480,
+        400
+      ]
     },
     {
       "parameters": {
@@ -31,12 +37,19 @@
           "values": [
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.plan_tier }}",
                     "rightValue": "free",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -46,12 +59,19 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.plan_tier }}",
                     "rightValue": "starter",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -61,12 +81,19 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.plan_tier }}",
                     "rightValue": "pro",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -76,12 +103,19 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.plan_tier }}",
                     "rightValue": "scale",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -91,13 +125,18 @@
             }
           ]
         },
-        "options": { "fallbackOutput": "extra" }
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "id": "c1000001-0003-0003-0003-000000000003",
       "name": "Switch: Plan Tier",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
-      "position": [720, 400]
+      "position": [
+        720,
+        400
+      ]
     },
     {
       "parameters": {
@@ -107,7 +146,10 @@
       "name": "Credits: Free (10)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 160]
+      "position": [
+        960,
+        160
+      ]
     },
     {
       "parameters": {
@@ -117,7 +159,10 @@
       "name": "Credits: Starter (100)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 320]
+      "position": [
+        960,
+        320
+      ]
     },
     {
       "parameters": {
@@ -127,7 +172,10 @@
       "name": "Credits: Pro (500)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 480]
+      "position": [
+        960,
+        480
+      ]
     },
     {
       "parameters": {
@@ -137,7 +185,10 @@
       "name": "Credits: Scale (9999)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 640]
+      "position": [
+        960,
+        640
+      ]
     },
     {
       "parameters": {
@@ -147,7 +198,10 @@
       "name": "Merge Credit Branches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1200, 400]
+      "position": [
+        1200,
+        400
+      ]
     },
     {
       "parameters": {
@@ -155,12 +209,19 @@
           "values": [
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.trigger_type }}",
                     "rightValue": "init",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -170,12 +231,19 @@
             },
             {
               "conditions": {
-                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.trigger_type }}",
                     "rightValue": "renewal",
-                    "operator": { "type": "string", "operation": "equals" }
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
                   }
                 ],
                 "combinator": "and"
@@ -185,61 +253,89 @@
             }
           ]
         },
-        "options": { "fallbackOutput": "extra" }
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "id": "c1000001-0009-0009-0009-000000000009",
       "name": "Switch: Trigger Type",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
-      "position": [1440, 400]
+      "position": [
+        1440,
+        400
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/user_credits",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer", "value": "return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"balance\": {{ $json.credit_amount }},\n  \"lifetime_granted\": {{ $json.credit_amount }},\n  \"last_replenished\": \"{{ $json.now }}\",\n  \"plan_tier\": \"{{ $json.plan_tier }}\",\n  \"created_at\": \"{{ $json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "c1000001-0010-0010-0010-000000000010",
       "name": "INSERT user_credits (init)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1700, 260]
+      "position": [
+        1700,
+        260
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
         "method": "GET",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/user_credits?user_id=eq.{{ $json.user_id }}&select=lifetime_granted",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "c1000001-0011-0011-0011-000000000011",
       "name": "GET current lifetime_granted",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1700, 540]
+      "position": [
+        1700,
+        540
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
@@ -249,33 +345,49 @@
       "name": "Calc New Lifetime",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1940, 540]
+      "position": [
+        1940,
+        540
+      ]
     },
     {
       "parameters": {
         "method": "PATCH",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/user_credits?user_id=eq.{{ $json.user_id }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer", "value": "return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"balance\": {{ $json.credit_amount }},\n  \"lifetime_granted\": {{ $json.new_lifetime_granted }},\n  \"last_replenished\": \"{{ $json.now }}\",\n  \"plan_tier\": \"{{ $json.plan_tier }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "c1000001-0013-0013-0013-000000000013",
       "name": "PATCH user_credits (renewal)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2180, 540]
+      "position": [
+        2180,
+        540
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
@@ -285,44 +397,68 @@
       "name": "Merge for Event Log",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2420, 400]
+      "position": [
+        2420,
+        400
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/credit_events",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer", "value": "return=representation" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"event_type\": \"{{ $json.trigger_type }}\",\n  \"plan_tier\": \"{{ $json.plan_tier }}\",\n  \"credits_granted\": {{ $json.credit_amount }},\n  \"created_at\": \"{{ $json.now }}\"\n}",
-        "options": {}
+        "options": {},
+        "nodeCredentialType": "supabaseApi"
       },
       "id": "c1000001-0015-0015-0015-000000000015",
       "name": "INSERT credit_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2660, 400]
+      "position": [
+        2660,
+        400
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "xbPYfxBm7UismiBl",
+          "name": "SUPABASE_PROD_SERVICE_ROLE"
+        }
+      }
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "id": "check-event-log",
               "leftValue": "={{ $json[0]?.user_id }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "exists", "singleValue": true }
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
             }
           ],
           "combinator": "and"
@@ -333,117 +469,256 @@
       "name": "Validate Event Log",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [2900, 400]
+      "position": [
+        2900,
+        400
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={\n  \"success\": true,\n  \"message\": \"Credit balance {{ $('Merge for Event Log').first().json.trigger_type === 'init' ? 'initialised' : 'replenished' }} successfully\",\n  \"data\": {\n    \"user_id\": \"{{ $('Merge for Event Log').first().json.user_id }}\",\n    \"plan_tier\": \"{{ $('Merge for Event Log').first().json.plan_tier }}\",\n    \"trigger_type\": \"{{ $('Merge for Event Log').first().json.trigger_type }}\",\n    \"credits_granted\": {{ $('Merge for Event Log').first().json.credit_amount }},\n    \"timestamp\": \"{{ $('Merge for Event Log').first().json.now }}\"\n  }\n}",
-        "options": { "responseCode": 200 }
+        "options": {
+          "responseCode": 200
+        }
       },
       "id": "c1000001-0017-0017-0017-000000000017",
       "name": "Return Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [3140, 280]
+      "position": [
+        3140,
+        280
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Credit event log write failed — check Supabase logs\",\n  \"user_id\": \"{{ $('Merge for Event Log').first().json.user_id }}\",\n  \"plan_tier\": \"{{ $('Merge for Event Log').first().json.plan_tier }}\",\n  \"trigger_type\": \"{{ $('Merge for Event Log').first().json.trigger_type }}\"\n}",
-        "options": { "responseCode": 500 }
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Credit event log write failed \u2014 check Supabase logs\",\n  \"user_id\": \"{{ $('Merge for Event Log').first().json.user_id }}\",\n  \"plan_tier\": \"{{ $('Merge for Event Log').first().json.plan_tier }}\",\n  \"trigger_type\": \"{{ $('Merge for Event Log').first().json.trigger_type }}\"\n}",
+        "options": {
+          "responseCode": 500
+        }
       },
       "id": "c1000001-0018-0018-0018-000000000018",
       "name": "Return Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [3140, 520]
+      "position": [
+        3140,
+        520
+      ]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Parse & Validate", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Parse & Validate": {
       "main": [
-        [{ "node": "Switch: Plan Tier", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Switch: Plan Tier",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Switch: Plan Tier": {
       "main": [
-        [{ "node": "Credits: Free (10)", "type": "main", "index": 0 }],
-        [{ "node": "Credits: Starter (100)", "type": "main", "index": 0 }],
-        [{ "node": "Credits: Pro (500)", "type": "main", "index": 0 }],
-        [{ "node": "Credits: Scale (9999)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Credits: Free (10)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Credits: Starter (100)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Credits: Pro (500)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Credits: Scale (9999)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Credits: Free (10)": {
       "main": [
-        [{ "node": "Merge Credit Branches", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Credit Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Credits: Starter (100)": {
       "main": [
-        [{ "node": "Merge Credit Branches", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Credit Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Credits: Pro (500)": {
       "main": [
-        [{ "node": "Merge Credit Branches", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Credit Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Credits: Scale (9999)": {
       "main": [
-        [{ "node": "Merge Credit Branches", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge Credit Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Merge Credit Branches": {
       "main": [
-        [{ "node": "Switch: Trigger Type", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Switch: Trigger Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Switch: Trigger Type": {
       "main": [
-        [{ "node": "INSERT user_credits (init)", "type": "main", "index": 0 }],
-        [{ "node": "GET current lifetime_granted", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "INSERT user_credits (init)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET current lifetime_granted",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "INSERT user_credits (init)": {
       "main": [
-        [{ "node": "Merge for Event Log", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge for Event Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "GET current lifetime_granted": {
       "main": [
-        [{ "node": "Calc New Lifetime", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Calc New Lifetime",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Calc New Lifetime": {
       "main": [
-        [{ "node": "PATCH user_credits (renewal)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "PATCH user_credits (renewal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "PATCH user_credits (renewal)": {
       "main": [
-        [{ "node": "Merge for Event Log", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Merge for Event Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Merge for Event Log": {
       "main": [
-        [{ "node": "INSERT credit_events", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "INSERT credit_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "INSERT credit_events": {
       "main": [
-        [{ "node": "Validate Event Log", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Validate Event Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Validate Event Log": {
       "main": [
-        [{ "node": "Return Success", "type": "main", "index": 0 }],
-        [{ "node": "Return Error", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -456,9 +731,15 @@
   },
   "staticData": null,
   "tags": [
-    { "name": "nova-ops" },
-    { "name": "credits" },
-    { "name": "billing" }
+    {
+      "name": "nova-ops"
+    },
+    {
+      "name": "credits"
+    },
+    {
+      "name": "billing"
+    }
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-28T00:00:00.000Z",
