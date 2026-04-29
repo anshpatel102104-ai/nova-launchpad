@@ -104,7 +104,13 @@ function Onboarding() {
             ],
             { onConflict: "user_id,question_key" },
           ),
-          supabase.from("profiles").update({ onboarding_complete: true, full_name: name }).eq("id", user.id),
+          // FIX: use upsert instead of update so a profile row is created
+          // even if one doesn't exist yet (update silently does nothing on missing rows)
+          supabase.from("profiles").upsert({
+            id: user.id,
+            onboarding_complete: true,
+            full_name: name,
+          }),
         ]);
         setDone(true);
         setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
