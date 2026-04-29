@@ -6,6 +6,43 @@
 -- Update at any time via UPDATE statements or your prompt-swap webhook.
 -- ════════════════════════════════════════════════════════════════════
 
+-- Ensure operator_prompts exists. The original definition lives in
+-- n8n/supabase/001_operator_schema.sql (manually run on production).
+-- Created here as a guard so preview branches and fresh DBs work too.
+create extension if not exists "uuid-ossp";
+
+create table if not exists public.operator_prompts (
+  id                  uuid primary key default uuid_generate_v4(),
+  component           text not null unique,
+  system_prompt       text not null,
+  version             text not null default 'v1',
+  is_known_component  boolean default true,
+  updated_at          timestamptz not null default now(),
+  created_at          timestamptz not null default now()
+);
+create index if not exists idx_operator_prompts_component
+  on public.operator_prompts(component);
+
+-- RLS — service-role full access; readable by authenticated users.
+alter table public.operator_prompts enable row level security;
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+     where polname = 'service_role_all' and tablename = 'operator_prompts'
+  ) then
+    create policy service_role_all on public.operator_prompts
+      for all to service_role using (true) with check (true);
+  end if;
+  if not exists (
+    select 1 from pg_policies
+     where polname = 'authenticated_read' and tablename = 'operator_prompts'
+  ) then
+    create policy authenticated_read on public.operator_prompts
+      for select to authenticated using (true);
+  end if;
+end $$;
+
 insert into public.operator_prompts (component, system_prompt, version) values
 
 -- ── brand_voice_subagent ─────────────────────────────────────────────
