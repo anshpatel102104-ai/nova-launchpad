@@ -29,14 +29,14 @@ do $$
 begin
   if not exists (
     select 1 from pg_policies
-     where polname = 'service_role_all' and tablename = 'operator_prompts'
+     where policyname = 'service_role_all' and tablename = 'operator_prompts'
   ) then
     create policy service_role_all on public.operator_prompts
       for all to service_role using (true) with check (true);
   end if;
   if not exists (
     select 1 from pg_policies
-     where polname = 'authenticated_read' and tablename = 'operator_prompts'
+     where policyname = 'authenticated_read' and tablename = 'operator_prompts'
   ) then
     create policy authenticated_read on public.operator_prompts
       for select to authenticated using (true);
