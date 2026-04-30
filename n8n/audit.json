@@ -203,8 +203,8 @@
       "schedule": [],
       "http_urls": [
         "={{ $json.subagent_url }}",
-        "={{ $vars.GLOBAL_APP_URL_STG }}/api/webhooks/credit-deduct",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://api.anthropic.com/v1/messages"
       ],
       "node_types_count": {
@@ -269,7 +269,7 @@
       ],
       "schedule": [],
       "http_urls": [
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/ai_operator_config",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/onboarding_responses",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_sessions",
@@ -312,8 +312,8 @@
       "schedule": [],
       "http_urls": [
         "={{ $json.tool_url }}",
-        "={{ $vars.GLOBAL_APP_URL_STG }}/api/webhooks/credit-deduct",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/plan_entitlements"
       ],
       "node_types_count": {
@@ -359,7 +359,7 @@
       ],
       "schedule": [],
       "http_urls": [
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/notifications",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/tool_outputs"
       ],
@@ -409,7 +409,7 @@
       "schedule": [],
       "http_urls": [
         "=https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_memory?id=in.{{ $json.prune_param }}&user_id=eq.{{ $json.user_id }}",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_memory"
       ],
       "node_types_count": {
@@ -448,7 +448,7 @@
       "schedule": [],
       "http_urls": [
         "={{ $json.query_url }}",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}"
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log"
       ],
       "node_types_count": {
         "n8n-nodes-base.webhook": 1,
@@ -491,7 +491,7 @@
       "schedule": [],
       "http_urls": [
         "=https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_sessions?session_id=eq.{{ $json.session_id }}",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://api.anthropic.com/v1/messages"
       ],
       "node_types_count": {
@@ -548,7 +548,7 @@
       ],
       "schedule": [],
       "http_urls": [
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/profiles",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/support_tickets"
       ],
@@ -603,7 +603,7 @@
       ],
       "http_urls": [
         "={{ $json._url }}",
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/health_checks"
       ],
       "node_types_count": {
@@ -644,7 +644,7 @@
       ],
       "schedule": [],
       "http_urls": [
-        "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_prompts"
       ],
       "node_types_count": {

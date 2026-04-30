@@ -195,7 +195,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "authentication": "none",
         "sendBody": true,
         "specifyBody": "json",

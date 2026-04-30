@@ -172,7 +172,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.GLOBAL_APP_URL_STG }}/api/webhooks/credit-deduct",
+        "url": "https://stg.nova-ops.space/api/webhooks/credit-deduct",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -282,7 +282,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.GLOBAL_ERROR_WEBHOOK_URL }}",
+        "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "authentication": "none",
         "sendBody": true,
         "specifyBody": "json",
