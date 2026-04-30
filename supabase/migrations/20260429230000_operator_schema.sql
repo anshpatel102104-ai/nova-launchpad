@@ -42,19 +42,19 @@ grant select, insert, update, delete on public.ai_operator_config
 alter table public.ai_operator_configs enable row level security;
 do $$
 begin
-  if not exists (select 1 from pg_policies where polname='ai_operator_configs_owner_select'
+  if not exists (select 1 from pg_policies where policyname='ai_operator_configs_owner_select'
                  and tablename='ai_operator_configs') then
     create policy "ai_operator_configs_owner_select"
       on public.ai_operator_configs for select to authenticated
       using (auth.uid() = user_id);
   end if;
-  if not exists (select 1 from pg_policies where polname='ai_operator_configs_owner_modify'
+  if not exists (select 1 from pg_policies where policyname='ai_operator_configs_owner_modify'
                  and tablename='ai_operator_configs') then
     create policy "ai_operator_configs_owner_modify"
       on public.ai_operator_configs for all to authenticated
       using (auth.uid() = user_id) with check (auth.uid() = user_id);
   end if;
-  if not exists (select 1 from pg_policies where polname='service_role_all'
+  if not exists (select 1 from pg_policies where policyname='service_role_all'
                  and tablename='ai_operator_configs') then
     create policy service_role_all on public.ai_operator_configs
       for all to service_role using (true) with check (true);
@@ -206,22 +206,22 @@ end $$;
 -- User-readable policies
 do $$
 begin
-  if not exists (select 1 from pg_policies where polname='own_rows_read'
+  if not exists (select 1 from pg_policies where policyname='own_rows_read'
                  and tablename='notifications') then
     create policy own_rows_read on public.notifications
       for select to authenticated using (user_id = auth.uid());
   end if;
-  if not exists (select 1 from pg_policies where polname='own_rows_read'
+  if not exists (select 1 from pg_policies where policyname='own_rows_read'
                  and tablename='tool_outputs') then
     create policy own_rows_read on public.tool_outputs
       for select to authenticated using (user_id = auth.uid());
   end if;
-  if not exists (select 1 from pg_policies where polname='own_rows_read'
+  if not exists (select 1 from pg_policies where policyname='own_rows_read'
                  and tablename='operator_memory') then
     create policy own_rows_read on public.operator_memory
       for select to authenticated using (user_id = auth.uid());
   end if;
-  if not exists (select 1 from pg_policies where polname='own_rows_read'
+  if not exists (select 1 from pg_policies where policyname='own_rows_read'
                  and tablename='support_tickets') then
     create policy own_rows_read on public.support_tickets
       for select to authenticated using (user_id = auth.uid());
