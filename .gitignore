@@ -31,6 +31,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Supabase CLI temp files
+supabase/.temp/
+
 # Local env with real secrets — never commit
 .env
 .env.local
