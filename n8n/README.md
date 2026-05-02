@@ -8,11 +8,20 @@ n8n/
 ├── README.md                       ← you are here
 ├── manifest.json                   ← workflow index (name, file, tags, node count)
 ├── workflows/                      ← 10 importable n8n workflow JSONs
+├── subagents/                      ← 6 Launchpad Claude subagents
+├── launchpad/                      ← 10 Launchpad tool workflows (v1/* webhooks)
 ├── supabase/
 │   └── 001_operator_schema.sql     ← run this in Supabase SQL editor
 ├── audit.json                      ← raw audit (env vars, creds, tables, URLs)
 └── table_columns.json              ← columns referenced per Supabase table
 ```
+
+> **Launchpad tool workflows** (10 product-facing tools — Niche Validator,
+> Offer Builder, ICP Builder, Pitch Deck Outliner, Landing Page Copy,
+> Pricing Strategist, VSL Generator, Lead Magnet Builder, Cold Email
+> Sequencer, Ad Creative Generator) live in `launchpad/`. See
+> `launchpad/README.md` for env-var setup and import order. Frontend
+> wrappers are in `src/lib/launchpadTools.ts`.
 
 ## 🎯 Workflows (all start `active: false` — flip on after setup)
 
