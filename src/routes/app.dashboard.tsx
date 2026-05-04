@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery, subscriptionQuery, toolRunsQuery, usageQuery,
@@ -62,7 +63,16 @@ const QUICK_ACTIONS = [
 ];
 
 function Dashboard() {
-  const { currentOrgId, profile, user } = useAuth();
+  const { currentOrgId, profile, user, refreshProfile } = useAuth();
+  const refreshed = useRef(false);
+
+  // If auth context is stale (just came from onboarding), re-fetch once
+  useEffect(() => {
+    if (!currentOrgId && profile?.onboarding_complete && !refreshed.current) {
+      refreshed.current = true;
+      void refreshProfile();
+    }
+  }, [currentOrgId, profile?.onboarding_complete, refreshProfile]);
 
   const orgQ     = useQuery({ ...organizationQuery(currentOrgId ?? ""),       enabled: !!currentOrgId });
   const subQ     = useQuery({ ...subscriptionQuery(currentOrgId ?? ""),       enabled: !!currentOrgId });

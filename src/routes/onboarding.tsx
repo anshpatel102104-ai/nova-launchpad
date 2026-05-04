@@ -7,6 +7,7 @@ import {
   Target, Globe, UserCircle2, Store,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { toast } from "sonner";
 
@@ -88,6 +89,7 @@ const TOTAL_STEPS = 5;
 
 function Onboarding() {
   const navigate = useNavigate();
+  const { refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [stepKey, setStepKey] = useState(0);
   const [name, setName] = useState("");
@@ -191,6 +193,9 @@ function Onboarding() {
             .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
           if (memberErr) throw new Error(memberErr.message);
         }
+
+        // Refresh auth context so currentOrgId is populated before navigating
+        await refreshProfile();
 
         // Trigger N8N dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
