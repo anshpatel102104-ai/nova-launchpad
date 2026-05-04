@@ -214,7 +214,8 @@ function Onboarding() {
         setDone(true);
         setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Something went wrong");
+        console.error("[onboarding] submit error:", e);
+        toast.error(e instanceof Error ? e.message : String(e));
       } finally {
         setSaving(false);
       }
@@ -246,6 +247,8 @@ function Onboarding() {
         borderRadius: 22,
         boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
         padding: "38px 38px 34px",
+        maxHeight: "calc(100vh - 48px)",
+        overflowY: "auto",
       }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 34 }}>
@@ -428,11 +431,27 @@ function Step4({ niche, onNiche }: { niche: string; onNiche: (v: string) => void
   return (
     <div>
       <Heading step={4} total={TOTAL_STEPS} />
-      <CardGrid cols={2}>
-        {NICHES.map(({ id, label, desc, icon }) => (
-          <OptionCard key={id} selected={niche === id} accent="#f59e0b" onClick={() => onNiche(id)} icon={icon} label={label} desc={desc} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+        {NICHES.map(({ id, label, desc, icon: Icon }) => (
+          <button key={id} onClick={() => onNiche(id)}
+            className={`ob-card${niche === id ? " ob-card-sel" : ""}`}
+            style={{
+              padding: 12, gap: 8,
+              ...(niche === id ? { borderColor: "rgba(245,158,11,0.65)", background: "rgba(245,158,11,0.09)" } : {}),
+            }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+              background: niche === id ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.05)",
+            }}>
+              <Icon style={{ width: 14, height: 14, color: niche === id ? "#f59e0b" : "rgba(240,244,255,0.35)" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.3, marginTop: 1 }}>{desc}</div>
+            </div>
+          </button>
         ))}
-      </CardGrid>
+      </div>
     </div>
   );
 }
