@@ -113,11 +113,17 @@ function Onboarding() {
           }),
         ]);
 
+        // Map onboarding stage labels to the business_stage DB enum
+        const stageMap: Record<string, string> = {
+          Idea: "Idea", Building: "Launch", Revenue: "Operate", Scaling: "Scale",
+        };
+        const dbStage = stageMap[stage] ?? "Idea";
+
         // Create org + membership so the dashboard can load
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ name: orgName, owner_id: user.id, stage })
+          .insert({ name: orgName, owner_id: user.id, stage: dbStage })
           .select("id")
           .single();
         if (orgErr) throw orgErr;
