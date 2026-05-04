@@ -1,6 +1,11 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowRight, Lightbulb, Hammer, DollarSign, TrendingUp, Rocket, Users, Package, Megaphone } from "lucide-react";
+import {
+  ArrowRight, Lightbulb, Hammer, DollarSign, TrendingUp,
+  Rocket, Users, Package, Megaphone,
+  ShoppingBag, Briefcase, Heart, Code2, GraduationCap, Building2,
+  Target, Globe, UserCircle2, Store,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { toast } from "sonner";
@@ -21,10 +26,28 @@ const STAGES = [
 ];
 
 const CHALLENGES = [
-  { id: "fundraising", label: "Fundraising",        desc: "Raising capital from investors",    icon: Rocket   },
-  { id: "customers",   label: "Getting customers",  desc: "Finding my first buyers",           icon: Users    },
-  { id: "product",     label: "Building product",   desc: "Shipping fast enough",              icon: Package  },
-  { id: "marketing",   label: "Marketing",          desc: "Getting visibility and awareness",  icon: Megaphone},
+  { id: "fundraising", label: "Fundraising",       desc: "Raising capital from investors",   icon: Rocket    },
+  { id: "customers",   label: "Getting customers", desc: "Finding my first buyers",          icon: Users     },
+  { id: "product",     label: "Building product",  desc: "Shipping fast enough",             icon: Package   },
+  { id: "marketing",   label: "Marketing",         desc: "Getting visibility and awareness", icon: Megaphone },
+];
+
+const NICHES = [
+  { id: "E-Commerce",        label: "E-Commerce",        desc: "Online retail & DTC",               icon: ShoppingBag  },
+  { id: "SaaS",              label: "SaaS",              desc: "Software as a service",             icon: Code2        },
+  { id: "Consulting",        label: "Consulting",        desc: "Professional services",             icon: Briefcase    },
+  { id: "Health & Wellness", label: "Health & Wellness", desc: "Fitness, nutrition, coaching",      icon: Heart        },
+  { id: "Education",         label: "Education",         desc: "Courses, coaching, training",       icon: GraduationCap},
+  { id: "Real Estate",       label: "Real Estate",       desc: "Property, investing, rentals",      icon: Building2    },
+  { id: "Agency",            label: "Agency",            desc: "Marketing, creative, dev agency",   icon: Target       },
+  { id: "Other",             label: "Other",             desc: "Something else entirely",           icon: Globe        },
+];
+
+const TARGET_CUSTOMERS = [
+  { id: "B2B — Small businesses",    label: "B2B — Small businesses",    desc: "Selling to SMBs",                    icon: Store        },
+  { id: "B2B — Enterprises",         label: "B2B — Enterprises",         desc: "Selling to large companies",         icon: Building2    },
+  { id: "B2C — Consumers",           label: "B2C — Consumers",           desc: "Selling directly to individuals",    icon: UserCircle2  },
+  { id: "B2B — Startups & founders", label: "B2B — Startups & founders", desc: "Selling to other founders",          icon: Rocket       },
 ];
 
 const ANIM_CSS = `
@@ -61,6 +84,8 @@ const ANIM_CSS = `
   .ob-card-sel { border-color: rgba(59,130,246,0.65) !important; background: rgba(59,130,246,0.09) !important; box-shadow: 0 0 28px rgba(59,130,246,0.2), inset 0 0 16px rgba(59,130,246,0.04) !important; }
 `;
 
+const TOTAL_STEPS = 5;
+
 function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -69,6 +94,8 @@ function Onboarding() {
   const [idea, setIdea] = useState("");
   const [stage, setStage] = useState("");
   const [challenge, setChallenge] = useState("");
+  const [niche, setNiche] = useState("");
+  const [targetCustomer, setTargetCustomer] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -80,13 +107,16 @@ function Onboarding() {
     });
   }, []);
 
-  const canAdvance = step === 0 ? name.trim().length > 0 && idea.trim().length > 0
+  const canAdvance =
+    step === 0 ? name.trim().length > 0 && idea.trim().length > 0
     : step === 1 ? !!stage
-    : !!challenge;
+    : step === 2 ? !!challenge
+    : step === 3 ? !!niche
+    : !!targetCustomer;
 
   const advance = async () => {
     if (!canAdvance) return;
-    if (step < 2) {
+    if (step < TOTAL_STEPS - 1) {
       setStep(s => s + 1);
       setStepKey(k => k + 1);
     } else {
@@ -95,14 +125,16 @@ function Onboarding() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Save responses and profile
+        // Save all responses and profile in parallel
         const [responsesResult, profileResult] = await Promise.all([
           supabase.from("onboarding_responses").upsert(
             [
-              { user_id: user.id, question_key: "fullName",  answer: name },
-              { user_id: user.id, question_key: "idea",      answer: idea },
-              { user_id: user.id, question_key: "stage",     answer: stage },
-              { user_id: user.id, question_key: "challenge", answer: challenge },
+              { user_id: user.id, question_key: "fullName",       answer: name },
+              { user_id: user.id, question_key: "idea",           answer: idea },
+              { user_id: user.id, question_key: "stage",          answer: stage },
+              { user_id: user.id, question_key: "challenge",      answer: challenge },
+              { user_id: user.id, question_key: "niche",          answer: niche },
+              { user_id: user.id, question_key: "targetCustomer", answer: targetCustomer },
             ],
             { onConflict: "user_id,question_key" },
           ),
@@ -115,7 +147,7 @@ function Onboarding() {
         if (responsesResult.error) throw new Error(responsesResult.error.message);
         if (profileResult.error) throw new Error(profileResult.error.message);
 
-        // Map onboarding stage labels to the business_stage DB enum
+        // Map onboarding stage labels → business_stage DB enum
         const stageMap: Record<string, string> = {
           Idea: "Idea", Building: "Launch", Revenue: "Operate", Scaling: "Scale",
         };
@@ -132,11 +164,23 @@ function Onboarding() {
 
         if (existingMember) {
           orgId = existingMember.organization_id;
+          // Update the org with the latest niche + target_customer data
+          await supabase
+            .from("organizations")
+            .update({ niche, target_customer: targetCustomer, stage: dbStage })
+            .eq("id", orgId);
         } else {
           const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
           const { data: org, error: orgErr } = await supabase
             .from("organizations")
-            .insert({ name: orgName, owner_id: user.id, stage: dbStage })
+            .insert({
+              name: orgName,
+              owner_id: user.id,
+              stage: dbStage,
+              niche,
+              target_customer: targetCustomer,
+              goal: challenge,
+            })
             .select("id")
             .single();
           if (orgErr) throw new Error(orgErr.message);
@@ -156,7 +200,8 @@ function Onboarding() {
           body: JSON.stringify({
             user_id: user.id,
             operator_name: name,
-            primary_niche: challenge,
+            primary_niche: niche,
+            operator_tone: "professional",
             recommended_tools: [],
           }),
         }).catch(() => { /* best-effort */ });
@@ -177,12 +222,10 @@ function Onboarding() {
     <div style={{ position: "fixed", inset: 0, background: "#080810", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <style>{ANIM_CSS}</style>
 
-      {/* Neural canvas */}
       <div style={{ position: "absolute", inset: 0, opacity: 0.3 }}>
         <NeuralCanvas className="w-full h-full" />
       </div>
 
-      {/* Center ambient glow */}
       <div style={{
         position: "absolute", width: 700, height: 500, borderRadius: "50%",
         background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)",
@@ -211,7 +254,7 @@ function Onboarding() {
           </div>
           {/* Progress dots */}
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {[0, 1, 2].map(i => (
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div key={i} style={{
                 height: 6, borderRadius: 99,
                 transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
@@ -228,6 +271,8 @@ function Onboarding() {
           {step === 0 && <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} />}
           {step === 1 && <Step2 stage={stage} onStage={setStage} />}
           {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
+          {step === 3 && <Step4 niche={niche} onNiche={setNiche} />}
+          {step === 4 && <Step5 targetCustomer={targetCustomer} onTargetCustomer={setTargetCustomer} />}
         </div>
 
         {/* Continue button */}
@@ -250,7 +295,7 @@ function Onboarding() {
             fontFamily: "inherit",
           }}
         >
-          {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
+          {saving ? "Initializing Nova…" : step < TOTAL_STEPS - 1 ? "Continue" : "Launch Nova"}
           {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
         </button>
       </div>
@@ -258,11 +303,11 @@ function Onboarding() {
   );
 }
 
-function Heading({ step: s }: { step: number }) {
+function Heading({ step: s, total }: { step: number; total: number }) {
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 8 }}>
-        Step {s} of 3
+        Step {s} of {total}
       </div>
       <h2 style={{
         fontSize: "clamp(1.7rem, 5vw, 2.3rem)", fontWeight: 800, color: "#f0f4ff",
@@ -271,6 +316,8 @@ function Heading({ step: s }: { step: number }) {
         {s === 1 && <>What's your<br /><span style={{ color: "#3b82f6" }}>startup idea</span>?</>}
         {s === 2 && <>What stage<br /><span style={{ color: "#8b5cf6" }}>are you at</span>?</>}
         {s === 3 && <>What's your<br /><span style={{ color: "#06b6d4" }}>biggest challenge</span>?</>}
+        {s === 4 && <>What's your<br /><span style={{ color: "#f59e0b" }}>industry</span>?</>}
+        {s === 5 && <>Who are your<br /><span style={{ color: "#10b981" }}>target customers</span>?</>}
       </h2>
     </div>
   );
@@ -287,7 +334,7 @@ function Step1({ name, idea, onName, onIdea, onSubmit }: {
 }) {
   return (
     <div>
-      <Heading step={1} />
+      <Heading step={1} total={TOTAL_STEPS} />
       <div style={{ marginBottom: 14 }}>
         <FieldLabel>Your name</FieldLabel>
         <input
@@ -300,7 +347,7 @@ function Step1({ name, idea, onName, onIdea, onSubmit }: {
         />
       </div>
       <div>
-        <FieldLabel>Describe it in one sentence</FieldLabel>
+        <FieldLabel>Describe your startup in one sentence</FieldLabel>
         <textarea
           value={idea}
           onChange={e => onIdea(e.target.value)}
@@ -316,27 +363,45 @@ function Step1({ name, idea, onName, onIdea, onSubmit }: {
   );
 }
 
+function CardGrid({ cols = 2, children }: { cols?: number; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 10 }}>
+      {children}
+    </div>
+  );
+}
+
+function OptionCard({ selected, accent = "#3b82f6", onClick, icon: Icon, label, desc }: {
+  selected: boolean; accent?: string; onClick: () => void;
+  icon: React.ElementType; label: string; desc: string;
+}) {
+  return (
+    <button onClick={onClick} className={`ob-card${selected ? " ob-card-sel" : ""}`}
+      style={selected ? { borderColor: `${accent}a6`, background: `${accent}16`, boxShadow: `0 0 28px ${accent}33` } : {}}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
+        background: selected ? `${accent}38` : "rgba(255,255,255,0.05)",
+        transition: "background 0.2s",
+      }}>
+        <Icon style={{ width: 16, height: 16, color: selected ? accent : "rgba(240,244,255,0.35)" }} />
+      </div>
+      <div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
+        <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+      </div>
+    </button>
+  );
+}
+
 function Step2({ stage, onStage }: { stage: string; onStage: (v: string) => void }) {
   return (
     <div>
-      <Heading step={2} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {STAGES.map(({ id, label, desc, icon: Icon }) => (
-          <button key={id} onClick={() => onStage(id)} className={`ob-card${stage === id ? " ob-card-sel" : ""}`}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-              background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
-              transition: "background 0.2s",
-            }}>
-              <Icon style={{ width: 16, height: 16, color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)" }} />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
-            </div>
-          </button>
+      <Heading step={2} total={TOTAL_STEPS} />
+      <CardGrid>
+        {STAGES.map(({ id, label, desc, icon }) => (
+          <OptionCard key={id} selected={stage === id} accent="#8b5cf6" onClick={() => onStage(id)} icon={icon} label={label} desc={desc} />
         ))}
-      </div>
+      </CardGrid>
     </div>
   );
 }
@@ -344,24 +409,38 @@ function Step2({ stage, onStage }: { stage: string; onStage: (v: string) => void
 function Step3({ challenge, onChallenge }: { challenge: string; onChallenge: (v: string) => void }) {
   return (
     <div>
-      <Heading step={3} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {CHALLENGES.map(({ id, label, desc, icon: Icon }) => (
-          <button key={id} onClick={() => onChallenge(id)} className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-              background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
-              transition: "background 0.2s",
-            }}>
-              <Icon style={{ width: 16, height: 16, color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)" }} />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
-            </div>
-          </button>
+      <Heading step={3} total={TOTAL_STEPS} />
+      <CardGrid>
+        {CHALLENGES.map(({ id, label, desc, icon }) => (
+          <OptionCard key={id} selected={challenge === id} accent="#06b6d4" onClick={() => onChallenge(id)} icon={icon} label={label} desc={desc} />
         ))}
-      </div>
+      </CardGrid>
+    </div>
+  );
+}
+
+function Step4({ niche, onNiche }: { niche: string; onNiche: (v: string) => void }) {
+  return (
+    <div>
+      <Heading step={4} total={TOTAL_STEPS} />
+      <CardGrid cols={2}>
+        {NICHES.map(({ id, label, desc, icon }) => (
+          <OptionCard key={id} selected={niche === id} accent="#f59e0b" onClick={() => onNiche(id)} icon={icon} label={label} desc={desc} />
+        ))}
+      </CardGrid>
+    </div>
+  );
+}
+
+function Step5({ targetCustomer, onTargetCustomer }: { targetCustomer: string; onTargetCustomer: (v: string) => void }) {
+  return (
+    <div>
+      <Heading step={5} total={TOTAL_STEPS} />
+      <CardGrid cols={1}>
+        {TARGET_CUSTOMERS.map(({ id, label, desc, icon }) => (
+          <OptionCard key={id} selected={targetCustomer === id} accent="#10b981" onClick={() => onTargetCustomer(id)} icon={icon} label={label} desc={desc} />
+        ))}
+      </CardGrid>
     </div>
   );
 }
@@ -394,7 +473,6 @@ function WelcomeScreen({ name }: { name: string }) {
         <NeuralCanvas className="w-full h-full" />
       </div>
 
-      {/* Radial glow — intensifies on reveal */}
       <div style={{
         position: "absolute", width: 800, height: 600, borderRadius: "50%",
         background: "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
