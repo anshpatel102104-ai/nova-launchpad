@@ -96,7 +96,7 @@ function Onboarding() {
         if (!user) throw new Error("Not authenticated");
 
         // Save responses and profile
-        await Promise.all([
+        const [responsesResult, profileResult] = await Promise.all([
           supabase.from("onboarding_responses").upsert(
             [
               { user_id: user.id, question_key: "fullName",  answer: name },
@@ -112,6 +112,8 @@ function Onboarding() {
             full_name: name,
           }),
         ]);
+        if (responsesResult.error) throw new Error(responsesResult.error.message);
+        if (profileResult.error) throw new Error(profileResult.error.message);
 
         // Map onboarding stage labels to the business_stage DB enum
         const stageMap: Record<string, string> = {
@@ -119,19 +121,32 @@ function Onboarding() {
         };
         const dbStage = stageMap[stage] ?? "Idea";
 
-        // Create org + membership so the dashboard can load
-        const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
-        const { data: org, error: orgErr } = await supabase
-          .from("organizations")
-          .insert({ name: orgName, owner_id: user.id, stage: dbStage })
-          .select("id")
-          .single();
-        if (orgErr) throw orgErr;
-
-        const { error: memberErr } = await supabase
+        // Re-use existing org if one was already created (idempotent on retry)
+        let orgId: string;
+        const { data: existingMember } = await supabase
           .from("organization_members")
-          .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
-        if (memberErr) throw memberErr;
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingMember) {
+          orgId = existingMember.organization_id;
+        } else {
+          const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
+          const { data: org, error: orgErr } = await supabase
+            .from("organizations")
+            .insert({ name: orgName, owner_id: user.id, stage: dbStage })
+            .select("id")
+            .single();
+          if (orgErr) throw new Error(orgErr.message);
+          orgId = org.id;
+
+          const { error: memberErr } = await supabase
+            .from("organization_members")
+            .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
+          if (memberErr) throw new Error(memberErr.message);
+        }
 
         // Trigger N8N dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
