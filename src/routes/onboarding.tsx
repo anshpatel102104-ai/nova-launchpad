@@ -127,35 +127,21 @@ function Onboarding() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Save all responses and profile in parallel
-        const [responsesResult, profileResult] = await Promise.all([
-          supabase.from("onboarding_responses").upsert(
-            [
-              { user_id: user.id, question_key: "fullName",       answer: name },
-              { user_id: user.id, question_key: "idea",           answer: idea },
-              { user_id: user.id, question_key: "stage",          answer: stage },
-              { user_id: user.id, question_key: "challenge",      answer: challenge },
-              { user_id: user.id, question_key: "niche",          answer: niche },
-              { user_id: user.id, question_key: "targetCustomer", answer: targetCustomer },
-            ],
-            { onConflict: "user_id,question_key" },
-          ),
-          supabase.from("profiles").upsert({
-            id: user.id,
-            onboarding_complete: true,
-            full_name: name,
-          }),
-        ]);
-        if (responsesResult.error) throw new Error(responsesResult.error.message);
-        if (profileResult.error) throw new Error(profileResult.error.message);
-
-        // Map onboarding stage labels → business_stage DB enum
+        // Map stage label → app_stage enum
         const stageMap: Record<string, string> = {
           Idea: "Idea", Building: "Launch", Revenue: "Operate", Scaling: "Scale",
         };
         const dbStage = stageMap[stage] ?? "Idea";
 
-        // Re-use existing org if one was already created (idempotent on retry)
+        // 1. Profile — no org dependency
+        const { error: profileErr } = await supabase.from("profiles").upsert({
+          id: user.id,
+          onboarding_complete: true,
+          full_name: name,
+        });
+        if (profileErr) throw new Error(profileErr.message);
+
+        // 2. Org — idempotent: reuse if already created
         let orgId: string;
         const { data: existingMember } = await supabase
           .from("organization_members")
@@ -166,35 +152,44 @@ function Onboarding() {
 
         if (existingMember) {
           orgId = existingMember.organization_id;
-          // Update the org with the latest niche + target_customer data
-          await supabase
-            .from("organizations")
-            .update({ niche, target_customer: targetCustomer, stage: dbStage })
+          await supabase.from("organizations")
+            .update({ niche, target_customer: targetCustomer, stage: dbStage, goal: challenge })
             .eq("id", orgId);
         } else {
           const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
           const { data: org, error: orgErr } = await supabase
             .from("organizations")
-            .insert({
-              name: orgName,
-              created_by: user.id,
-              stage: dbStage,
-              niche,
-              target_customer: targetCustomer,
-              goal: challenge,
-            })
+            .insert({ name: orgName, created_by: user.id, stage: dbStage, niche, target_customer: targetCustomer, goal: challenge })
             .select("id")
             .single();
           if (orgErr) throw new Error(orgErr.message);
           orgId = org.id;
 
+          // 3. Member row — required before onboarding_responses insert
           const { error: memberErr } = await supabase
             .from("organization_members")
             .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
           if (memberErr) throw new Error(memberErr.message);
         }
 
-        // Refresh auth context so currentOrgId is populated before navigating
+        // 4. Onboarding responses — single row per org, requires org membership
+        const { error: responsesErr } = await supabase
+          .from("onboarding_responses")
+          .upsert({
+            organization_id: orgId,
+            user_id: user.id,
+            niche,
+            target_customer: targetCustomer,
+            stage: dbStage,
+            goal: challenge,
+            biggest_blocker: challenge,
+            offer: idea,
+            completed: true,
+            completed_at: new Date().toISOString(),
+          }, { onConflict: "organization_id" });
+        if (responsesErr) throw new Error(responsesErr.message);
+
+        // 5. Refresh auth context so currentOrgId is populated before navigating
         await refreshProfile();
 
         // Trigger N8N dashboard creation workflow (non-blocking)
