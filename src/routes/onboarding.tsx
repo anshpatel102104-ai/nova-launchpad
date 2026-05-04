@@ -94,6 +94,8 @@ function Onboarding() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
+
+        // Save responses and profile
         await Promise.all([
           supabase.from("onboarding_responses").upsert(
             [
@@ -104,14 +106,40 @@ function Onboarding() {
             ],
             { onConflict: "user_id,question_key" },
           ),
-          // FIX: use upsert instead of update so a profile row is created
-          // even if one doesn't exist yet (update silently does nothing on missing rows)
           supabase.from("profiles").upsert({
             id: user.id,
             onboarding_complete: true,
             full_name: name,
           }),
         ]);
+
+        // Create org + membership so the dashboard can load
+        const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
+        const { data: org, error: orgErr } = await supabase
+          .from("organizations")
+          .insert({ name: orgName, owner_id: user.id, stage })
+          .select("id")
+          .single();
+        if (orgErr) throw orgErr;
+
+        const { error: memberErr } = await supabase
+          .from("organization_members")
+          .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
+        if (memberErr) throw memberErr;
+
+        // Trigger N8N dashboard creation workflow (non-blocking)
+        const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
+        fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,
+            operator_name: name,
+            primary_niche: challenge,
+            recommended_tools: [],
+          }),
+        }).catch(() => { /* best-effort */ });
+
         setDone(true);
         setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
       } catch (e) {
