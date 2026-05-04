@@ -222,47 +222,44 @@ export type Database = {
         Row: {
           business_type: string | null
           created_at: string
+          created_by: string
           goal: string | null
           id: string
           location: string | null
           name: string
           niche: string | null
           offer: string | null
-          owner_id: string
-          stage: Database["public"]["Enums"]["business_stage"]
+          stage: Database["public"]["Enums"]["app_stage"]
           target_customer: string | null
           updated_at: string
-          website_url: string | null
         }
         Insert: {
           business_type?: string | null
           created_at?: string
+          created_by: string
           goal?: string | null
           id?: string
           location?: string | null
           name: string
           niche?: string | null
           offer?: string | null
-          owner_id: string
-          stage?: Database["public"]["Enums"]["business_stage"]
+          stage?: Database["public"]["Enums"]["app_stage"]
           target_customer?: string | null
           updated_at?: string
-          website_url?: string | null
         }
         Update: {
           business_type?: string | null
           created_at?: string
+          created_by?: string
           goal?: string | null
           id?: string
           location?: string | null
           name?: string
           niche?: string | null
           offer?: string | null
-          owner_id?: string
-          stage?: Database["public"]["Enums"]["business_stage"]
+          stage?: Database["public"]["Enums"]["app_stage"]
           target_customer?: string | null
           updated_at?: string
-          website_url?: string | null
         }
         Relationships: []
       }
@@ -636,6 +633,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      app_stage: "Idea" | "Validate" | "Launch" | "Operate" | "Scale"
       business_stage: "Idea" | "Validate" | "Launch" | "Operate" | "Scale"
       lead_stage:
         | "New"

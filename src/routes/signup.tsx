@@ -70,7 +70,7 @@ function SignupPage() {
         const orgName = `${fullName.trim()}'s Business`;
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ owner_id: userId, name: orgName })
+          .insert({ created_by: userId, name: orgName })
           .select("id")
           .single();
         if (orgErr) throw orgErr;

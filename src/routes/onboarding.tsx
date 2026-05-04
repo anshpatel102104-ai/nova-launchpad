@@ -177,7 +177,7 @@ function Onboarding() {
             .from("organizations")
             .insert({
               name: orgName,
-              owner_id: user.id,
+              created_by: user.id,
               stage: dbStage,
               niche,
               target_customer: targetCustomer,
