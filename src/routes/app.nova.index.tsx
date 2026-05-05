@@ -10,8 +10,25 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Lock, Settings2, Inbox, Mail, UserCheck, Receipt, Star, BarChart3, Zap, ArrowRight } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
+  Lock,
+  Settings2,
+  Inbox,
+  Mail,
+  UserCheck,
+  Receipt,
+  Star,
+  BarChart3,
+  Zap,
+  ArrowRight,
+} from "lucide-react";
 import { blockIfGuest } from "@/lib/guest";
 import { useOwnerMode } from "@/lib/ownerMode";
 
@@ -19,20 +36,20 @@ export const Route = createFileRoute("/app/nova/")({ component: NovaOverview });
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "lead-capture": Inbox,
-  "followup": Mail,
-  "onboarding": UserCheck,
-  "invoice": Receipt,
-  "reputation": Star,
-  "reporting": BarChart3,
+  followup: Mail,
+  onboarding: UserCheck,
+  invoice: Receipt,
+  reputation: Star,
+  reporting: BarChart3,
 };
 
 const MODULE_COLORS: Record<string, string> = {
   "lead-capture": "linear-gradient(135deg, var(--accent), #c084fc)",
-  "followup": "linear-gradient(135deg, var(--primary), var(--accent))",
-  "onboarding": "linear-gradient(135deg, #10b981, var(--primary))",
-  "invoice": "linear-gradient(135deg, #f59e0b, var(--orange))",
-  "reputation": "linear-gradient(135deg, var(--orange), #ef4444)",
-  "reporting": "linear-gradient(135deg, var(--primary), #38bdf8)",
+  followup: "linear-gradient(135deg, var(--primary), var(--accent))",
+  onboarding: "linear-gradient(135deg, #10b981, var(--primary))",
+  invoice: "linear-gradient(135deg, #f59e0b, var(--orange))",
+  reputation: "linear-gradient(135deg, var(--orange), #ef4444)",
+  reporting: "linear-gradient(135deg, var(--primary), #38bdf8)",
 };
 
 const KEY_PREFIX = "nova:webhook:";
@@ -49,7 +66,8 @@ function NovaOverview() {
   const [active, setActive] = useState<NovaModule | null>(null);
 
   const integrations = intQ.data ?? [];
-  const moduleStatus = (key: string) => integrations.find((i) => i.integration_key === KEY_PREFIX + key);
+  const moduleStatus = (key: string) =>
+    integrations.find((i) => i.integration_key === KEY_PREFIX + key);
 
   const onlineCount = novaSystemsCatalog.filter((m) => {
     const s = moduleStatus(m.key);
@@ -69,12 +87,15 @@ function NovaOverview() {
             <div
               className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11.5px] font-medium"
               style={{
-                background: onlineCount > 0
-                  ? "color-mix(in oklab, var(--success) 12%, transparent)"
-                  : "var(--surface-2)",
-                border: `1px solid ${onlineCount > 0
-                  ? "color-mix(in oklab, var(--success) 30%, transparent)"
-                  : "var(--border)"}`,
+                background:
+                  onlineCount > 0
+                    ? "color-mix(in oklab, var(--success) 12%, transparent)"
+                    : "var(--surface-2)",
+                border: `1px solid ${
+                  onlineCount > 0
+                    ? "color-mix(in oklab, var(--success) 30%, transparent)"
+                    : "var(--border)"
+                }`,
                 color: onlineCount > 0 ? "var(--success)" : "var(--muted-foreground)",
               }}
             >
@@ -84,7 +105,9 @@ function NovaOverview() {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
                 </span>
               )}
-              {onlineCount > 0 ? `${onlineCount} module${onlineCount === 1 ? "" : "s"} online` : "No modules active"}
+              {onlineCount > 0
+                ? `${onlineCount} module${onlineCount === 1 ? "" : "s"} online`
+                : "No modules active"}
             </div>
             <span
               className="rounded-xl px-2.5 py-1.5 text-[11px]"
@@ -94,7 +117,10 @@ function NovaOverview() {
                 color: "var(--muted-foreground)",
               }}
             >
-              Plan: <span className="font-medium capitalize" style={{ color: "var(--foreground)" }}>{plan}</span>
+              Plan:{" "}
+              <span className="font-medium capitalize" style={{ color: "var(--foreground)" }}>
+                {plan}
+              </span>
             </span>
           </div>
         }
@@ -105,7 +131,8 @@ function NovaOverview() {
           const Icon = ICONS[mod.key] ?? Settings2;
           const status = moduleStatus(mod.key);
           const online = status?.status === "connected" && !!status?.is_connected;
-          const grad = MODULE_COLORS[mod.key] ?? "linear-gradient(135deg, var(--accent), var(--primary))";
+          const grad =
+            MODULE_COLORS[mod.key] ?? "linear-gradient(135deg, var(--accent), var(--primary))";
 
           return (
             <div key={mod.key} className="relative" style={{ animationDelay: `${idx * 40}ms` }}>
@@ -114,34 +141,46 @@ function NovaOverview() {
                 style={{
                   background: "var(--surface)",
                   border: `1px solid ${online ? "color-mix(in oklab, var(--success) 25%, transparent)" : "var(--border)"}`,
-                  boxShadow: online ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--success) 8%, transparent)" : "var(--shadow-card)",
+                  boxShadow: online
+                    ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--success) 8%, transparent)"
+                    : "var(--shadow-card)",
                 }}
                 onMouseEnter={(e) => {
                   if (unlocked) {
                     const el = e.currentTarget as HTMLElement;
                     el.style.transform = "translateY(-2px)";
-                    el.style.boxShadow = "var(--shadow-hover), 0 0 0 1px color-mix(in oklab, var(--accent) 20%, transparent)";
+                    el.style.boxShadow =
+                      "var(--shadow-hover), 0 0 0 1px color-mix(in oklab, var(--accent) 20%, transparent)";
                     el.style.borderColor = "color-mix(in oklab, var(--accent) 30%, transparent)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
                   el.style.transform = "none";
-                  el.style.boxShadow = online ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--success) 8%, transparent)" : "var(--shadow-card)";
-                  el.style.borderColor = online ? "color-mix(in oklab, var(--success) 25%, transparent)" : "var(--border)";
+                  el.style.boxShadow = online
+                    ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--success) 8%, transparent)"
+                    : "var(--shadow-card)";
+                  el.style.borderColor = online
+                    ? "color-mix(in oklab, var(--success) 25%, transparent)"
+                    : "var(--border)";
                 }}
               >
                 {/* Corner glow */}
                 <div
                   className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{ background: `radial-gradient(circle, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%)` }}
+                  style={{
+                    background: `radial-gradient(circle, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%)`,
+                  }}
                 />
 
                 {/* Online pulse strip */}
                 {online && (
                   <div
                     className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
-                    style={{ background: "linear-gradient(90deg, transparent, var(--success), transparent)" }}
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, var(--success), transparent)",
+                    }}
                   />
                 )}
 
@@ -151,19 +190,31 @@ function NovaOverview() {
                       className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-card transition-transform duration-300 group-hover:scale-110"
                       style={{
                         background: unlocked ? grad : "var(--surface-2)",
-                        boxShadow: unlocked ? "0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)" : "none",
+                        boxShadow: unlocked
+                          ? "0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)"
+                          : "none",
                       }}
                     >
-                      <Icon className={unlocked ? "h-5 w-5 text-white" : "h-5 w-5 text-muted-foreground"} />
+                      <Icon
+                        className={
+                          unlocked ? "h-5 w-5 text-white" : "h-5 w-5 text-muted-foreground"
+                        }
+                      />
                     </div>
                     <StatusBadge variant={online ? "online" : "standby"} live={online} />
                   </div>
 
                   <div className="mt-4">
-                    <div className="font-display text-[15px] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+                    <div
+                      className="font-display text-[15px] font-semibold tracking-tight"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {mod.name}
                     </div>
-                    <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                    <p
+                      className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {mod.desc}
                     </p>
                   </div>
@@ -188,7 +239,10 @@ function NovaOverview() {
                         }}
                         disabled={!unlocked}
                       />
-                      <span className="text-[12px]" style={{ color: online ? "var(--success)" : "var(--muted-foreground)" }}>
+                      <span
+                        className="text-[12px]"
+                        style={{ color: online ? "var(--success)" : "var(--muted-foreground)" }}
+                      >
                         {online ? "Online" : "Standby"}
                       </span>
                     </div>
@@ -205,7 +259,8 @@ function NovaOverview() {
                       }}
                       onMouseEnter={(e) => {
                         if (unlocked) {
-                          (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--accent) 40%, transparent)";
+                          (e.currentTarget as HTMLElement).style.borderColor =
+                            "color-mix(in oklab, var(--accent) 40%, transparent)";
                           (e.currentTarget as HTMLElement).style.color = "var(--accent)";
                         }
                       }}
@@ -277,7 +332,9 @@ function LockedOverlay() {
 }
 
 function ConfigureSheet({
-  open, onOpenChange, module: mod,
+  open,
+  onOpenChange,
+  module: mod,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -289,7 +346,9 @@ function ConfigureSheet({
   const existing = mod && intQ.data?.find((i) => i.integration_key === KEY_PREFIX + mod.key);
   const [url, setUrl] = useState("");
 
-  useEffect(() => { setUrl(""); }, [open]);
+  useEffect(() => {
+    setUrl("");
+  }, [open]);
 
   const save = async () => {
     if (blockIfGuest("Sign up to wire automation webhooks.")) return;
@@ -325,7 +384,10 @@ function ConfigureSheet({
         </SheetHeader>
         <div className="mt-6 space-y-4 px-4">
           <div>
-            <div className="mb-1.5 text-[12.5px] font-medium" style={{ color: "var(--foreground)" }}>
+            <div
+              className="mb-1.5 text-[12.5px] font-medium"
+              style={{ color: "var(--foreground)" }}
+            >
               Webhook URL
             </div>
             <Input
@@ -334,12 +396,17 @@ function ConfigureSheet({
               onChange={(e) => setUrl(e.target.value)}
               className="rounded-xl"
             />
-            <p className="mt-2 text-[11.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-              We'll POST events to this URL when the module fires. For security, the existing
-              URL isn't shown — re-enter to update, or leave blank and save to disconnect.
+            <p
+              className="mt-2 text-[11.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              We'll POST events to this URL when the module fires. For security, the existing URL
+              isn't shown — re-enter to update, or leave blank and save to disconnect.
             </p>
           </div>
-          <Button onClick={save} className="w-full rounded-xl">Save module</Button>
+          <Button onClick={save} className="w-full rounded-xl">
+            Save module
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

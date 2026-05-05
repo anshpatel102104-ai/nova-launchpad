@@ -1,7 +1,11 @@
 import { cn } from "@/lib/utils";
 
 export function PageHeader({
-  eyebrow, title, description, actions, className,
+  eyebrow,
+  title,
+  description,
+  actions,
+  className,
 }: {
   eyebrow?: string;
   title: string;

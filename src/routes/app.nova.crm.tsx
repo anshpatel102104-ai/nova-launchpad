@@ -36,7 +36,9 @@ function CRM() {
   const totalPipeline = leads
     .filter((l) => l.stage !== "Lost")
     .reduce((sum, l) => sum + (Number(l.value) || 0), 0);
-  const wonValue = leads.filter((l) => l.stage === "Won").reduce((s, l) => s + (Number(l.value) || 0), 0);
+  const wonValue = leads
+    .filter((l) => l.stage === "Won")
+    .reduce((s, l) => s + (Number(l.value) || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -57,7 +59,10 @@ function CRM() {
       <div className="grid gap-3 sm:grid-cols-3">
         <KPI label="Open pipeline" value={`$${totalPipeline.toLocaleString()}`} />
         <KPI label="Won this period" value={`$${wonValue.toLocaleString()}`} />
-        <KPI label="Active deals" value={leads.filter((l) => l.stage !== "Lost" && l.stage !== "Won").length.toString()} />
+        <KPI
+          label="Active deals"
+          value={leads.filter((l) => l.stage !== "Lost" && l.stage !== "Won").length.toString()}
+        />
       </div>
 
       {leads.length === 0 ? (
@@ -157,7 +162,9 @@ function CRM() {
 function KPI({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div className="mt-1 font-display text-xl font-semibold tracking-tight">{value}</div>
     </div>
   );

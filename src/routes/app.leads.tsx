@@ -9,8 +9,21 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Inbox, Plus, Search, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { blockIfGuest } from "@/lib/guest";
@@ -21,15 +34,20 @@ const STAGES = ["New", "Contacted", "Qualified", "Proposal", "Won", "Lost"] as c
 type Stage = (typeof STAGES)[number];
 
 const STAGE_COLOR: Record<Stage, string> = {
-  New:       "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+  New: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
   Contacted: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
   Qualified: "bg-primary/10 text-primary border-primary/30",
-  Proposal:  "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
-  Won:       "bg-success/10 text-success border-success/30",
-  Lost:      "bg-destructive/10 text-destructive border-destructive/30",
+  Proposal: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
+  Won: "bg-success/10 text-success border-success/30",
+  Lost: "bg-destructive/10 text-destructive border-destructive/30",
 };
 
-const PLAN_LIMIT: Record<string, number> = { starter: 50, launch: 250, operate: 2000, scale: 10000 };
+const PLAN_LIMIT: Record<string, number> = {
+  starter: 50,
+  launch: 250,
+  operate: 2000,
+  scale: 10000,
+};
 
 function LeadsPage() {
   const { currentOrgId, user } = useAuth();
@@ -61,14 +79,20 @@ function LeadsPage() {
     if (blockIfGuest("Sign up to update your live pipeline.")) return;
     const { error } = await supabase.from("leads").update({ stage }).eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Stage updated"); qc.invalidateQueries({ queryKey: ["leads", currentOrgId] }); }
+    else {
+      toast.success("Stage updated");
+      qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
+    }
   };
 
   const deleteLead = async (id: string) => {
     if (blockIfGuest("Sign up to manage your real pipeline.")) return;
     const { error } = await supabase.from("leads").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Lead removed"); qc.invalidateQueries({ queryKey: ["leads", currentOrgId] }); }
+    else {
+      toast.success("Lead removed");
+      qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
+    }
   };
 
   return (
@@ -79,7 +103,9 @@ function LeadsPage() {
         description="Track every prospect from first touch to close."
         actions={
           <Button
-            onClick={() => { if (!blockIfGuest("Sign up to start tracking real leads.")) setOpenAdd(true); }}
+            onClick={() => {
+              if (!blockIfGuest("Sign up to start tracking real leads.")) setOpenAdd(true);
+            }}
             className="gap-2"
           >
             <Plus className="h-4 w-4" /> Add lead
@@ -115,10 +141,16 @@ function LeadsPage() {
           />
         </div>
         <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All stages</SelectItem>
-            {STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {STAGES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -134,7 +166,9 @@ function LeadsPage() {
             Add your first lead to start tracking the pipeline.
           </p>
           <Button
-            onClick={() => { if (!blockIfGuest("Sign up to start tracking real leads.")) setOpenAdd(true); }}
+            onClick={() => {
+              if (!blockIfGuest("Sign up to start tracking real leads.")) setOpenAdd(true);
+            }}
             className="mt-4 gap-2"
           >
             <Plus className="h-4 w-4" /> Add lead
@@ -178,7 +212,11 @@ function LeadsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          {STAGES.map((s) => (
+                            <SelectItem key={s} value={s}>
+                              {s}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </td>
@@ -227,11 +265,19 @@ function LeadsPage() {
 }
 
 function AddLeadDialog({
-  open, onOpenChange, onCreate,
+  open,
+  onOpenChange,
+  onCreate,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onCreate: (form: { name: string; email?: string; phone?: string; source?: string; notes?: string }) => Promise<void>;
+  onCreate: (form: {
+    name: string;
+    email?: string;
+    phone?: string;
+    source?: string;
+    notes?: string;
+  }) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -241,7 +287,10 @@ function AddLeadDialog({
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (!name.trim()) { toast.error("Name required"); return; }
+    if (!name.trim()) {
+      toast.error("Name required");
+      return;
+    }
     setBusy(true);
     await onCreate({
       name,
@@ -251,7 +300,11 @@ function AddLeadDialog({
       notes: notes || undefined,
     });
     setBusy(false);
-    setName(""); setEmail(""); setPhone(""); setSource(""); setNotes("");
+    setName("");
+    setEmail("");
+    setPhone("");
+    setSource("");
+    setNotes("");
   };
 
   return (
@@ -287,8 +340,12 @@ function AddLeadDialog({
           </Field>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={busy}>Add lead</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={submit} disabled={busy}>
+            Add lead
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

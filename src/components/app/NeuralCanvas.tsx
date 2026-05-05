@@ -75,8 +75,10 @@ export function NeuralCanvas({ className }: { className?: string }) {
         const from = Math.floor(Math.random() * nodes.length);
         let to = Math.floor(Math.random() * nodes.length);
         if (to === from) to = (to + 1) % nodes.length;
-        const n1 = nodes[from], n2 = nodes[to];
-        const dx = n2.x - n1.x, dy = n2.y - n1.y;
+        const n1 = nodes[from],
+          n2 = nodes[to];
+        const dx = n2.x - n1.x,
+          dy = n2.y - n1.y;
         if (Math.sqrt(dx * dx + dy * dy) < MAX_DIST * 1.5) {
           sparks.push({ from, to, progress: 0, speed: 0.012 + Math.random() * 0.016, alpha: 0.9 });
         }
@@ -85,15 +87,27 @@ export function NeuralCanvas({ className }: { className?: string }) {
       // Draw connections
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
-          const n1 = nodes[i], n2 = nodes[j];
-          const dx = n2.x - n1.x, dy = n2.y - n1.y;
+          const n1 = nodes[i],
+            n2 = nodes[j];
+          const dx = n2.x - n1.x,
+            dy = n2.y - n1.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > MAX_DIST) continue;
 
           const alpha = (1 - dist / MAX_DIST) * 0.25;
           const grad = ctx.createLinearGradient(n1.x, n1.y, n2.x, n2.y);
-          grad.addColorStop(0, `${n1.color}${Math.round(alpha * 255).toString(16).padStart(2, "0")}`);
-          grad.addColorStop(1, `${n2.color}${Math.round(alpha * 255).toString(16).padStart(2, "0")}`);
+          grad.addColorStop(
+            0,
+            `${n1.color}${Math.round(alpha * 255)
+              .toString(16)
+              .padStart(2, "0")}`,
+          );
+          grad.addColorStop(
+            1,
+            `${n2.color}${Math.round(alpha * 255)
+              .toString(16)
+              .padStart(2, "0")}`,
+          );
 
           ctx.beginPath();
           ctx.moveTo(n1.x, n1.y);
@@ -106,7 +120,8 @@ export function NeuralCanvas({ className }: { className?: string }) {
 
       // Draw sparks
       sparks = sparks.filter((s) => {
-        const n1 = nodes[s.from], n2 = nodes[s.to];
+        const n1 = nodes[s.from],
+          n2 = nodes[s.to];
         const x = n1.x + (n2.x - n1.x) * s.progress;
         const y = n1.y + (n2.y - n1.y) * s.progress;
 

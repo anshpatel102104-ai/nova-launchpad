@@ -52,7 +52,9 @@ function Clients() {
                 </Button>
               </Link>
               <Link to="/app/nova">
-                <Button size="sm" variant="outline">Open modules</Button>
+                <Button size="sm" variant="outline">
+                  Open modules
+                </Button>
               </Link>
             </div>
           }
@@ -60,14 +62,25 @@ function Clients() {
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           {items.map((c) => {
-            const progress = synthProgress(c.created_at, c.metadata as Record<string, unknown> | null);
+            const progress = synthProgress(
+              c.created_at,
+              c.metadata as Record<string, unknown> | null,
+            );
             const stage =
-              progress >= 100 ? "Live" :
-              progress >= 80 ? "Final review" :
-              progress >= 60 ? "Implementation" :
-              progress >= 35 ? "Discovery" : "Kickoff";
+              progress >= 100
+                ? "Live"
+                : progress >= 80
+                  ? "Final review"
+                  : progress >= 60
+                    ? "Implementation"
+                    : progress >= 35
+                      ? "Discovery"
+                      : "Kickoff";
             return (
-              <div key={c.id} className="rounded-xl border border-border bg-surface p-5 shadow-soft">
+              <div
+                key={c.id}
+                className="rounded-xl border border-border bg-surface p-5 shadow-soft"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -77,12 +90,14 @@ function Clients() {
                       {c.title}
                     </div>
                   </div>
-                  <span className={cn(
-                    "shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium",
-                    progress >= 100
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-accent/10 text-accent",
-                  )}>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium",
+                      progress >= 100
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : "bg-accent/10 text-accent",
+                    )}
+                  >
                     {stage}
                   </span>
                 </div>

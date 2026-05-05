@@ -1,8 +1,20 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import {
-  LogOut, Sun, Moon, Monitor, ChevronDown, Search, Bell, ChevronRight,
-  User as UserIcon, Settings as SettingsIcon, Check, Rocket, Zap, Command,
+  LogOut,
+  Sun,
+  Moon,
+  Monitor,
+  ChevronDown,
+  Search,
+  Bell,
+  ChevronRight,
+  User as UserIcon,
+  Settings as SettingsIcon,
+  Check,
+  Rocket,
+  Zap,
+  Command,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -62,10 +74,19 @@ export function AppTopbar() {
   const plan = subQ.data?.plan ?? "starter";
 
   const initials = (profile?.full_name || user?.email || "U")
-    .split(/[\s@]/).filter(Boolean).map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+    .split(/[\s@]/)
+    .filter(Boolean)
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   const handleSignOut = async () => {
-    if (isGuest) { disable(); navigate({ to: "/" }); return; }
+    if (isGuest) {
+      disable();
+      navigate({ to: "/" });
+      return;
+    }
     await signOut();
     navigate({ to: "/auth/sign-in" });
   };
@@ -112,7 +133,10 @@ export function AppTopbar() {
             style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" }}
           >
             LN
-            <span className="absolute inset-0 rounded-lg" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)" }} />
+            <span
+              className="absolute inset-0 rounded-lg"
+              style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)" }}
+            />
           </div>
           <span className="font-display text-[13px] font-semibold">LaunchpadNOVA</span>
         </Link>
@@ -121,7 +145,12 @@ export function AppTopbar() {
         <nav className="hidden lg:flex items-center gap-1.5 text-[13px] min-w-0">
           {crumbs.map((c, i) => (
             <span key={i} className="flex items-center gap-1.5 min-w-0">
-              {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)", opacity: 0.5 }} />}
+              {i > 0 && (
+                <ChevronRight
+                  className="h-3.5 w-3.5 shrink-0"
+                  style={{ color: "var(--muted-foreground)", opacity: 0.5 }}
+                />
+              )}
               {c.to ? (
                 <Link
                   to={c.to}
@@ -131,7 +160,10 @@ export function AppTopbar() {
                   {c.label}
                 </Link>
               ) : (
-                <span className="font-display font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                <span
+                  className="font-display font-semibold truncate"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {c.label}
                 </span>
               )}
@@ -150,10 +182,12 @@ export function AppTopbar() {
               color: "var(--muted-foreground)",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 30%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--primary) 30%, transparent)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--border) 70%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--border) 70%, transparent)";
             }}
           >
             <Search className="h-3.5 w-3.5 shrink-0 opacity-60" />
@@ -197,26 +231,34 @@ export function AppTopbar() {
             <Link
               to="/app/launchpad"
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-medium transition"
-              style={workspace === "launchpad" ? {
-                background: "color-mix(in oklab, var(--primary) 12%, var(--surface))",
-                color: "var(--primary)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-              } : {
-                color: "var(--muted-foreground)",
-              }}
+              style={
+                workspace === "launchpad"
+                  ? {
+                      background: "color-mix(in oklab, var(--primary) 12%, var(--surface))",
+                      color: "var(--primary)",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                    }
+                  : {
+                      color: "var(--muted-foreground)",
+                    }
+              }
             >
               <Rocket className="h-3 w-3" /> Launchpad
             </Link>
             <Link
               to="/app/nova"
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-medium transition"
-              style={workspace === "nova" ? {
-                background: "color-mix(in oklab, var(--accent) 12%, var(--surface))",
-                color: "var(--accent)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-              } : {
-                color: "var(--muted-foreground)",
-              }}
+              style={
+                workspace === "nova"
+                  ? {
+                      background: "color-mix(in oklab, var(--accent) 12%, var(--surface))",
+                      color: "var(--accent)",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                    }
+                  : {
+                      color: "var(--muted-foreground)",
+                    }
+              }
             >
               <Zap className="h-3 w-3" /> Nova OS
             </Link>
@@ -235,16 +277,14 @@ export function AppTopbar() {
               opacity: 0.8,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--primary) 40%, transparent)";
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
             }}
           >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: "var(--primary)" }}
-            />
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--primary)" }} />
             <span className="capitalize">{plan}</span>
           </Link>
 
@@ -300,7 +340,13 @@ export function AppTopbar() {
               }}
               aria-label="Choose theme"
             >
-              {theme === "system" ? <Monitor className="h-4 w-4" /> : resolvedTheme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {theme === "system" ? (
+                <Monitor className="h-4 w-4" />
+              ) : resolvedTheme === "dark" ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
             </button>
             {themeOpen && (
               <div
@@ -308,17 +354,23 @@ export function AppTopbar() {
                 style={{
                   background: "var(--popover)",
                   borderColor: "var(--border)",
-                  boxShadow: "var(--shadow-card), 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent)",
+                  boxShadow:
+                    "var(--shadow-card), 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent)",
                 }}
               >
-                {([
-                  { id: "light", label: "Light", Icon: Sun },
-                  { id: "dark", label: "Dark", Icon: Moon },
-                  { id: "system", label: "System", Icon: Monitor },
-                ] as const).map(({ id, label, Icon }) => (
+                {(
+                  [
+                    { id: "light", label: "Light", Icon: Sun },
+                    { id: "dark", label: "Dark", Icon: Moon },
+                    { id: "system", label: "System", Icon: Monitor },
+                  ] as const
+                ).map(({ id, label, Icon }) => (
                   <button
                     key={id}
-                    onClick={() => { setTheme(id); setThemeOpen(false); }}
+                    onClick={() => {
+                      setTheme(id);
+                      setThemeOpen(false);
+                    }}
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition",
                       theme === id ? "font-medium" : "opacity-70",
@@ -326,12 +378,18 @@ export function AppTopbar() {
                     style={{
                       color: theme === id ? "var(--foreground)" : "var(--muted-foreground)",
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                    }}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     <span className="flex-1 text-left">{label}</span>
-                    {theme === id && <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />}
+                    {theme === id && (
+                      <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+                    )}
                   </button>
                 ))}
               </div>
@@ -343,8 +401,12 @@ export function AppTopbar() {
             <button
               onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-1 rounded-full p-0.5 pr-1.5 transition"
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+              }}
             >
               <span
                 className="flex h-7 w-7 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
@@ -360,18 +422,44 @@ export function AppTopbar() {
                 style={{
                   background: "var(--popover)",
                   borderColor: "var(--border)",
-                  boxShadow: "var(--shadow-card), 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent)",
+                  boxShadow:
+                    "var(--shadow-card), 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent)",
                 }}
               >
                 <div className="border-b p-3" style={{ borderColor: "var(--border)" }}>
-                  <div className="truncate text-[13px] font-medium">{profile?.full_name || "Account"}</div>
-                  <div className="truncate text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{user?.email}</div>
+                  <div className="truncate text-[13px] font-medium">
+                    {profile?.full_name || "Account"}
+                  </div>
+                  <div
+                    className="truncate text-[11.5px]"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    {user?.email}
+                  </div>
                 </div>
                 <div className="p-1">
-                  <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={UserIcon}>Profile</MenuItem>
-                  <MenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={SettingsIcon}>Settings</MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate({ to: "/app/settings" });
+                    }}
+                    icon={UserIcon}
+                  >
+                    Profile
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate({ to: "/app/settings" });
+                    }}
+                    icon={SettingsIcon}
+                  >
+                    Settings
+                  </MenuItem>
                   <div className="my-1 h-px" style={{ background: "var(--border)" }} />
-                  <MenuItem onClick={handleSignOut} icon={LogOut} destructive>{isGuest ? "Exit demo" : "Sign out"}</MenuItem>
+                  <MenuItem onClick={handleSignOut} icon={LogOut} destructive>
+                    {isGuest ? "Exit demo" : "Sign out"}
+                  </MenuItem>
                 </div>
               </div>
             )}
@@ -384,8 +472,16 @@ export function AppTopbar() {
 }
 
 function MenuItem({
-  onClick, icon: Icon, children, destructive,
-}: { onClick: () => void; icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; destructive?: boolean }) {
+  onClick,
+  icon: Icon,
+  children,
+  destructive,
+}: {
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  destructive?: boolean;
+}) {
   return (
     <button
       onClick={onClick}
@@ -396,9 +492,12 @@ function MenuItem({
           ? "color-mix(in oklab, var(--destructive) 10%, transparent)"
           : "var(--surface-2)";
       }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
     >
-      <Icon className="h-3.5 w-3.5" />{children}
+      <Icon className="h-3.5 w-3.5" />
+      {children}
     </button>
   );
 }

@@ -16,21 +16,49 @@ function Reset() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirm) { toast.error("Passwords don't match"); return; }
+    if (password !== confirm) {
+      toast.error("Passwords don't match");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) toast.error(error.message); else { toast.success("Password updated"); navigate({ to: "/auth/sign-in" }); }
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Password updated");
+      navigate({ to: "/auth/sign-in" });
+    }
   };
 
   return (
     <AuthShell title="Set a new password" subtitle="Choose something you'll remember.">
       <form className="space-y-3" onSubmit={onSubmit}>
-        <Field label="New password"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} required /></Field>
-        <Field label="Confirm password"><Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required /></Field>
-        <Button className="w-full" type="submit" disabled={loading}>{loading ? "Updating…" : "Update password"}</Button>
+        <Field label="New password">
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+        </Field>
+        <Field label="Confirm password">
+          <Input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+          />
+        </Field>
+        <Button className="w-full" type="submit" disabled={loading}>
+          {loading ? "Updating…" : "Update password"}
+        </Button>
       </form>
-      <p className="mt-4 text-xs text-muted-foreground"><Link to="/auth/sign-in" className="text-foreground hover:underline">Back to sign in</Link></p>
+      <p className="mt-4 text-xs text-muted-foreground">
+        <Link to="/auth/sign-in" className="text-foreground hover:underline">
+          Back to sign in
+        </Link>
+      </p>
     </AuthShell>
   );
 }

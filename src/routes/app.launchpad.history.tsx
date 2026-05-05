@@ -41,13 +41,18 @@ function HistoryPage() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-          <Link to="/app/launchpad" className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+          <Link
+            to="/app/launchpad"
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition"
+          >
             <ArrowLeft className="h-3 w-3" /> Launchpad
           </Link>
           <span className="text-muted-foreground/50">/</span>
           <span className="text-foreground">Run history</span>
         </div>
-        <h1 className="mt-3 font-display text-[1.75rem] font-semibold tracking-tight">Run history</h1>
+        <h1 className="mt-3 font-display text-[1.75rem] font-semibold tracking-tight">
+          Run history
+        </h1>
         <p className="mt-1 text-[13.5px] text-muted-foreground">
           Every output you've generated. Open any run to inspect or copy its result.
         </p>
@@ -68,7 +73,9 @@ function HistoryPage() {
                 onClick={() => setStatus(s)}
                 className={cn(
                   "rounded px-2.5 py-1 text-[11.5px] font-medium capitalize transition",
-                  status === s ? "bg-surface text-foreground" : "text-muted-foreground hover:text-foreground",
+                  status === s
+                    ? "bg-surface text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {s}
@@ -89,7 +96,10 @@ function HistoryPage() {
           }
           action={
             runs.length === 0 && (
-              <Link to="/app/launchpad" className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-[12.5px] font-medium text-primary-foreground transition hover:opacity-90">
+              <Link
+                to="/app/launchpad"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-[12.5px] font-medium text-primary-foreground transition hover:opacity-90"
+              >
                 Open Launchpad <ArrowRight className="h-3 w-3" />
               </Link>
             )
@@ -111,10 +121,17 @@ function HistoryPage() {
               <tbody>
                 {filtered.map((r) => {
                   const tool = TOOL_BY_KEY[r.tool_key];
-                  const input = (r.input ?? {}) as { business?: string; title?: string; context?: string };
+                  const input = (r.input ?? {}) as {
+                    business?: string;
+                    title?: string;
+                    context?: string;
+                  };
                   const ctx = input.business || input.title || input.context || "Untitled run";
                   return (
-                    <tr key={r.id} className="border-b border-border-subtle/60 last:border-b-0 hover:bg-surface-2/40 transition">
+                    <tr
+                      key={r.id}
+                      className="border-b border-border-subtle/60 last:border-b-0 hover:bg-surface-2/40 transition"
+                    >
                       <td className="px-4 py-3">
                         <div className="text-[13px] font-medium">{tool?.name ?? r.tool_key}</div>
                         <div className="text-[11px] text-muted-foreground">{r.tool_key}</div>

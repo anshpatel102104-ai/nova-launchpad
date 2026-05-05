@@ -4,8 +4,15 @@ import { launchpadCatalog } from "@/lib/mock";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
-  Loader2, FileText, Sparkles, ArrowLeft, ArrowRight, Lock, History as HistoryIcon,
-  RotateCcw, KeyRound,
+  Loader2,
+  FileText,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+  Lock,
+  History as HistoryIcon,
+  RotateCcw,
+  KeyRound,
 } from "lucide-react";
 import { NovaThinking } from "@/components/app/NovaThinking";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +46,10 @@ export const Route = createFileRoute("/app/launchpad/$tool")({
   notFoundComponent: () => (
     <div className="p-6">
       <div className="text-sm">
-        Unknown tool. <Link to="/app/launchpad" className="underline">Back to Launchpad</Link>
+        Unknown tool.{" "}
+        <Link to="/app/launchpad" className="underline">
+          Back to Launchpad
+        </Link>
       </div>
     </div>
   ),
@@ -105,27 +115,41 @@ function ToolPage() {
   const handoffs = HANDOFFS[tool.key] ?? [];
 
   const ideaValidatorRuns = useMemo(
-    () => (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded").length,
+    () =>
+      (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
+        .length,
     [runsQ.data],
   );
   const isFreeStarter = isOwner ? false : planTier === "starter";
   const isIdeaValidator = effectiveToolKey === "validate-idea";
-  const ideaValidatorBlocked = !isOwner && isFreeStarter && isIdeaValidator && ideaValidatorRuns >= 3;
+  const ideaValidatorBlocked =
+    !isOwner && isFreeStarter && isIdeaValidator && ideaValidatorRuns >= 3;
   const isPastDue = !isOwner && subQ.data?.status === "past_due";
 
   const handleGenerate = async () => {
     if (blockIfGuest("Sign up to run AI tools and unlock real outputs.")) return;
-    if (!effectiveWired) { toast.error("This tool is launching soon."); return; }
+    if (!effectiveWired) {
+      toast.error("This tool is launching soon.");
+      return;
+    }
     if (isPastDue) {
       toast.error("Payment failed — update your card in Billing to keep using AI tools.");
       return;
     }
-    if (!context.trim()) { toast.error("Add some context first."); return; }
-    if (!hasLocalAiKey()) {
-      toast.error("Add your Anthropic API key to VITE_ANTHROPIC_API_KEY in .env, then restart the dev server.");
+    if (!context.trim()) {
+      toast.error("Add some context first.");
       return;
     }
-    if (ideaValidatorBlocked) { setPaywallOpen(true); return; }
+    if (!hasLocalAiKey()) {
+      toast.error(
+        "Add your Anthropic API key to VITE_ANTHROPIC_API_KEY in .env, then restart the dev server.",
+      );
+      return;
+    }
+    if (ideaValidatorBlocked) {
+      setPaywallOpen(true);
+      return;
+    }
     setGenerating(true);
     setStreamText("");
     setOutput(null);
@@ -133,8 +157,13 @@ function ToolPage() {
     setFeedback(null);
     try {
       const payload: Record<string, unknown> = {
-        idea: context, business: title || context, target: title,
-        context, goal: context, offer: context, url: context,
+        idea: context,
+        business: title || context,
+        target: title,
+        context,
+        goal: context,
+        offer: context,
+        url: context,
       };
       const result = await runToolLocally(
         effectiveToolKey,
@@ -161,14 +190,16 @@ function ToolPage() {
   const saveToAssets = async () => {
     if (blockIfGuest("Sign up to save assets to your library.")) return;
     if (!currentOrgId || !user || !output) return;
-    const { error } = await supabase.from("generated_assets").insert([{
-      organization_id: currentOrgId,
-      user_id: user.id,
-      category: tool.toolKey,
-      kind: tool.key,
-      title: title || tool.name,
-      content: output as never,
-    }]);
+    const { error } = await supabase.from("generated_assets").insert([
+      {
+        organization_id: currentOrgId,
+        user_id: user.id,
+        category: tool.toolKey,
+        kind: tool.key,
+        title: title || tool.name,
+        content: output as never,
+      },
+    ]);
     if (error) toast.error(error.message);
     else {
       toast.success("Saved to library");
@@ -184,7 +215,9 @@ function ToolPage() {
         .from("tool_runs")
         .update({ metadata: { feedback: v, feedback_at: new Date().toISOString() } })
         .eq("id", runId);
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
   };
 
   const handleCopy = () => {
@@ -221,10 +254,29 @@ function ToolPage() {
             <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
               Anthropic API key required
             </div>
-            <p className="mt-0.5 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-              Add <code className="rounded px-1 py-0.5 font-mono text-[11.5px]" style={{ background: "var(--surface-2)" }}>VITE_ANTHROPIC_API_KEY=sk-ant-...</code> to your{" "}
-              <code className="rounded px-1 py-0.5 font-mono text-[11.5px]" style={{ background: "var(--surface-2)" }}>.env</code> file and restart the dev server.
-              Get a key at <span className="font-medium" style={{ color: "var(--primary)" }}>console.anthropic.com</span>.
+            <p
+              className="mt-0.5 text-[12.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Add{" "}
+              <code
+                className="rounded px-1 py-0.5 font-mono text-[11.5px]"
+                style={{ background: "var(--surface-2)" }}
+              >
+                VITE_ANTHROPIC_API_KEY=sk-ant-...
+              </code>{" "}
+              to your{" "}
+              <code
+                className="rounded px-1 py-0.5 font-mono text-[11.5px]"
+                style={{ background: "var(--surface-2)" }}
+              >
+                .env
+              </code>{" "}
+              file and restart the dev server. Get a key at{" "}
+              <span className="font-medium" style={{ color: "var(--primary)" }}>
+                console.anthropic.com
+              </span>
+              .
             </p>
           </div>
         </div>
@@ -232,7 +284,10 @@ function ToolPage() {
 
       {/* Breadcrumb + header */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+        <div
+          className="flex items-center gap-2 text-[12px]"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           <Link
             to="/app/launchpad"
             className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
@@ -245,10 +300,16 @@ function ToolPage() {
 
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-[1.75rem] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+            <h1
+              className="font-display text-[1.75rem] font-semibold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
               {tool.name}
             </h1>
-            <p className="mt-1 max-w-2xl text-[13.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+            <p
+              className="mt-1 max-w-2xl text-[13.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {tool.desc}
             </p>
           </div>
@@ -284,7 +345,10 @@ function ToolPage() {
                   color: "var(--muted-foreground)",
                 }}
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: "color-mix(in oklab, var(--primary) 60%, transparent)" }} />
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: "color-mix(in oklab, var(--primary) 60%, transparent)" }}
+                />
                 {savedLabel}
               </span>
             ) : null}
@@ -305,7 +369,13 @@ function ToolPage() {
             }}
           >
             {/* Neon top edge */}
-            <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.3), transparent)" }} />
+            <div
+              className="h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.3), transparent)",
+              }}
+            />
             {/* Panel header */}
             <div
               className="flex items-center justify-between px-5 py-3"
@@ -328,7 +398,10 @@ function ToolPage() {
             </div>
 
             <div className="space-y-5 px-5 py-5">
-              <Section label="Identity" hint="Give this run a memorable name. Used as the asset title.">
+              <Section
+                label="Identity"
+                hint="Give this run a memorable name. Used as the asset title."
+              >
                 <Input
                   placeholder="e.g. Northwind Labs — initial launch"
                   value={title}
@@ -341,7 +414,10 @@ function ToolPage() {
                 />
               </Section>
 
-              <Section label="Context" hint="Be specific about your idea, audience, and the outcome you want.">
+              <Section
+                label="Context"
+                hint="Be specific about your idea, audience, and the outcome you want."
+              >
                 <Textarea
                   rows={9}
                   placeholder={placeholderFor(tool.key)}
@@ -361,7 +437,11 @@ function ToolPage() {
                   {context && (
                     <button
                       type="button"
-                      onClick={() => { setContext(""); setTitle(""); clearDraft(currentOrgId, tool.key); }}
+                      onClick={() => {
+                        setContext("");
+                        setTitle("");
+                        clearDraft(currentOrgId, tool.key);
+                      }}
                       className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
                     >
                       <RotateCcw className="h-3 w-3" /> Clear
@@ -382,35 +462,50 @@ function ToolPage() {
                 style={{
                   background: "linear-gradient(135deg, var(--primary), var(--accent))",
                   color: "white",
-                  boxShadow: "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  boxShadow:
+                    "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
                 }}
                 onMouseEnter={(e) => {
                   if (!generating && context && effectiveWired) {
                     (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
                 }}
               >
                 {generating ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Generating with AI…</>
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Generating with AI…
+                  </>
                 ) : ideaValidatorBlocked ? (
-                  <><Lock className="h-4 w-4" /> Upgrade to continue</>
+                  <>
+                    <Lock className="h-4 w-4" /> Upgrade to continue
+                  </>
                 ) : (
-                  <><Sparkles className="h-4 w-4" /> Generate with AI</>
+                  <>
+                    <Sparkles className="h-4 w-4" /> Generate with AI
+                  </>
                 )}
               </button>
 
               {isFreeStarter && isIdeaValidator && (
-                <p className="text-center text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                <p
+                  className="text-center text-[11.5px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Free plan · {Math.min(ideaValidatorRuns, 3)} of 3 free validations used
                 </p>
               )}
               {!effectiveWired && (
-                <p className="text-center text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                <p
+                  className="text-center text-[11.5px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   This tool is launching soon. Inputs save as drafts.
                 </p>
               )}
@@ -421,7 +516,11 @@ function ToolPage() {
           {effectiveWired && (
             <div
               className="overflow-hidden rounded-2xl"
-              style={{ background: "var(--surface)", border: "1px solid rgba(59,130,246,0.12)", boxShadow: "0 2px 12px rgba(0,0,0,0.3)" }}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid rgba(59,130,246,0.12)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+              }}
             >
               <div
                 className="flex items-center justify-between px-5 py-3"
@@ -445,7 +544,10 @@ function ToolPage() {
                 </Link>
               </div>
               {toolRuns.length === 0 ? (
-                <div className="px-5 py-6 text-center text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+                <div
+                  className="px-5 py-6 text-center text-[12.5px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   No runs yet. Your first generation will appear here.
                 </div>
               ) : (
@@ -461,24 +563,36 @@ function ToolPage() {
                         setOutput(out);
                         setRunId(r.id);
                         const meta = (r.metadata ?? {}) as Record<string, unknown>;
-                        setFeedback(meta.feedback === "up" ? "up" : meta.feedback === "down" ? "down" : null);
+                        setFeedback(
+                          meta.feedback === "up" ? "up" : meta.feedback === "down" ? "down" : null,
+                        );
                       }}
                       className="flex w-full items-center justify-between px-5 py-2.5 text-left transition"
                       style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "transparent";
+                      }}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
+                        <div
+                          className="truncate text-[13px] font-medium"
+                          style={{ color: "var(--foreground)" }}
+                        >
                           {(r.input as { business?: string; title?: string })?.business ||
-                           (r.input as { title?: string })?.title ||
-                           "Untitled run"}
+                            (r.input as { title?: string })?.title ||
+                            "Untitled run"}
                         </div>
                         <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                           {new Date(r.created_at).toLocaleString()} · {r.status}
                         </div>
                       </div>
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                      <ArrowRight
+                        className="h-3.5 w-3.5 shrink-0"
+                        style={{ color: "var(--muted-foreground)" }}
+                      />
                     </button>
                   ))}
                 </div>
@@ -499,7 +613,13 @@ function ToolPage() {
             }}
           >
             {/* Neon top edge — violet */}
-            <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(59,130,246,0.3), transparent)" }} />
+            <div
+              className="h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(59,130,246,0.3), transparent)",
+              }}
+            />
             <div
               className="px-5 py-4"
               style={{
@@ -531,9 +651,7 @@ function ToolPage() {
                 />
               )}
 
-              {generating && (
-                <NovaThinking streamText={streamText} toolName={tool.name} />
-              )}
+              {generating && <NovaThinking streamText={streamText} toolName={tool.name} />}
 
               {output && !generating && (
                 <div className="max-h-[68vh] overflow-y-auto pr-1">
@@ -546,7 +664,9 @@ function ToolPage() {
             {output && handoffs.length > 0 && (
               <div
                 className="px-5 py-4"
-                style={{ borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)" }}
+                style={{
+                  borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+                }}
               >
                 <div
                   className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
@@ -572,8 +692,10 @@ function ToolPage() {
                         opacity: 0.85,
                       }}
                       onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
-                        (e.currentTarget as HTMLElement).style.background = "color-mix(in oklab, var(--primary) 8%, var(--surface-2))";
+                        (e.currentTarget as HTMLElement).style.borderColor =
+                          "color-mix(in oklab, var(--primary) 40%, transparent)";
+                        (e.currentTarget as HTMLElement).style.background =
+                          "color-mix(in oklab, var(--primary) 8%, var(--surface-2))";
                         (e.currentTarget as HTMLElement).style.color = "var(--primary)";
                         (e.currentTarget as HTMLElement).style.opacity = "1";
                       }}
@@ -598,13 +720,25 @@ function ToolPage() {
 }
 
 function Section({
-  label, hint, children,
-}: { label: string; hint?: string; children: React.ReactNode }) {
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <div className="mb-2">
-        <div className="text-[12.5px] font-semibold" style={{ color: "var(--foreground)" }}>{label}</div>
-        {hint && <div className="mt-0.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{hint}</div>}
+        <div className="text-[12.5px] font-semibold" style={{ color: "var(--foreground)" }}>
+          {label}
+        </div>
+        {hint && (
+          <div className="mt-0.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+            {hint}
+          </div>
+        )}
       </div>
       {children}
     </div>

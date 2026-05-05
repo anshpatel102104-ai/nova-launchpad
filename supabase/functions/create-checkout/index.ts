@@ -23,16 +23,13 @@ serve(async (req) => {
     const token = authHeader?.replace("Bearer ", "");
     if (!token) return json({ error: "Unauthorized" }, 401);
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authErr,
+    } = await supabase.auth.getUser(token);
     if (authErr || !user) return json({ error: "Unauthorized" }, 401);
 
-    const {
-      priceId,
-      quantity,
-      organizationId,
-      returnUrl,
-      environment,
-    } = await req.json();
+    const { priceId, quantity, organizationId, returnUrl, environment } = await req.json();
 
     if (!priceId || typeof priceId !== "string" || !/^[a-zA-Z0-9_-]+$/.test(priceId)) {
       return json({ error: "Invalid priceId" }, 400);
