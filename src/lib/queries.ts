@@ -68,73 +68,74 @@ export const subscriptionQuery = (orgId: string) =>
     },
   });
 
+export type PlanEntitlement = {
+  plan: "starter" | "launch" | "operate" | "scale";
+  price_usd: number;
+  monthly_generation_limit: number | null;
+  allowed_tools: string[];
+  features: Record<string, number | null>;
+  created_at: string;
+};
+
+const PLAN_PRICES: Record<string, number> = {
+  starter: 0,
+  launch: 49,
+  operate: 149,
+  scale: 299,
+};
+
+const PLAN_TOOLS: Record<string, string[]> = {
+  starter: ["validate-idea"],
+  launch: ["validate-idea", "generate-pitch", "generate-offer", "generate-followup-sequence"],
+  operate: [
+    "validate-idea",
+    "generate-pitch",
+    "generate-offer",
+    "generate-followup-sequence",
+    "generate-gtm-strategy",
+    "generate-ops-plan",
+    "analyze-website",
+  ],
+  scale: [
+    "validate-idea",
+    "generate-pitch",
+    "generate-offer",
+    "generate-followup-sequence",
+    "generate-gtm-strategy",
+    "generate-ops-plan",
+    "analyze-website",
+  ],
+};
+
 export const planEntitlementsQuery = () =>
   queryOptions({
     queryKey: ["plan_entitlements"],
-    queryFn: async () => {
+    queryFn: async (): Promise<PlanEntitlement[]> => {
+      const plans = ["starter", "launch", "operate", "scale"] as const;
       if (isGuest()) {
-        return [
-          {
-            plan: "starter" as const,
-            price_usd: 0,
-            monthly_generation_limit: 10,
-            allowed_tools: ["validate-idea"],
-            features: {},
-            created_at: new Date().toISOString(),
-          },
-          {
-            plan: "launch" as const,
-            price_usd: 49,
-            monthly_generation_limit: 100,
-            allowed_tools: [
-              "validate-idea",
-              "generate-pitch",
-              "generate-offer",
-              "generate-followup-sequence",
-            ],
-            features: {},
-            created_at: new Date().toISOString(),
-          },
-          {
-            plan: "operate" as const,
-            price_usd: 149,
-            monthly_generation_limit: 500,
-            allowed_tools: [
-              "validate-idea",
-              "generate-pitch",
-              "generate-offer",
-              "generate-followup-sequence",
-              "generate-gtm-strategy",
-              "generate-ops-plan",
-              "analyze-website",
-            ],
-            features: {},
-            created_at: new Date().toISOString(),
-          },
-          {
-            plan: "scale" as const,
-            price_usd: 299,
-            monthly_generation_limit: null,
-            allowed_tools: [
-              "validate-idea",
-              "generate-pitch",
-              "generate-offer",
-              "generate-followup-sequence",
-              "generate-gtm-strategy",
-              "generate-ops-plan",
-              "analyze-website",
-            ],
-            features: {},
-            created_at: new Date().toISOString(),
-          },
-        ];
+        return plans.map((plan) => ({
+          plan,
+          price_usd: PLAN_PRICES[plan] ?? 0,
+          monthly_generation_limit: plan === "scale" ? null : (PLAN_PRICES[plan] === 0 ? 10 : plan === "launch" ? 100 : 500),
+          allowed_tools: PLAN_TOOLS[plan] ?? [],
+          features: {},
+          created_at: new Date().toISOString(),
+        }));
       }
-      const { data, error } = await supabase
-        .from("plan_entitlements")
-        .select("*")
-        .order("price_usd", { ascending: true });
+      const { data, error } = await supabase.from("plan_entitlements").select("*");
       if (error) throw error;
-      return data ?? [];
+      return plans.map((plan) => {
+        const rows = (data ?? []).filter((r) => r.plan === plan);
+        const get = (key: string) => rows.find((r) => r.feature_key === key)?.limit_value ?? null;
+        return {
+          plan,
+          price_usd: PLAN_PRICES[plan] ?? 0,
+          monthly_generation_limit: get("ai.generations.monthly"),
+          allowed_tools: PLAN_TOOLS[plan] ?? [],
+          features: Object.fromEntries(rows.map((r) => [r.feature_key, r.limit_value])),
+          created_at: rows[0]?.created_at ?? new Date().toISOString(),
+        };
+      });
     },
   });
 
@@ -154,14 +155,14 @@ export const toolRunsQuery = (orgId: string, limit = 20) =>
     },
   });
 
-export const generatedAssetsQuery = (orgId: string, category?: string) =>
+export const generatedAssetsQuery = (orgId: string, kind?: string) =>
   queryOptions({
-    queryKey: ["generated_assets", orgId, category ?? "all"],
+    queryKey: ["generated_assets", orgId, kind ?? "all"],
     queryFn: async () => {
       if (isGuest())
-        return category ? GUEST_ASSETS.filter((a) => a.category === category) : GUEST_ASSETS;
+        return kind ? GUEST_ASSETS.filter((a) => a.kind === kind) : GUEST_ASSETS;
       let q = supabase.from("generated_assets").select("*").eq("organization_id", orgId);
-      if (category) q = q.eq("category", category);
+      if (kind) q = q.eq("kind", kind);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
       if (error) throw error;
       return data ?? [];

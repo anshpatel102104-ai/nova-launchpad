@@ -1855,6 +1855,7 @@ export async function runToolLocally(
           tool_key: toolKey,
           status: "running",
           input: payload as never,
+          surface: "launchpad",
         })
         .select("id")
         .single();
@@ -1886,10 +1887,9 @@ export async function runToolLocally(
         organization_id: ctx.orgId,
         user_id: ctx.userId,
         tool_run_id: runId ?? null,
-        category: def.assetCategory,
         kind: toolKey,
         title: def.assetTitle(payload, output),
-        content: output as never,
+        metadata: output as never,
       });
       // Increment usage
       const period = new Date().toISOString().slice(0, 7);
@@ -1903,7 +1903,7 @@ export async function runToolLocally(
       if (existing) {
         await supabase
           .from("usage_tracking")
-          .update({ count: (existing.count as number) + 1, last_used_at: new Date().toISOString() })
+          .update({ count: (existing.count as number) + 1 })
           .eq("id", existing.id);
       } else {
         await supabase.from("usage_tracking").insert({

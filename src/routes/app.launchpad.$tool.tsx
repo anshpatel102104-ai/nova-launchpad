@@ -194,10 +194,9 @@ function ToolPage() {
       {
         organization_id: currentOrgId,
         user_id: user.id,
-        category: tool.toolKey,
-        kind: tool.key,
+        kind: tool.toolKey,
         title: title || tool.name,
-        content: output as never,
+        metadata: output as never,
       },
     ]);
     if (error) toast.error(error.message);
@@ -213,7 +212,7 @@ function ToolPage() {
     try {
       await supabase
         .from("tool_runs")
-        .update({ metadata: { feedback: v, feedback_at: new Date().toISOString() } })
+        .update({ output: { feedback: v, feedback_at: new Date().toISOString() } as never })
         .eq("id", runId);
     } catch {
       /* non-blocking */
@@ -562,7 +561,7 @@ function ToolPage() {
                         const out = (r.output ?? null) as Record<string, unknown> | null;
                         setOutput(out);
                         setRunId(r.id);
-                        const meta = (r.metadata ?? {}) as Record<string, unknown>;
+                        const meta = ((r as Record<string, unknown>).metadata ?? {}) as Record<string, unknown>;
                         setFeedback(
                           meta.feedback === "up" ? "up" : meta.feedback === "down" ? "down" : null,
                         );

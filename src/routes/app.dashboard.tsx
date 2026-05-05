@@ -210,7 +210,7 @@ function Dashboard() {
           ? "active"
           : "setup";
     if (k === "clients")
-      return assets.some((a) => a.category === "client-onboarding") ? "active" : "setup";
+      return assets.some((a) => a.kind === "client-onboarding") ? "active" : "setup";
     if (k === "reports") return allRuns.length > 5 ? "active" : "inactive";
     return "inactive";
   };

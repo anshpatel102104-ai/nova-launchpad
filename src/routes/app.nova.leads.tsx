@@ -212,7 +212,6 @@ function Leads() {
           const { error } = await supabase.from("leads").insert({
             ...lead,
             organization_id: currentOrgId,
-            user_id: user.id,
           });
           if (error) toast.error(error.message);
           else {
