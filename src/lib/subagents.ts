@@ -10,8 +10,7 @@
  */
 
 const N8N_BASE_URL =
-  (import.meta as { env?: { VITE_N8N_BASE_URL?: string } }).env
-    ?.VITE_N8N_BASE_URL ?? '/api/n8n';
+  (import.meta as { env?: { VITE_N8N_BASE_URL?: string } }).env?.VITE_N8N_BASE_URL ?? "/api/n8n";
 
 // ─── Shared types ───────────────────────────────────────────────────────────
 
@@ -43,7 +42,7 @@ type CallOpts = {
 async function callSubagent<T>(opts: CallOpts): Promise<SubagentResult<T>> {
   const url = `${N8N_BASE_URL}/webhook/${opts.path}`;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (opts.accessToken) {
     headers.Authorization = `Bearer ${opts.accessToken}`;
@@ -52,15 +51,15 @@ async function callSubagent<T>(opts: CallOpts): Promise<SubagentResult<T>> {
   let res: Response;
   try {
     res = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(opts.body),
     });
   } catch (e) {
     return {
       success: false,
-      error: e instanceof Error ? e.message : 'Network error',
-      code: 'NETWORK_ERROR',
+      error: e instanceof Error ? e.message : "Network error",
+      code: "NETWORK_ERROR",
     };
   }
 
@@ -72,12 +71,15 @@ async function callSubagent<T>(opts: CallOpts): Promise<SubagentResult<T>> {
       success: false,
       status: res.status,
       error: `Invalid JSON from subagent (HTTP ${res.status})`,
-      code: 'INVALID_RESPONSE',
+      code: "INVALID_RESPONSE",
     };
   }
 
   // n8n subagents return { success: false, error, code, upgrade_url? } on block
-  if (!res.ok || (typeof json === 'object' && json && (json as { success?: boolean }).success === false)) {
+  if (
+    !res.ok ||
+    (typeof json === "object" && json && (json as { success?: boolean }).success === false)
+  ) {
     const body = (json ?? {}) as Partial<SubagentError>;
     return {
       success: false,
@@ -123,7 +125,7 @@ export type BrandVoiceOutput = {
 
 export const callBrandVoice = (input: BrandVoiceInput, accessToken?: string) =>
   callSubagent<BrandVoiceOutput>({
-    path: 'brand-voice-subagent',
+    path: "brand-voice-subagent",
     body: input,
     accessToken,
   });
@@ -152,14 +154,14 @@ export type BlogContentOutput = {
 
 export const callBlogContent = (input: BlogContentInput, accessToken?: string) =>
   callSubagent<BlogContentOutput>({
-    path: 'content-subagent-blog',
+    path: "content-subagent-blog",
     body: input,
     accessToken,
   });
 
 // ─── 3. Social ──────────────────────────────────────────────────────────────
 
-export type Platform = 'linkedin' | 'twitter' | 'instagram' | 'facebook' | 'tiktok';
+export type Platform = "linkedin" | "twitter" | "instagram" | "facebook" | "tiktok";
 
 export type SocialInput = {
   user_id: string;
@@ -183,7 +185,7 @@ export type SocialOutput = { posts: SocialPost[] };
 
 export const callSocial = (input: SocialInput, accessToken?: string) =>
   callSubagent<SocialOutput>({
-    path: 'social-subagent',
+    path: "social-subagent",
     body: input,
     accessToken,
   });
@@ -191,12 +193,12 @@ export const callSocial = (input: SocialInput, accessToken?: string) =>
 // ─── 4. Sales Script ────────────────────────────────────────────────────────
 
 export type SalesScriptType =
-  | 'cold_call'
-  | 'discovery_call'
-  | 'closing_call'
-  | 'objection_handling'
-  | 'voicemail'
-  | 'follow_up';
+  | "cold_call"
+  | "discovery_call"
+  | "closing_call"
+  | "objection_handling"
+  | "voicemail"
+  | "follow_up";
 
 export type SalesScriptInput = {
   user_id: string;
@@ -223,7 +225,7 @@ export type SalesScriptOutput = {
 
 export const callSalesScript = (input: SalesScriptInput, accessToken?: string) =>
   callSubagent<SalesScriptOutput>({
-    path: 'sales-script-subagent',
+    path: "sales-script-subagent",
     body: input,
     accessToken,
   });
@@ -255,12 +257,9 @@ export type ClientReportOutput = {
   }[];
 };
 
-export const callClientReport = (
-  input: ClientReportInput,
-  accessToken?: string,
-) =>
+export const callClientReport = (input: ClientReportInput, accessToken?: string) =>
   callSubagent<ClientReportOutput>({
-    path: 'client-reporting-subagent',
+    path: "client-reporting-subagent",
     body: input,
     accessToken,
   });
@@ -280,12 +279,9 @@ export type AutomationBuilderOutput = {
   workflow_json: Record<string, unknown>;
 };
 
-export const callAutomationBuilder = (
-  input: AutomationBuilderInput,
-  accessToken?: string,
-) =>
+export const callAutomationBuilder = (input: AutomationBuilderInput, accessToken?: string) =>
   callSubagent<AutomationBuilderOutput>({
-    path: 'automation-builder-subagent',
+    path: "automation-builder-subagent",
     body: input,
     accessToken,
   });
@@ -293,9 +289,9 @@ export const callAutomationBuilder = (
 // ─── Helper: route blocked plan-tier responses to upgrade ──────────────────
 
 export function isPlanGateBlock(err: SubagentError): boolean {
-  return err.code === 'PLAN_UPGRADE_REQUIRED' || err.status === 403;
+  return err.code === "PLAN_UPGRADE_REQUIRED" || err.status === 403;
 }
 
 export function getUpgradeUrl(err: SubagentError): string {
-  return err.upgrade_url ?? '/upgrade';
+  return err.upgrade_url ?? "/upgrade";
 }

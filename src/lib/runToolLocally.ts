@@ -52,19 +52,69 @@ Give me a complete, no-BS validation. I need to know if this is worth my next 5 
       input_schema: {
         type: "object",
         properties: {
-          score:          { type: "number",  description: "0-100 overall viability score. Be accurate, not generous." },
-          verdict:        { type: "string",  description: "One punchy sentence verdict (e.g. 'Strong niche play with defensibility risk — worth validating in 90 days')" },
-          summary:        { type: "string",  description: "2-3 sentence honest summary of the idea's potential" },
-          strengths:      { type: "array",   items: { type: "string" }, description: "2-4 genuine strengths with specific reasoning" },
-          weaknesses:     { type: "array",   items: { type: "string" }, description: "2-4 real weaknesses founders often underestimate" },
-          risks:          { type: "array",   items: { type: "string" }, description: "3-5 specific risks — market, execution, timing, competition" },
-          market_size:    { type: "string",  description: "Honest estimate of addressable market with reasoning" },
-          competition:    { type: "string",  description: "Who already does this and how saturated is the space" },
-          differentiation_angle: { type: "string", description: "The one angle that could make this actually work" },
-          recommendation: { type: "string",  description: "What the founder should do in the next 30 days" },
-          next_steps:     { type: "array",   items: { type: "string" }, description: "5 specific, actionable next steps to validate before spending money" },
+          score: {
+            type: "number",
+            description: "0-100 overall viability score. Be accurate, not generous.",
+          },
+          verdict: {
+            type: "string",
+            description:
+              "One punchy sentence verdict (e.g. 'Strong niche play with defensibility risk — worth validating in 90 days')",
+          },
+          summary: {
+            type: "string",
+            description: "2-3 sentence honest summary of the idea's potential",
+          },
+          strengths: {
+            type: "array",
+            items: { type: "string" },
+            description: "2-4 genuine strengths with specific reasoning",
+          },
+          weaknesses: {
+            type: "array",
+            items: { type: "string" },
+            description: "2-4 real weaknesses founders often underestimate",
+          },
+          risks: {
+            type: "array",
+            items: { type: "string" },
+            description: "3-5 specific risks — market, execution, timing, competition",
+          },
+          market_size: {
+            type: "string",
+            description: "Honest estimate of addressable market with reasoning",
+          },
+          competition: {
+            type: "string",
+            description: "Who already does this and how saturated is the space",
+          },
+          differentiation_angle: {
+            type: "string",
+            description: "The one angle that could make this actually work",
+          },
+          recommendation: {
+            type: "string",
+            description: "What the founder should do in the next 30 days",
+          },
+          next_steps: {
+            type: "array",
+            items: { type: "string" },
+            description: "5 specific, actionable next steps to validate before spending money",
+          },
         },
-        required: ["score", "verdict", "summary", "strengths", "weaknesses", "risks", "market_size", "competition", "differentiation_angle", "recommendation", "next_steps"],
+        required: [
+          "score",
+          "verdict",
+          "summary",
+          "strengths",
+          "weaknesses",
+          "risks",
+          "market_size",
+          "competition",
+          "differentiation_angle",
+          "recommendation",
+          "next_steps",
+        ],
       },
     },
     assetCategory: "validation",
@@ -97,21 +147,63 @@ Write a pitch that makes an investor lean forward. Be specific. Use real languag
       input_schema: {
         type: "object",
         properties: {
-          headline:     { type: "string", description: "The one-liner that hooks them in 5 seconds" },
-          the_hook:     { type: "string", description: "Opening 2-3 sentences that establish the pain — should feel visceral" },
-          problem:      { type: "string", description: "The problem in full — why it matters, who it affects, what it costs" },
-          solution:     { type: "string", description: "How the product solves it — clear, jargon-free" },
-          why_now:      { type: "string", description: "The tailwind — why this moment is uniquely right for this idea" },
-          traction:     { type: "string", description: "What proof exists — or what to build toward" },
-          market:       { type: "string", description: "TAM/SAM/SOM with specific numbers and reasoning" },
-          business_model: { type: "string", description: "How money is made, with unit economics if possible" },
-          competitive_edge: { type: "string", description: "The moat — what makes this defensible over 3-5 years" },
-          team:         { type: "string", description: "Why this founder/team is uniquely positioned to win" },
-          ask:          { type: "string", description: "The raise amount, use of funds, and 18-month target" },
-          cta:          { type: "string", description: "The closing line that drives action" },
-          elevator_pitch: { type: "string", description: "The 30-second version — for networking events and warm intros" },
+          headline: { type: "string", description: "The one-liner that hooks them in 5 seconds" },
+          the_hook: {
+            type: "string",
+            description: "Opening 2-3 sentences that establish the pain — should feel visceral",
+          },
+          problem: {
+            type: "string",
+            description: "The problem in full — why it matters, who it affects, what it costs",
+          },
+          solution: {
+            type: "string",
+            description: "How the product solves it — clear, jargon-free",
+          },
+          why_now: {
+            type: "string",
+            description: "The tailwind — why this moment is uniquely right for this idea",
+          },
+          traction: { type: "string", description: "What proof exists — or what to build toward" },
+          market: {
+            type: "string",
+            description: "TAM/SAM/SOM with specific numbers and reasoning",
+          },
+          business_model: {
+            type: "string",
+            description: "How money is made, with unit economics if possible",
+          },
+          competitive_edge: {
+            type: "string",
+            description: "The moat — what makes this defensible over 3-5 years",
+          },
+          team: {
+            type: "string",
+            description: "Why this founder/team is uniquely positioned to win",
+          },
+          ask: {
+            type: "string",
+            description: "The raise amount, use of funds, and 18-month target",
+          },
+          cta: { type: "string", description: "The closing line that drives action" },
+          elevator_pitch: {
+            type: "string",
+            description: "The 30-second version — for networking events and warm intros",
+          },
         },
-        required: ["headline", "the_hook", "problem", "solution", "why_now", "market", "business_model", "competitive_edge", "ask", "cta", "elevator_pitch"],
+        required: [
+          "headline",
+          "the_hook",
+          "problem",
+          "solution",
+          "why_now",
+          "market",
+          "business_model",
+          "competitive_edge",
+          "ask",
+          "cta",
+          "elevator_pitch",
+        ],
       },
     },
     assetCategory: "pitch",
@@ -146,17 +238,35 @@ Give me a GTM plan I can execute starting Monday. Prioritize ruthlessly.`,
       input_schema: {
         type: "object",
         properties: {
-          icp: { type: "string", description: "Ideal Customer Profile — specific firmographics, psychographics, pain triggers, and buying signals" },
-          positioning: { type: "string", description: "The positioning statement — for which [ICP], [product] is the [category] that [benefit] unlike [alternative]" },
-          core_message: { type: "string", description: "The one sentence that captures why buyers should care" },
+          icp: {
+            type: "string",
+            description:
+              "Ideal Customer Profile — specific firmographics, psychographics, pain triggers, and buying signals",
+          },
+          positioning: {
+            type: "string",
+            description:
+              "The positioning statement — for which [ICP], [product] is the [category] that [benefit] unlike [alternative]",
+          },
+          core_message: {
+            type: "string",
+            description: "The one sentence that captures why buyers should care",
+          },
           channels: {
             type: "array",
             items: {
               type: "object",
               properties: {
                 channel: { type: "string" },
-                rationale: { type: "string", description: "Why this channel for this specific business" },
-                tactics: { type: "array", items: { type: "string" }, description: "3-5 specific tactics for this channel" },
+                rationale: {
+                  type: "string",
+                  description: "Why this channel for this specific business",
+                },
+                tactics: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "3-5 specific tactics for this channel",
+                },
                 expected_timeline: { type: "string" },
                 estimated_cac: { type: "string" },
               },
@@ -179,11 +289,32 @@ Give me a GTM plan I can execute starting Monday. Prioritize ruthlessly.`,
             },
             description: "3 phases: weeks 1-4, months 2-3, months 4-6",
           },
-          messaging_angles: { type: "array", items: { type: "string" }, description: "3-4 specific messaging angles to A/B test" },
-          what_not_to_do: { type: "array", items: { type: "string" }, description: "2-3 common GTM mistakes to avoid for this specific business" },
-          week_one_actions: { type: "array", items: { type: "string" }, description: "5 things to do in the first 7 days" },
+          messaging_angles: {
+            type: "array",
+            items: { type: "string" },
+            description: "3-4 specific messaging angles to A/B test",
+          },
+          what_not_to_do: {
+            type: "array",
+            items: { type: "string" },
+            description: "2-3 common GTM mistakes to avoid for this specific business",
+          },
+          week_one_actions: {
+            type: "array",
+            items: { type: "string" },
+            description: "5 things to do in the first 7 days",
+          },
         },
-        required: ["icp", "positioning", "core_message", "channels", "phases", "messaging_angles", "what_not_to_do", "week_one_actions"],
+        required: [
+          "icp",
+          "positioning",
+          "core_message",
+          "channels",
+          "phases",
+          "messaging_angles",
+          "what_not_to_do",
+          "week_one_actions",
+        ],
       },
     },
     assetCategory: "gtm",
@@ -217,19 +348,64 @@ Build an offer architecture that makes saying no feel like leaving money on the 
       input_schema: {
         type: "object",
         properties: {
-          name: { type: "string", description: "The offer name — transformation-focused, not feature-focused" },
-          promise: { type: "string", description: "The bold, specific promise — what outcome is guaranteed" },
-          dream_outcome: { type: "string", description: "Paint the vivid picture of life after the offer" },
-          deliverables: { type: "array", items: { type: "string" }, description: "Every specific thing included — use vivid language, not bullets" },
-          bonuses: { type: "array", items: { type: "string" }, description: "2-3 high-perceived-value bonuses that make the offer feel like a steal" },
-          price_anchor: { type: "string", description: "What it would cost to get this outcome elsewhere — creates contrast" },
+          name: {
+            type: "string",
+            description: "The offer name — transformation-focused, not feature-focused",
+          },
+          promise: {
+            type: "string",
+            description: "The bold, specific promise — what outcome is guaranteed",
+          },
+          dream_outcome: {
+            type: "string",
+            description: "Paint the vivid picture of life after the offer",
+          },
+          deliverables: {
+            type: "array",
+            items: { type: "string" },
+            description: "Every specific thing included — use vivid language, not bullets",
+          },
+          bonuses: {
+            type: "array",
+            items: { type: "string" },
+            description: "2-3 high-perceived-value bonuses that make the offer feel like a steal",
+          },
+          price_anchor: {
+            type: "string",
+            description: "What it would cost to get this outcome elsewhere — creates contrast",
+          },
           price_recommendation: { type: "string", description: "Recommended price with reasoning" },
-          guarantee: { type: "string", description: "The specific guarantee — remove all perceived risk" },
-          urgency_scarcity: { type: "string", description: "Real reason to act now — not manufactured fake urgency" },
-          positioning_line: { type: "string", description: "The one sentence that positions this vs every alternative" },
-          objection_crushers: { type: "array", items: { type: "string" }, description: "The top 3 objections and how the offer architecture handles each" },
+          guarantee: {
+            type: "string",
+            description: "The specific guarantee — remove all perceived risk",
+          },
+          urgency_scarcity: {
+            type: "string",
+            description: "Real reason to act now — not manufactured fake urgency",
+          },
+          positioning_line: {
+            type: "string",
+            description: "The one sentence that positions this vs every alternative",
+          },
+          objection_crushers: {
+            type: "array",
+            items: { type: "string" },
+            description: "The top 3 objections and how the offer architecture handles each",
+          },
         },
-        required: ["name", "promise", "dream_outcome", "deliverables", "bonuses", "price_anchor", "price_recommendation", "guarantee", "urgency_scarcity", "positioning_line", "objection_crushers"],
+        required: [
+          "name",
+          "promise",
+          "dream_outcome",
+          "deliverables",
+          "bonuses",
+          "price_anchor",
+          "price_recommendation",
+          "guarantee",
+          "urgency_scarcity",
+          "positioning_line",
+          "objection_crushers",
+        ],
       },
     },
     assetCategory: "offer",
@@ -261,7 +437,10 @@ Give me a concrete ops system I can start implementing this week.`,
       input_schema: {
         type: "object",
         properties: {
-          north_star_kpi: { type: "string", description: "The single metric that drives everything else" },
+          north_star_kpi: {
+            type: "string",
+            description: "The single metric that drives everything else",
+          },
           core_workflows: {
             type: "array",
             items: {
@@ -277,14 +456,43 @@ Give me a concrete ops system I can start implementing this week.`,
             },
             description: "3-5 mission-critical workflows",
           },
-          automations: { type: "array", items: { type: "string" }, description: "Specific automations to build — include the tool and trigger" },
-          weekly_rhythm: { type: "array", items: { type: "string" }, description: "The recurring weekly operating cadence" },
-          kpis: { type: "array", items: { type: "string" }, description: "5-7 KPIs to track weekly — specific and measurable" },
+          automations: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific automations to build — include the tool and trigger",
+          },
+          weekly_rhythm: {
+            type: "array",
+            items: { type: "string" },
+            description: "The recurring weekly operating cadence",
+          },
+          kpis: {
+            type: "array",
+            items: { type: "string" },
+            description: "5-7 KPIs to track weekly — specific and measurable",
+          },
           first_hire: { type: "string", description: "Who to hire first and what to hand off" },
-          tools_stack: { type: "array", items: { type: "string" }, description: "Recommended tech stack — lean and effective" },
-          quick_wins: { type: "array", items: { type: "string" }, description: "3 ops improvements you can implement in under a week" },
+          tools_stack: {
+            type: "array",
+            items: { type: "string" },
+            description: "Recommended tech stack — lean and effective",
+          },
+          quick_wins: {
+            type: "array",
+            items: { type: "string" },
+            description: "3 ops improvements you can implement in under a week",
+          },
         },
-        required: ["north_star_kpi", "core_workflows", "automations", "weekly_rhythm", "kpis", "first_hire", "tools_stack", "quick_wins"],
+        required: [
+          "north_star_kpi",
+          "core_workflows",
+          "automations",
+          "weekly_rhythm",
+          "kpis",
+          "first_hire",
+          "tools_stack",
+          "quick_wins",
+        ],
       },
     },
     assetCategory: "ops",
@@ -318,7 +526,10 @@ Write real, deployable copy — not templates with [BRACKETS]. Use natural langu
       input_schema: {
         type: "object",
         properties: {
-          sequence_strategy: { type: "string", description: "The psychological approach and why it works for this situation" },
+          sequence_strategy: {
+            type: "string",
+            description: "The psychological approach and why it works for this situation",
+          },
           sequence: {
             type: "array",
             items: {
@@ -382,14 +593,38 @@ Give me an audit that tells me exactly what to fix first and why it's killing co
       input_schema: {
         type: "object",
         properties: {
-          overall_grade: { type: "string", description: "Letter grade: A/B/C/D/F with brief reasoning" },
-          conversion_killers: { type: "array", items: { type: "string" }, description: "Top issues that are actively losing conversions — brutal honesty" },
-          above_the_fold: { type: "string", description: "Detailed analysis of what a visitor sees in the first 5 seconds" },
-          copy_analysis: { type: "string", description: "Is the copy speaking to buyer desires or feature-bragging?" },
-          trust_signals: { type: "array", items: { type: "string" }, description: "Missing trust elements that create subconscious doubt" },
-          ux_issues: { type: "string", description: "Navigation, friction points, and user confusion areas" },
+          overall_grade: {
+            type: "string",
+            description: "Letter grade: A/B/C/D/F with brief reasoning",
+          },
+          conversion_killers: {
+            type: "array",
+            items: { type: "string" },
+            description: "Top issues that are actively losing conversions — brutal honesty",
+          },
+          above_the_fold: {
+            type: "string",
+            description: "Detailed analysis of what a visitor sees in the first 5 seconds",
+          },
+          copy_analysis: {
+            type: "string",
+            description: "Is the copy speaking to buyer desires or feature-bragging?",
+          },
+          trust_signals: {
+            type: "array",
+            items: { type: "string" },
+            description: "Missing trust elements that create subconscious doubt",
+          },
+          ux_issues: {
+            type: "string",
+            description: "Navigation, friction points, and user confusion areas",
+          },
           seo_notes: { type: "string", description: "Technical and content SEO opportunities" },
-          opportunities: { type: "array", items: { type: "string" }, description: "Quick wins and bigger opportunities in priority order" },
+          opportunities: {
+            type: "array",
+            items: { type: "string" },
+            description: "Quick wins and bigger opportunities in priority order",
+          },
           priority_fixes: {
             type: "array",
             items: {
@@ -403,9 +638,22 @@ Give me an audit that tells me exactly what to fix first and why it's killing co
               required: ["fix", "impact", "effort", "why"],
             },
           },
-          rewrite_suggestion: { type: "string", description: "A suggested rewrite of the main headline + subheadline" },
+          rewrite_suggestion: {
+            type: "string",
+            description: "A suggested rewrite of the main headline + subheadline",
+          },
         },
-        required: ["overall_grade", "conversion_killers", "above_the_fold", "copy_analysis", "trust_signals", "ux_issues", "seo_notes", "opportunities", "priority_fixes"],
+        required: [
+          "overall_grade",
+          "conversion_killers",
+          "above_the_fold",
+          "copy_analysis",
+          "trust_signals",
+          "ux_issues",
+          "seo_notes",
+          "opportunities",
+          "priority_fixes",
+        ],
       },
     },
     assetCategory: "website-audit",
@@ -438,10 +686,20 @@ Find every reason this fails. Be specific. Reference real market dynamics. Then 
       input_schema: {
         type: "object",
         properties: {
-          survival_score: { type: "number", description: "0-100 survival probability. Be honest. Most ideas score 25-50." },
+          survival_score: {
+            type: "number",
+            description: "0-100 survival probability. Be honest. Most ideas score 25-50.",
+          },
           verdict: { type: "string", description: "The harsh verdict in 2-3 sentences" },
-          the_kill_shot: { type: "string", description: "The single biggest reason this fails — the fatal flaw" },
-          fatal_flaws: { type: "array", items: { type: "string" }, description: "3-5 specific fatal flaws with real reasoning" },
+          the_kill_shot: {
+            type: "string",
+            description: "The single biggest reason this fails — the fatal flaw",
+          },
+          fatal_flaws: {
+            type: "array",
+            items: { type: "string" },
+            description: "3-5 specific fatal flaws with real reasoning",
+          },
           dangerous_assumptions: {
             type: "array",
             items: {
@@ -455,16 +713,43 @@ Find every reason this fails. Be specific. Reference real market dynamics. Then 
             },
             description: "The hidden assumptions the founder hasn't validated",
           },
-          market_risks: { type: "array", items: { type: "string" }, description: "Market-specific risks — competition, timing, regulation, behavior change" },
-          execution_risks: { type: "array", items: { type: "string" }, description: "Operational and team risks" },
-          the_pivot_that_saves_it: { type: "string", description: "The version of this idea that could actually work — the adjacent possible" },
-          if_you_proceed: { type: "array", items: { type: "string" }, description: "If you're ignoring all of this, at least do these 4 things first" },
+          market_risks: {
+            type: "array",
+            items: { type: "string" },
+            description: "Market-specific risks — competition, timing, regulation, behavior change",
+          },
+          execution_risks: {
+            type: "array",
+            items: { type: "string" },
+            description: "Operational and team risks",
+          },
+          the_pivot_that_saves_it: {
+            type: "string",
+            description:
+              "The version of this idea that could actually work — the adjacent possible",
+          },
+          if_you_proceed: {
+            type: "array",
+            items: { type: "string" },
+            description: "If you're ignoring all of this, at least do these 4 things first",
+          },
         },
-        required: ["survival_score", "verdict", "the_kill_shot", "fatal_flaws", "dangerous_assumptions", "market_risks", "execution_risks", "the_pivot_that_saves_it", "if_you_proceed"],
+        required: [
+          "survival_score",
+          "verdict",
+          "the_kill_shot",
+          "fatal_flaws",
+          "dangerous_assumptions",
+          "market_risks",
+          "execution_risks",
+          "the_pivot_that_saves_it",
+          "if_you_proceed",
+        ],
       },
     },
     assetCategory: "kill-analysis",
-    assetTitle: (i) => `Kill Analysis: ${String(i.idea || i.context || "Untitled idea").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Kill Analysis: ${String(i.idea || i.context || "Untitled idea").slice(0, 60)}`,
   },
 
   "funding-score": {
@@ -495,23 +780,89 @@ Give me a complete investment memo-style assessment. Tell me if this is venture-
       input_schema: {
         type: "object",
         properties: {
-          overall_score: { type: "number", description: "0-100 venture investability score. Average fundable startup: 60-70. Top 1%: 85+." },
-          verdict: { type: "string", description: "The investment thesis in 2-3 sentences — would you fund this?" },
-          vc_appropriate: { type: "boolean", description: "Is this a venture-scale business or should it bootstrap?" },
-          market_score: { type: "number", description: "0-100 — market size, growth rate, and win-ability" },
-          timing_score: { type: "number", description: "0-100 — is this the right moment? What tailwinds exist?" },
-          defensibility_score: { type: "number", description: "0-100 — moat, switching costs, network effects, data advantages" },
-          founder_fit_score: { type: "number", description: "0-100 — founder-market fit, execution credibility" },
-          traction_score: { type: "number", description: "0-100 — signals of market pull and product-market fit" },
-          bull_case: { type: "string", description: "The scenario where this becomes a $1B company" },
-          bear_case: { type: "string", description: "The realistic scenario where this fails or plateaus" },
-          strengths: { type: "array", items: { type: "string" }, description: "What makes investors lean forward" },
-          red_flags: { type: "array", items: { type: "string" }, description: "What makes investors pass immediately" },
-          what_changes_the_verdict: { type: "array", items: { type: "string" }, description: "What traction/milestones would dramatically improve fundability" },
-          comparable_companies: { type: "array", items: { type: "string" }, description: "Comparable funded companies and their outcomes" },
-          funding_stage_fit: { type: "string", description: "What stage of funding is realistic right now and why" },
+          overall_score: {
+            type: "number",
+            description:
+              "0-100 venture investability score. Average fundable startup: 60-70. Top 1%: 85+.",
+          },
+          verdict: {
+            type: "string",
+            description: "The investment thesis in 2-3 sentences — would you fund this?",
+          },
+          vc_appropriate: {
+            type: "boolean",
+            description: "Is this a venture-scale business or should it bootstrap?",
+          },
+          market_score: {
+            type: "number",
+            description: "0-100 — market size, growth rate, and win-ability",
+          },
+          timing_score: {
+            type: "number",
+            description: "0-100 — is this the right moment? What tailwinds exist?",
+          },
+          defensibility_score: {
+            type: "number",
+            description: "0-100 — moat, switching costs, network effects, data advantages",
+          },
+          founder_fit_score: {
+            type: "number",
+            description: "0-100 — founder-market fit, execution credibility",
+          },
+          traction_score: {
+            type: "number",
+            description: "0-100 — signals of market pull and product-market fit",
+          },
+          bull_case: {
+            type: "string",
+            description: "The scenario where this becomes a $1B company",
+          },
+          bear_case: {
+            type: "string",
+            description: "The realistic scenario where this fails or plateaus",
+          },
+          strengths: {
+            type: "array",
+            items: { type: "string" },
+            description: "What makes investors lean forward",
+          },
+          red_flags: {
+            type: "array",
+            items: { type: "string" },
+            description: "What makes investors pass immediately",
+          },
+          what_changes_the_verdict: {
+            type: "array",
+            items: { type: "string" },
+            description: "What traction/milestones would dramatically improve fundability",
+          },
+          comparable_companies: {
+            type: "array",
+            items: { type: "string" },
+            description: "Comparable funded companies and their outcomes",
+          },
+          funding_stage_fit: {
+            type: "string",
+            description: "What stage of funding is realistic right now and why",
+          },
         },
-        required: ["overall_score", "verdict", "vc_appropriate", "market_score", "timing_score", "defensibility_score", "founder_fit_score", "traction_score", "bull_case", "bear_case", "strengths", "red_flags", "what_changes_the_verdict", "comparable_companies", "funding_stage_fit"],
+        required: [
+          "overall_score",
+          "verdict",
+          "vc_appropriate",
+          "market_score",
+          "timing_score",
+          "defensibility_score",
+          "founder_fit_score",
+          "traction_score",
+          "bull_case",
+          "bear_case",
+          "strengths",
+          "red_flags",
+          "what_changes_the_verdict",
+          "comparable_companies",
+          "funding_stage_fit",
+        ],
       },
     },
     assetCategory: "funding-score",
@@ -545,7 +896,11 @@ Give me a specific, executable plan. I want to know exactly where to go, what to
       input_schema: {
         type: "object",
         properties: {
-          target_profile: { type: "string", description: "Hyper-specific first customer profile — demographics, psychographics, situation, and buying trigger" },
+          target_profile: {
+            type: "string",
+            description:
+              "Hyper-specific first customer profile — demographics, psychographics, situation, and buying trigger",
+          },
           where_to_find_them: {
             type: "array",
             items: {
@@ -558,8 +913,15 @@ Give me a specific, executable plan. I want to know exactly where to go, what to
               required: ["channel", "specific_places", "how_to_approach"],
             },
           },
-          outreach_script: { type: "string", description: "Word-for-word cold outreach DM/email — natural language, not a template. Include subject line." },
-          discovery_call_guide: { type: "string", description: "The 5-question discovery script that reveals buying intent" },
+          outreach_script: {
+            type: "string",
+            description:
+              "Word-for-word cold outreach DM/email — natural language, not a template. Include subject line.",
+          },
+          discovery_call_guide: {
+            type: "string",
+            description: "The 5-question discovery script that reveals buying intent",
+          },
           weekly_plan: {
             type: "array",
             items: {
@@ -574,7 +936,11 @@ Give me a specific, executable plan. I want to know exactly where to go, what to
             },
             description: "4-week week-by-week plan",
           },
-          conversion_tactics: { type: "array", items: { type: "string" }, description: "Specific tactics to close the deal — founder-specific advantages" },
+          conversion_tactics: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific tactics to close the deal — founder-specific advantages",
+          },
           common_objections: {
             type: "array",
             items: {
@@ -587,13 +953,26 @@ Give me a specific, executable plan. I want to know exactly where to go, what to
               required: ["objection", "reality", "reframe"],
             },
           },
-          the_secret_channel: { type: "string", description: "The non-obvious channel most founders overlook for this specific market" },
+          the_secret_channel: {
+            type: "string",
+            description: "The non-obvious channel most founders overlook for this specific market",
+          },
         },
-        required: ["target_profile", "where_to_find_them", "outreach_script", "discovery_call_guide", "weekly_plan", "conversion_tactics", "common_objections", "the_secret_channel"],
+        required: [
+          "target_profile",
+          "where_to_find_them",
+          "outreach_script",
+          "discovery_call_guide",
+          "weekly_plan",
+          "conversion_tactics",
+          "common_objections",
+          "the_secret_channel",
+        ],
       },
     },
     assetCategory: "customer-acquisition",
-    assetTitle: (i) => `First 10 Customers: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `First 10 Customers: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "business-plan": {
@@ -622,15 +1001,43 @@ Write a plan I could hand to an investor or bank tomorrow. Be realistic about th
       input_schema: {
         type: "object",
         properties: {
-          executive_summary: { type: "string", description: "The one-page summary — problem, solution, market, model, traction, ask" },
-          problem: { type: "string", description: "The problem statement — specific, evidenced, and urgent" },
-          solution: { type: "string", description: "How the product/service solves it — clear mechanism of value" },
-          target_market: { type: "string", description: "Primary and secondary markets with TAM/SAM/SOM estimates" },
-          business_model: { type: "string", description: "Revenue model with pricing tiers and unit economics" },
-          competitive_landscape: { type: "string", description: "Who else is solving this and how you win" },
-          competitive_advantage: { type: "string", description: "Your sustainable moat — why competitors can't easily copy" },
-          go_to_market: { type: "string", description: "First 12 months of customer acquisition — channels, costs, expectations" },
-          revenue_streams: { type: "array", items: { type: "string" }, description: "All revenue streams with rough % contribution" },
+          executive_summary: {
+            type: "string",
+            description: "The one-page summary — problem, solution, market, model, traction, ask",
+          },
+          problem: {
+            type: "string",
+            description: "The problem statement — specific, evidenced, and urgent",
+          },
+          solution: {
+            type: "string",
+            description: "How the product/service solves it — clear mechanism of value",
+          },
+          target_market: {
+            type: "string",
+            description: "Primary and secondary markets with TAM/SAM/SOM estimates",
+          },
+          business_model: {
+            type: "string",
+            description: "Revenue model with pricing tiers and unit economics",
+          },
+          competitive_landscape: {
+            type: "string",
+            description: "Who else is solving this and how you win",
+          },
+          competitive_advantage: {
+            type: "string",
+            description: "Your sustainable moat — why competitors can't easily copy",
+          },
+          go_to_market: {
+            type: "string",
+            description: "First 12 months of customer acquisition — channels, costs, expectations",
+          },
+          revenue_streams: {
+            type: "array",
+            items: { type: "string" },
+            description: "All revenue streams with rough % contribution",
+          },
           financial_projections: {
             type: "object",
             properties: {
@@ -654,7 +1061,10 @@ Write a plan I could hand to an investor or bank tomorrow. Be realistic about th
               required: ["milestone", "timeline", "how"],
             },
           },
-          team: { type: "string", description: "Who is building this and why they're the right people" },
+          team: {
+            type: "string",
+            description: "Who is building this and why they're the right people",
+          },
           risks_and_mitigations: {
             type: "array",
             items: {
@@ -666,13 +1076,30 @@ Write a plan I could hand to an investor or bank tomorrow. Be realistic about th
               required: ["risk", "mitigation"],
             },
           },
-          ask: { type: "string", description: "What you need — funding, partnerships, advisors — and what it unlocks" },
+          ask: {
+            type: "string",
+            description: "What you need — funding, partnerships, advisors — and what it unlocks",
+          },
         },
-        required: ["executive_summary", "problem", "solution", "target_market", "business_model", "competitive_advantage", "go_to_market", "revenue_streams", "financial_projections", "key_milestones", "risks_and_mitigations", "ask"],
+        required: [
+          "executive_summary",
+          "problem",
+          "solution",
+          "target_market",
+          "business_model",
+          "competitive_advantage",
+          "go_to_market",
+          "revenue_streams",
+          "financial_projections",
+          "key_milestones",
+          "risks_and_mitigations",
+          "ask",
+        ],
       },
     },
     assetCategory: "business-plan",
-    assetTitle: (i) => `Business Plan: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Business Plan: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "investor-emails": {
@@ -703,14 +1130,27 @@ Write emails I could send Monday morning. Make them feel personal and specific, 
       input_schema: {
         type: "object",
         properties: {
-          strategy_note: { type: "string", description: "The psychological approach — why these emails are structured this way" },
-          subject_lines: { type: "array", items: { type: "string" }, description: "4 subject line options with different hooks" },
+          strategy_note: {
+            type: "string",
+            description: "The psychological approach — why these emails are structured this way",
+          },
+          subject_lines: {
+            type: "array",
+            items: { type: "string" },
+            description: "4 subject line options with different hooks",
+          },
           cold_email: {
             type: "object",
             properties: {
               subject: { type: "string" },
-              body: { type: "string", description: "Under 150 words. Lead with the hook, not the pitch." },
-              ps_line: { type: "string", description: "Optional PS — often the most read part of an email" },
+              body: {
+                type: "string",
+                description: "Under 150 words. Lead with the hook, not the pitch.",
+              },
+              ps_line: {
+                type: "string",
+                description: "Optional PS — often the most read part of an email",
+              },
             },
             required: ["subject", "body"],
           },
@@ -720,7 +1160,10 @@ Write emails I could send Monday morning. Make them feel personal and specific, 
               subject: { type: "string" },
               body: { type: "string" },
               timing: { type: "string" },
-              strategy: { type: "string", description: "Why this specific approach for follow-up 1" },
+              strategy: {
+                type: "string",
+                description: "Why this specific approach for follow-up 1",
+              },
             },
             required: ["subject", "body", "timing", "strategy"],
           },
@@ -743,14 +1186,28 @@ Write emails I could send Monday morning. Make them feel personal and specific, 
             },
             required: ["subject", "body", "timing"],
           },
-          personalization_hooks: { type: "array", items: { type: "string" }, description: "Specific things to research about each investor before sending" },
+          personalization_hooks: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific things to research about each investor before sending",
+          },
           dos_and_donts: { type: "array", items: { type: "string" } },
         },
-        required: ["strategy_note", "subject_lines", "cold_email", "follow_up_1", "follow_up_2", "breakup_email", "personalization_hooks", "dos_and_donts"],
+        required: [
+          "strategy_note",
+          "subject_lines",
+          "cold_email",
+          "follow_up_1",
+          "follow_up_2",
+          "breakup_email",
+          "personalization_hooks",
+          "dos_and_donts",
+        ],
       },
     },
     assetCategory: "investor-emails",
-    assetTitle: (i) => `Investor Emails: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Investor Emails: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "idea-vs-idea": {
@@ -786,7 +1243,10 @@ Give me a definitive verdict. Which path should I bet my next 3 years on, and ex
         properties: {
           winner: { type: "string", enum: ["Idea A", "Idea B", "Too close to call"] },
           confidence: { type: "string", enum: ["High", "Medium", "Low"] },
-          verdict: { type: "string", description: "2-3 paragraphs — the definitive recommendation and the key reasoning" },
+          verdict: {
+            type: "string",
+            description: "2-3 paragraphs — the definitive recommendation and the key reasoning",
+          },
           idea_a: {
             type: "object",
             properties: {
@@ -794,7 +1254,10 @@ Give me a definitive verdict. Which path should I bet my next 3 years on, and ex
               one_liner: { type: "string" },
               score: { type: "number", description: "0-100 overall startup potential" },
               market_potential: { type: "string" },
-              execution_difficulty: { type: "string", enum: ["Easy", "Medium", "Hard", "Extremely Hard"] },
+              execution_difficulty: {
+                type: "string",
+                enum: ["Easy", "Medium", "Hard", "Extremely Hard"],
+              },
               pros: { type: "array", items: { type: "string" } },
               cons: { type: "array", items: { type: "string" } },
               ideal_founder_profile: { type: "string" },
@@ -809,7 +1272,10 @@ Give me a definitive verdict. Which path should I bet my next 3 years on, and ex
               one_liner: { type: "string" },
               score: { type: "number" },
               market_potential: { type: "string" },
-              execution_difficulty: { type: "string", enum: ["Easy", "Medium", "Hard", "Extremely Hard"] },
+              execution_difficulty: {
+                type: "string",
+                enum: ["Easy", "Medium", "Hard", "Extremely Hard"],
+              },
               pros: { type: "array", items: { type: "string" } },
               cons: { type: "array", items: { type: "string" } },
               ideal_founder_profile: { type: "string" },
@@ -817,15 +1283,34 @@ Give me a definitive verdict. Which path should I bet my next 3 years on, and ex
             },
             required: ["name", "one_liner", "score", "pros", "cons", "ideal_founder_profile"],
           },
-          key_differentiators: { type: "array", items: { type: "string" }, description: "The critical dimensions where they diverge most" },
-          the_twist: { type: "string", description: "The non-obvious insight most founders would miss" },
-          hybrid_possibility: { type: "string", description: "Is there a way to combine the best of both?" },
+          key_differentiators: {
+            type: "array",
+            items: { type: "string" },
+            description: "The critical dimensions where they diverge most",
+          },
+          the_twist: {
+            type: "string",
+            description: "The non-obvious insight most founders would miss",
+          },
+          hybrid_possibility: {
+            type: "string",
+            description: "Is there a way to combine the best of both?",
+          },
         },
-        required: ["winner", "confidence", "verdict", "idea_a", "idea_b", "key_differentiators", "the_twist"],
+        required: [
+          "winner",
+          "confidence",
+          "verdict",
+          "idea_a",
+          "idea_b",
+          "key_differentiators",
+          "the_twist",
+        ],
       },
     },
     assetCategory: "idea-comparison",
-    assetTitle: (i) => `Idea vs Idea: ${String(i.business || i.context || "Comparison").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Idea vs Idea: ${String(i.business || i.context || "Comparison").slice(0, 60)}`,
   },
 
   "landing-page": {
@@ -857,18 +1342,39 @@ Write copy that makes the visitor feel like you read their mind. No clichés. No
       input_schema: {
         type: "object",
         properties: {
-          hero_headline: { type: "string", description: "Main H1 — specific, bold, outcome-focused. Not clever, CLEAR." },
-          hero_subheadline: { type: "string", description: "2 sentences that amplify the headline and explain the mechanism" },
-          hero_cta: { type: "string", description: "Primary CTA button — speaks to desire, not obligation" },
-          above_fold_hook: { type: "string", description: "The sentence that keeps them scrolling — create urgency or curiosity" },
-          social_proof_bar: { type: "string", description: "The quick stat or logo bar that builds immediate credibility" },
+          hero_headline: {
+            type: "string",
+            description: "Main H1 — specific, bold, outcome-focused. Not clever, CLEAR.",
+          },
+          hero_subheadline: {
+            type: "string",
+            description: "2 sentences that amplify the headline and explain the mechanism",
+          },
+          hero_cta: {
+            type: "string",
+            description: "Primary CTA button — speaks to desire, not obligation",
+          },
+          above_fold_hook: {
+            type: "string",
+            description: "The sentence that keeps them scrolling — create urgency or curiosity",
+          },
+          social_proof_bar: {
+            type: "string",
+            description: "The quick stat or logo bar that builds immediate credibility",
+          },
           problem_section: {
             type: "object",
             properties: {
               headline: { type: "string" },
-              opening: { type: "string", description: "The visceral opening that makes them feel the pain" },
+              opening: {
+                type: "string",
+                description: "The visceral opening that makes them feel the pain",
+              },
               pain_points: { type: "array", items: { type: "string" } },
-              agitation: { type: "string", description: "The consequence of NOT solving this — what it's costing them" },
+              agitation: {
+                type: "string",
+                description: "The consequence of NOT solving this — what it's costing them",
+              },
             },
             required: ["headline", "opening", "pain_points", "agitation"],
           },
@@ -876,7 +1382,10 @@ Write copy that makes the visitor feel like you read their mind. No clichés. No
             type: "object",
             properties: {
               headline: { type: "string" },
-              mechanism: { type: "string", description: "How it works — the unique mechanism that makes results inevitable" },
+              mechanism: {
+                type: "string",
+                description: "How it works — the unique mechanism that makes results inevitable",
+              },
             },
             required: ["headline", "mechanism"],
           },
@@ -892,7 +1401,11 @@ Write copy that makes the visitor feel like you read their mind. No clichés. No
               required: ["headline", "description", "outcome"],
             },
           },
-          testimonial_templates: { type: "array", items: { type: "string" }, description: "3 specific testimonial scripts to collect from customers" },
+          testimonial_templates: {
+            type: "array",
+            items: { type: "string" },
+            description: "3 specific testimonial scripts to collect from customers",
+          },
           faq_section: {
             type: "array",
             items: {
@@ -904,17 +1417,36 @@ Write copy that makes the visitor feel like you read their mind. No clichés. No
               required: ["question", "answer"],
             },
           },
-          objection_busters: { type: "array", items: { type: "string" }, description: "The top objections and how to handle them in copy" },
+          objection_busters: {
+            type: "array",
+            items: { type: "string" },
+            description: "The top objections and how to handle them in copy",
+          },
           closing_cta_headline: { type: "string" },
           closing_cta_body: { type: "string" },
           seo_meta_title: { type: "string" },
           seo_meta_description: { type: "string" },
         },
-        required: ["hero_headline", "hero_subheadline", "hero_cta", "above_fold_hook", "problem_section", "solution_section", "benefits", "testimonial_templates", "faq_section", "objection_busters", "closing_cta_headline", "closing_cta_body", "seo_meta_description"],
+        required: [
+          "hero_headline",
+          "hero_subheadline",
+          "hero_cta",
+          "above_fold_hook",
+          "problem_section",
+          "solution_section",
+          "benefits",
+          "testimonial_templates",
+          "faq_section",
+          "objection_busters",
+          "closing_cta_headline",
+          "closing_cta_body",
+          "seo_meta_description",
+        ],
       },
     },
     assetCategory: "landing-page",
-    assetTitle: (i) => `Landing Page: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Landing Page: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "competitor-analysis": {
@@ -943,7 +1475,10 @@ Map the competitive landscape completely. Find my unfair angle. Tell me where I 
       input_schema: {
         type: "object",
         properties: {
-          market_summary: { type: "string", description: "State of the competitive landscape in 2-3 paragraphs" },
+          market_summary: {
+            type: "string",
+            description: "State of the competitive landscape in 2-3 paragraphs",
+          },
           competitors: {
             type: "array",
             items: {
@@ -954,14 +1489,22 @@ Map the competitive landscape completely. Find my unfair angle. Tell me where I 
                 strengths: { type: "array", items: { type: "string" } },
                 weaknesses: { type: "array", items: { type: "string" } },
                 pricing: { type: "string" },
-                customer_complaints: { type: "array", items: { type: "string" }, description: "What customers complain about in reviews" },
+                customer_complaints: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "What customers complain about in reviews",
+                },
                 exploitable_weakness: { type: "string" },
               },
               required: ["name", "tier", "strengths", "weaknesses", "exploitable_weakness"],
             },
             description: "3-6 key competitors analyzed",
           },
-          market_gaps: { type: "array", items: { type: "string" }, description: "Specific underserved segments or unmet needs — with evidence" },
+          market_gaps: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific underserved segments or unmet needs — with evidence",
+          },
           winning_angles: {
             type: "array",
             items: {
@@ -975,16 +1518,35 @@ Map the competitive landscape completely. Find my unfair angle. Tell me where I 
             },
             description: "3-4 specific angles to win — ranked by opportunity",
           },
-          positioning_recommendation: { type: "string", description: "The exact positioning statement that creates maximum differentiation" },
+          positioning_recommendation: {
+            type: "string",
+            description: "The exact positioning statement that creates maximum differentiation",
+          },
           channels_competitors_neglect: { type: "array", items: { type: "string" } },
-          moat_building_strategy: { type: "string", description: "How to build a moat competitors can't easily copy" },
-          watch_out_for: { type: "array", items: { type: "string" }, description: "Competitive threats to monitor closely" },
+          moat_building_strategy: {
+            type: "string",
+            description: "How to build a moat competitors can't easily copy",
+          },
+          watch_out_for: {
+            type: "array",
+            items: { type: "string" },
+            description: "Competitive threats to monitor closely",
+          },
         },
-        required: ["market_summary", "competitors", "market_gaps", "winning_angles", "positioning_recommendation", "channels_competitors_neglect", "moat_building_strategy"],
+        required: [
+          "market_summary",
+          "competitors",
+          "market_gaps",
+          "winning_angles",
+          "positioning_recommendation",
+          "channels_competitors_neglect",
+          "moat_building_strategy",
+        ],
       },
     },
     assetCategory: "competitor-analysis",
-    assetTitle: (i) => `Competitor Analysis: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Competitor Analysis: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "pricing-strategy": {
@@ -1016,8 +1578,15 @@ Build a pricing architecture that maximizes both growth and revenue. Don't be co
       input_schema: {
         type: "object",
         properties: {
-          pricing_philosophy: { type: "string", description: "The core pricing principle — value-based, competitive, cost-plus, etc. and why it fits" },
-          pricing_model: { type: "string", description: "The fundamental model: subscription, usage, project, retainer, etc." },
+          pricing_philosophy: {
+            type: "string",
+            description:
+              "The core pricing principle — value-based, competitive, cost-plus, etc. and why it fits",
+          },
+          pricing_model: {
+            type: "string",
+            description: "The fundamental model: subscription, usage, project, retainer, etc.",
+          },
           tiers: {
             type: "array",
             items: {
@@ -1029,26 +1598,77 @@ Build a pricing architecture that maximizes both growth and revenue. Don't be co
                 target_customer: { type: "string" },
                 what_they_get: { type: "array", items: { type: "string" } },
                 limitations: { type: "array", items: { type: "string" } },
-                psychological_role: { type: "string", description: "Anchor, hero, upsell — what job this tier does" },
-                conversion_mechanism: { type: "string", description: "What drives users to this tier" },
+                psychological_role: {
+                  type: "string",
+                  description: "Anchor, hero, upsell — what job this tier does",
+                },
+                conversion_mechanism: {
+                  type: "string",
+                  description: "What drives users to this tier",
+                },
               },
-              required: ["name", "price", "billing", "target_customer", "what_they_get", "psychological_role"],
+              required: [
+                "name",
+                "price",
+                "billing",
+                "target_customer",
+                "what_they_get",
+                "psychological_role",
+              ],
             },
           },
-          anchor_strategy: { type: "string", description: "How the pricing tiers work together psychologically to drive toward the hero tier" },
-          hero_tier: { type: "string", description: "Which tier will generate 70%+ of revenue and why" },
-          annual_discount: { type: "string", description: "Recommended annual vs monthly discount and the rationale" },
-          price_increase_path: { type: "string", description: "How to raise prices over 24 months without losing customers" },
-          packaging_insights: { type: "array", items: { type: "string" }, description: "Specific packaging moves that increase perceived value" },
-          what_to_charge_for: { type: "array", items: { type: "string" }, description: "Dimensions of value to monetize — seats, usage, outcomes, features" },
-          pricing_page_copy: { type: "string", description: "The key copy elements for a high-converting pricing page" },
-          common_pricing_mistakes: { type: "array", items: { type: "string" }, description: "Mistakes to avoid in this specific market" },
+          anchor_strategy: {
+            type: "string",
+            description:
+              "How the pricing tiers work together psychologically to drive toward the hero tier",
+          },
+          hero_tier: {
+            type: "string",
+            description: "Which tier will generate 70%+ of revenue and why",
+          },
+          annual_discount: {
+            type: "string",
+            description: "Recommended annual vs monthly discount and the rationale",
+          },
+          price_increase_path: {
+            type: "string",
+            description: "How to raise prices over 24 months without losing customers",
+          },
+          packaging_insights: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific packaging moves that increase perceived value",
+          },
+          what_to_charge_for: {
+            type: "array",
+            items: { type: "string" },
+            description: "Dimensions of value to monetize — seats, usage, outcomes, features",
+          },
+          pricing_page_copy: {
+            type: "string",
+            description: "The key copy elements for a high-converting pricing page",
+          },
+          common_pricing_mistakes: {
+            type: "array",
+            items: { type: "string" },
+            description: "Mistakes to avoid in this specific market",
+          },
         },
-        required: ["pricing_philosophy", "pricing_model", "tiers", "anchor_strategy", "hero_tier", "annual_discount", "packaging_insights", "pricing_page_copy"],
+        required: [
+          "pricing_philosophy",
+          "pricing_model",
+          "tiers",
+          "anchor_strategy",
+          "hero_tier",
+          "annual_discount",
+          "packaging_insights",
+          "pricing_page_copy",
+        ],
       },
     },
     assetCategory: "pricing-strategy",
-    assetTitle: (i) => `Pricing Strategy: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Pricing Strategy: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "revenue-projector": {
@@ -1104,7 +1724,13 @@ Build three scenarios. Be honest about the assumptions. Tell me what I need to b
               key_assumption: { type: "string" },
               probability: { type: "string" },
             },
-            required: ["month_3_mrr", "month_6_mrr", "month_12_mrr", "customers_at_12m", "key_assumption"],
+            required: [
+              "month_3_mrr",
+              "month_6_mrr",
+              "month_12_mrr",
+              "customers_at_12m",
+              "key_assumption",
+            ],
           },
           base_scenario: {
             type: "object",
@@ -1117,7 +1743,14 @@ Build three scenarios. Be honest about the assumptions. Tell me what I need to b
               key_assumption: { type: "string" },
               probability: { type: "string" },
             },
-            required: ["month_3_mrr", "month_6_mrr", "month_12_mrr", "customers_at_12m", "arr_at_12m", "key_assumption"],
+            required: [
+              "month_3_mrr",
+              "month_6_mrr",
+              "month_12_mrr",
+              "customers_at_12m",
+              "arr_at_12m",
+              "key_assumption",
+            ],
           },
           optimistic_scenario: {
             type: "object",
@@ -1130,7 +1763,14 @@ Build three scenarios. Be honest about the assumptions. Tell me what I need to b
               what_must_be_true: { type: "array", items: { type: "string" } },
               probability: { type: "string" },
             },
-            required: ["month_3_mrr", "month_6_mrr", "month_12_mrr", "customers_at_12m", "arr_at_12m", "what_must_be_true"],
+            required: [
+              "month_3_mrr",
+              "month_6_mrr",
+              "month_12_mrr",
+              "customers_at_12m",
+              "arr_at_12m",
+              "what_must_be_true",
+            ],
           },
           growth_levers: {
             type: "array",
@@ -1145,16 +1785,40 @@ Build three scenarios. Be honest about the assumptions. Tell me what I need to b
             },
             description: "Top 3-4 levers to accelerate to optimistic scenario",
           },
-          breakeven_analysis: { type: "string", description: "When does the business break even and what does that require?" },
-          unit_economics_verdict: { type: "string", description: "Are the unit economics good, acceptable, or concerning? What needs to improve?" },
-          investor_story: { type: "string", description: "The 3-sentence financial narrative for investors" },
-          risk_factors: { type: "array", items: { type: "string" }, description: "The assumptions most likely to be wrong and by how much" },
+          breakeven_analysis: {
+            type: "string",
+            description: "When does the business break even and what does that require?",
+          },
+          unit_economics_verdict: {
+            type: "string",
+            description:
+              "Are the unit economics good, acceptable, or concerning? What needs to improve?",
+          },
+          investor_story: {
+            type: "string",
+            description: "The 3-sentence financial narrative for investors",
+          },
+          risk_factors: {
+            type: "array",
+            items: { type: "string" },
+            description: "The assumptions most likely to be wrong and by how much",
+          },
         },
-        required: ["model_assumptions", "conservative_scenario", "base_scenario", "optimistic_scenario", "growth_levers", "breakeven_analysis", "unit_economics_verdict", "investor_story"],
+        required: [
+          "model_assumptions",
+          "conservative_scenario",
+          "base_scenario",
+          "optimistic_scenario",
+          "growth_levers",
+          "breakeven_analysis",
+          "unit_economics_verdict",
+          "investor_story",
+        ],
       },
     },
     assetCategory: "revenue-projection",
-    assetTitle: (i) => `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 };
 
@@ -1195,7 +1859,9 @@ export async function runToolLocally(
         .select("id")
         .single();
       runId = run?.id as string | undefined;
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
   }
 
   const useStreaming = typeof onStream === "function";
@@ -1211,7 +1877,10 @@ export async function runToolLocally(
   if (ctx.orgId && ctx.userId) {
     try {
       if (runId) {
-        await supabase.from("tool_runs").update({ status: "succeeded", output: output as never }).eq("id", runId);
+        await supabase
+          .from("tool_runs")
+          .update({ status: "succeeded", output: output as never })
+          .eq("id", runId);
       }
       await supabase.from("generated_assets").insert({
         organization_id: ctx.orgId,
@@ -1232,19 +1901,28 @@ export async function runToolLocally(
         .eq("tool_key", toolKey)
         .maybeSingle();
       if (existing) {
-        await supabase.from("usage_tracking")
+        await supabase
+          .from("usage_tracking")
           .update({ count: (existing.count as number) + 1, last_used_at: new Date().toISOString() })
           .eq("id", existing.id);
       } else {
         await supabase.from("usage_tracking").insert({
-          organization_id: ctx.orgId, period, tool_key: toolKey, count: 1,
+          organization_id: ctx.orgId,
+          period,
+          tool_key: toolKey,
+          count: 1,
         });
       }
     } catch {
       if (runId) {
         try {
-          await supabase.from("tool_runs").update({ status: "succeeded", output: output as never }).eq("id", runId);
-        } catch { /* truly non-blocking */ }
+          await supabase
+            .from("tool_runs")
+            .update({ status: "succeeded", output: output as never })
+            .eq("id", runId);
+        } catch {
+          /* truly non-blocking */
+        }
       }
     }
   }
@@ -1347,7 +2025,9 @@ async function callStreamingAPI(
           jsonAccum += chunk;
           onStream(chunk);
         }
-      } catch { /* skip malformed SSE lines */ }
+      } catch {
+        /* skip malformed SSE lines */
+      }
     }
   }
 
@@ -1361,7 +2041,8 @@ async function callStreamingAPI(
 
 function parseApiError(status: number, body: string): string {
   if (status === 429) return "Rate limit exceeded — please wait a moment and try again.";
-  if (status === 401) return "Invalid Anthropic API key. Check VITE_ANTHROPIC_API_KEY in your .env file.";
+  if (status === 401)
+    return "Invalid Anthropic API key. Check VITE_ANTHROPIC_API_KEY in your .env file.";
   if (status === 400) return `Bad request: ${body.slice(0, 200)}`;
   return `Anthropic API error ${status}: ${body.slice(0, 200)}`;
 }

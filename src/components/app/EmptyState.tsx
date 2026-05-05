@@ -23,11 +23,15 @@ export function EmptyState({
         variant === "card" && "rounded-2xl p-12",
         className,
       )}
-      style={variant === "card" ? {
-        background: "var(--surface)",
-        border: "1px dashed rgba(59,130,246,0.2)",
-        boxShadow: "inset 0 0 60px rgba(59,130,246,0.03)",
-      } : undefined}
+      style={
+        variant === "card"
+          ? {
+              background: "var(--surface)",
+              border: "1px dashed rgba(59,130,246,0.2)",
+              boxShadow: "inset 0 0 60px rgba(59,130,246,0.03)",
+            }
+          : undefined
+      }
     >
       {/* Layered glow icon */}
       <div className="relative mb-6">
@@ -59,7 +63,14 @@ export function EmptyState({
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 20px rgba(59,130,246,0.15)",
           }}
         >
-          <Icon className="h-6 w-6" style={{ color: "var(--primary)", opacity: 0.8, filter: "drop-shadow(0 0 6px rgba(59,130,246,0.5))" }} />
+          <Icon
+            className="h-6 w-6"
+            style={{
+              color: "var(--primary)",
+              opacity: 0.8,
+              filter: "drop-shadow(0 0 6px rgba(59,130,246,0.5))",
+            }}
+          />
         </span>
       </div>
 

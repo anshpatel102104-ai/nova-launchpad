@@ -3,14 +3,17 @@ import type { LucideIcon } from "lucide-react";
 
 type Variant = "dashboard" | "launchpad" | "nova" | "assets" | "billing" | "settings" | "neutral";
 
-const V: Record<Variant, {
-  gradient: string;
-  eyebrowColor: string;
-  borderColor: string;
-  glowColor: string;
-  orb1: string;
-  orb2: string;
-}> = {
+const V: Record<
+  Variant,
+  {
+    gradient: string;
+    eyebrowColor: string;
+    borderColor: string;
+    glowColor: string;
+    orb1: string;
+    orb2: string;
+  }
+> = {
   dashboard: {
     gradient: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
     eyebrowColor: "#60a5fa",
@@ -103,11 +106,17 @@ export function WorkspaceHeader({
         <>
           <div
             className="orb-float pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full"
-            style={{ background: `radial-gradient(circle, ${v.orb1}, transparent 70%)`, filter: "blur(40px)" }}
+            style={{
+              background: `radial-gradient(circle, ${v.orb1}, transparent 70%)`,
+              filter: "blur(40px)",
+            }}
           />
           <div
             className="orb-float-2 pointer-events-none absolute -bottom-20 -right-10 h-48 w-48 rounded-full"
-            style={{ background: `radial-gradient(circle, ${v.orb2}, transparent 70%)`, filter: "blur(30px)" }}
+            style={{
+              background: `radial-gradient(circle, ${v.orb2}, transparent 70%)`,
+              filter: "blur(30px)",
+            }}
           />
         </>
       )}
@@ -116,7 +125,9 @@ export function WorkspaceHeader({
       {isVibrant && (
         <div
           className="absolute top-0 left-0 right-0 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${v.eyebrowColor}60, transparent)` }}
+          style={{
+            background: `linear-gradient(90deg, transparent, ${v.eyebrowColor}60, transparent)`,
+          }}
         />
       )}
 
@@ -171,9 +182,7 @@ export function WorkspaceHeader({
             )}
           </div>
         </div>
-        {actions && (
-          <div className="flex shrink-0 items-center gap-2">{actions}</div>
-        )}
+        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>
     </header>
   );

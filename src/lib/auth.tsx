@@ -67,7 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(sess?.user ?? null);
       if (sess?.user) {
         // defer to avoid deadlock
-        setTimeout(() => { void loadProfile(sess.user.id); }, 0);
+        setTimeout(() => {
+          void loadProfile(sess.user.id);
+        }, 0);
       } else {
         setProfile(null);
         setCurrentOrgId(null);
@@ -83,7 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else setLoading(false);
     });
 
-    return () => { sub.subscription.unsubscribe(); };
+    return () => {
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const refreshProfile = async () => {
@@ -95,7 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, currentOrgId, currentOrg, loading, refreshProfile, signOut }}>
+    <AuthContext.Provider
+      value={{ session, user, profile, currentOrgId, currentOrg, loading, refreshProfile, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -110,7 +116,12 @@ export function useAuth() {
       ...ctx,
       session: null,
       user: { id: GUEST_USER.id, email: GUEST_USER.email } as unknown as User,
-      profile: { id: GUEST_USER.id, email: GUEST_USER.email, full_name: GUEST_USER.full_name, onboarding_complete: true },
+      profile: {
+        id: GUEST_USER.id,
+        email: GUEST_USER.email,
+        full_name: GUEST_USER.full_name,
+        onboarding_complete: true,
+      },
       currentOrgId: GUEST_ORG_ID,
       currentOrg: { id: GUEST_ORG_ID, name: "Demo Operations Co." },
       loading: false,

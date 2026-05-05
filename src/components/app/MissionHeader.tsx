@@ -44,9 +44,7 @@ export function MissionHeader({
             <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{description}</p>
           )}
         </div>
-        {actions && (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
-        )}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </div>
   );
@@ -65,21 +63,21 @@ export function StatusBadge({
     variant === "active" || variant === "online"
       ? "status-active"
       : variant === "standby"
-      ? "status-standby"
-      : variant === "soon"
-      ? "status-soon"
-      : "status-locked";
+        ? "status-standby"
+        : variant === "soon"
+          ? "status-soon"
+          : "status-locked";
   const text =
     label ??
     (variant === "active"
       ? "Active"
       : variant === "online"
-      ? "Online"
-      : variant === "standby"
-      ? "Standby"
-      : variant === "soon"
-      ? "Coming soon"
-      : "Locked");
+        ? "Online"
+        : variant === "standby"
+          ? "Standby"
+          : variant === "soon"
+            ? "Coming soon"
+            : "Locked");
   return (
     <span className={cn("status-badge", cls)}>
       <span className={cn("dot", live && "live")} />
@@ -102,8 +100,8 @@ export function DifficultyBadge({ level }: { level: "Beginner" | "Intermediate" 
     level === "Beginner"
       ? "border-success/30 text-success bg-success/10"
       : level === "Intermediate"
-      ? "border-primary/30 text-primary bg-primary/10"
-      : "border-warning/40 text-warning bg-warning/10";
+        ? "border-primary/30 text-primary bg-primary/10"
+        : "border-warning/40 text-warning bg-warning/10";
   return (
     <span
       className={cn(

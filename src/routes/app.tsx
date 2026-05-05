@@ -10,7 +10,9 @@ export const Route = createFileRoute("/app")({
   beforeLoad: async ({ location }) => {
     // Guest mode bypasses auth — purely client-side demo.
     if (guestStore.get().isGuest) return;
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
     }

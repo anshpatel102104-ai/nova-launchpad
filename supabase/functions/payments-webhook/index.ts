@@ -56,6 +56,7 @@ serve(async (req) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncSubscription(obj: any) {
   const subscriptionId: string | undefined = obj.subscription || obj.id;
   const customerId: string | undefined = obj.customer;
@@ -92,9 +93,7 @@ async function syncSubscription(obj: any) {
     status,
     stripe_subscription_id: subscriptionId ?? null,
     stripe_customer_id: customerId ?? null,
-    current_period_end: currentPeriodEnd
-      ? new Date(currentPeriodEnd * 1000).toISOString()
-      : null,
+    current_period_end: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
     cancel_at_period_end: cancelAtPeriodEnd,
     updated_at: new Date().toISOString(),
   };
@@ -109,6 +108,7 @@ async function syncSubscription(obj: any) {
   else console.log("Synced", { plan, organizationId, status });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function cancelSubscription(obj: any) {
   const organizationId = obj.metadata?.organizationId;
   if (!organizationId) return;
@@ -123,6 +123,7 @@ async function cancelSubscription(obj: any) {
     .eq("organization_id", organizationId);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function markPastDue(invoice: any) {
   const customerId = invoice.customer;
   if (!customerId) return;
@@ -132,6 +133,7 @@ async function markPastDue(invoice: any) {
     .eq("stripe_customer_id", customerId);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function clearPastDue(invoice: any) {
   const customerId = invoice.customer;
   if (!customerId) return;

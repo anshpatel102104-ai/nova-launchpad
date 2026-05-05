@@ -18,28 +18,61 @@ function SignIn() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     navigate({ to: "/app/dashboard" });
   };
 
   return (
     <AuthShell title="Welcome back" subtitle="Sign in to your operating system.">
       <form className="space-y-4" onSubmit={onSubmit}>
-        <Field label="Email"><Input type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 bg-surface-2" /></Field>
-        <Field label="Password"><Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 bg-surface-2" /></Field>
+        <Field label="Email">
+          <Input
+            type="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-11 bg-surface-2"
+          />
+        </Field>
+        <Field label="Password">
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-11 bg-surface-2"
+          />
+        </Field>
         <Button className="w-full h-11 mt-2" type="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
       <div className="mt-5 flex items-center justify-between text-[12.5px]">
-        <Link to="/auth/forgot-password" className="text-muted-foreground hover:text-foreground">Forgot password?</Link>
-        <Link to="/auth/sign-up" className="text-muted-foreground hover:text-foreground">Don't have an account? <span className="text-primary">Sign up free</span></Link>
+        <Link to="/auth/forgot-password" className="text-muted-foreground hover:text-foreground">
+          Forgot password?
+        </Link>
+        <Link to="/auth/sign-up" className="text-muted-foreground hover:text-foreground">
+          Don't have an account? <span className="text-primary">Sign up free</span>
+        </Link>
       </div>
     </AuthShell>
   );
 }
 
-export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_1fr] bg-background relative overflow-hidden">
       {/* Subtle ambient glows */}
@@ -49,18 +82,25 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
       {/* Left: brand statement */}
       <div className="relative hidden lg:flex flex-col justify-between border-r border-border p-12 bg-grid-faint">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary text-white font-display font-bold text-[14px] glow-primary">LN</div>
-          <span className="font-display text-[15px] font-semibold tracking-tight">LaunchpadNOVA</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary text-white font-display font-bold text-[14px] glow-primary">
+            LN
+          </div>
+          <span className="font-display text-[15px] font-semibold tracking-tight">
+            LaunchpadNOVA
+          </span>
         </div>
 
         <div className="max-w-lg">
           <h2 className="font-display text-[clamp(2.5rem,4vw,3.75rem)] font-semibold leading-[1.05] tracking-tight">
-            <span className="text-brand-cycle">Build.</span><br />
-            <span className="text-brand-cycle">Launch.</span><br />
+            <span className="text-brand-cycle">Build.</span>
+            <br />
+            <span className="text-brand-cycle">Launch.</span>
+            <br />
             <span className="text-brand-cycle">Operate.</span>
           </h2>
           <p className="mt-6 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-            The AI operating system founders use to go from first idea to automated company — without stitching ten tools together.
+            The AI operating system founders use to go from first idea to automated company —
+            without stitching ten tools together.
           </p>
           <div className="mt-8 flex items-center gap-6 text-[12px] text-muted-foreground">
             <Stat n="10" label="AI tools" />
@@ -69,14 +109,18 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           </div>
         </div>
 
-        <div className="text-[11px] text-muted-foreground">© LaunchpadNOVA · Built for founders</div>
+        <div className="text-[11px] text-muted-foreground">
+          © LaunchpadNOVA · Built for founders
+        </div>
       </div>
 
       {/* Right: form card */}
       <div className="relative flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8 flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary text-white font-bold text-[13px]">LN</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary text-white font-bold text-[13px]">
+              LN
+            </div>
             <span className="font-display text-[15px] font-semibold">LaunchpadNOVA</span>
           </div>
           <h1 className="font-display text-[26px] font-semibold tracking-tight">{title}</h1>
@@ -92,7 +136,9 @@ function Stat({ n, label }: { n: string; label: string }) {
   return (
     <div>
       <div className="font-display text-[22px] font-semibold leading-none">{n}</div>
-      <div className="mt-1 text-[10.5px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-1 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
     </div>
   );
 }

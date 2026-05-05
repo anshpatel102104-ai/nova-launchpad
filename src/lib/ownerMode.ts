@@ -4,11 +4,19 @@ const STORAGE_KEY = "nova-owner-mode";
 const EVENT = "nova:owner-mode-change";
 
 export function getOwnerMode(): boolean {
-  try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 function setOwnerMode(next: boolean) {
-  try { localStorage.setItem(STORAGE_KEY, next ? "1" : "0"); } catch {}
+  try {
+    localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+  } catch (_) {
+    // ignore storage errors
+  }
   window.dispatchEvent(new CustomEvent(EVENT, { detail: next }));
 }
 

@@ -2,9 +2,7 @@ import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { supabase } from "@/integrations/supabase/client";
 
 const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined;
-const environment: "sandbox" | "live" = clientToken?.startsWith("pk_test_")
-  ? "sandbox"
-  : "live";
+const environment: "sandbox" | "live" = clientToken?.startsWith("pk_test_") ? "sandbox" : "live";
 
 let stripePromise: Promise<Stripe | null> | null = null;
 

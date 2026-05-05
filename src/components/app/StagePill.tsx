@@ -29,10 +29,7 @@ export function StagePill({ className }: { className?: string }) {
         {STAGES.map((_, i) => (
           <span
             key={i}
-            className={cn(
-              "h-1 w-2.5 rounded-full",
-              i <= idx ? "bg-primary" : "bg-surface-offset",
-            )}
+            className={cn("h-1 w-2.5 rounded-full", i <= idx ? "bg-primary" : "bg-surface-offset")}
           />
         ))}
       </span>

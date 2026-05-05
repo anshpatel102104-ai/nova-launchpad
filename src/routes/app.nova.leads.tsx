@@ -12,7 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { blockIfGuest } from "@/lib/guest";
 
@@ -163,7 +167,9 @@ function Leads() {
                       )}
                     >
                       {STAGES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
                       ))}
                     </select>
                   </td>
@@ -221,11 +227,20 @@ function Leads() {
 }
 
 function CreateLeadSheet({
-  open, onOpenChange, onCreate,
+  open,
+  onOpenChange,
+  onCreate,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onCreate: (l: { name: string; email: string; phone: string; source: string; value: number | null; stage: Stage }) => Promise<void>;
+  onCreate: (l: {
+    name: string;
+    email: string;
+    phone: string;
+    source: string;
+    value: number | null;
+    stage: Stage;
+  }) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -251,17 +266,35 @@ function CreateLeadSheet({
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
           </Field>
           <Field label="Email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@example.com" />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="jane@example.com"
+            />
           </Field>
           <Field label="Phone">
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 555 5555" />
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1 555 555 5555"
+            />
           </Field>
           <Field label="Source">
-            <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Landing page, referral…" />
+            <Input
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="Landing page, referral…"
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Value (USD)">
-              <Input type="number" value={value} onChange={(e) => setValue(e.target.value)} placeholder="0" />
+              <Input
+                type="number"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="0"
+              />
             </Field>
             <Field label="Stage">
               <select
@@ -269,7 +302,9 @@ function CreateLeadSheet({
                 onChange={(e) => setStage(e.target.value as Stage)}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                {STAGES.map((s) => <option key={s}>{s}</option>)}
+                {STAGES.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
               </select>
             </Field>
           </div>
@@ -295,7 +330,15 @@ function CreateLeadSheet({
   );
 }
 
-function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+function Field({
+  label,
+  children,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
   return (
     <label className="block">
       <div className="mb-1.5 text-[12px] font-medium text-foreground">

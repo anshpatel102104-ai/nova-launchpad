@@ -4,8 +4,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { Button } from "@/components/ui/button";
 import {
-  Check, Sparkles, Zap, Crown, Rocket, CreditCard, AlertTriangle,
-  ExternalLink, FileText, Loader2, RotateCcw, Ban,
+  Check,
+  Sparkles,
+  Zap,
+  Crown,
+  Rocket,
+  CreditCard,
+  AlertTriangle,
+  ExternalLink,
+  FileText,
+  Loader2,
+  RotateCcw,
+  Ban,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { planEntitlementsQuery, subscriptionQuery, usageQuery } from "@/lib/queries";
@@ -16,8 +26,14 @@ import { CheckoutDialog } from "@/components/app/CheckoutDialog";
 import { PaymentTestModeBanner } from "@/components/app/PaymentTestModeBanner";
 import { isPaymentsEnabled, getStripeEnvironment } from "@/lib/stripe";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/billing")({ component: Billing });
@@ -160,7 +176,8 @@ function Billing() {
 
     // Payments disabled → fallback DB switch
     directDbSwitch(plan);
-    void targetIdx; void currentIdx;
+    void targetIdx;
+    void currentIdx;
   };
 
   const directDbSwitch = async (plan: string) => {
@@ -169,7 +186,10 @@ function Billing() {
       .from("subscriptions")
       .update({ plan: plan as "starter" | "launch" | "operate" | "scale" })
       .eq("organization_id", currentOrgId);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success(`Switched to ${plan}`);
     qc.invalidateQueries({ queryKey: ["subscription", currentOrgId] });
   };
@@ -197,7 +217,8 @@ function Billing() {
               Payment failed — AI tools are locked
             </div>
             <p className="mt-0.5 text-[12.5px] text-rose-100/80">
-              We couldn't charge your card. Update your payment method or re-subscribe to restore access.
+              We couldn't charge your card. Update your payment method or re-subscribe to restore
+              access.
             </p>
           </div>
           {hasStripeSub && (
@@ -222,7 +243,12 @@ function Billing() {
           <RotateCcw className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
           <div className="flex-1">
             <div className="font-display text-sm font-semibold tracking-tight">
-              Subscription ends {periodEnd.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+              Subscription ends{" "}
+              {periodEnd.toLocaleDateString(undefined, {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
             </div>
             <p className="mt-0.5 text-[12.5px] text-muted-foreground">
               You'll keep {currentPlan} access until then, then drop to Starter.
@@ -231,7 +257,11 @@ function Billing() {
           <Button
             size="sm"
             disabled={busy}
-            onClick={() => callManage({ action: "resume" }).then((ok) => ok && toast.success("Subscription resumed"))}
+            onClick={() =>
+              callManage({ action: "resume" }).then(
+                (ok) => ok && toast.success("Subscription resumed"),
+              )
+            }
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Resume"}
           </Button>
@@ -245,19 +275,32 @@ function Billing() {
       >
         <div
           className="relative overflow-hidden px-6 py-5"
-          style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--surface)), color-mix(in oklab, var(--accent) 5%, var(--surface)))" }}
+          style={{
+            background:
+              "linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--surface)), color-mix(in oklab, var(--accent) 5%, var(--surface)))",
+          }}
         >
-          <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50rem 20rem at 100% 50%, color-mix(in oklab, var(--primary) 8%, transparent), transparent)" }} />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-40"
+            style={{
+              background:
+                "radial-gradient(50rem 20rem at 100% 50%, color-mix(in oklab, var(--primary) 8%, transparent), transparent)",
+            }}
+          />
           <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
               <div
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-card"
                 style={{
                   background: "linear-gradient(135deg, var(--primary), var(--accent))",
-                  boxShadow: "0 4px 16px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  boxShadow:
+                    "0 4px 16px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
                 }}
               >
-                {(() => { const Icon = PLAN_ICONS[currentPlan] ?? Sparkles; return <Icon className="h-5 w-5" />; })()}
+                {(() => {
+                  const Icon = PLAN_ICONS[currentPlan] ?? Sparkles;
+                  return <Icon className="h-5 w-5" />;
+                })()}
               </div>
               <div>
                 <div
@@ -266,12 +309,19 @@ function Billing() {
                 >
                   Current plan
                 </div>
-                <div className="mt-0.5 font-display text-xl font-semibold capitalize tracking-tight" style={{ color: "var(--foreground)" }}>
+                <div
+                  className="mt-0.5 font-display text-xl font-semibold capitalize tracking-tight"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {currentPlan}
                   {sub?.status && sub.status !== "active" && (
                     <span
                       className="ml-2 rounded-full px-2 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--muted-foreground)" }}
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--border)",
+                        color: "var(--muted-foreground)",
+                      }}
                     >
                       {sub.status}
                     </span>
@@ -280,7 +330,10 @@ function Billing() {
                 <div className="mt-0.5 text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
                   ${currentEnt?.price_usd ?? 0}/mo · {allowedToolCount} tools included
                   {periodEnd && hasStripeSub && (
-                    <> · {isCanceling ? "ends" : "renews"} {periodEnd.toLocaleDateString()}</>
+                    <>
+                      {" "}
+                      · {isCanceling ? "ends" : "renews"} {periodEnd.toLocaleDateString()}
+                    </>
                   )}
                 </div>
               </div>
@@ -288,7 +341,13 @@ function Billing() {
 
             <div className="grid w-full max-w-md grid-cols-2 gap-3">
               <UsageCard label="Generations" used={totalUsed} limit={limit} pct={pct} />
-              <UsageCard label="AI tools" used={allowedToolCount} limit={null} pct={0} suffix="enabled" />
+              <UsageCard
+                label="AI tools"
+                used={allowedToolCount}
+                limit={null}
+                pct={0}
+                suffix="enabled"
+              />
             </div>
           </div>
         </div>
@@ -305,7 +364,8 @@ function Billing() {
               disabled={busy}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "#f87171";
-                (e.currentTarget as HTMLElement).style.background = "color-mix(in oklab, #ef4444 10%, transparent)";
+                (e.currentTarget as HTMLElement).style.background =
+                  "color-mix(in oklab, #ef4444 10%, transparent)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -340,15 +400,22 @@ function Billing() {
               key={p.plan}
               className="relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300"
               style={{
-                background: isCurrent ? "color-mix(in oklab, var(--primary) 6%, var(--surface))" : "var(--surface)",
+                background: isCurrent
+                  ? "color-mix(in oklab, var(--primary) 6%, var(--surface))"
+                  : "var(--surface)",
                 border: `1px solid ${isCurrent ? "color-mix(in oklab, var(--primary) 35%, transparent)" : "var(--border)"}`,
-                boxShadow: isCurrent ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--primary) 12%, transparent)" : "var(--shadow-card)",
+                boxShadow: isCurrent
+                  ? "var(--shadow-card), 0 0 20px color-mix(in oklab, var(--primary) 12%, transparent)"
+                  : "var(--shadow-card)",
               }}
             >
               {isCurrent && (
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px]"
-                  style={{ background: "linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent)" }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent)",
+                  }}
                 />
               )}
               {isCurrent && (
@@ -372,7 +439,10 @@ function Billing() {
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="mt-3">
-                  <div className="font-display text-[15px] font-semibold capitalize tracking-tight" style={{ color: "var(--foreground)" }}>
+                  <div
+                    className="font-display text-[15px] font-semibold capitalize tracking-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
                     {p.plan}
                   </div>
                   <div className="mt-0.5 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
@@ -380,15 +450,23 @@ function Billing() {
                   </div>
                 </div>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="font-display text-[1.7rem] font-semibold leading-none tracking-tight" style={{ color: "var(--foreground)" }}>
+                  <span
+                    className="font-display text-[1.7rem] font-semibold leading-none tracking-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
                     ${p.price_usd}
                   </span>
-                  <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>/mo</span>
+                  <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                    /mo
+                  </span>
                 </div>
                 <ul className="mt-4 flex-1 space-y-1.5 text-[12.5px]">
                   {highlights.map((f) => (
                     <li key={f} className="flex gap-2">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "var(--success)" }} />
+                      <Check
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                        style={{ color: "var(--success)" }}
+                      />
                       <span style={{ color: "var(--foreground)", opacity: 0.85 }}>{f}</span>
                     </li>
                   ))}
@@ -397,29 +475,39 @@ function Billing() {
                   className="mt-5 w-full rounded-xl py-2 text-[13px] font-semibold transition-all duration-200"
                   disabled={isCurrent || busy}
                   onClick={() => onPlanClick(p.plan)}
-                  style={isCurrent ? {
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    color: "var(--muted-foreground)",
-                    cursor: "not-allowed",
-                  } : isUpgrade ? {
-                    background: "linear-gradient(135deg, var(--primary), var(--accent))",
-                    color: "white",
-                    boxShadow: "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)",
-                  } : {
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
+                  style={
+                    isCurrent
+                      ? {
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                          color: "var(--muted-foreground)",
+                          cursor: "not-allowed",
+                        }
+                      : isUpgrade
+                        ? {
+                            background: "linear-gradient(135deg, var(--primary), var(--accent))",
+                            color: "white",
+                            boxShadow:
+                              "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)",
+                          }
+                        : {
+                            background: "var(--surface-2)",
+                            border: "1px solid var(--border)",
+                            color: "var(--foreground)",
+                          }
+                  }
                   onMouseEnter={(e) => {
                     if (!isCurrent && !busy && isUpgrade) {
                       (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                      (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px color-mix(in oklab, var(--primary) 40%, transparent)";
+                      (e.currentTarget as HTMLElement).style.boxShadow =
+                        "0 6px 20px color-mix(in oklab, var(--primary) 40%, transparent)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.transform = "none";
-                    if (isUpgrade) (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)";
+                    if (isUpgrade)
+                      (e.currentTarget as HTMLElement).style.boxShadow =
+                        "0 4px 16px color-mix(in oklab, var(--primary) 30%, transparent)";
                   }}
                 >
                   {isCurrent
@@ -444,9 +532,15 @@ function Billing() {
         >
           <div
             className="px-6 py-4"
-            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)", background: "color-mix(in oklab, var(--surface-2) 40%, transparent)" }}
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+              background: "color-mix(in oklab, var(--surface-2) 40%, transparent)",
+            }}
           >
-            <div className="font-display text-[14px] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+            <div
+              className="font-display text-[14px] font-semibold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
               Invoice history
             </div>
             <div className="mt-0.5 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
@@ -455,34 +549,51 @@ function Billing() {
           </div>
           <div className="px-6 py-4">
             {invoicesQ.isLoading ? (
-              <div className="flex items-center gap-2 text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+              <div
+                className="flex items-center gap-2 text-[12.5px]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading invoices…
               </div>
             ) : (invoicesQ.data ?? []).length === 0 ? (
-              <div className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>No invoices yet.</div>
+              <div className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+                No invoices yet.
+              </div>
             ) : (
               <div className="space-y-1">
                 {invoicesQ.data!.map((inv) => (
                   <div
                     key={inv.id}
                     className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition"
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                    }}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                        style={{ background: "color-mix(in oklab, var(--primary) 10%, transparent)" }}
+                        style={{
+                          background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+                        }}
                       >
                         <FileText className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
                       </div>
                       <div>
-                        <div className="font-display text-[13px] font-medium tracking-tight" style={{ color: "var(--foreground)" }}>
+                        <div
+                          className="font-display text-[13px] font-medium tracking-tight"
+                          style={{ color: "var(--foreground)" }}
+                        >
                           {inv.number ?? inv.id.slice(-10)}
                         </div>
                         <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
                           {new Date(inv.created * 1000).toLocaleDateString()} ·{" "}
-                          {(inv.amount_paid / 100).toLocaleString(undefined, { style: "currency", currency: inv.currency.toUpperCase() })}{" "}
+                          {(inv.amount_paid / 100).toLocaleString(undefined, {
+                            style: "currency",
+                            currency: inv.currency.toUpperCase(),
+                          })}{" "}
                           · {inv.status}
                         </div>
                       </div>
@@ -494,12 +605,14 @@ function Billing() {
                             className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium transition"
                             style={{ color: "var(--muted-foreground)" }}
                             onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.background = "var(--surface-offset)";
+                              (e.currentTarget as HTMLElement).style.background =
+                                "var(--surface-offset)";
                               (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                             }}
                             onMouseLeave={(e) => {
                               (e.currentTarget as HTMLElement).style.background = "transparent";
-                              (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                              (e.currentTarget as HTMLElement).style.color =
+                                "var(--muted-foreground)";
                             }}
                           >
                             View <ExternalLink className="h-3 w-3" />
@@ -510,9 +623,14 @@ function Billing() {
                         <a href={inv.invoice_pdf} target="_blank" rel="noreferrer">
                           <button
                             className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium transition"
-                            style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
+                            style={{
+                              background: "var(--surface-2)",
+                              border: "1px solid var(--border)",
+                              color: "var(--foreground)",
+                            }}
                             onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 35%, transparent)";
+                              (e.currentTarget as HTMLElement).style.borderColor =
+                                "color-mix(in oklab, var(--primary) 35%, transparent)";
                             }}
                             onMouseLeave={(e) => {
                               (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
@@ -559,7 +677,7 @@ function Billing() {
                   will drop to Starter. You can resume anytime before then.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              
+
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={busy}>Keep plan</AlertDialogCancel>
                 <AlertDialogAction
@@ -597,7 +715,11 @@ function Billing() {
                     setConfirm(null);
                   }}
                 >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : `Switch to ${confirm.plan}`}
+                  {busy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    `Switch to ${confirm.plan}`
+                  )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </>
@@ -634,7 +756,11 @@ function Billing() {
 }
 
 function UsageCard({
-  label, used, limit, pct, suffix,
+  label,
+  used,
+  limit,
+  pct,
+  suffix,
 }: {
   label: string;
   used: number;
@@ -646,13 +772,22 @@ function UsageCard({
   return (
     <div
       className="rounded-xl p-3.5"
-      style={{ background: "color-mix(in oklab, var(--surface-2) 80%, transparent)", border: "1px solid color-mix(in oklab, var(--border) 60%, transparent)" }}
+      style={{
+        background: "color-mix(in oklab, var(--surface-2) 80%, transparent)",
+        border: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+      }}
     >
-      <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted-foreground)" }}>
+      <div
+        className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+        style={{ color: "var(--muted-foreground)" }}
+      >
         {label}
       </div>
       <div className="mt-1.5 flex items-baseline gap-1">
-        <span className="font-display text-lg font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+        <span
+          className="font-display text-lg font-semibold tracking-tight"
+          style={{ color: "var(--foreground)" }}
+        >
           {used.toLocaleString()}
         </span>
         <span className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
@@ -660,7 +795,10 @@ function UsageCard({
         </span>
       </div>
       {limit !== null && (
-        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--surface-offset)" }}>
+        <div
+          className="mt-2.5 h-1.5 overflow-hidden rounded-full"
+          style={{ background: "var(--surface-offset)" }}
+        >
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, background: barColor, boxShadow: `0 0 6px ${barColor}` }}

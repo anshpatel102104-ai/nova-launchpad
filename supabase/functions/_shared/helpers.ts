@@ -30,11 +30,9 @@ export async function authenticateAndAuthorize(
   const auth = req.headers.get("Authorization");
   if (!auth) return jsonResponse({ error: "Missing auth" }, 401);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: auth } } },
-  );
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: auth } },
+  });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData?.user) return jsonResponse({ error: "Invalid token" }, 401);
@@ -70,7 +68,10 @@ export async function authenticateAndAuthorize(
   const monthlyLimit = (ent?.monthly_generation_limit as number | null) ?? null;
 
   if (!allowedTools.includes(toolKey)) {
-    return jsonResponse({ error: `Tool '${toolKey}' not available on '${plan}' plan`, code: "PLAN_GATE" }, 403);
+    return jsonResponse(
+      { error: `Tool '${toolKey}' not available on '${plan}' plan`, code: "PLAN_GATE" },
+      403,
+    );
   }
 
   // Quota check
@@ -115,11 +116,15 @@ export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
   }
 }
 
-export async function callClaude(systemPrompt: string, userPrompt: string, schema: {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-}): Promise<Record<string, unknown>> {
+export async function callClaude(
+  systemPrompt: string,
+  userPrompt: string,
+  schema: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  },
+): Promise<Record<string, unknown>> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -188,15 +193,13 @@ export async function runTool(opts: {
     .select()
     .single();
 
-  if (runErr || !run) return jsonResponse({ error: "Failed to create run", details: runErr?.message }, 500);
+  if (runErr || !run)
+    return jsonResponse({ error: "Failed to create run", details: runErr?.message }, 500);
 
   try {
     const output = await callClaude(opts.systemPrompt, opts.buildUserPrompt(input), opts.schema);
 
-    await ctx.supabase
-      .from("tool_runs")
-      .update({ status: "succeeded", output })
-      .eq("id", run.id);
+    await ctx.supabase.from("tool_runs").update({ status: "succeeded", output }).eq("id", run.id);
 
     await ctx.supabase.from("generated_assets").insert({
       organization_id: ctx.organizationId,
@@ -215,8 +218,10 @@ export async function runTool(opts: {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[tool-run-error:${opts.toolKey}]`, msg);
     await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run.id);
-    if (msg === "RATE_LIMIT") return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
-    if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted. Add funds in Settings." }, 402);
+    if (msg === "RATE_LIMIT")
+      return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
+    if (msg === "PAYMENT_REQUIRED")
+      return jsonResponse({ error: "AI credits exhausted. Add funds in Settings." }, 402);
     return jsonResponse({ error: "An internal error occurred. Please try again." }, 500);
   }
 }

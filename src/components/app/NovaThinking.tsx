@@ -56,10 +56,7 @@ export function NovaThinking({ streamText, toolName }: Props) {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
-          <span
-            className="font-mono text-[10px]"
-            style={{ color: "var(--primary)", opacity: 0.7 }}
-          >
+          <span className="font-mono text-[10px]" style={{ color: "var(--primary)", opacity: 0.7 }}>
             {charCount} tokens
           </span>
           <ThinkingDots />
@@ -112,7 +109,12 @@ export function NovaThinking({ streamText, toolName }: Props) {
             style={{
               width: "3px",
               height: "16px",
-              background: i % 3 === 0 ? "var(--primary)" : i % 3 === 1 ? "var(--accent)" : "rgba(6,182,212,0.7)",
+              background:
+                i % 3 === 0
+                  ? "var(--primary)"
+                  : i % 3 === 1
+                    ? "var(--accent)"
+                    : "rgba(6,182,212,0.7)",
               animation: `wavebar 1.2s ease-in-out infinite`,
               animationDelay: `${i * 0.1}s`,
               opacity: 0.7,
@@ -180,7 +182,7 @@ function NeuralOrb() {
     const ringData = [
       { r: 18, alpha: 0.25, speed: 0.025, color: "#3b82f6" },
       { r: 13, alpha: 0.35, speed: -0.035, color: "#8b5cf6" },
-      { r: 8,  alpha: 0.5,  speed: 0.05,  color: "#06b6d4" },
+      { r: 8, alpha: 0.5, speed: 0.05, color: "#06b6d4" },
     ];
 
     const tick = () => {
@@ -247,10 +249,5 @@ function NeuralOrb() {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: 44, height: 44, flexShrink: 0 }}
-    />
-  );
+  return <canvas ref={canvasRef} style={{ width: 44, height: 44, flexShrink: 0 }} />;
 }

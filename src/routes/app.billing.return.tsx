@@ -34,9 +34,7 @@ function BillingReturn() {
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
         <CheckCircle2 className="h-7 w-7" />
       </div>
-      <h1 className="font-display text-2xl font-semibold tracking-tight">
-        Payment successful
-      </h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">Payment successful</h1>
       <p className="text-[13px] text-muted-foreground">
         Your plan is being activated. This usually takes a few seconds.
       </p>

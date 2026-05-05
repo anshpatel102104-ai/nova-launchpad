@@ -16,7 +16,8 @@ export const Route = createFileRoute("/app/assets")({ component: AssetsPage });
 const KIND_TONE: Record<string, string> = {
   "generate-pitch": "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
   "generate-offer": "border-primary/30 bg-primary/10 text-primary",
-  "generate-followup-sequence": "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  "generate-followup-sequence":
+    "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
   "analyze-website": "border-warning/30 bg-warning/10 text-warning",
   "generate-gtm-strategy": "border-launchpad/30 bg-launchpad/10 text-launchpad",
   "validate-idea": "border-success/30 bg-success/10 text-success",
@@ -35,10 +36,13 @@ function AssetsPage() {
   const { currentOrgId } = useAuth();
   const qc = useQueryClient();
   const [filter, setFilter] = useState("all");
-  const assetsQ = useQuery({ ...generatedAssetsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const assetsQ = useQuery({
+    ...generatedAssetsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
   const all = assetsQ.data ?? [];
   const assets = useMemo(
-    () => filter === "all" ? all : all.filter((a) => a.category === filter),
+    () => (filter === "all" ? all : all.filter((a) => a.category === filter)),
     [all, filter],
   );
 
@@ -56,7 +60,10 @@ function AssetsPage() {
     if (blockIfGuest("Sign up to manage your real library.")) return;
     const { error } = await supabase.from("generated_assets").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else { toast.success("Asset removed"); qc.invalidateQueries({ queryKey: ["generated_assets", currentOrgId] }); }
+    else {
+      toast.success("Asset removed");
+      qc.invalidateQueries({ queryKey: ["generated_assets", currentOrgId] });
+    }
   };
 
   return (

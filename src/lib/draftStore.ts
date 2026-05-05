@@ -19,10 +19,7 @@ export function loadDraft(orgId: string | null, toolKey: string): Draft | null {
 export function saveDraft(orgId: string | null, toolKey: string, draft: Omit<Draft, "updatedAt">) {
   if (!orgId || typeof window === "undefined") return;
   try {
-    localStorage.setItem(
-      KEY(orgId, toolKey),
-      JSON.stringify({ ...draft, updatedAt: Date.now() }),
-    );
+    localStorage.setItem(KEY(orgId, toolKey), JSON.stringify({ ...draft, updatedAt: Date.now() }));
   } catch {
     /* ignore quota / private mode */
   }

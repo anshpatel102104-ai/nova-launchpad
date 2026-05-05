@@ -182,7 +182,8 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipPropsLoose>(
               const key = `${nameKey || (item.name as string) || (item.dataKey as string) || "value"}`;
               const itemConfig = getPayloadConfigFromPayload(config, item, key);
               const itemPayload = item.payload as { fill?: string } | undefined;
-              const indicatorColor = color || itemPayload?.fill || (item.color as string | undefined);
+              const indicatorColor =
+                color || itemPayload?.fill || (item.color as string | undefined);
 
               return (
                 <div
@@ -229,7 +230,8 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipPropsLoose>(
                         <div className="grid gap-1.5">
                           {nestLabel ? tooltipLabel : null}
                           <span className="text-muted-foreground">
-                            {(itemConfig?.label as React.ReactNode) || (item.name as React.ReactNode)}
+                            {(itemConfig?.label as React.ReactNode) ||
+                              (item.name as React.ReactNode)}
                           </span>
                         </div>
                         {item.value !== undefined && item.value !== null && (

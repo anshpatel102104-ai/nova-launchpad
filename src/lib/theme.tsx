@@ -37,7 +37,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === "light" || stored === "dark" || stored === "system") initial = stored;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setThemeState(initial);
     const resolved = initial === "system" ? systemPref() : initial;
     setResolvedTheme(resolved);
@@ -62,7 +64,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const resolved = t === "system" ? systemPref() : t;
     setResolvedTheme(resolved);
     applyTheme(resolved);
-    try { localStorage.setItem(STORAGE_KEY, t); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(STORAGE_KEY, t);
+    } catch {
+      /* ignore */
+    }
   };
 
   const toggle = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");

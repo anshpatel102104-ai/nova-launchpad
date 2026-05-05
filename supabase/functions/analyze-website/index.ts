@@ -1,4 +1,10 @@
-import { authenticateAndAuthorize, callClaude, corsHeaders, incrementUsage, jsonResponse } from "../_shared/helpers.ts";
+import {
+  authenticateAndAuthorize,
+  callClaude,
+  corsHeaders,
+  incrementUsage,
+  jsonResponse,
+} from "../_shared/helpers.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -8,10 +14,18 @@ Deno.serve(async (req) => {
   const ctx = authResult;
 
   let input: { url?: string };
-  try { input = await req.json(); } catch { return jsonResponse({ error: "Invalid JSON" }, 400); }
+  try {
+    input = await req.json();
+  } catch {
+    return jsonResponse({ error: "Invalid JSON" }, 400);
+  }
   const rawUrl = (input.url || "").trim();
   let parsedUrl: URL;
-  try { parsedUrl = new URL(rawUrl); } catch { return jsonResponse({ error: "Invalid URL" }, 400); }
+  try {
+    parsedUrl = new URL(rawUrl);
+  } catch {
+    return jsonResponse({ error: "Invalid URL" }, 400);
+  }
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
     return jsonResponse({ error: "Invalid URL" }, 400);
   }
@@ -30,18 +44,23 @@ Deno.serve(async (req) => {
     /^0\./.test(host) ||
     host === "::1" ||
     host.startsWith("[::1") ||
-    host.startsWith("fc") || host.startsWith("fd") || // unique local IPv6
+    host.startsWith("fc") ||
+    host.startsWith("fd") || // unique local IPv6
     host.startsWith("fe80"); // link-local IPv6
   if (isBlockedHost) return jsonResponse({ error: "URL not allowed" }, 400);
   const url = parsedUrl.toString();
 
-  const { data: run } = await ctx.supabase.from("tool_runs").insert({
-    organization_id: ctx.organizationId,
-    user_id: ctx.userId,
-    tool_key: "analyze-website",
-    status: "running",
-    input,
-  }).select().single();
+  const { data: run } = await ctx.supabase
+    .from("tool_runs")
+    .insert({
+      organization_id: ctx.organizationId,
+      user_id: ctx.userId,
+      tool_key: "analyze-website",
+      status: "running",
+      input,
+    })
+    .select()
+    .single();
 
   try {
     // Fetch the page
@@ -78,17 +97,21 @@ Deno.serve(async (req) => {
 
     await ctx.supabase.from("tool_runs").update({ status: "succeeded", output }).eq("id", run!.id);
 
-    const { data: analysis } = await ctx.supabase.from("website_analyses").insert({
-      organization_id: ctx.organizationId,
-      user_id: ctx.userId,
-      url,
-      snapshot_path: snapshotPath,
-      issues: output.issues,
-      opportunities: output.opportunities,
-      ux_notes: output.ux_notes,
-      seo_notes: output.seo_notes,
-      suggested_changes: output.suggested_changes,
-    }).select().single();
+    const { data: analysis } = await ctx.supabase
+      .from("website_analyses")
+      .insert({
+        organization_id: ctx.organizationId,
+        user_id: ctx.userId,
+        url,
+        snapshot_path: snapshotPath,
+        issues: output.issues,
+        opportunities: output.opportunities,
+        ux_notes: output.ux_notes,
+        seo_notes: output.seo_notes,
+        suggested_changes: output.suggested_changes,
+      })
+      .select()
+      .single();
 
     await incrementUsage(ctx, "analyze-website");
 

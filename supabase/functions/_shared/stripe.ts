@@ -37,6 +37,7 @@ export function createStripeClient(env: StripeEnv): Stripe {
 export async function verifyWebhook(
   req: Request,
   env: StripeEnv,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();

@@ -86,16 +86,20 @@ function Workflows() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={
-                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium " +
-                      (w.enabled
-                        ? "bg-emerald-500/10 text-emerald-400"
-                        : "bg-muted text-muted-foreground")
-                    }>
-                      <span className={
-                        "h-1.5 w-1.5 rounded-full " +
-                        (w.enabled ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground")
-                      } />
+                    <span
+                      className={
+                        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium " +
+                        (w.enabled
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : "bg-muted text-muted-foreground")
+                      }
+                    >
+                      <span
+                        className={
+                          "h-1.5 w-1.5 rounded-full " +
+                          (w.enabled ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground")
+                        }
+                      />
                       {w.enabled ? "Live" : "Paused"}
                     </span>
                     <Switch checked={w.enabled} onCheckedChange={(v) => toggle(w.id, v)} />
@@ -113,11 +117,16 @@ function Workflows() {
 function KPI({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={
-        "mt-1 font-display text-xl font-semibold tracking-tight " +
-        (accent ? "text-accent" : "")
-      }>{value}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={
+          "mt-1 font-display text-xl font-semibold tracking-tight " + (accent ? "text-accent" : "")
+        }
+      >
+        {value}
+      </div>
     </div>
   );
 }

@@ -1,10 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Rocket, Zap, Users, GitBranch, CheckSquare, BarChart2,
-  Settings, CreditCard, ChevronsLeft, ChevronsRight, ChevronDown, ArrowUpRight,
-  Lightbulb, Megaphone, Target, Skull, Trophy, UserPlus, FileText, Mail,
-  GitCompare, Globe, Inbox, Workflow, ListChecks, LineChart, Shield, Tags,
+  LayoutDashboard,
+  Rocket,
+  Zap,
+  Users,
+  GitBranch,
+  CheckSquare,
+  BarChart2,
+  Settings,
+  CreditCard,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronDown,
+  ArrowUpRight,
+  Lightbulb,
+  Megaphone,
+  Target,
+  Skull,
+  Trophy,
+  UserPlus,
+  FileText,
+  Mail,
+  GitCompare,
+  Globe,
+  Inbox,
+  Workflow,
+  ListChecks,
+  LineChart,
+  Shield,
+  Tags,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -24,48 +49,71 @@ type NavItem = {
 };
 
 const LAUNCHPAD_TOOLS: SubItem[] = [
-  { to: "/app/launchpad/idea-validator",     label: "Idea Validator",     icon: Lightbulb },
-  { to: "/app/launchpad/pitch-generator",    label: "Pitch Generator",    icon: Megaphone },
-  { to: "/app/launchpad/gtm-strategy",       label: "GTM Strategy",       icon: Target },
-  { to: "/app/launchpad/kill-my-idea",       label: "Kill My Idea",       icon: Skull },
-  { to: "/app/launchpad/funding-score",      label: "Funding Score",      icon: Trophy },
+  { to: "/app/launchpad/idea-validator", label: "Idea Validator", icon: Lightbulb },
+  { to: "/app/launchpad/pitch-generator", label: "Pitch Generator", icon: Megaphone },
+  { to: "/app/launchpad/gtm-strategy", label: "GTM Strategy", icon: Target },
+  { to: "/app/launchpad/kill-my-idea", label: "Kill My Idea", icon: Skull },
+  { to: "/app/launchpad/funding-score", label: "Funding Score", icon: Trophy },
   { to: "/app/launchpad/first-10-customers", label: "First 10 Customers", icon: UserPlus },
-  { to: "/app/launchpad/business-plan",      label: "Business Plan",      icon: FileText },
-  { to: "/app/launchpad/investor-emails",    label: "Investor Emails",    icon: Mail },
-  { to: "/app/launchpad/idea-vs-idea",       label: "Idea vs Idea",       icon: GitCompare },
-  { to: "/app/launchpad/landing-page",       label: "Landing Page",       icon: Globe },
-  { to: "/app/launchpad/competitor",         label: "Competitor",         icon: Target },
-  { to: "/app/launchpad/pricing",            label: "Pricing Strategy",   icon: Tags },
-  { to: "/app/launchpad/revenue-projector",  label: "Revenue Projector",  icon: LineChart },
+  { to: "/app/launchpad/business-plan", label: "Business Plan", icon: FileText },
+  { to: "/app/launchpad/investor-emails", label: "Investor Emails", icon: Mail },
+  { to: "/app/launchpad/idea-vs-idea", label: "Idea vs Idea", icon: GitCompare },
+  { to: "/app/launchpad/landing-page", label: "Landing Page", icon: Globe },
+  { to: "/app/launchpad/competitor", label: "Competitor", icon: Target },
+  { to: "/app/launchpad/pricing", label: "Pricing Strategy", icon: Tags },
+  { to: "/app/launchpad/revenue-projector", label: "Revenue Projector", icon: LineChart },
 ];
 
 const NOVA_MODULES: SubItem[] = [
-  { to: "/app/nova/crm",       label: "CRM Pipeline",      icon: Workflow },
-  { to: "/app/nova/leads",     label: "Lead Capture",      icon: Inbox },
-  { to: "/app/nova/workflows", label: "Automation",        icon: GitBranch },
-  { to: "/app/nova/clients",   label: "Client Onboarding", icon: ListChecks },
-  { to: "/app/nova/reports",   label: "Reporting",         icon: LineChart },
+  { to: "/app/nova/crm", label: "CRM Pipeline", icon: Workflow },
+  { to: "/app/nova/leads", label: "Lead Capture", icon: Inbox },
+  { to: "/app/nova/workflows", label: "Automation", icon: GitBranch },
+  { to: "/app/nova/clients", label: "Client Onboarding", icon: ListChecks },
+  { to: "/app/nova/reports", label: "Reporting", icon: LineChart },
 ];
 
 const NAV: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
-    to: "/app/launchpad", label: "Launchpad", icon: Rocket, workspace: "launchpad",
-    match: (p) => p.startsWith("/app/launchpad"), children: LAUNCHPAD_TOOLS,
+    to: "/app/launchpad",
+    label: "Launchpad",
+    icon: Rocket,
+    workspace: "launchpad",
+    match: (p) => p.startsWith("/app/launchpad"),
+    children: LAUNCHPAD_TOOLS,
   },
   {
-    to: "/app/nova", label: "Nova OS", icon: Zap, workspace: "nova",
-    match: (p) => p === "/app/nova" || p.startsWith("/app/nova/"), children: NOVA_MODULES,
+    to: "/app/nova",
+    label: "Nova OS",
+    icon: Zap,
+    workspace: "nova",
+    match: (p) => p === "/app/nova" || p.startsWith("/app/nova/"),
+    children: NOVA_MODULES,
   },
-  { to: "/app/leads",          label: "Leads",     icon: Users,       match: (p) => p.startsWith("/app/leads") },
-  { to: "/app/nova/workflows", label: "Workflows", icon: GitBranch,   match: (p) => p === "/app/nova/workflows" },
-  { to: "/app/nova/clients",   label: "Clients",   icon: CheckSquare, match: (p) => p === "/app/nova/clients" },
-  { to: "/app/nova/reports",   label: "Reports",   icon: BarChart2,   match: (p) => p === "/app/nova/reports" },
+  { to: "/app/leads", label: "Leads", icon: Users, match: (p) => p.startsWith("/app/leads") },
+  {
+    to: "/app/nova/workflows",
+    label: "Workflows",
+    icon: GitBranch,
+    match: (p) => p === "/app/nova/workflows",
+  },
+  {
+    to: "/app/nova/clients",
+    label: "Clients",
+    icon: CheckSquare,
+    match: (p) => p === "/app/nova/clients",
+  },
+  {
+    to: "/app/nova/reports",
+    label: "Reports",
+    icon: BarChart2,
+    match: (p) => p === "/app/nova/reports",
+  },
 ];
 
 const FOOTER_NAV: NavItem[] = [
   { to: "/app/settings", label: "Settings", icon: Settings },
-  { to: "/app/billing",  label: "Billing",  icon: CreditCard },
+  { to: "/app/billing", label: "Billing", icon: CreditCard },
 ];
 
 const STORAGE = "nova-sidebar-collapsed";
@@ -90,10 +138,18 @@ export function AppSidebar() {
     ...FOOTER_NAV,
   ];
 
-  const exitDemo = () => { disable(); navigate({ to: "/signup", search: { plan: undefined } }); };
+  const exitDemo = () => {
+    disable();
+    navigate({ to: "/signup", search: { plan: undefined } });
+  };
 
   useEffect(() => {
-    try { const v = localStorage.getItem(STORAGE); if (v === "1") setCollapsed(true); } catch { /* */ }
+    try {
+      const v = localStorage.getItem(STORAGE);
+      if (v === "1") setCollapsed(true);
+    } catch {
+      /* */
+    }
   }, []);
 
   useEffect(() => {
@@ -107,13 +163,22 @@ export function AppSidebar() {
   const toggle = () => {
     setCollapsed((c) => {
       const n = !c;
-      try { localStorage.setItem(STORAGE, n ? "1" : "0"); } catch { /* */ }
+      try {
+        localStorage.setItem(STORAGE, n ? "1" : "0");
+      } catch {
+        /* */
+      }
       return n;
     });
   };
 
   const initials = (profile?.full_name || user?.email || "U")
-    .split(/[\s@]/).filter(Boolean).map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+    .split(/[\s@]/)
+    .filter(Boolean)
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <aside
@@ -133,7 +198,9 @@ export function AppSidebar() {
       {/* Top neon edge line */}
       <div
         className="absolute top-0 left-0 right-0 h-px z-10"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent)" }}
+        style={{
+          background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent)",
+        }}
       />
 
       {/* Brand */}
@@ -155,10 +222,16 @@ export function AppSidebar() {
         </div>
         {!collapsed && (
           <div className="min-w-0 leading-tight">
-            <div className="font-display text-[13.5px] font-bold tracking-tight truncate" style={{ color: "var(--foreground)" }}>
+            <div
+              className="font-display text-[13.5px] font-bold tracking-tight truncate"
+              style={{ color: "var(--foreground)" }}
+            >
               LaunchpadNOVA
             </div>
-            <div className="text-[9.5px] font-medium truncate" style={{ color: "rgba(59,130,246,0.7)", letterSpacing: "0.06em" }}>
+            <div
+              className="text-[9.5px] font-medium truncate"
+              style={{ color: "rgba(59,130,246,0.7)", letterSpacing: "0.06em" }}
+            >
               AI BUSINESS OS
             </div>
           </div>
@@ -183,14 +256,19 @@ export function AppSidebar() {
             <div className="mt-5 mb-1 px-2">
               <div className="flex items-center gap-2">
                 <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
-                <span className="text-[8.5px] font-bold uppercase tracking-[0.2em]" style={{ color: "rgba(59,130,246,0.4)" }}>
+                <span
+                  className="text-[8.5px] font-bold uppercase tracking-[0.2em]"
+                  style={{ color: "rgba(59,130,246,0.4)" }}
+                >
                   Ops
                 </span>
                 <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
               </div>
             </div>
           )}
-          {collapsed && <div className="my-3 mx-2 h-px" style={{ background: "rgba(59,130,246,0.12)" }} />}
+          {collapsed && (
+            <div className="my-3 mx-2 h-px" style={{ background: "rgba(59,130,246,0.12)" }} />
+          )}
 
           {NAV.slice(3).map((item) => (
             <NavRow
@@ -206,10 +284,7 @@ export function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div
-        className="relative z-10 p-2"
-        style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}
-      >
+      <div className="relative z-10 p-2" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
         {isGuest && (
           <button
             onClick={exitDemo}
@@ -231,7 +306,14 @@ export function AppSidebar() {
 
         <div className="space-y-0.5">
           {footerNav.map((item) => (
-            <NavRow key={item.to} item={item} path={path} collapsed={collapsed} open={false} onToggle={() => {}} />
+            <NavRow
+              key={item.to}
+              item={item}
+              path={path}
+              collapsed={collapsed}
+              open={false}
+              onToggle={() => {}}
+            />
           ))}
         </div>
 
@@ -267,10 +349,16 @@ export function AppSidebar() {
           {!collapsed && (
             <>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[11.5px] font-medium leading-tight" style={{ color: "var(--foreground)" }}>
+                <div
+                  className="truncate text-[11.5px] font-medium leading-tight"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {profile?.full_name || "Account"}
                 </div>
-                <div className="truncate text-[9.5px] leading-tight" style={{ color: "var(--muted-foreground)" }}>
+                <div
+                  className="truncate text-[9.5px] leading-tight"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {currentOrg?.name ?? plan}
                 </div>
               </div>
@@ -306,10 +394,14 @@ export function AppSidebar() {
           }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed
-            ? <ChevronsRight className="h-3.5 w-3.5" />
-            : <><ChevronsLeft className="h-3.5 w-3.5" /><span>Collapse</span></>
-          }
+          {collapsed ? (
+            <ChevronsRight className="h-3.5 w-3.5" />
+          ) : (
+            <>
+              <ChevronsLeft className="h-3.5 w-3.5" />
+              <span>Collapse</span>
+            </>
+          )}
         </button>
       </div>
     </aside>
@@ -317,8 +409,18 @@ export function AppSidebar() {
 }
 
 function NavRow({
-  item, path, collapsed, open, onToggle,
-}: { item: NavItem; path: string; collapsed: boolean; open: boolean; onToggle: () => void }) {
+  item,
+  path,
+  collapsed,
+  open,
+  onToggle,
+}: {
+  item: NavItem;
+  path: string;
+  collapsed: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const active = item.match ? item.match(path) : path === item.to;
   const exactActive = path === item.to;
   const hasChildren = !!item.children?.length && !collapsed;
@@ -350,12 +452,16 @@ function NavRow({
             "group relative flex flex-1 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150",
             collapsed && "justify-center px-0",
           )}
-          style={active ? {
-            background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
-            color: "var(--foreground)",
-          } : {
-            color: "rgba(240,244,255,0.4)",
-          }}
+          style={
+            active
+              ? {
+                  background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
+                  color: "var(--foreground)",
+                }
+              : {
+                  color: "rgba(240,244,255,0.4)",
+                }
+          }
           onMouseEnter={(e) => {
             if (!active) {
               (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
@@ -371,10 +477,14 @@ function NavRow({
           title={collapsed ? item.label : undefined}
         >
           <span
-            style={exactActive ? {
-              color: activeColor,
-              filter: `drop-shadow(0 0 4px ${activeColor}80)`,
-            } : undefined}
+            style={
+              exactActive
+                ? {
+                    color: activeColor,
+                    filter: `drop-shadow(0 0 4px ${activeColor}80)`,
+                  }
+                : undefined
+            }
           >
             <item.icon className="h-[15px] w-[15px] shrink-0 transition-all" />
           </span>
@@ -390,7 +500,10 @@ function NavRow({
 
         {hasChildren && (
           <button
-            onClick={(e) => { e.preventDefault(); onToggle(); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onToggle();
+            }}
             className="mr-1 flex h-5 w-5 items-center justify-center rounded transition-all"
             style={{ color: "rgba(255,255,255,0.2)" }}
             onMouseEnter={(e) => {
@@ -403,7 +516,9 @@ function NavRow({
             }}
             aria-label={open ? "Collapse" : "Expand"}
           >
-            <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", open && "rotate-180")} />
+            <ChevronDown
+              className={cn("h-3 w-3 transition-transform duration-200", open && "rotate-180")}
+            />
           </button>
         )}
       </div>
@@ -418,14 +533,22 @@ function NavRow({
             const cActive = path === c.to;
             const cColor = isNova ? "#8b5cf6" : "#3b82f6";
             return (
-              <li key={c.to} className="slide-in-left" style={{ ["--i" as string]: i } as React.CSSProperties}>
+              <li
+                key={c.to}
+                className="slide-in-left"
+                style={{ ["--i" as string]: i } as React.CSSProperties}
+              >
                 <Link
                   to={c.to}
                   className="flex items-center gap-2 rounded-md px-2 py-1 text-[11.5px] transition-all duration-150"
-                  style={cActive ? {
-                    background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
-                    color: cColor,
-                  } : { color: "rgba(240,244,255,0.35)" }}
+                  style={
+                    cActive
+                      ? {
+                          background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
+                          color: cColor,
+                        }
+                      : { color: "rgba(240,244,255,0.35)" }
+                  }
                   onMouseEnter={(e) => {
                     if (!cActive) {
                       (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
@@ -439,7 +562,13 @@ function NavRow({
                     }
                   }}
                 >
-                  <span style={cActive ? { color: cColor, filter: `drop-shadow(0 0 3px ${cColor}60)` } : undefined}>
+                  <span
+                    style={
+                      cActive
+                        ? { color: cColor, filter: `drop-shadow(0 0 3px ${cColor}60)` }
+                        : undefined
+                    }
+                  >
                     <c.icon className="h-3 w-3 shrink-0" />
                   </span>
                   <span className="truncate">{c.label}</span>
@@ -474,8 +603,12 @@ function DigitalRain() {
     window.addEventListener("resize", resize);
 
     const COLS = Math.floor(canvas.offsetWidth / 16);
-    const drops: number[] = Array(COLS).fill(0).map(() => Math.random() * -canvas.offsetHeight / 14);
-    const speeds: number[] = Array(COLS).fill(0).map(() => 0.3 + Math.random() * 0.5);
+    const drops: number[] = Array(COLS)
+      .fill(0)
+      .map(() => (Math.random() * -canvas.offsetHeight) / 14);
+    const speeds: number[] = Array(COLS)
+      .fill(0)
+      .map(() => 0.3 + Math.random() * 0.5);
 
     const CHARS = "01アウイエオカキクケコサシスセソタチツテトナニヌネノ";
     let frame = 0;

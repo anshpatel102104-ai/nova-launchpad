@@ -5,8 +5,26 @@ import { launchpadCatalog } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery } from "@/lib/queries";
 import {
-  Lock, Rocket, Zap, Target, Megaphone, Settings2, Mail, Globe, Swords, Tags, LineChart,
-  ArrowUpRight, Search, Lightbulb, Skull, Trophy, UserPlus, FileText, GitCompare, History,
+  Lock,
+  Rocket,
+  Zap,
+  Target,
+  Megaphone,
+  Settings2,
+  Mail,
+  Globe,
+  Swords,
+  Tags,
+  LineChart,
+  ArrowUpRight,
+  Search,
+  Lightbulb,
+  Skull,
+  Trophy,
+  UserPlus,
+  FileText,
+  GitCompare,
+  History,
 } from "lucide-react";
 import { WorkspaceHeader } from "@/components/app/WorkspaceHeader";
 import { useOwnerMode } from "@/lib/ownerMode";
@@ -17,9 +35,9 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "idea-validator": Lightbulb,
   "pitch-generator": Megaphone,
   "gtm-strategy": Target,
-  "offer": Zap,
+  offer: Zap,
   "ops-plan": Settings2,
-  "followup": Mail,
+  followup: Mail,
   "website-audit": Globe,
   "kill-my-idea": Skull,
   "funding-score": Trophy,
@@ -28,8 +46,8 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "investor-emails": Mail,
   "idea-vs-idea": GitCompare,
   "landing-page": Globe,
-  "competitor": Swords,
-  "pricing": Tags,
+  competitor: Swords,
+  pricing: Tags,
   "revenue-projector": LineChart,
 };
 
@@ -99,11 +117,13 @@ function LaunchpadOverview() {
               opacity: 0.85,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--primary) 40%, transparent)";
               (e.currentTarget as HTMLElement).style.opacity = "1";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--border) 80%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--border) 80%, transparent)";
               (e.currentTarget as HTMLElement).style.opacity = "0.85";
             }}
           >
@@ -130,8 +150,10 @@ function LaunchpadOverview() {
               color: "var(--foreground)",
             }}
             onFocus={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px color-mix(in oklab, var(--primary) 8%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--primary) 40%, transparent)";
+              (e.currentTarget as HTMLElement).style.boxShadow =
+                "0 0 0 3px color-mix(in oklab, var(--primary) 8%, transparent)";
             }}
             onBlur={(e) => {
               (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
@@ -148,13 +170,17 @@ function LaunchpadOverview() {
               key={f.key}
               onClick={() => setFilter(f.key)}
               className="rounded-lg px-3 py-1 text-[12px] font-medium transition"
-              style={filter === f.key ? {
-                background: "var(--surface)",
-                color: "var(--foreground)",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
-              } : {
-                color: "var(--muted-foreground)",
-              }}
+              style={
+                filter === f.key
+                  ? {
+                      background: "var(--surface)",
+                      color: "var(--foreground)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                    }
+                  : {
+                      color: "var(--muted-foreground)",
+                    }
+              }
             >
               {f.label}
             </button>
@@ -169,7 +195,8 @@ function LaunchpadOverview() {
           const locked = isOwner ? false : !tool.wired;
           const effectiveToolKey = tool.toolKey || (isOwner ? tool.key : "");
           const runs = runsByTool.get(effectiveToolKey) ?? 0;
-          const iconGrad = ICON_COLORS[tool.key] ?? "linear-gradient(135deg, var(--primary), var(--accent))";
+          const iconGrad =
+            ICON_COLORS[tool.key] ?? "linear-gradient(135deg, var(--primary), var(--accent))";
 
           return (
             <Link
@@ -190,7 +217,8 @@ function LaunchpadOverview() {
                   const el = e.currentTarget as HTMLElement;
                   if (!locked) {
                     el.style.borderColor = "color-mix(in oklab, var(--primary) 35%, transparent)";
-                    el.style.boxShadow = "var(--shadow-hover), 0 0 0 1px color-mix(in oklab, var(--primary) 15%, transparent)";
+                    el.style.boxShadow =
+                      "var(--shadow-hover), 0 0 0 1px color-mix(in oklab, var(--primary) 15%, transparent)";
                     el.style.transform = "translateY(-2px) scale(1.005)";
                   } else {
                     el.style.borderColor = "color-mix(in oklab, var(--border) 150%, transparent)";
@@ -207,7 +235,9 @@ function LaunchpadOverview() {
                 {!locked && (
                   <div
                     className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                    style={{ background: `radial-gradient(circle, ${iconGrad.includes("ef4444") ? "rgba(239,68,68,0.15)" : "color-mix(in oklab, var(--primary) 15%, transparent)"}, transparent 70%)` }}
+                    style={{
+                      background: `radial-gradient(circle, ${iconGrad.includes("ef4444") ? "rgba(239,68,68,0.15)" : "color-mix(in oklab, var(--primary) 15%, transparent)"}, transparent 70%)`,
+                    }}
                   />
                 )}
 
@@ -217,39 +247,55 @@ function LaunchpadOverview() {
                       className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-card transition-transform duration-300 group-hover:scale-110"
                       style={{
                         background: locked ? "var(--surface-2)" : iconGrad,
-                        boxShadow: locked ? "none" : "0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
+                        boxShadow: locked
+                          ? "none"
+                          : "0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
                       }}
                     >
-                      {locked
-                        ? <Lock className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
-                        : <Icon className="h-5 w-5" />
-                      }
+                      {locked ? (
+                        <Lock className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
+                      ) : (
+                        <Icon className="h-5 w-5" />
+                      )}
                     </div>
                     <span
                       className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                      style={locked ? {
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--border)",
-                        color: "var(--muted-foreground)",
-                      } : {
-                        background: "color-mix(in oklab, var(--success) 12%, transparent)",
-                        border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
-                        color: "var(--success)",
-                      }}
+                      style={
+                        locked
+                          ? {
+                              background: "var(--surface-2)",
+                              border: "1px solid var(--border)",
+                              color: "var(--muted-foreground)",
+                            }
+                          : {
+                              background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                              border:
+                                "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
+                              color: "var(--success)",
+                            }
+                      }
                     >
                       <span
                         className="h-1.5 w-1.5 rounded-full"
-                        style={{ background: locked ? "var(--muted-foreground)" : "var(--success)" }}
+                        style={{
+                          background: locked ? "var(--muted-foreground)" : "var(--success)",
+                        }}
                       />
                       {locked ? "Soon" : "Ready"}
                     </span>
                   </div>
 
                   <div className="mt-4">
-                    <div className="font-display text-[15px] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+                    <div
+                      className="font-display text-[15px] font-semibold tracking-tight"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {tool.name}
                     </div>
-                    <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                    <p
+                      className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {tool.desc}
                     </p>
                   </div>
@@ -259,10 +305,25 @@ function LaunchpadOverview() {
                       className="rounded-full px-2 py-0.5 text-[11px] font-medium"
                       style={
                         tool.difficulty === "Beginner"
-                          ? { background: "color-mix(in oklab, var(--success) 12%, transparent)", color: "var(--success)", border: "1px solid color-mix(in oklab, var(--success) 25%, transparent)" }
+                          ? {
+                              background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                              color: "var(--success)",
+                              border:
+                                "1px solid color-mix(in oklab, var(--success) 25%, transparent)",
+                            }
                           : tool.difficulty === "Intermediate"
-                          ? { background: "color-mix(in oklab, var(--primary) 12%, transparent)", color: "var(--primary)", border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)" }
-                          : { background: "color-mix(in oklab, var(--warning) 12%, transparent)", color: "var(--warning)", border: "1px solid color-mix(in oklab, var(--warning) 25%, transparent)" }
+                            ? {
+                                background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+                                color: "var(--primary)",
+                                border:
+                                  "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+                              }
+                            : {
+                                background: "color-mix(in oklab, var(--warning) 12%, transparent)",
+                                color: "var(--warning)",
+                                border:
+                                  "1px solid color-mix(in oklab, var(--warning) 25%, transparent)",
+                              }
                       }
                     >
                       {tool.difficulty}
@@ -276,7 +337,9 @@ function LaunchpadOverview() {
                         <ArrowUpRight className="h-3 w-3" />
                       </span>
                     ) : (
-                      <span className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>Launching soon</span>
+                      <span className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                        Launching soon
+                      </span>
                     )}
                   </div>
                 </div>
