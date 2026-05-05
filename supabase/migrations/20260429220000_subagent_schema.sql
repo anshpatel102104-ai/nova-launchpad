@@ -166,26 +166,24 @@ create or replace view public.user_credit_balance as
 select
   p.id                                                            as user_id,
   coalesce(
-    (select pe.limit_value
+    (select pe.monthly_generation_limit
        from public.plan_entitlements pe
        join public.subscriptions sub
          on sub.plan = pe.plan
        join public.organization_members om
          on om.organization_id = sub.organization_id
         and om.user_id = p.id
-      where pe.feature_key = 'ai.generations.monthly'
       limit 1),
     999999) * 5                                                   as starting_credits,
   coalesce(sum(cl.cost), 0)                                       as credits_used,
   coalesce(
-    (select pe.limit_value
+    (select pe.monthly_generation_limit
        from public.plan_entitlements pe
        join public.subscriptions sub
          on sub.plan = pe.plan
        join public.organization_members om
          on om.organization_id = sub.organization_id
         and om.user_id = p.id
-      where pe.feature_key = 'ai.generations.monthly'
       limit 1),
     999999) * 5 - coalesce(sum(cl.cost), 0)                      as credits_remaining
 from public.profiles p
