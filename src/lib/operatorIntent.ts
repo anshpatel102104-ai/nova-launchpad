@@ -91,7 +91,7 @@ const PATTERNS: Pattern[] = [
     slug: "website-audit",
     verb: "Audit website",
     matchers: [
-      /^(?:audit|analyze|analyse|review|check)\s+(?:my\s+|the\s+)?(?:website|site|landing\s+page|url)\s*[:\-]?\s*(.+)$/i,
+      /^(?:audit|analyze|analyse|review|check)\s+(?:my\s+|the\s+)?(?:website|site|landing\s+page|url)\s*[:-]?\s*(.+)$/i,
       /^(?:website|site)\s+(?:audit|review|analysis)\s+(?:for\s+)?(.+)$/i,
       /^(https?:\/\/\S+)$/i,
     ],
@@ -109,7 +109,17 @@ const PATTERNS: Pattern[] = [
 ];
 
 const STOP_WORDS = new Set([
-  "a", "an", "the", "for", "about", "my", "our", "this", "that", "to", "of",
+  "a",
+  "an",
+  "the",
+  "for",
+  "about",
+  "my",
+  "our",
+  "this",
+  "that",
+  "to",
+  "of",
 ]);
 
 function deriveTitle(context: string, max = 60): string {

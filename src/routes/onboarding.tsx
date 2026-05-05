@@ -1,30 +1,50 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { ArrowRight, Lightbulb, Hammer, DollarSign, TrendingUp, Rocket, Users, Package, Megaphone } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  ArrowRight,
+  Lightbulb,
+  Hammer,
+  DollarSign,
+  TrendingUp,
+  Rocket,
+  Users,
+  Package,
+  Megaphone,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { toast } from "sonner";
 
+type BusinessStage = Database["public"]["Enums"]["business_stage"];
+
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) throw redirect({ to: "/auth/sign-in" });
   },
   component: Onboarding,
 });
 
-const STAGES = [
-  { id: "Idea",     label: "Idea",     desc: "Just a concept, nothing built",    icon: Lightbulb  },
-  { id: "Building", label: "Building", desc: "Actively building the product",    icon: Hammer     },
-  { id: "Revenue",  label: "Revenue",  desc: "I have paying customers",          icon: DollarSign },
-  { id: "Scaling",  label: "Scaling",  desc: "Growing revenue and team",         icon: TrendingUp },
+const STAGES: { id: BusinessStage; label: string; desc: string; icon: React.ElementType }[] = [
+  { id: "Idea", label: "Idea", desc: "Just a concept, nothing built", icon: Lightbulb },
+  { id: "Validate", label: "Building", desc: "Actively building the product", icon: Hammer },
+  { id: "Operate", label: "Revenue", desc: "I have paying customers", icon: DollarSign },
+  { id: "Scale", label: "Scaling", desc: "Growing revenue and team", icon: TrendingUp },
 ];
 
 const CHALLENGES = [
-  { id: "fundraising", label: "Fundraising",        desc: "Raising capital from investors",    icon: Rocket   },
-  { id: "customers",   label: "Getting customers",  desc: "Finding my first buyers",           icon: Users    },
-  { id: "product",     label: "Building product",   desc: "Shipping fast enough",              icon: Package  },
-  { id: "marketing",   label: "Marketing",          desc: "Getting visibility and awareness",  icon: Megaphone},
+  { id: "fundraising", label: "Fundraising", desc: "Raising capital from investors", icon: Rocket },
+  { id: "customers", label: "Getting customers", desc: "Finding my first buyers", icon: Users },
+  { id: "product", label: "Building product", desc: "Shipping fast enough", icon: Package },
+  {
+    id: "marketing",
+    label: "Marketing",
+    desc: "Getting visibility and awareness",
+    icon: Megaphone,
+  },
 ];
 
 const ANIM_CSS = `
@@ -67,7 +87,7 @@ function Onboarding() {
   const [stepKey, setStepKey] = useState(0);
   const [name, setName] = useState("");
   const [idea, setIdea] = useState("");
-  const [stage, setStage] = useState("");
+  const [stage, setStage] = useState<BusinessStage | "">("");
   const [challenge, setChallenge] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -80,28 +100,33 @@ function Onboarding() {
     });
   }, []);
 
-  const canAdvance = step === 0 ? name.trim().length > 0 && idea.trim().length > 0
-    : step === 1 ? !!stage
-    : !!challenge;
+  const canAdvance =
+    step === 0
+      ? name.trim().length > 0 && idea.trim().length > 0
+      : step === 1
+        ? !!stage
+        : !!challenge;
 
   const advance = async () => {
     if (!canAdvance) return;
     if (step < 2) {
-      setStep(s => s + 1);
-      setStepKey(k => k + 1);
+      setStep((s) => s + 1);
+      setStepKey((k) => k + 1);
     } else {
       setSaving(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
         // Save responses and profile
         await Promise.all([
           supabase.from("onboarding_responses").upsert(
             [
-              { user_id: user.id, question_key: "fullName",  answer: name },
-              { user_id: user.id, question_key: "idea",      answer: idea },
-              { user_id: user.id, question_key: "stage",     answer: stage },
+              { user_id: user.id, question_key: "fullName", answer: name },
+              { user_id: user.id, question_key: "idea", answer: idea },
+              { user_id: user.id, question_key: "stage", answer: stage },
               { user_id: user.id, question_key: "challenge", answer: challenge },
             ],
             { onConflict: "user_id,question_key" },
@@ -117,7 +142,7 @@ function Onboarding() {
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ name: orgName, owner_id: user.id, stage })
+          .insert({ name: orgName, owner_id: user.id, stage: stage || undefined })
           .select("id")
           .single();
         if (orgErr) throw orgErr;
@@ -138,7 +163,9 @@ function Onboarding() {
             primary_niche: challenge,
             recommended_tools: [],
           }),
-        }).catch(() => { /* best-effort */ });
+        }).catch(() => {
+          /* best-effort */
+        });
 
         setDone(true);
         setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
@@ -153,7 +180,16 @@ function Onboarding() {
   if (done) return <WelcomeScreen name={name} />;
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#080810", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#080810",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <style>{ANIM_CSS}</style>
 
       {/* Neural canvas */}
@@ -162,49 +198,100 @@ function Onboarding() {
       </div>
 
       {/* Center ambient glow */}
-      <div style={{
-        position: "absolute", width: 700, height: 500, borderRadius: "50%",
-        background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)",
-        animation: "ambientPulse 4s ease-in-out infinite",
-        pointerEvents: "none",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          width: 700,
+          height: 500,
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)",
+          animation: "ambientPulse 4s ease-in-out infinite",
+          pointerEvents: "none",
+        }}
+      />
 
       {/* Card */}
-      <div style={{
-        position: "relative", zIndex: 10, width: "100%", maxWidth: 560, margin: "0 20px",
-        background: "rgba(11,11,26,0.88)", backdropFilter: "blur(28px) saturate(1.4)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 22,
-        boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
-        padding: "38px 38px 34px",
-      }}>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          width: "100%",
+          maxWidth: 560,
+          margin: "0 20px",
+          background: "rgba(11,11,26,0.88)",
+          backdropFilter: "blur(28px) saturate(1.4)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 22,
+          boxShadow:
+            "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
+          padding: "38px 38px 34px",
+        }}
+      >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 34 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 34,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: "0.02em",
-            }}>N</div>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f0f4ff", letterSpacing: "-0.01em" }}>Nova OS</span>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                fontSize: 11,
+                fontWeight: 800,
+                color: "#fff",
+                letterSpacing: "0.02em",
+              }}
+            >
+              N
+            </div>
+            <span
+              style={{
+                fontSize: 13.5,
+                fontWeight: 600,
+                color: "#f0f4ff",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Nova OS
+            </span>
           </div>
           {/* Progress dots */}
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{
-                height: 6, borderRadius: 99,
-                transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
-                width: i === step ? 28 : 6,
-                background: i < step ? "#3b82f6" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
-                boxShadow: i === step ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)" : "none",
-              }} />
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  height: 6,
+                  borderRadius: 99,
+                  transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
+                  width: i === step ? 28 : 6,
+                  background:
+                    i < step ? "#3b82f6" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                  boxShadow:
+                    i === step
+                      ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)"
+                      : "none",
+                }}
+              />
             ))}
           </div>
         </div>
 
         {/* Animated step */}
         <div key={stepKey} className="ob-step">
-          {step === 0 && <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} />}
+          {step === 0 && (
+            <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} />
+          )}
           {step === 1 && <Step2 stage={stage} onStage={setStage} />}
           {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
         </div>
@@ -214,18 +301,29 @@ function Onboarding() {
           onClick={advance}
           disabled={!canAdvance || saving}
           style={{
-            marginTop: 28, width: "100%", height: 52, borderRadius: 12, border: "none",
+            marginTop: 28,
+            width: "100%",
+            height: 52,
+            borderRadius: 12,
+            border: "none",
             cursor: canAdvance && !saving ? "pointer" : "default",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em",
-            background: canAdvance && !saving
-              ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
-              : "rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            fontWeight: 600,
+            fontSize: 15,
+            letterSpacing: "-0.01em",
+            background:
+              canAdvance && !saving
+                ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
+                : "rgba(255,255,255,0.06)",
             color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
             transition: "all 0.25s",
-            boxShadow: canAdvance && !saving
-              ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
-              : "none",
+            boxShadow:
+              canAdvance && !saving
+                ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
+                : "none",
             fontFamily: "inherit",
           }}
         >
@@ -240,28 +338,75 @@ function Onboarding() {
 function Heading({ step: s }: { step: number }) {
   return (
     <div style={{ marginBottom: 24 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#3b82f6", marginBottom: 8 }}>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "#3b82f6",
+          marginBottom: 8,
+        }}
+      >
         Step {s} of 3
       </div>
-      <h2 style={{
-        fontSize: "clamp(1.7rem, 5vw, 2.3rem)", fontWeight: 800, color: "#f0f4ff",
-        lineHeight: 1.08, letterSpacing: "-0.04em", margin: 0,
-      }}>
-        {s === 1 && <>What's your<br /><span style={{ color: "#3b82f6" }}>startup idea</span>?</>}
-        {s === 2 && <>What stage<br /><span style={{ color: "#8b5cf6" }}>are you at</span>?</>}
-        {s === 3 && <>What's your<br /><span style={{ color: "#06b6d4" }}>biggest challenge</span>?</>}
+      <h2
+        style={{
+          fontSize: "clamp(1.7rem, 5vw, 2.3rem)",
+          fontWeight: 800,
+          color: "#f0f4ff",
+          lineHeight: 1.08,
+          letterSpacing: "-0.04em",
+          margin: 0,
+        }}
+      >
+        {s === 1 && (
+          <>
+            What's your
+            <br />
+            <span style={{ color: "#3b82f6" }}>startup idea</span>?
+          </>
+        )}
+        {s === 2 && (
+          <>
+            What stage
+            <br />
+            <span style={{ color: "#8b5cf6" }}>are you at</span>?
+          </>
+        )}
+        {s === 3 && (
+          <>
+            What's your
+            <br />
+            <span style={{ color: "#06b6d4" }}>biggest challenge</span>?
+          </>
+        )}
       </h2>
     </div>
   );
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}>{children}</div>;
+  return (
+    <div
+      style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}
+    >
+      {children}
+    </div>
+  );
 }
 
-function Step1({ name, idea, onName, onIdea, onSubmit }: {
-  name: string; idea: string;
-  onName: (v: string) => void; onIdea: (v: string) => void;
+function Step1({
+  name,
+  idea,
+  onName,
+  onIdea,
+  onSubmit,
+}: {
+  name: string;
+  idea: string;
+  onName: (v: string) => void;
+  onIdea: (v: string) => void;
   onSubmit: () => void;
 }) {
   return (
@@ -272,7 +417,7 @@ function Step1({ name, idea, onName, onIdea, onSubmit }: {
         <input
           autoFocus
           value={name}
-          onChange={e => onName(e.target.value)}
+          onChange={(e) => onName(e.target.value)}
           placeholder="Alex Founder"
           className="ob-input"
           style={{ height: 44, padding: "0 14px" }}
@@ -282,36 +427,72 @@ function Step1({ name, idea, onName, onIdea, onSubmit }: {
         <FieldLabel>Describe it in one sentence</FieldLabel>
         <textarea
           value={idea}
-          onChange={e => onIdea(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit(); }}
+          onChange={(e) => onIdea(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
+          }}
           placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
           rows={3}
           className="ob-input"
           style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
         />
-        <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>⌘+Enter to continue</div>
+        <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
+          ⌘+Enter to continue
+        </div>
       </div>
     </div>
   );
 }
 
-function Step2({ stage, onStage }: { stage: string; onStage: (v: string) => void }) {
+function Step2({
+  stage,
+  onStage,
+}: {
+  stage: BusinessStage | "";
+  onStage: (v: BusinessStage) => void;
+}) {
   return (
     <div>
       <Heading step={2} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {STAGES.map(({ id, label, desc, icon: Icon }) => (
-          <button key={id} onClick={() => onStage(id)} className={`ob-card${stage === id ? " ob-card-sel" : ""}`}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-              background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
-              transition: "background 0.2s",
-            }}>
-              <Icon style={{ width: 16, height: 16, color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)" }} />
+          <button
+            key={id}
+            onClick={() => onStage(id)}
+            className={`ob-card${stage === id ? " ob-card-sel" : ""}`}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
+                transition: "background 0.2s",
+              }}
+            >
+              <Icon
+                style={{
+                  width: 16,
+                  height: 16,
+                  color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)",
+                }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: "rgba(240,244,255,0.38)",
+                  lineHeight: 1.4,
+                  marginTop: 2,
+                }}
+              >
+                {desc}
+              </div>
             </div>
           </button>
         ))}
@@ -320,23 +501,55 @@ function Step2({ stage, onStage }: { stage: string; onStage: (v: string) => void
   );
 }
 
-function Step3({ challenge, onChallenge }: { challenge: string; onChallenge: (v: string) => void }) {
+function Step3({
+  challenge,
+  onChallenge,
+}: {
+  challenge: string;
+  onChallenge: (v: string) => void;
+}) {
   return (
     <div>
       <Heading step={3} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {CHALLENGES.map(({ id, label, desc, icon: Icon }) => (
-          <button key={id} onClick={() => onChallenge(id)} className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
-              background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
-              transition: "background 0.2s",
-            }}>
-              <Icon style={{ width: 16, height: 16, color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)" }} />
+          <button
+            key={id}
+            onClick={() => onChallenge(id)}
+            className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
+                transition: "background 0.2s",
+              }}
+            >
+              <Icon
+                style={{
+                  width: 16,
+                  height: 16,
+                  color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)",
+                }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: "rgba(240,244,255,0.38)",
+                  lineHeight: 1.4,
+                  marginTop: 2,
+                }}
+              >
+                {desc}
+              </div>
             </div>
           </button>
         ))}
@@ -366,33 +579,72 @@ function WelcomeScreen({ name }: { name: string }) {
   }, []);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#080810", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#080810",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
       <style>{ANIM_CSS}</style>
 
-      <div style={{ position: "absolute", inset: 0, opacity: phase === "reveal" ? 0.15 : 0.25, transition: "opacity 1s" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: phase === "reveal" ? 0.15 : 0.25,
+          transition: "opacity 1s",
+        }}
+      >
         <NeuralCanvas className="w-full h-full" />
       </div>
 
       {/* Radial glow — intensifies on reveal */}
-      <div style={{
-        position: "absolute", width: 800, height: 600, borderRadius: "50%",
-        background: "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
-        transition: "opacity 1s",
-        opacity: phase === "reveal" ? 1 : 0.4,
-        animation: "ambientPulse 4s ease-in-out infinite",
-        pointerEvents: "none",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          width: 800,
+          height: 600,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
+          transition: "opacity 1s",
+          opacity: phase === "reveal" ? 1 : 0.4,
+          animation: "ambientPulse 4s ease-in-out infinite",
+          pointerEvents: "none",
+        }}
+      />
 
-      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: 600 }}>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          textAlign: "center",
+          padding: "0 24px",
+          maxWidth: 600,
+        }}
+      >
         {phase === "boot" && (
           <div style={{ fontFamily: "monospace", textAlign: "left", display: "inline-block" }}>
             {BOOT_LINES.slice(0, lineIdx).map((line, i) => (
-              <div key={line} style={{
-                fontSize: 13, color: "rgba(59,130,246,0.85)", lineHeight: 2.1,
-                animation: "bootLine 0.35s ease both",
-              }}>
-                <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>{line}
-                {i === lineIdx - 1 && <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>}
+              <div
+                key={line}
+                style={{
+                  fontSize: 13,
+                  color: "rgba(59,130,246,0.85)",
+                  lineHeight: 2.1,
+                  animation: "bootLine 0.35s ease both",
+                }}
+              >
+                <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>
+                {line}
+                {i === lineIdx - 1 && (
+                  <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>
+                )}
               </div>
             ))}
           </div>
@@ -400,52 +652,98 @@ function WelcomeScreen({ name }: { name: string }) {
 
         {phase === "reveal" && (
           <div style={{ animation: "nameReveal 1s cubic-bezier(0.16,1,0.3,1) both" }}>
-            <div style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase",
-              color: "#3b82f6", marginBottom: 20,
-              animation: "fadeUp 0.6s ease 0.15s both", opacity: 0,
-            }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "#3b82f6",
+                marginBottom: 20,
+                animation: "fadeUp 0.6s ease 0.15s both",
+                opacity: 0,
+              }}
+            >
               System ready
             </div>
 
-            <h1 style={{
-              fontSize: "clamp(2.6rem, 7vw, 4.5rem)", fontWeight: 900,
-              letterSpacing: "-0.05em", lineHeight: 1.04, color: "#f0f4ff", margin: "0 0 8px",
-              textShadow: "0 0 60px rgba(59,130,246,0.25)",
-            }}>
-              Nova is ready<br />for you,{" "}
-              <span style={{
-                background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              }}>
+            <h1
+              style={{
+                fontSize: "clamp(2.6rem, 7vw, 4.5rem)",
+                fontWeight: 900,
+                letterSpacing: "-0.05em",
+                lineHeight: 1.04,
+                color: "#f0f4ff",
+                margin: "0 0 8px",
+                textShadow: "0 0 60px rgba(59,130,246,0.25)",
+              }}
+            >
+              Nova is ready
+              <br />
+              for you,{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
                 {name || "Founder"}
               </span>
             </h1>
 
-            <div style={{
-              margin: "22px auto 0",
-              height: 2, borderRadius: 2,
-              background: "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
-              boxShadow: "0 0 20px rgba(59,130,246,0.7)",
-              animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
-            }} />
+            <div
+              style={{
+                margin: "22px auto 0",
+                height: 2,
+                borderRadius: 2,
+                background:
+                  "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
+                boxShadow: "0 0 20px rgba(59,130,246,0.7)",
+                animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
+              }}
+            />
 
-            <p style={{
-              marginTop: 22, fontSize: 16, color: "rgba(240,244,255,0.45)", lineHeight: 1.65,
-              animation: "fadeUp 0.6s ease 0.5s both", opacity: 0,
-            }}>
-              Your AI founder OS is online.<br />Let's build something remarkable.
+            <p
+              style={{
+                marginTop: 22,
+                fontSize: 16,
+                color: "rgba(240,244,255,0.45)",
+                lineHeight: 1.65,
+                animation: "fadeUp 0.6s ease 0.5s both",
+                opacity: 0,
+              }}
+            >
+              Your AI founder OS is online.
+              <br />
+              Let's build something remarkable.
             </p>
 
-            <div style={{
-              marginTop: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              animation: "fadeUp 0.6s ease 0.75s both", opacity: 0,
-            }}>
-              <div style={{
-                width: 6, height: 6, borderRadius: "50%", background: "#3b82f6",
-                boxShadow: "0 0 10px #3b82f6", animation: "ambientPulse 1.4s ease-in-out infinite",
-              }} />
-              <span style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}>
+            <div
+              style={{
+                marginTop: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                animation: "fadeUp 0.6s ease 0.75s both",
+                opacity: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#3b82f6",
+                  boxShadow: "0 0 10px #3b82f6",
+                  animation: "ambientPulse 1.4s ease-in-out infinite",
+                }}
+              />
+              <span
+                style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
+              >
                 loading dashboard…
               </span>
             </div>
