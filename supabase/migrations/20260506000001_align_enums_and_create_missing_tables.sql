@@ -6,10 +6,18 @@
 drop view if exists public.users cascade;
 drop view if exists public.user_credit_balance cascade;
 
--- 1. Create missing enum types
-create type public.plan_tier      as enum ('starter','launch','operate','scale');
-create type public.business_stage as enum ('Idea','Validate','Launch','Operate','Scale');
-create type public.app_role       as enum ('user','admin');
+-- 1. Create missing enum types (idempotent)
+do $$ begin
+  create type public.plan_tier as enum ('starter','launch','operate','scale');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.business_stage as enum ('Idea','Validate','Launch','Operate','Scale');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.app_role as enum ('user','admin');
+exception when duplicate_object then null; end $$;
 
 -- 2. subscriptions.plan: app_plan → plan_tier
 alter table public.subscriptions alter column plan drop default;
@@ -209,3 +217,9 @@ create or replace function public.has_role(_role public.app_role, _user_id uuid)
 returns boolean language sql security definer stable as $$
   select exists (select 1 from public.user_roles where user_id = _user_id and role = _role);
 $$;
+
+-- 14. Fix SECURITY DEFINER views — use invoker's RLS, not creator's
+alter view public.users                    set (security_invoker = on);
+alter view public.user_credit_balance      set (security_invoker = on);
+alter view public.user_integrations_masked set (security_invoker = on);
+alter view public.ai_operator_config       set (security_invoker = on);
