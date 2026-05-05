@@ -1,10 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tanstack-start-app",
+  "name": "nova-launchpad",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // Routes: match your production domain. Update zone_name after you add the domain in Cloudflare.
+  // "routes": [{ "pattern": "nova-ops.space/*", "zone_name": "nova-ops.space" }],
   "vars": {
-    "VITE_N8N_BASE_URL": "/api/n8n"
+    // Public env vars available at runtime on the Worker
+    "VITE_N8N_BASE_URL": "/api/n8n",
+    "VITE_SUPABASE_URL": "https://ipidfqwlszuhjgjygbvx.supabase.co",
+    "VITE_SUPABASE_PROJECT_ID": "ipidfqwlszuhjgjygbvx"
   }
+  // Secret bindings (never in source control — set via wrangler CLI):
+  //   npx wrangler secret put VITE_SUPABASE_PUBLISHABLE_KEY
+  //   npx wrangler secret put VITE_PAYMENTS_CLIENT_TOKEN
 }

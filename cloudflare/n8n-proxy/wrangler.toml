@@ -2,11 +2,13 @@ name = "nova-n8n-proxy"
 main = "src/worker.ts"
 compatibility_date = "2026-01-15"
 
-# Bind your routes after `npx wrangler deploy`.
-# Example: routes = [{ pattern = "nova-ops.space/api/n8n/*", zone_name = "nova-ops.space" }]
+# Routes: update zone_name to match your Cloudflare zone after domain is added.
+# Uncomment and adjust before deploying:
+# routes = [{ pattern = "nova-ops.space/api/n8n/*", zone_name = "nova-ops.space" }]
 
 [vars]
-N8N_UPSTREAM = "https://n8n.nova-ops.space"
+N8N_UPSTREAM = "https://launchpad-novaops.app.n8n.cloud"
 
-# Set via: npx wrangler secret put N8N_PROXY_SECRET
-# This is the shared secret n8n verifies via X-Proxy-Secret header.
+# Secrets — set via wrangler CLI (NEVER commit real values):
+#   npx wrangler secret put N8N_PROXY_SECRET        # shared secret, also set on n8n host
+#   npx wrangler secret put SUPABASE_JWT_SECRET     # from Supabase → Settings → API → JWT Secret

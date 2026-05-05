@@ -1,4 +1,4 @@
-project_id = "snnnbzhopsajrhimhgje"
+project_id = "ipidfqwlszuhjgjygbvx"
 
 [functions.validate-idea]
 verify_jwt = false
@@ -34,4 +34,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.list-invoices]
+verify_jwt = false
+
+[functions.kill-my-idea]
+verify_jwt = false
+
+[functions.save-integration]
 verify_jwt = false

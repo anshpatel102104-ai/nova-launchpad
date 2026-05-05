@@ -20,16 +20,20 @@ create extension if not exists "pgcrypto";
 --    Subagents query: SELECT user_id, plan_tier, email FROM users WHERE user_id = '...'
 --    The view exposes plan_tier as the numeric price string ('0','49','149','299')
 --    so the gate logic (allowedTiers = ['149','299']) works without code changes.
+--    plan_entitlements uses a key-value schema — plan tier is mapped by plan name.
 -- ════════════════════════════════════════════════════════════════════
 create or replace view public.users as
 select
   p.id                                  as user_id,
   p.email                               as email,
-  case
-    when pe.price_usd is null then '0'
-    else pe.price_usd::text
+  case s.plan::text
+    when 'Starter'  then '0'
+    when 'Launch'   then '49'
+    when 'Operate'  then '149'
+    when 'Scale'    then '299'
+    else '0'
   end                                   as plan_tier,
-  coalesce(s.plan, 'starter')           as plan_tier_enum,
+  coalesce(s.plan::text, 'Starter')     as plan_tier_enum,
   s.organization_id                     as organization_id,
   p.created_at                          as created_at
 from public.profiles p
@@ -38,9 +42,7 @@ left join public.subscriptions s
          select organization_id
            from public.organization_members
           where user_id = p.id
-       )
-left join public.plan_entitlements pe
-       on pe.plan = s.plan;
+       );
 
 grant select on public.users to anon, authenticated, service_role;
 
@@ -159,24 +161,38 @@ create index if not exists idx_credit_ledger_tool
   on public.credit_ledger(tool);
 
 -- Convenience view: current credit balance per user.
--- Default starting balance per plan = generation_limit * 5 (rough mapping).
+-- Starting credits = ai.generations.monthly entitlement * 5 (each gen costs 5 credits).
 create or replace view public.user_credit_balance as
 select
-  p.id                                                  as user_id,
-  coalesce(pe.monthly_generation_limit, 999999) * 5     as starting_credits,
-  coalesce(sum(cl.cost), 0)                             as credits_used,
-  coalesce(pe.monthly_generation_limit, 999999) * 5
-    - coalesce(sum(cl.cost), 0)                         as credits_remaining
+  p.id                                                            as user_id,
+  coalesce(
+    (select pe.limit_value
+       from public.plan_entitlements pe
+       join public.subscriptions sub
+         on sub.plan = pe.plan
+       join public.organization_members om
+         on om.organization_id = sub.organization_id
+        and om.user_id = p.id
+      where pe.feature_key = 'ai.generations.monthly'
+      limit 1),
+    999999) * 5                                                   as starting_credits,
+  coalesce(sum(cl.cost), 0)                                       as credits_used,
+  coalesce(
+    (select pe.limit_value
+       from public.plan_entitlements pe
+       join public.subscriptions sub
+         on sub.plan = pe.plan
+       join public.organization_members om
+         on om.organization_id = sub.organization_id
+        and om.user_id = p.id
+      where pe.feature_key = 'ai.generations.monthly'
+      limit 1),
+    999999) * 5 - coalesce(sum(cl.cost), 0)                      as credits_remaining
 from public.profiles p
-left join public.subscriptions s
-       on s.organization_id in (
-         select organization_id from public.organization_members where user_id = p.id
-       )
-left join public.plan_entitlements pe on pe.plan = s.plan
 left join public.credit_ledger cl
        on cl.user_id = p.id
       and cl.created_at >= date_trunc('month', now())
-group by p.id, pe.monthly_generation_limit;
+group by p.id;
 
 grant select on public.user_credit_balance to authenticated, service_role;
 

@@ -49,7 +49,7 @@ In n8n → **Credentials**, create exactly these (names must match the JSON):
 
 | Credential name        | Type                                  | Notes                                                                                |
 | ---------------------- | ------------------------------------- | ------------------------------------------------------------------------------------ |
-| `Supabase Postgres`    | Postgres                              | Host: `db.snnnbzhopsajrhimhgje.supabase.co`, port 5432, db `postgres`, user `postgres`, password = Supabase service role pwd |
+| `Supabase Postgres`    | Postgres                              | Host: `db.ipidfqwlszuhjgjygbvx.supabase.co`, port 5432, db `postgres`, user `postgres`, password = Supabase service role pwd |
 | `Anthropic API Key`    | Header Auth                           | Header name: `x-api-key` · Value: your `ANTHROPIC_API_KEY`                           |
 
 After importing the JSONs, n8n will flag missing credential refs — bind each
