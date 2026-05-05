@@ -249,7 +249,6 @@ function LeadsPage() {
           if (!currentOrgId || !user) return;
           const { error } = await supabase.from("leads").insert({
             organization_id: currentOrgId,
-            user_id: user.id,
             ...form,
           });
           if (error) toast.error(error.message);

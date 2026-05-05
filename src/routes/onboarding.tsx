@@ -120,29 +120,17 @@ function Onboarding() {
         } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Save responses and profile
-        await Promise.all([
-          supabase.from("onboarding_responses").upsert(
-            [
-              { user_id: user.id, question_key: "fullName", answer: name },
-              { user_id: user.id, question_key: "idea", answer: idea },
-              { user_id: user.id, question_key: "stage", answer: stage },
-              { user_id: user.id, question_key: "challenge", answer: challenge },
-            ],
-            { onConflict: "user_id,question_key" },
-          ),
-          supabase.from("profiles").upsert({
-            id: user.id,
-            onboarding_complete: true,
-            full_name: name,
-          }),
-        ]);
+        // Update profile
+        await supabase
+          .from("profiles")
+          .update({ onboarding_complete: true, full_name: name })
+          .eq("id", user.id);
 
         // Create org + membership so the dashboard can load
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ name: orgName, owner_id: user.id, stage: stage || undefined })
+          .insert({ name: orgName, created_by: user.id, stage: stage || undefined })
           .select("id")
           .single();
         if (orgErr) throw orgErr;
@@ -151,6 +139,20 @@ function Onboarding() {
           .from("organization_members")
           .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
         if (memberErr) throw memberErr;
+
+        // Save onboarding responses (requires org_id)
+        await supabase.from("onboarding_responses").upsert(
+          {
+            user_id: user.id,
+            organization_id: org.id,
+            offer: idea,
+            stage: (stage as Database["public"]["Enums"]["app_stage"]) || null,
+            biggest_blocker: challenge,
+            completed: true,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: "organization_id" },
+        );
 
         // Trigger N8N dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";

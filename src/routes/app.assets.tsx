@@ -42,12 +42,12 @@ function AssetsPage() {
   });
   const all = assetsQ.data ?? [];
   const assets = useMemo(
-    () => (filter === "all" ? all : all.filter((a) => a.category === filter)),
+    () => (filter === "all" ? all : all.filter((a) => a.kind === filter)),
     [all, filter],
   );
 
-  const downloadJSON = (a: { title: string; content: unknown }) => {
-    const blob = new Blob([JSON.stringify(a.content, null, 2)], { type: "application/json" });
+  const downloadJSON = (a: { title: string; metadata: unknown }) => {
+    const blob = new Blob([JSON.stringify(a.metadata, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -122,10 +122,10 @@ function AssetsPage() {
                 <span
                   className={cn(
                     "rounded-full border px-2 py-0.5 text-[10.5px] font-medium",
-                    KIND_TONE[a.category] ?? "border-border text-muted-foreground",
+                    KIND_TONE[a.kind] ?? "border-border text-muted-foreground",
                   )}
                 >
-                  {a.category.replace(/-/g, " ")}
+                  {a.kind.replace(/-/g, " ")}
                 </span>
               </div>
               <div className="mt-4 truncate font-display text-[15px] font-semibold">{a.title}</div>
