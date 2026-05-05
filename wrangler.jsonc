@@ -16,6 +16,21 @@
     "SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaWRmcXdsc3p1aGpnanlnYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MzU4OTUsImV4cCI6MjA5MjQxMTg5NX0.4F3q4epd_H8xn2JB5-RtSSy81U9zJBS7HO2KahD4HIc",
     "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaWRmcXdsc3p1aGpnanlnYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MzU4OTUsImV4cCI6MjA5MjQxMTg5NX0.4F3q4epd_H8xn2JB5-RtSSy81U9zJBS7HO2KahD4HIc"
   }
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  }
   // Secret bindings (set via wrangler CLI — never commit these):
   //   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY   # Supabase Dashboard → Project Settings → API → service_role
   //   npx wrangler secret put SUPABASE_JWT_SECRET         # Supabase Dashboard → Project Settings → API → JWT Secret
