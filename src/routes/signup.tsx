@@ -75,17 +75,19 @@ function SignupPage() {
           .single();
         if (orgErr) throw orgErr;
 
-        await supabase.from("organization_members").insert({
+        const { error: memberErr } = await supabase.from("organization_members").insert({
           organization_id: org.id,
           user_id: userId,
           role: "owner",
         });
+        if (memberErr) throw memberErr;
 
-        await supabase.from("subscriptions").insert({
+        const { error: subErr } = await supabase.from("subscriptions").insert({
           organization_id: org.id,
           plan,
           status: "trialing",
         });
+        if (subErr) throw subErr;
 
         toast.success("Account created");
         navigate({ to: "/onboarding" });

@@ -231,7 +231,7 @@ function Billing() {
           <Button
             size="sm"
             disabled={busy}
-            onClick={() => callManage({ action: "resume" }).then((ok) => ok && toast.success("Subscription resumed"))}
+            onClick={() => callManage({ action: "resume" }).then((ok) => ok && toast.success("Subscription resumed")).catch((e) => toast.error(e instanceof Error ? e.message : "Failed to resume"))}
           >
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Resume"}
           </Button>

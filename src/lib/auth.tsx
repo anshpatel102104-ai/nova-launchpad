@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(sess?.user ?? null);
       if (sess?.user) void loadProfile(sess.user.id).finally(() => setLoading(false));
       else setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     return () => { sub.subscription.unsubscribe(); };
   }, []);

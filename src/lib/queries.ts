@@ -52,7 +52,7 @@ export const planEntitlementsQuery = () =>
           { plan: "scale"   as const, price_usd: 299, monthly_generation_limit: null,allowed_tools: ["validate-idea","generate-pitch","generate-offer","generate-followup-sequence","generate-gtm-strategy","generate-ops-plan","analyze-website"], features: {}, created_at: new Date().toISOString() },
         ];
       }
-      const { data, error } = await supabase.from("plan_entitlements").select("*").order("price_usd", { ascending: true });
+      const { data, error } = await supabase.from("plan_entitlements").select("*").order("price_usd", { ascending: true }).limit(20);
       if (error) throw error;
       return data ?? [];
     },
@@ -103,7 +103,7 @@ export const automationSettingsQuery = (orgId: string) =>
     queryFn: async () => {
       if (isGuest()) return [];
       const { data, error } = await supabase
-        .from("automation_settings").select("*").eq("organization_id", orgId).order("key");
+        .from("automation_settings").select("*").eq("organization_id", orgId).order("key").limit(100);
       if (error) throw error;
       return data ?? [];
     },
@@ -115,7 +115,7 @@ export const websiteAnalysesQuery = (orgId: string) =>
     queryFn: async () => {
       if (isGuest()) return [];
       const { data, error } = await supabase
-        .from("website_analyses").select("*").eq("organization_id", orgId).order("created_at", { ascending: false });
+        .from("website_analyses").select("*").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data ?? [];
     },
@@ -128,7 +128,7 @@ export const leadsQuery = (orgId: string) =>
       if (isGuest()) return GUEST_LEADS;
       const { data, error } = await supabase
         .from("leads").select("*").eq("organization_id", orgId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }).limit(200);
       if (error) throw error;
       return data ?? [];
     },
@@ -153,7 +153,8 @@ export const integrationsQuery = (userId: string) =>
       const { data, error } = await supabase
         .from("user_integrations_masked")
         .select("*")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .limit(50);
       if (error) throw error;
       return (data ?? []) as MaskedIntegration[];
     },
