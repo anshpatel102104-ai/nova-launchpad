@@ -766,3 +766,135 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─────────────────────────── Nova OPS Mission Design System ─────────────────────────── */
+/* Tokens and utilities from nova-ops-suite Lovable design — required by new UI routes   */
+
+:root {
+  /* surface-elevated alias (nova-ops-suite routes use this; launchpad uses --surface-2) */
+  --surface-elevated: var(--surface-2);
+  /* Mission color palette */
+  --ignition: oklch(0.68 0.21 40);   /* rocket flame orange */
+  --plasma:   oklch(0.62 0.22 295);  /* violet plasma */
+  --aurora:   oklch(0.70 0.18 175);  /* turquoise */
+  --solar:    oklch(0.80 0.16 90);   /* solar yellow */
+  --cosmic:   oklch(0.58 0.22 320);  /* magenta */
+  --nebula:   oklch(0.65 0.18 215);  /* sky cyan */
+  --signal:   var(--primary);
+}
+
+@theme inline {
+  --color-surface-elevated: var(--surface-elevated);
+  --color-signal:   var(--signal);
+  --color-ignition: var(--ignition);
+  --color-plasma:   var(--plasma);
+  --color-aurora:   var(--aurora);
+  --color-solar:    var(--solar);
+  --color-cosmic:   var(--cosmic);
+  --color-nebula:   var(--nebula);
+}
+
+@layer utilities {
+  /* ── Nova OPS card system ── */
+  .nova-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.03),
+      0 6px 20px -16px rgba(0,0,0,0.4);
+  }
+  .nova-card-hover {
+    transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  }
+  .nova-card-hover:hover {
+    border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent),
+      0 10px 30px -14px color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  /* ── Nova grid / dot / scanline backgrounds ── */
+  .nova-grid-bg {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .nova-dot-bg {
+    background-image:
+      radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .nova-scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      color-mix(in oklab, var(--foreground) 2.5%, transparent) 2px,
+      color-mix(in oklab, var(--foreground) 2.5%, transparent) 3px
+    );
+  }
+  .nova-rainbow-bar {
+    background-image: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      var(--nebula) 20%,
+      var(--aurora) 40%,
+      var(--solar) 60%,
+      var(--ignition) 80%,
+      var(--cosmic) 100%
+    );
+  }
+
+  /* ── Nova glow effects ── */
+  .nova-glow {
+    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  .nova-glow-ignite {
+    box-shadow: 0 0 24px -6px color-mix(in oklab, var(--ignition) 55%, transparent);
+  }
+
+  /* ── Nova bracket corner decorations ── */
+  .nova-bracket { position: relative; }
+  .nova-bracket::before,
+  .nova-bracket::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--primary);
+    pointer-events: none;
+  }
+  .nova-bracket::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .nova-bracket::after  { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  /* ── Nova live pulsing dot ── */
+  @keyframes nova-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 50%, transparent); }
+    50%       { opacity: 0.65; box-shadow: 0 0 0 5px color-mix(in oklab, currentColor 0%, transparent); }
+  }
+  .nova-live-dot { animation: nova-pulse 2s ease-in-out infinite; }
+
+  /* ── Nova thrust / flicker animation ── */
+  @keyframes nova-thrust {
+    0%, 100% { opacity: 0.7; transform: scaleY(1); }
+    50%       { opacity: 1; transform: scaleY(1.18); }
+  }
+  .nova-thrust { animation: nova-thrust 1.4s ease-in-out infinite; transform-origin: top; }
+
+  /* ── Mission palette text/bg helpers ── */
+  .text-ignition { color: var(--ignition); }
+  .text-plasma   { color: var(--plasma); }
+  .text-aurora   { color: var(--aurora); }
+  .text-solar    { color: var(--solar); }
+  .text-cosmic   { color: var(--cosmic); }
+  .text-nebula   { color: var(--nebula); }
+
+  .bg-ignition { background-color: var(--ignition); }
+  .bg-plasma   { background-color: var(--plasma); }
+  .bg-aurora   { background-color: var(--aurora); }
+  .bg-solar    { background-color: var(--solar); }
+  .bg-cosmic   { background-color: var(--cosmic); }
+  .bg-nebula   { background-color: var(--nebula); }
+}
