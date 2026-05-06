@@ -76,6 +76,64 @@ const INTEGRATIONS = [
   { key: "gmail", name: "Gmail", hint: "OAuth coming soon", type: "url", soon: true },
 ] as const;
 
+type IntegrationKey = (typeof INTEGRATIONS)[number]["key"];
+
+function validateIntegrationValue(key: IntegrationKey, value: string): string | null {
+  if (!value) return null; // clearing is always allowed
+
+  switch (key) {
+    case "stripe":
+      if (!/^sk_(live|test)_[A-Za-z0-9]{20,}$/.test(value))
+        return "Must be a Stripe secret key starting with sk_live_ or sk_test_";
+      return null;
+
+    case "airtable":
+      if (!/^pat[A-Za-z0-9._]{10,}$/.test(value))
+        return "Must be an Airtable personal access token starting with pat";
+      return null;
+
+    case "gohighlevel":
+      if (value.length < 10) return "API key is too short";
+      return null;
+
+    case "n8n": {
+      try {
+        const u = new URL(value);
+        if (u.protocol !== "https:") return "Must be an https:// URL";
+        if (!u.pathname.includes("/webhook")) return "URL must contain /webhook";
+      } catch {
+        return "Must be a valid https:// URL";
+      }
+      return null;
+    }
+
+    case "zapier": {
+      try {
+        const u = new URL(value);
+        if (u.protocol !== "https:") return "Must be an https:// URL";
+        if (!u.hostname.includes("zapier.com")) return "Must be a hooks.zapier.com URL";
+      } catch {
+        return "Must be a valid https:// URL";
+      }
+      return null;
+    }
+
+    case "slack": {
+      try {
+        const u = new URL(value);
+        if (u.protocol !== "https:") return "Must be an https:// URL";
+        if (!u.hostname.includes("slack.com")) return "Must be a hooks.slack.com URL";
+      } catch {
+        return "Must be a valid https:// URL";
+      }
+      return null;
+    }
+
+    default:
+      return null;
+  }
+}
+
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
   { key: "organization", label: "Organization", icon: Building2 },
@@ -609,15 +667,30 @@ function ConnectorCard({
 }) {
   const { user } = useAuth();
   const [val, setVal] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   useEffect(() => {
     setVal("");
+    setValidationError(null);
   }, [existing?.value_last4]);
 
   const isConnected = !!existing?.is_connected && existing.status === "connected";
 
+  const handleChange = (newVal: string) => {
+    setVal(newVal);
+    if (validationError) {
+      setValidationError(validateIntegrationValue(conn.key as IntegrationKey, newVal));
+    }
+  };
+
   const save = async () => {
     if (blockIfGuest("Sign up to connect real integrations.")) return;
     if (!user) return;
+    const err = validateIntegrationValue(conn.key as IntegrationKey, val);
+    if (err) {
+      setValidationError(err);
+      return;
+    }
+    setValidationError(null);
     try {
       await saveIntegration(conn.key, val);
       toast.success(`${conn.name} ${val ? "connected" : "cleared"}`);
@@ -673,7 +746,8 @@ function ConnectorCard({
             />
           )}
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-col gap-1.5">
+          <div className="flex gap-2">
           <Input
             placeholder={
               conn.soon
@@ -684,10 +758,15 @@ function ConnectorCard({
             }
             value={val}
             disabled={conn.soon}
-            onChange={(e) => setVal(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
             type={conn.type === "key" ? "password" : "text"}
             className="rounded-xl text-[12.5px]"
-            style={{ background: "var(--surface-2)" }}
+            style={{
+              background: "var(--surface-2)",
+              ...(validationError
+                ? { border: "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)" }
+                : {}),
+            }}
           />
           <button
             onClick={save}
@@ -716,6 +795,16 @@ function ConnectorCard({
           >
             {conn.soon ? <Lock className="h-3.5 w-3.5" /> : isConnected ? "Update" : "Connect"}
           </button>
+          </div>
+          {validationError && (
+            <div
+              className="flex items-center gap-1 text-[11.5px] font-medium"
+              style={{ color: "var(--destructive)" }}
+            >
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              {validationError}
+            </div>
+          )}
         </div>
       </div>
     </div>
