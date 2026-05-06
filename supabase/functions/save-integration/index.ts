@@ -24,6 +24,48 @@ function isAllowedKey(k: string) {
   return ALLOWED_FLAT.has(k) || NOVA_WEBHOOK_RE.test(k);
 }
 
+function validateValue(integrationKey: string, value: string): string | null {
+  if (!value) return null; // clearing is always allowed
+
+  switch (integrationKey) {
+    case "stripe":
+      if (!/^sk_(live|test)_[A-Za-z0-9]{20,}$/.test(value))
+        return "Stripe key must start with sk_live_ or sk_test_";
+      return null;
+
+    case "airtable":
+      if (!/^pat[A-Za-z0-9._]{10,}$/.test(value))
+        return "Airtable token must start with pat";
+      return null;
+
+    case "gohighlevel":
+      if (value.length < 10) return "API key is too short";
+      return null;
+
+    case "n8n":
+    case "zapier":
+    case "slack": {
+      let url: URL;
+      try {
+        url = new URL(value);
+      } catch {
+        return "Must be a valid https:// URL";
+      }
+      if (url.protocol !== "https:") return "URL must use https://";
+      if (integrationKey === "zapier" && !url.hostname.includes("zapier.com"))
+        return "Must be a hooks.zapier.com URL";
+      if (integrationKey === "slack" && !url.hostname.includes("slack.com"))
+        return "Must be a hooks.slack.com URL";
+      if (integrationKey === "n8n" && !url.pathname.includes("/webhook"))
+        return "n8n URL must contain /webhook";
+      return null;
+    }
+
+    default:
+      return null;
+  }
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -66,6 +108,9 @@ serve(async (req) => {
       return json({ error: "Unknown integration_key" }, 400);
     }
     if (value.length > 4096) return json({ error: "Value too long" }, 400);
+
+    const formatError = validateValue(integrationKey, value);
+    if (formatError) return json({ error: formatError }, 400);
 
     // Service-role client to call the SECURITY DEFINER function
     const admin = createClient(
