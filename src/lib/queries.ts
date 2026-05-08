@@ -272,3 +272,109 @@ export async function disconnectIntegration(userId: string, integrationKey: stri
     .eq("integration_key", integrationKey);
   if (error) throw error;
 }
+
+// ── AI Dashboard ─────────────────────────────────────────────────────────────
+
+export type AiDashboardRecord = {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  business: string;
+  niche: string | null;
+  stage: string | null;
+  goal: string | null;
+  current_revenue: string | null;
+  target_customer: string | null;
+  biggest_blocker: string | null;
+  payload: Record<string, unknown>;
+  model: string | null;
+  prompt_version: string | null;
+  generated_at: string;
+  created_at: string;
+};
+
+export const aiDashboardQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["ai_dashboard", orgId],
+    queryFn: async (): Promise<AiDashboardRecord | null> => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("ai_dashboards" as never)
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as AiDashboardRecord | null;
+    },
+    staleTime: 1000 * 60 * 5, // 5 min — dashboards don't change often
+  });
+
+export type OnboardingResponse = {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  business_type: string | null;
+  niche: string | null;
+  stage: string | null;
+  goal: string | null;
+  current_revenue: string | null;
+  target_customer: string | null;
+  offer: string | null;
+  biggest_blocker: string | null;
+  completed: boolean;
+  created_at: string;
+};
+
+export const onboardingResponseQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["onboarding_response", orgId],
+    queryFn: async (): Promise<OnboardingResponse | null> => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("onboarding_responses")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as OnboardingResponse | null;
+    },
+  });
+
+export type GenerateDashboardInput = {
+  business?: string;
+  niche?: string;
+  stage?: string;
+  goal?: string;
+  current_revenue?: string;
+  target_customer?: string;
+  biggest_blocker?: string;
+};
+
+export type GenerateDashboardResult = {
+  dashboard_id: string | null;
+  payload: Record<string, unknown>;
+  context: Record<string, unknown>;
+};
+
+export async function generateAiDashboard(
+  input: GenerateDashboardInput,
+): Promise<GenerateDashboardResult> {
+  const { data, error } = await supabase.functions.invoke("generate-ai-dashboard", {
+    body: input,
+  });
+  if (error) throw new Error(error.message || "Failed to generate dashboard");
+  if (data?.error) throw new Error(data.error);
+  return data as GenerateDashboardResult;
+}
+
+export async function deleteAiDashboard(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("ai_dashboards" as never)
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
