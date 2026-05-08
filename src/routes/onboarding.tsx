@@ -185,20 +185,22 @@ function Onboarding() {
           { onConflict: "organization_id" },
         );
 
-        // Trigger N8N dashboard creation workflow (non-blocking)
-        const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
-        fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: user.id,
-            operator_name: name,
-            primary_niche: challenge,
-            recommended_tools: [],
-          }),
-        }).catch(() => {
-          /* best-effort */
-        });
+        // Trigger N8N dashboard creation workflow (non-blocking, only if configured)
+        const n8nBase = import.meta.env.VITE_N8N_BASE_URL;
+        if (n8nBase) {
+          fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user.id,
+              operator_name: name,
+              primary_niche: challenge,
+              recommended_tools: [],
+            }),
+          }).catch(() => {
+            /* best-effort */
+          });
+        }
 
         setDone(true);
         setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
