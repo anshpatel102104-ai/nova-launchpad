@@ -136,25 +136,46 @@ function Onboarding() {
           .update({ onboarding_complete: true, full_name: name })
           .eq("id", user.id);
 
-        // Create org + membership so the dashboard can load
-        const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
-        const { data: org, error: orgErr } = await supabase
-          .from("organizations")
-          .insert({ name: orgName, created_by: user.id, stage: stage || undefined })
-          .select("id")
-          .single();
-        if (orgErr) throw orgErr;
-
-        const { error: memberErr } = await supabase
+        // Reuse the org created during signup, or create one if it doesn't exist yet
+        let orgId: string;
+        const { data: existingMember } = await supabase
           .from("organization_members")
-          .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
-        if (memberErr) throw memberErr;
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (existingMember?.organization_id) {
+          orgId = existingMember.organization_id;
+          // Update the org's stage now that we know it
+          if (stage) {
+            await supabase
+              .from("organizations")
+              .update({ stage })
+              .eq("id", orgId);
+          }
+        } else {
+          const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
+          const { data: org, error: orgErr } = await supabase
+            .from("organizations")
+            .insert({ name: orgName, created_by: user.id, stage: stage || undefined })
+            .select("id")
+            .single();
+          if (orgErr) throw orgErr;
+          orgId = org.id;
+
+          const { error: memberErr } = await supabase
+            .from("organization_members")
+            .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
+          if (memberErr) throw memberErr;
+        }
 
         // Save onboarding responses (requires org_id)
         await supabase.from("onboarding_responses").upsert(
           {
             user_id: user.id,
-            organization_id: org.id,
+            organization_id: orgId,
             offer: idea,
             stage: (stage as Database["public"]["Enums"]["app_stage"]) || null,
             biggest_blocker: challenge,

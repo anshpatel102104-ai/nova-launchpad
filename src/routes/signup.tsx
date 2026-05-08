@@ -108,11 +108,10 @@ function SignupPage() {
           role: "owner",
         });
 
-        await supabase.from("subscriptions").insert({
-          organization_id: org.id,
-          plan,
-          status: "trialing",
-        });
+        await supabase.from("subscriptions").upsert(
+          { organization_id: org.id, plan, status: "trialing" },
+          { onConflict: "organization_id" },
+        );
 
         toast.success("Account created — welcome to Nova!");
         navigate({ to: "/onboarding" });
