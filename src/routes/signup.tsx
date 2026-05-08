@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
-import { Sparkles, Check } from "lucide-react";
+import { Sparkles, Check, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +8,19 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type PlanKey = "starter" | "launch" | "operate" | "scale";
-const PLANS: { key: PlanKey; label: string; price: string; tagline: string }[] = [
-  { key: "starter", label: "Starter", price: "$0", tagline: "Free to begin" },
-  { key: "launch", label: "Launch", price: "$49", tagline: "Validate + launch" },
-  { key: "operate", label: "Operate", price: "$149", tagline: "Run the business" },
-  { key: "scale", label: "Scale", price: "$299", tagline: "Full Nova OS" },
-];
+const PLANS: { key: PlanKey; label: string; price: string; tagline: string; highlight?: string }[] =
+  [
+    { key: "starter", label: "Starter", price: "$0", tagline: "Free to begin" },
+    {
+      key: "launch",
+      label: "Launch",
+      price: "$49",
+      tagline: "Validate + launch",
+      highlight: "Most popular",
+    },
+    { key: "operate", label: "Operate", price: "$149", tagline: "Run the business" },
+    { key: "scale", label: "Scale", price: "$299", tagline: "Full Nova OS" },
+  ];
 
 function normalizePlan(p?: string): PlanKey {
   const v = (p || "starter").toLowerCase();
@@ -27,6 +34,19 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
+function passwordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score, label: "Weak", color: "#f87171" };
+  if (score <= 2) return { score, label: "Fair", color: "#fbbf24" };
+  if (score <= 3) return { score, label: "Good", color: "#34d399" };
+  return { score, label: "Strong", color: "#10b981" };
+}
+
 function SignupPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/signup" });
@@ -35,8 +55,12 @@ function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+
+  const strength = password ? passwordStrength(password) : null;
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -64,7 +88,6 @@ function SignupPage() {
       });
       if (signUpErr) throw signUpErr;
 
-      // If session exists immediately (auto-confirm), provision workspace.
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -91,7 +114,7 @@ function SignupPage() {
           status: "trialing",
         });
 
-        toast.success("Account created");
+        toast.success("Account created — welcome to Nova!");
         navigate({ to: "/onboarding" });
       } else {
         toast.success("Check your email to confirm your account");
@@ -106,6 +129,7 @@ function SignupPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between border-r border-border bg-muted/30 p-10">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -120,76 +144,174 @@ function SignupPage() {
           <p className="mt-3 max-w-md text-sm text-muted-foreground">
             One operating system for the full founder journey.
           </p>
+          <ul className="mt-6 space-y-2">
+            {[
+              "AI tools for every stage of your startup",
+              "CRM, lead capture, and automation built-in",
+              "From idea to revenue in one platform",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Check className="h-4 w-4 text-primary shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="text-xs text-muted-foreground">© Launchpad Nova</div>
       </div>
 
-      <div className="flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+      {/* Right panel */}
+      <div className="flex items-center justify-center p-6 overflow-y-auto">
+        <div className="w-full max-w-md py-8">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-6 lg:hidden">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <span className="font-display text-sm font-semibold">Launchpad Nova</span>
+          </div>
+
           <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Pick a plan — upgrade or downgrade anytime.
           </p>
 
+          {/* Plan selector */}
           <div className="mt-5 grid grid-cols-2 gap-2">
             {PLANS.map((p) => (
               <button
                 type="button"
                 key={p.key}
                 onClick={() => setPlan(p.key)}
+                aria-pressed={plan === p.key}
                 className={cn(
-                  "rounded-md border p-3 text-left transition",
+                  "relative rounded-md border p-3 text-left transition",
                   plan === p.key ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
                 )}
               >
+                {p.highlight && (
+                  <span className="absolute -top-2 left-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary-foreground">
+                    {p.highlight}
+                  </span>
+                )}
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium">{p.label}</div>
                   {plan === p.key && <Check className="h-4 w-4 text-primary" />}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {p.price} · {p.tagline}
+                  {p.price}/mo · {p.tagline}
                 </div>
               </button>
             ))}
           </div>
 
-          <form className="mt-5 space-y-3" onSubmit={onSubmit}>
-            <Field label="Full name" error={errors.fullName}>
+          <form className="mt-5 space-y-3" onSubmit={onSubmit} noValidate>
+            <Field label="Full name" error={errors.fullName} htmlFor="full-name">
               <Input
+                id="full-name"
+                autoFocus
+                autoComplete="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Jane Doe"
+                aria-invalid={!!errors.fullName}
               />
             </Field>
-            <Field label="Work email" error={errors.email}>
+            <Field label="Work email" error={errors.email} htmlFor="email">
               <Input
+                id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
+                aria-invalid={!!errors.email}
               />
             </Field>
-            <Field label="Password" error={errors.password}>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+            <Field label="Password" error={errors.password} htmlFor="password">
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                  aria-invalid={!!errors.password}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {password && strength && (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="flex flex-1 gap-1">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="h-1 flex-1 rounded-full transition-all duration-300"
+                        style={{
+                          background: i <= strength.score ? strength.color : "var(--border)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[11px] font-medium" style={{ color: strength.color }}>
+                    {strength.label}
+                  </span>
+                </div>
+              )}
             </Field>
-            <Field label="Confirm password" error={errors.confirm}>
-              <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+            <Field label="Confirm password" error={errors.confirm} htmlFor="confirm-password">
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirm ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  className="pr-10"
+                  aria-invalid={!!errors.confirm}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                >
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </Field>
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading
                 ? "Creating account…"
-                : `Start with ${PLANS.find((p) => p.key === plan)?.label}`}
+                : `Start with ${PLANS.find((p) => p.key === plan)?.label} · ${PLANS.find((p) => p.key === plan)?.price}/mo`}
             </Button>
           </form>
 
+          <p className="mt-3 text-[11px] text-muted-foreground text-center">
+            By signing up you agree to our{" "}
+            <a href="/terms" className="underline hover:text-foreground">
+              Terms
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="underline hover:text-foreground">
+              Privacy Policy
+            </a>
+            .
+          </p>
+
           <p className="mt-4 text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground hover:underline">
-              Sign in
+            <Link to="/login" className="text-foreground hover:underline font-medium">
+              Sign in →
             </Link>
           </p>
         </div>
@@ -201,17 +323,25 @@ function SignupPage() {
 function Field({
   label,
   error,
+  htmlFor,
   children,
 }: {
   label: string;
   error?: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
-      <div className="mb-1.5 text-xs font-medium text-muted-foreground">{label}</div>
+    <div>
+      <label htmlFor={htmlFor} className="block">
+        <div className="mb-1.5 text-xs font-medium text-muted-foreground">{label}</div>
+      </label>
       {children}
-      {error && <div className="mt-1 text-xs text-destructive">{error}</div>}
-    </label>
+      {error && (
+        <div className="mt-1 text-xs text-destructive" role="alert">
+          {error}
+        </div>
+      )}
+    </div>
   );
 }

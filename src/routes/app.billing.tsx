@@ -208,6 +208,45 @@ function Billing() {
         description="Plans translate to platform access. Upgrade unlocks more tools and higher generation limits."
       />
 
+      {/* Near-limit upgrade nudge */}
+      {!isPastDue && limit !== null && pct >= 80 && currentPlan !== "scale" && (
+        <div
+          className="flex items-start gap-3 rounded-xl p-4"
+          style={{
+            background:
+              pct >= 100
+                ? "color-mix(in oklab, #ef4444 8%, var(--surface))"
+                : "color-mix(in oklab, var(--primary) 8%, var(--surface))",
+            border: `1px solid ${pct >= 100 ? "rgba(239,68,68,0.3)" : "color-mix(in oklab, var(--primary) 30%, transparent)"}`,
+          }}
+        >
+          <div className="flex-1">
+            <div
+              className="font-display text-sm font-semibold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
+              {pct >= 100
+                ? "You've hit your generation limit"
+                : `You've used ${Math.round(pct)}% of your monthly generations`}
+            </div>
+            <p className="mt-0.5 text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+              {pct >= 100
+                ? "Upgrade now to unlock more generations and keep building."
+                : "Running low — upgrade before you hit the wall."}
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              const nextPlan = PLAN_ORDER[PLAN_ORDER.indexOf(currentPlan) + 1];
+              if (nextPlan) onPlanClick(nextPlan);
+            }}
+          >
+            Upgrade plan
+          </Button>
+        </div>
+      )}
+
       {/* Past due banner — locks tools */}
       {isPastDue && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-rose-100 dark:text-rose-200">

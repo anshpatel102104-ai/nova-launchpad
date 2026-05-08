@@ -100,12 +100,22 @@ function Onboarding() {
     });
   }, []);
 
+  const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+  const modKey = isMac ? "⌘" : "Ctrl";
+
   const canAdvance =
     step === 0
       ? name.trim().length > 0 && idea.trim().length > 0
       : step === 1
         ? !!stage
         : !!challenge;
+
+  const goBack = () => {
+    if (step > 0) {
+      setStep((s) => s - 1);
+      setStepKey((k) => k + 1);
+    }
+  };
 
   const advance = async () => {
     if (!canAdvance) return;
@@ -179,7 +189,7 @@ function Onboarding() {
     }
   };
 
-  if (done) return <WelcomeScreen name={name} />;
+  if (done) return <WelcomeScreen name={name} onSkip={() => navigate({ to: "/app/dashboard" })} />;
 
   return (
     <div
@@ -292,46 +302,78 @@ function Onboarding() {
         {/* Animated step */}
         <div key={stepKey} className="ob-step">
           {step === 0 && (
-            <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} />
+            <Step1
+              name={name}
+              idea={idea}
+              onName={setName}
+              onIdea={setIdea}
+              onSubmit={advance}
+              modKey={modKey}
+            />
           )}
           {step === 1 && <Step2 stage={stage} onStage={setStage} />}
           {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
         </div>
 
-        {/* Continue button */}
-        <button
-          onClick={advance}
-          disabled={!canAdvance || saving}
-          style={{
-            marginTop: 28,
-            width: "100%",
-            height: 52,
-            borderRadius: 12,
-            border: "none",
-            cursor: canAdvance && !saving ? "pointer" : "default",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            fontWeight: 600,
-            fontSize: 15,
-            letterSpacing: "-0.01em",
-            background:
-              canAdvance && !saving
-                ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
-                : "rgba(255,255,255,0.06)",
-            color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
-            transition: "all 0.25s",
-            boxShadow:
-              canAdvance && !saving
-                ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
-                : "none",
-            fontFamily: "inherit",
-          }}
-        >
-          {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
-          {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
-        </button>
+        {/* Navigation buttons */}
+        <div style={{ marginTop: 28, display: "flex", gap: 10 }}>
+          {step > 0 && (
+            <button
+              onClick={goBack}
+              disabled={saving}
+              style={{
+                height: 52,
+                width: 52,
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(255,255,255,0.04)",
+                color: "rgba(240,244,255,0.5)",
+                transition: "all 0.2s",
+                flexShrink: 0,
+                fontFamily: "inherit",
+              }}
+              aria-label="Go back"
+            >
+              <ArrowRight style={{ width: 16, height: 16, transform: "rotate(180deg)" }} />
+            </button>
+          )}
+          <button
+            onClick={advance}
+            disabled={!canAdvance || saving}
+            style={{
+              flex: 1,
+              height: 52,
+              borderRadius: 12,
+              border: "none",
+              cursor: canAdvance && !saving ? "pointer" : "default",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              fontWeight: 600,
+              fontSize: 15,
+              letterSpacing: "-0.01em",
+              background:
+                canAdvance && !saving
+                  ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
+                  : "rgba(255,255,255,0.06)",
+              color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
+              transition: "all 0.25s",
+              boxShadow:
+                canAdvance && !saving
+                  ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
+                  : "none",
+              fontFamily: "inherit",
+            }}
+          >
+            {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
+            {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -404,12 +446,14 @@ function Step1({
   onName,
   onIdea,
   onSubmit,
+  modKey,
 }: {
   name: string;
   idea: string;
   onName: (v: string) => void;
   onIdea: (v: string) => void;
   onSubmit: () => void;
+  modKey: string;
 }) {
   return (
     <div>
@@ -439,7 +483,7 @@ function Step1({
           style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
         />
         <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
-          ⌘+Enter to continue
+          {modKey}+Enter to continue · your idea stays private
         </div>
       </div>
     </div>
@@ -567,7 +611,7 @@ const BOOT_LINES = [
   "building your command center…",
 ];
 
-function WelcomeScreen({ name }: { name: string }) {
+function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
   const [phase, setPhase] = useState<"boot" | "reveal">("boot");
   const [lineIdx, setLineIdx] = useState(0);
 
@@ -726,28 +770,46 @@ function WelcomeScreen({ name }: { name: string }) {
               style={{
                 marginTop: 32,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
+                gap: 16,
                 animation: "fadeUp 0.6s ease 0.75s both",
                 opacity: 0,
               }}
             >
-              <div
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#3b82f6",
+                    boxShadow: "0 0 10px #3b82f6",
+                    animation: "ambientPulse 1.4s ease-in-out infinite",
+                  }}
+                />
+                <span
+                  style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
+                >
+                  loading dashboard…
+                </span>
+              </div>
+              <button
+                onClick={onSkip}
                 style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#3b82f6",
-                  boxShadow: "0 0 10px #3b82f6",
-                  animation: "ambientPulse 1.4s ease-in-out infinite",
+                  fontSize: 12,
+                  color: "rgba(240,244,255,0.45)",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 8,
+                  padding: "6px 16px",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "all 0.2s",
                 }}
-              />
-              <span
-                style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
               >
-                loading dashboard…
-              </span>
+                Skip intro → Go to dashboard
+              </button>
             </div>
           </div>
         )}
