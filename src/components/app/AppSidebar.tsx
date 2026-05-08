@@ -30,6 +30,7 @@ import {
   LineChart,
   Shield,
   Tags,
+  Sparkles,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ const NOVA_MODULES: SubItem[] = [
 
 const NAV: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app/ai-dashboard", label: "AI Dashboard", icon: Sparkles, match: (p) => p === "/app/ai-dashboard" },
   {
     to: "/app/launchpad",
     label: "Launchpad",
