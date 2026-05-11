@@ -12,7 +12,6 @@ import {
   Lock,
   History as HistoryIcon,
   RotateCcw,
-  KeyRound,
 } from "lucide-react";
 import { NovaThinking } from "@/components/app/NovaThinking";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +26,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { HANDOFFS } from "@/lib/handoffs";
 import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/draftStore";
 import { PaywallModal } from "@/components/app/PaywallModal";
-import { runToolLocally, hasLocalAiKey } from "@/lib/runToolLocally";
+import { runTool } from "@/lib/runTool";
 import { useOwnerMode } from "@/lib/ownerMode";
 
 type Search = { context?: string; title?: string };
@@ -75,7 +74,6 @@ function ToolPage() {
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const planTier = subQ.data?.plan ?? "starter";
 
-  // Owner mode: treat every tool as wired and bypass all plan gates
   const effectiveWired = isOwner ? true : tool.wired;
   const effectiveToolKey = tool.toolKey || (isOwner ? tool.key : "");
 
@@ -116,7 +114,8 @@ function ToolPage() {
 
   const ideaValidatorRuns = useMemo(
     () =>
-      (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
+      (runsQ.data ?? [])
+        .filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
         .length,
     [runsQ.data],
   );
@@ -140,12 +139,6 @@ function ToolPage() {
       toast.error("Add some context first.");
       return;
     }
-    if (!hasLocalAiKey()) {
-      toast.error(
-        "Add your Anthropic API key to VITE_ANTHROPIC_API_KEY in .env, then restart the dev server.",
-      );
-      return;
-    }
     if (ideaValidatorBlocked) {
       setPaywallOpen(true);
       return;
@@ -164,8 +157,9 @@ function ToolPage() {
         goal: context,
         offer: context,
         url: context,
+        title,
       };
-      const result = await runToolLocally(
+      const result = await runTool(
         effectiveToolKey,
         payload,
         { orgId: currentOrgId, userId: user?.id },
@@ -238,48 +232,6 @@ function ToolPage() {
   return (
     <div className="space-y-6">
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
-
-      {/* Missing API key banner */}
-      {!hasLocalAiKey() && (
-        <div
-          className="flex items-start gap-3 rounded-2xl p-4"
-          style={{
-            background: "color-mix(in oklab, var(--warning) 8%, var(--surface))",
-            border: "1px solid color-mix(in oklab, var(--warning) 30%, transparent)",
-          }}
-        >
-          <KeyRound className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--warning)" }} />
-          <div>
-            <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
-              Anthropic API key required
-            </div>
-            <p
-              className="mt-0.5 text-[12.5px] leading-relaxed"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Add{" "}
-              <code
-                className="rounded px-1 py-0.5 font-mono text-[11.5px]"
-                style={{ background: "var(--surface-2)" }}
-              >
-                VITE_ANTHROPIC_API_KEY=sk-ant-...
-              </code>{" "}
-              to your{" "}
-              <code
-                className="rounded px-1 py-0.5 font-mono text-[11.5px]"
-                style={{ background: "var(--surface-2)" }}
-              >
-                .env
-              </code>{" "}
-              file and restart the dev server. Get a key at{" "}
-              <span className="font-medium" style={{ color: "var(--primary)" }}>
-                console.anthropic.com
-              </span>
-              .
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Breadcrumb + header */}
       <div className="flex flex-col gap-3">
@@ -367,7 +319,6 @@ function ToolPage() {
               boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.05)",
             }}
           >
-            {/* Neon top edge */}
             <div
               className="h-px"
               style={{
@@ -375,7 +326,6 @@ function ToolPage() {
                   "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.3), transparent)",
               }}
             />
-            {/* Panel header */}
             <div
               className="flex items-center justify-between px-5 py-3"
               style={{
@@ -449,7 +399,6 @@ function ToolPage() {
                 </div>
               </Section>
 
-              {/* Generate button */}
               <button
                 onClick={handleGenerate}
                 disabled={generating || !context || !effectiveWired}
@@ -511,7 +460,6 @@ function ToolPage() {
             </div>
           </div>
 
-          {/* Recent runs */}
           {effectiveWired && (
             <div
               className="overflow-hidden rounded-2xl"
@@ -611,7 +559,6 @@ function ToolPage() {
               boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.05)",
             }}
           >
-            {/* Neon top edge — violet */}
             <div
               className="h-px"
               style={{
@@ -659,7 +606,6 @@ function ToolPage() {
               )}
             </div>
 
-            {/* Cross-tool handoffs */}
             {output && handoffs.length > 0 && (
               <div
                 className="px-5 py-4"
@@ -761,7 +707,25 @@ function placeholderFor(key: string): string {
     case "website-audit":
       return "Paste your live URL and any context about who visits and what you want them to do.";
     case "kill-my-idea":
-      return "Describe your startup idea in detail — what it does, who it's for, the business model, and why you think it'll work. The more confident you sound, the better the critique.";
+      return "Describe your startup idea in detail — what it does, who it's for, the business model, and why you think it'll work.";
+    case "funding-score":
+      return "Describe your startup: what you do, your traction, team, and target raise amount.";
+    case "first-10-customers":
+      return "Describe your product/service, target customer, and current distribution channels.";
+    case "business-plan":
+      return "Describe your business, target market, revenue model, and current stage.";
+    case "investor-emails":
+      return "Describe your startup, the raise you're running, and the type of investor you're targeting.";
+    case "idea-vs-idea":
+      return "Describe both startup ideas clearly — what each does, target customer, and business model.";
+    case "landing-page":
+      return "Describe your product/service, who it's for, the core transformation, and your CTA.";
+    case "competitor":
+      return "Name your top 3-5 competitors and describe your positioning and differentiation.";
+    case "pricing":
+      return "Describe your product, value delivered, target customer segments, and current pricing (if any).";
+    case "revenue-projector":
+      return "Describe your business model, current MRR (if any), CAC estimate, and growth targets.";
     default:
       return "Describe your business, audience, and goal. The more specific, the better the output.";
   }
