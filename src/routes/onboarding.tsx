@@ -140,7 +140,7 @@ function Onboarding() {
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ name: orgName, created_by: user.id, stage: stage || undefined })
+          .insert({ name: orgName, owner_id: user.id, stage: stage || undefined })
           .select("id")
           .single();
         if (orgErr) throw orgErr;

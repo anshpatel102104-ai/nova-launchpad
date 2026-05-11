@@ -156,8 +156,7 @@ function Billing() {
       if (hasStripeSub) {
         setConfirm({ kind: "downgrade-free" });
       } else {
-        // No Stripe sub yet — just flip the row
-        directDbSwitch("starter");
+        toast.error("No active subscription found. Refresh the page.");
       }
       return;
     }
@@ -174,24 +173,10 @@ function Billing() {
       return;
     }
 
-    // Payments disabled → fallback DB switch
-    directDbSwitch(plan);
+    // Payments not configured
+    toast.error("Payments are not configured. Contact support to upgrade.");
     void targetIdx;
     void currentIdx;
-  };
-
-  const directDbSwitch = async (plan: string) => {
-    if (!currentOrgId) return;
-    const { error } = await supabase
-      .from("subscriptions")
-      .update({ plan: plan as "starter" | "launch" | "operate" | "scale" })
-      .eq("organization_id", currentOrgId);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success(`Switched to ${plan}`);
-    qc.invalidateQueries({ queryKey: ["subscription", currentOrgId] });
   };
 
   const sortedPlans = [...(plansQ.data ?? [])].sort((a, b) => a.price_usd - b.price_usd);
