@@ -73,10 +73,12 @@ export type PlanEntitlement = {
   price_usd: number;
   monthly_generation_limit: number | null;
   allowed_tools: string[];
-  features: Record<string, number | null>;
+  features: Record<string, unknown>;
   created_at: string;
 };
 
+// Fallback values used for guest mode and when DB has no row for a plan.
+// Must stay in sync with supabase/migrations seed data.
 const PLAN_PRICES: Record<string, number> = {
   starter: 0,
   launch: 49,
@@ -84,26 +86,34 @@ const PLAN_PRICES: Record<string, number> = {
   scale: 299,
 };
 
+const PLAN_GEN_LIMITS: Record<string, number | null> = {
+  starter: 5,
+  launch: 50,
+  operate: 200,
+  scale: null,
+};
+
 const PLAN_TOOLS: Record<string, string[]> = {
-  starter: ["validate-idea"],
-  launch: ["validate-idea", "generate-pitch", "generate-offer", "generate-followup-sequence"],
+  starter: ["validate-idea", "generate-pitch"],
+  launch: ["validate-idea", "generate-pitch", "generate-gtm-strategy", "generate-offer", "kill-my-idea"],
   operate: [
     "validate-idea",
     "generate-pitch",
-    "generate-offer",
-    "generate-followup-sequence",
     "generate-gtm-strategy",
+    "generate-offer",
     "generate-ops-plan",
-    "analyze-website",
+    "generate-followup-sequence",
+    "kill-my-idea",
   ],
   scale: [
     "validate-idea",
     "generate-pitch",
-    "generate-offer",
-    "generate-followup-sequence",
     "generate-gtm-strategy",
+    "generate-offer",
     "generate-ops-plan",
+    "generate-followup-sequence",
     "analyze-website",
+    "kill-my-idea",
   ],
 };
 
@@ -116,24 +126,24 @@ export const planEntitlementsQuery = () =>
         return plans.map((plan) => ({
           plan,
           price_usd: PLAN_PRICES[plan] ?? 0,
-          monthly_generation_limit: plan === "scale" ? null : (PLAN_PRICES[plan] === 0 ? 10 : plan === "launch" ? 100 : 500),
+          monthly_generation_limit: PLAN_GEN_LIMITS[plan] ?? null,
           allowed_tools: PLAN_TOOLS[plan] ?? [],
           features: {},
           created_at: new Date().toISOString(),
         }));
       }
+      // plan_entitlements has one row per plan (plan is PRIMARY KEY)
       const { data, error } = await supabase.from("plan_entitlements").select("*");
       if (error) throw error;
       return plans.map((plan) => {
-        const rows = (data ?? []).filter((r) => r.plan === plan);
-        const get = (key: string) => rows.find((r) => r.feature_key === key)?.limit_value ?? null;
+        const row = (data ?? []).find((r) => r.plan === plan);
         return {
           plan,
-          price_usd: PLAN_PRICES[plan] ?? 0,
-          monthly_generation_limit: get("ai.generations.monthly"),
-          allowed_tools: PLAN_TOOLS[plan] ?? [],
-          features: Object.fromEntries(rows.map((r) => [r.feature_key, r.limit_value])),
-          created_at: rows[0]?.created_at ?? new Date().toISOString(),
+          price_usd: row?.price_usd ?? PLAN_PRICES[plan] ?? 0,
+          monthly_generation_limit: row?.monthly_generation_limit ?? PLAN_GEN_LIMITS[plan] ?? null,
+          allowed_tools: (row?.allowed_tools as string[] | null) ?? PLAN_TOOLS[plan] ?? [],
+          features: (row?.features as Record<string, unknown>) ?? {},
+          created_at: row?.created_at ?? new Date().toISOString(),
         };
       });
     },

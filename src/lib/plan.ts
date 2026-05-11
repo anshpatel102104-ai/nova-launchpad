@@ -1,7 +1,7 @@
-// Plan / entitlement helpers. Backend enforcement happens via Supabase + n8n.
-// TODO: replace mock plan with Supabase subscription lookup.
+// Plan / entitlement helpers. Server-side enforcement is via run-tool edge function
+// reading plan_entitlements directly. This file is used for client-side UI gating only.
 
-export type PlanId = "free" | "launch" | "operate" | "scale";
+export type PlanId = "starter" | "launch" | "operate" | "scale";
 
 export const PLANS: Record<PlanId, {
   id: PlanId;
@@ -12,45 +12,45 @@ export const PLANS: Record<PlanId, {
   toolLimit: number;
   systemLimit: number;
 }> = {
-  free: {
-    id: "free",
+  starter: {
+    id: "starter",
     name: "Starter",
     price: 0,
-    tagline: "Try the founder toolkit",
+    tagline: "Validate your first idea",
     toolLimit: 2,
     systemLimit: 0,
-    features: ["2 LaunchPad tools", "Limited runs", "Community support"],
+    features: ["2 AI tools", "5 generations/mo", "Community support"],
   },
   launch: {
     id: "launch",
     name: "Launch",
     price: 49,
-    tagline: "Ship your offer faster",
-    toolLimit: 10,
+    tagline: "Build, pitch, and go to market",
+    toolLimit: 5,
     systemLimit: 1,
-    features: ["All 10 LaunchPad tools", "1 Nova OS system", "Email support"],
+    features: ["5 AI tools", "50 generations/mo", "Email support"],
   },
   operate: {
     id: "operate",
     name: "Operate",
     price: 149,
-    tagline: "Automate your operations",
-    toolLimit: 10,
+    tagline: "Automate revenue operations",
+    toolLimit: 7,
     systemLimit: 4,
-    features: ["Everything in Launch", "4 Nova OS systems", "Integrations", "Priority support"],
+    features: ["7 AI tools", "200 generations/mo", "Integrations", "Priority support"],
   },
   scale: {
     id: "scale",
     name: "Scale",
     price: 299,
-    tagline: "Run the whole business on Nova",
-    toolLimit: 10,
+    tagline: "Scale across teams and pipelines",
+    toolLimit: 8,
     systemLimit: 6,
-    features: ["All 6 Nova OS systems", "Unlimited runs", "Dedicated operator"],
+    features: ["All 8 AI tools", "Unlimited generations", "Dedicated operator"],
   },
 };
 
-export const PLAN_ORDER: PlanId[] = ["free", "launch", "operate", "scale"];
+export const PLAN_ORDER: PlanId[] = ["starter", "launch", "operate", "scale"];
 
 export function planRank(p: PlanId) {
   return PLAN_ORDER.indexOf(p);
