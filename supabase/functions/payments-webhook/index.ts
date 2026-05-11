@@ -24,9 +24,31 @@ serve(async (req) => {
   const url = new URL(req.url);
   const env = (url.searchParams.get("env") || "sandbox") as StripeEnv;
 
+  let event: Awaited<ReturnType<typeof verifyWebhook>>;
   try {
-    const event = await verifyWebhook(req, env);
-    console.log("Stripe event:", event.type, "env:", env);
+    event = await verifyWebhook(req, env);
+  } catch (e) {
+    console.error("Webhook signature verification failed:", e);
+    return new Response("Webhook signature invalid", { status: 400 });
+  }
+
+  // Idempotency: skip already-processed events
+  const { data: existing } = await supabase
+    .from("stripe_webhook_events")
+    .select("id")
+    .eq("id", event.id)
+    .maybeSingle();
+
+  if (existing) {
+    console.log("Duplicate event, skipping:", event.id);
+    return new Response(JSON.stringify({ received: true, duplicate: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    console.log("Stripe event:", event.type, "env:", env, "id:", event.id);
 
     switch (event.type) {
       case "checkout.session.completed":
@@ -46,13 +68,20 @@ serve(async (req) => {
       default:
         console.log("Unhandled:", event.type);
     }
+
+    // Mark event as processed
+    await supabase
+      .from("stripe_webhook_events")
+      .insert({ id: event.id, type: event.type });
+
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("Webhook error:", e);
-    return new Response("Webhook error", { status: 400 });
+    console.error("Webhook processing error:", e);
+    // Return 400 so Stripe retries — but only for non-duplicate events
+    return new Response("Webhook processing error", { status: 400 });
   }
 });
 
@@ -65,7 +94,7 @@ async function syncSubscription(obj: any) {
   const cancelAtPeriodEnd: boolean = obj.cancel_at_period_end ?? false;
   const metadata = obj.metadata || {};
   let lookupKey: string | undefined = metadata.priceLookupKey;
-  const organizationId: string | undefined = metadata.organizationId;
+  let organizationId: string | undefined = metadata.organizationId;
 
   const item = obj.items?.data?.[0];
   if (item?.price) {
@@ -76,8 +105,18 @@ async function syncSubscription(obj: any) {
       item.price.metadata?.priceLookupKey;
   }
 
+  // Fallback: look up org by stripe_customer_id if metadata is missing
+  if (!organizationId && customerId) {
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("organization_id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+    organizationId = sub?.organization_id;
+  }
+
   if (!organizationId) {
-    console.warn("No organizationId in metadata; skipping sync", { subscriptionId });
+    console.warn("No organizationId found for event; skipping sync", { subscriptionId, customerId });
     return;
   }
 
@@ -110,7 +149,15 @@ async function syncSubscription(obj: any) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function cancelSubscription(obj: any) {
-  const organizationId = obj.metadata?.organizationId;
+  let organizationId = obj.metadata?.organizationId;
+  if (!organizationId && obj.customer) {
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("organization_id")
+      .eq("stripe_customer_id", obj.customer)
+      .maybeSingle();
+    organizationId = sub?.organization_id;
+  }
   if (!organizationId) return;
   await supabase
     .from("subscriptions")
@@ -137,7 +184,6 @@ async function markPastDue(invoice: any) {
 async function clearPastDue(invoice: any) {
   const customerId = invoice.customer;
   if (!customerId) return;
-  // Only flip back to active if currently past_due
   await supabase
     .from("subscriptions")
     .update({ status: "active", updated_at: new Date().toISOString() })
