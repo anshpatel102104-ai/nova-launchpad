@@ -73,10 +73,11 @@ export type PlanEntitlement = {
   price_usd: number;
   monthly_generation_limit: number | null;
   allowed_tools: string[];
-  features: Record<string, number | null>;
+  features: Record<string, unknown>;
   created_at: string;
 };
 
+// Fallback values used for guest mode and when DB has no row for a plan.
 const PLAN_PRICES: Record<string, number> = {
   starter: 0,
   launch: 49,
@@ -84,26 +85,36 @@ const PLAN_PRICES: Record<string, number> = {
   scale: 299,
 };
 
+const PLAN_GEN_LIMITS: Record<string, number | null> = {
+  starter: 5,
+  launch: 50,
+  operate: 200,
+  scale: null,
+};
+
+// Cumulative — each tier includes all tools from lower tiers.
+// Keep in sync with plan_tier_limits table seed.
 const PLAN_TOOLS: Record<string, string[]> = {
-  starter: ["validate-idea"],
-  launch: ["validate-idea", "generate-pitch", "generate-offer", "generate-followup-sequence"],
+  starter: ["validate-idea", "generate-pitch"],
+  launch: [
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+  ],
   operate: [
-    "validate-idea",
-    "generate-pitch",
-    "generate-offer",
-    "generate-followup-sequence",
-    "generate-gtm-strategy",
-    "generate-ops-plan",
-    "analyze-website",
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+    "generate-ops-plan", "generate-followup-sequence",
+    "funding-score", "investor-emails", "business-plan",
   ],
   scale: [
-    "validate-idea",
-    "generate-pitch",
-    "generate-offer",
-    "generate-followup-sequence",
-    "generate-gtm-strategy",
-    "generate-ops-plan",
-    "analyze-website",
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+    "generate-ops-plan", "generate-followup-sequence",
+    "funding-score", "investor-emails", "business-plan",
+    "analyze-website", "competitor-analysis", "pricing-strategy", "revenue-projector",
   ],
 };
 
@@ -116,24 +127,23 @@ export const planEntitlementsQuery = () =>
         return plans.map((plan) => ({
           plan,
           price_usd: PLAN_PRICES[plan] ?? 0,
-          monthly_generation_limit: plan === "scale" ? null : (PLAN_PRICES[plan] === 0 ? 10 : plan === "launch" ? 100 : 500),
+          monthly_generation_limit: PLAN_GEN_LIMITS[plan] ?? null,
           allowed_tools: PLAN_TOOLS[plan] ?? [],
           features: {},
           created_at: new Date().toISOString(),
         }));
       }
-      const { data, error } = await supabase.from("plan_entitlements").select("*");
+      const { data, error } = await supabase.from("plan_tier_limits").select("*");
       if (error) throw error;
       return plans.map((plan) => {
-        const rows = (data ?? []).filter((r) => r.plan === plan);
-        const get = (key: string) => rows.find((r) => r.feature_key === key)?.limit_value ?? null;
+        const row = (data ?? []).find((r) => r.plan === plan);
         return {
           plan,
-          price_usd: PLAN_PRICES[plan] ?? 0,
-          monthly_generation_limit: get("ai.generations.monthly"),
-          allowed_tools: PLAN_TOOLS[plan] ?? [],
-          features: Object.fromEntries(rows.map((r) => [r.feature_key, r.limit_value])),
-          created_at: rows[0]?.created_at ?? new Date().toISOString(),
+          price_usd: row?.price_usd ?? PLAN_PRICES[plan] ?? 0,
+          monthly_generation_limit: row?.monthly_generation_limit ?? PLAN_GEN_LIMITS[plan] ?? null,
+          allowed_tools: (row?.allowed_tools as string[] | null) ?? PLAN_TOOLS[plan] ?? [],
+          features: {},
+          created_at: row?.created_at ?? new Date().toISOString(),
         };
       });
     },
@@ -264,117 +274,10 @@ export async function saveIntegration(integrationKey: string, value: string) {
 }
 
 export async function disconnectIntegration(userId: string, integrationKey: string) {
-  // RLS allows users to delete their own row directly
   const { error } = await supabase
     .from("user_integrations")
     .delete()
     .eq("user_id", userId)
     .eq("integration_key", integrationKey);
-  if (error) throw error;
-}
-
-// ── AI Dashboard ─────────────────────────────────────────────────────────────
-
-export type AiDashboardRecord = {
-  id: string;
-  organization_id: string;
-  user_id: string;
-  business: string;
-  niche: string | null;
-  stage: string | null;
-  goal: string | null;
-  current_revenue: string | null;
-  target_customer: string | null;
-  biggest_blocker: string | null;
-  payload: Record<string, unknown>;
-  model: string | null;
-  prompt_version: string | null;
-  generated_at: string;
-  created_at: string;
-};
-
-export const aiDashboardQuery = (orgId: string) =>
-  queryOptions({
-    queryKey: ["ai_dashboard", orgId],
-    queryFn: async (): Promise<AiDashboardRecord | null> => {
-      if (isGuest()) return null;
-      const { data, error } = await supabase
-        .from("ai_dashboards" as never)
-        .select("*")
-        .eq("organization_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      return data as AiDashboardRecord | null;
-    },
-    staleTime: 1000 * 60 * 5, // 5 min — dashboards don't change often
-  });
-
-export type OnboardingResponse = {
-  id: string;
-  organization_id: string;
-  user_id: string;
-  business_type: string | null;
-  niche: string | null;
-  stage: string | null;
-  goal: string | null;
-  current_revenue: string | null;
-  target_customer: string | null;
-  offer: string | null;
-  biggest_blocker: string | null;
-  completed: boolean;
-  created_at: string;
-};
-
-export const onboardingResponseQuery = (orgId: string) =>
-  queryOptions({
-    queryKey: ["onboarding_response", orgId],
-    queryFn: async (): Promise<OnboardingResponse | null> => {
-      if (isGuest()) return null;
-      const { data, error } = await supabase
-        .from("onboarding_responses")
-        .select("*")
-        .eq("organization_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      return data as OnboardingResponse | null;
-    },
-  });
-
-export type GenerateDashboardInput = {
-  business?: string;
-  niche?: string;
-  stage?: string;
-  goal?: string;
-  current_revenue?: string;
-  target_customer?: string;
-  biggest_blocker?: string;
-};
-
-export type GenerateDashboardResult = {
-  dashboard_id: string | null;
-  payload: Record<string, unknown>;
-  context: Record<string, unknown>;
-};
-
-export async function generateAiDashboard(
-  input: GenerateDashboardInput,
-): Promise<GenerateDashboardResult> {
-  const { data, error } = await supabase.functions.invoke("generate-ai-dashboard", {
-    body: input,
-  });
-  if (error) throw new Error(error.message || "Failed to generate dashboard");
-  if (data?.error) throw new Error(data.error);
-  return data as GenerateDashboardResult;
-}
-
-export async function deleteAiDashboard(id: string): Promise<void> {
-  const { error } = await supabase
-    .from("ai_dashboards" as never)
-    .delete()
-    .eq("id", id);
   if (error) throw error;
 }

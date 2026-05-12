@@ -14,13 +14,15 @@ type Props = {
   onOpenChange: (v: boolean) => void;
   title?: string;
   description?: string;
+  ctaLabel?: string;
 };
 
 export function PaywallModal({
   open,
   onOpenChange,
   title = "You've used your 3 free validations",
-  description = "Upgrade to Launch to unlock unlimited access and all 10 tools.",
+  description = "Upgrade to Launch to unlock unlimited access and all 17 AI tools.",
+  ctaLabel = "Upgrade to Launch — $49/mo",
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,8 +41,8 @@ export function PaywallModal({
 
         <ul className="mt-2 space-y-2 rounded-lg border border-border bg-surface-2/60 p-4 text-[12.5px]">
           {[
-            "Unlimited Idea Validator runs",
-            "All 10 AI tools unlocked",
+            "Unlimited AI tool runs",
+            "All 17 AI tools unlocked",
             "Pitch, GTM, Offer, Ops Plan & more",
             "Priority generation queue",
           ].map((f) => (
@@ -53,7 +55,7 @@ export function PaywallModal({
         <div className="mt-4 flex flex-col gap-2">
           <Link to="/app/billing">
             <Button className="w-full" onClick={() => onOpenChange(false)}>
-              Upgrade to Launch — $49/mo
+              {ctaLabel}
             </Button>
           </Link>
           <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
