@@ -53,8 +53,10 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed":
       case "customer.subscription.created":
+        await syncSubscription(event.data.object, "provision");
+        break;
       case "customer.subscription.updated":
-        await syncSubscription(event.data.object);
+        await syncSubscription(event.data.object, "change");
         break;
       case "customer.subscription.deleted":
         await cancelSubscription(event.data.object);
@@ -80,13 +82,12 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("Webhook processing error:", e);
-    // Return 400 so Stripe retries — but only for non-duplicate events
     return new Response("Webhook processing error", { status: 400 });
   }
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function syncSubscription(obj: any) {
+async function syncSubscription(obj: any, n8nAction: "provision" | "change") {
   const subscriptionId: string | undefined = obj.subscription || obj.id;
   const customerId: string | undefined = obj.customer;
   const status: string = obj.status || "active";
@@ -143,8 +144,16 @@ async function syncSubscription(obj: any) {
     .update(update)
     .eq("organization_id", organizationId);
 
-  if (error) console.error("subscriptions update failed", error);
-  else console.log("Synced", { plan, organizationId, status });
+  if (error) {
+    console.error("subscriptions update failed", error);
+    return;
+  }
+  console.log("Synced", { plan, organizationId, status });
+
+  // Trigger n8n provisioning workflow (best-effort, non-blocking)
+  if (plan) {
+    fireN8nProvisioning(organizationId, plan, n8nAction);
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,6 +177,9 @@ async function cancelSubscription(obj: any) {
       updated_at: new Date().toISOString(),
     })
     .eq("organization_id", organizationId);
+
+  // Notify n8n so automations can be paused/archived
+  fireN8nProvisioning(organizationId, "starter", "deprovision");
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -189,4 +201,52 @@ async function clearPastDue(invoice: any) {
     .update({ status: "active", updated_at: new Date().toISOString() })
     .eq("stripe_customer_id", customerId)
     .eq("status", "past_due");
+}
+
+async function fireN8nProvisioning(
+  organizationId: string,
+  plan: PlanTier,
+  action: "provision" | "change" | "deprovision",
+) {
+  const n8nBase = Deno.env.get("N8N_BASE_URL");
+  if (!n8nBase) {
+    console.log("N8N_BASE_URL not set — skipping provisioning trigger");
+    return;
+  }
+
+  // Fetch org + owner details for the n8n payload
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("name, owner_id")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  if (!org) {
+    console.warn("fireN8nProvisioning: org not found", organizationId);
+    return;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email, full_name")
+    .eq("id", org.owner_id)
+    .maybeSingle();
+
+  const webhookPath = action === "deprovision"
+    ? "nova-ops-deprovision"
+    : "nova-ops-provision";
+
+  // Fire and forget — webhook delivery is best-effort
+  fetch(`${n8nBase}/webhook/${webhookPath}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      organization_id: organizationId,
+      organization_name: org.name,
+      owner_email: profile?.email ?? null,
+      owner_name: profile?.full_name ?? null,
+      plan,
+      action,
+    }),
+  }).catch((err) => console.warn("n8n trigger failed (non-fatal):", err));
 }
