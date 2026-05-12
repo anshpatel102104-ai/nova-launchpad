@@ -37,6 +37,7 @@ import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
+import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -178,6 +179,11 @@ const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => AppBillingRoute,
 } as any)
+const AppAiDashboardRoute = AppAiDashboardRouteImport.update({
+  id: '/ai-dashboard',
+  path: '/ai-dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/ai-dashboard': typeof AppAiDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/ai-dashboard': typeof AppAiDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/app/assets': typeof AppAssetsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/ai-dashboard': typeof AppAiDashboardRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
+    | '/app/ai-dashboard'
     | '/app/leads'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
+    | '/app/ai-dashboard'
     | '/app/leads'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/app/assets'
     | '/app/billing'
     | '/app/dashboard'
+    | '/app/ai-dashboard'
     | '/app/leads'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -482,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/ai-dashboard': {
+      id: '/app/ai-dashboard'
+      path: '/ai-dashboard'
+      fullPath: '/app/ai-dashboard'
+      preLoaderRoute: typeof AppAiDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/billing': {
       id: '/app/billing'
       path: '/billing'
@@ -593,6 +612,7 @@ interface AppRouteChildren {
   AppAssetsRoute: typeof AppAssetsRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
+  AppAiDashboardRoute: typeof AppAiDashboardRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -612,6 +632,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssetsRoute: AppAssetsRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
+  AppAiDashboardRoute: AppAiDashboardRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
