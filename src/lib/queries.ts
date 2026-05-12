@@ -93,27 +93,29 @@ const PLAN_GEN_LIMITS: Record<string, number | null> = {
   scale: null,
 };
 
+// Cumulative — each tier includes all tools from lower tiers.
+// Keep in sync with migration 20260512000002_expand_plan_tool_entitlements.sql
 const PLAN_TOOLS: Record<string, string[]> = {
   starter: ["validate-idea", "generate-pitch"],
-  launch: ["validate-idea", "generate-pitch", "generate-gtm-strategy", "generate-offer", "kill-my-idea"],
+  launch: [
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+  ],
   operate: [
-    "validate-idea",
-    "generate-pitch",
-    "generate-gtm-strategy",
-    "generate-offer",
-    "generate-ops-plan",
-    "generate-followup-sequence",
-    "kill-my-idea",
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+    "generate-ops-plan", "generate-followup-sequence",
+    "funding-score", "investor-emails", "business-plan",
   ],
   scale: [
-    "validate-idea",
-    "generate-pitch",
-    "generate-gtm-strategy",
-    "generate-offer",
-    "generate-ops-plan",
-    "generate-followup-sequence",
-    "analyze-website",
-    "kill-my-idea",
+    "validate-idea", "generate-pitch",
+    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
+    "idea-vs-idea", "landing-page", "first-10-customers",
+    "generate-ops-plan", "generate-followup-sequence",
+    "funding-score", "investor-emails", "business-plan",
+    "analyze-website", "competitor-analysis", "pricing-strategy", "revenue-projector",
   ],
 };
 
