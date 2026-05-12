@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
-import { toolRunsQuery, subscriptionQuery } from "@/lib/queries";
+import { toolRunsQuery, subscriptionQuery, planEntitlementsQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRenderer";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -72,7 +72,19 @@ function ToolPage() {
 
   const isOwner = useOwnerMode();
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const plansQ = useQuery(planEntitlementsQuery());
   const planTier = subQ.data?.plan ?? "starter";
+
+  const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
+  const isToolLocked =
+    !isOwner && !!currentEnt && !currentEnt.allowed_tools.includes(tool.toolKey);
+
+  // Find the lowest plan that grants access to this tool
+  const requiredPlan = isToolLocked
+    ? (["launch", "operate", "scale"] as const).find(
+        (p) => plansQ.data?.find((e) => e.plan === p)?.allowed_tools.includes(tool.toolKey),
+      )
+    : undefined;
 
   const effectiveWired = isOwner ? true : tool.wired;
   const effectiveToolKey = tool.toolKey || (isOwner ? tool.key : "");
@@ -139,7 +151,7 @@ function ToolPage() {
       toast.error("Add some context first.");
       return;
     }
-    if (ideaValidatorBlocked) {
+    if (ideaValidatorBlocked || isToolLocked) {
       setPaywallOpen(true);
       return;
     }
@@ -231,7 +243,21 @@ function ToolPage() {
 
   return (
     <div className="space-y-6">
-      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        title={
+          isToolLocked
+            ? `${tool.name} requires the ${requiredPlan ?? "next"} plan`
+            : undefined
+        }
+        description={
+          isToolLocked
+            ? `You're on the ${planTier} plan. Upgrade to ${requiredPlan ?? "a higher plan"} to unlock this tool and more.`
+            : undefined
+        }
+        ctaLabel={isToolLocked ? "View plans in Billing" : undefined}
+      />
 
       {/* Breadcrumb + header */}
       <div className="flex flex-col gap-3">
@@ -265,7 +291,21 @@ function ToolPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {!effectiveWired ? (
+            {isToolLocked ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                style={{
+                  background: "color-mix(in oklab, var(--warning) 12%, transparent)",
+                  border: "1px solid color-mix(in oklab, var(--warning) 30%, transparent)",
+                  color: "var(--warning)",
+                }}
+              >
+                <Lock className="h-3 w-3" />{" "}
+                {requiredPlan
+                  ? `${requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)} plan`
+                  : "Upgrade required"}
+              </span>
+            ) : !effectiveWired ? (
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium"
                 style={{
@@ -430,9 +470,12 @@ function ToolPage() {
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" /> Generating with AI…
                   </>
-                ) : ideaValidatorBlocked ? (
+                ) : ideaValidatorBlocked || isToolLocked ? (
                   <>
-                    <Lock className="h-4 w-4" /> Upgrade to continue
+                    <Lock className="h-4 w-4" />{" "}
+                    {requiredPlan
+                      ? `Upgrade to ${requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)}`
+                      : "Upgrade to continue"}
                   </>
                 ) : (
                   <>
@@ -447,6 +490,21 @@ function ToolPage() {
                   style={{ color: "var(--muted-foreground)" }}
                 >
                   Free plan · {Math.min(ideaValidatorRuns, 3)} of 3 free validations used
+                </p>
+              )}
+              {isToolLocked && requiredPlan && (
+                <p
+                  className="text-center text-[11.5px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  Requires{" "}
+                  {requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)} plan ·{" "}
+                  <Link
+                    to="/app/billing"
+                    className="underline transition-colors hover:text-foreground"
+                  >
+                    View plans
+                  </Link>
                 </p>
               )}
               {!effectiveWired && (
@@ -589,9 +647,11 @@ function ToolPage() {
                   icon={FileText}
                   title="No output yet"
                   description={
-                    effectiveWired
-                      ? "Add context on the left, then generate to see your structured output here."
-                      : "This tool is launching soon. Your inputs are auto-saved as a draft."
+                    isToolLocked
+                      ? `Upgrade to ${requiredPlan ?? "a higher plan"} to run this tool.`
+                      : effectiveWired
+                        ? "Add context on the left, then generate to see your structured output here."
+                        : "This tool is launching soon. Your inputs are auto-saved as a draft."
                   }
                   className="py-10"
                 />
