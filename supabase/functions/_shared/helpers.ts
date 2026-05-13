@@ -58,8 +58,9 @@ export async function authenticateAndAuthorize(
     .maybeSingle();
   const plan = (sub?.plan as string) || "starter";
 
+  // Query plan_tier_limits (the canonical entitlements table)
   const { data: ent } = await supabase
-    .from("plan_entitlements")
+    .from("plan_tier_limits")
     .select("allowed_tools, monthly_generation_limit")
     .eq("plan", plan)
     .maybeSingle();
@@ -166,6 +167,9 @@ export async function runTool(opts: {
   schema: { name: string; description: string; parameters: Record<string, unknown> };
   assetCategory: string;
   assetTitle: (input: Record<string, unknown>, output: Record<string, unknown>) => string;
+  // Pre-parsed body — pass when the caller already consumed req.json() to avoid
+  // double-reading the stream (e.g. the central run-tool router).
+  preloadedInput?: Record<string, unknown>;
 }) {
   if (opts.req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -174,10 +178,14 @@ export async function runTool(opts: {
   const ctx = authResult;
 
   let input: Record<string, unknown>;
-  try {
-    input = await opts.req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON" }, 400);
+  if (opts.preloadedInput !== undefined) {
+    input = opts.preloadedInput;
+  } else {
+    try {
+      input = await opts.req.json();
+    } catch {
+      return jsonResponse({ error: "Invalid JSON" }, 400);
+    }
   }
 
   // Insert running tool_run

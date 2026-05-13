@@ -1,5 +1,5 @@
-// Manage an existing Stripe subscription: cancel at period end, resume, or
-// switch plan. Always validates org ownership before mutating Stripe.
+// Manage an existing Stripe subscription: cancel at period end, resume,
+// switch plan, or open a Stripe Billing Portal session.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, corsHeaders } from "../_shared/stripe.ts";
@@ -9,7 +9,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-type Action = "cancel_at_period_end" | "resume" | "switch_plan";
+type Action = "cancel_at_period_end" | "resume" | "switch_plan" | "billing_portal";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -29,6 +29,7 @@ serve(async (req) => {
     const action = body.action as Action;
     const organizationId = body.organizationId as string | undefined;
     const newPriceLookupKey = body.newPriceLookupKey as string | undefined;
+    const returnUrl = body.returnUrl as string | undefined;
     const env = (body.environment || "sandbox") as StripeEnv;
 
     if (!organizationId) return json({ error: "organizationId required" }, 400);
@@ -46,15 +47,30 @@ serve(async (req) => {
 
     const { data: sub } = await supabase
       .from("subscriptions")
-      .select("stripe_subscription_id, plan, status")
+      .select("stripe_subscription_id, stripe_customer_id, plan, status")
       .eq("organization_id", organizationId)
       .maybeSingle();
+
+    const stripe = createStripeClient(env);
+
+    // ----------------------------------------------------------------
+    // Billing Portal — lets users update payment method, view invoices
+    // ----------------------------------------------------------------
+    if (action === "billing_portal") {
+      if (!sub?.stripe_customer_id) {
+        return json({ error: "No Stripe customer found for this organization" }, 404);
+      }
+      const origin = req.headers.get("origin") || "https://app.novaops.ai";
+      const session = await stripe.billingPortal.sessions.create({
+        customer: sub.stripe_customer_id,
+        return_url: returnUrl || `${origin}/app/billing`,
+      });
+      return json({ url: session.url });
+    }
 
     if (!sub?.stripe_subscription_id) {
       return json({ error: "No active Stripe subscription" }, 404);
     }
-
-    const stripe = createStripeClient(env);
 
     if (action === "cancel_at_period_end") {
       const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
@@ -108,7 +124,6 @@ serve(async (req) => {
           priceLookupKey: newPriceLookupKey,
         },
       });
-      // Webhook will sync the new plan; return ok so UI can refetch.
       return json({ ok: true });
     }
 
