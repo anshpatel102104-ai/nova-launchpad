@@ -130,13 +130,13 @@ function Onboarding() {
         } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Update profile
+        // 1. Save the display name immediately (non-critical, no onboarding_complete yet)
         await supabase
           .from("profiles")
-          .update({ onboarding_complete: true, full_name: name })
+          .update({ full_name: name })
           .eq("id", user.id);
 
-        // Create org + membership so the dashboard can load
+        // 2. Create org + membership — if this fails the user can retry
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
@@ -150,13 +150,13 @@ function Onboarding() {
           .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
         if (memberErr) throw memberErr;
 
-        // Save onboarding responses (requires org_id)
+        // 3. Save onboarding responses
         await supabase.from("onboarding_responses").upsert(
           {
             user_id: user.id,
             organization_id: org.id,
             offer: idea,
-            stage: (stage as Database["public"]["Enums"]["app_stage"]) || null,
+            stage: (stage as Database["public"]["Enums"]["business_stage"]) || null,
             biggest_blocker: challenge,
             completed: true,
             completed_at: new Date().toISOString(),
@@ -164,7 +164,13 @@ function Onboarding() {
           { onConflict: "organization_id" },
         );
 
-        // Trigger N8N dashboard creation workflow (non-blocking)
+        // 4. Only mark onboarding complete AFTER org + responses are saved
+        await supabase
+          .from("profiles")
+          .update({ onboarding_complete: true })
+          .eq("id", user.id);
+
+        // 5. Trigger n8n dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
         fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
           method: "POST",
@@ -176,7 +182,7 @@ function Onboarding() {
             recommended_tools: [],
           }),
         }).catch(() => {
-          /* best-effort */
+          /* best-effort — failure here doesn't block onboarding */
         });
 
         setDone(true);

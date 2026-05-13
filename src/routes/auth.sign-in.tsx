@@ -103,7 +103,7 @@ export function AuthShell({
             without stitching ten tools together.
           </p>
           <div className="mt-8 flex items-center gap-6 text-[12px] text-muted-foreground">
-            <Stat n="10" label="AI tools" />
+            <Stat n="17" label="AI tools" />
             <Stat n="6" label="Operating systems" />
             <Stat n="1" label="Source of truth" />
           </div>
