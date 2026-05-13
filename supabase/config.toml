@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.save-integration]
 verify_jwt = false
+
+[functions.run-tool]
+verify_jwt = false
+
+[functions.generate-ai-dashboard]
+verify_jwt = false
