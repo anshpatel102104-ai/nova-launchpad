@@ -120,7 +120,7 @@ const PLAN_TOOLS: Record<string, string[]> = {
 
 export const planEntitlementsQuery = () =>
   queryOptions({
-    queryKey: ["plan_entitlements"],
+    queryKey: ["plan_tier_limits"],
     queryFn: async (): Promise<PlanEntitlement[]> => {
       const plans = ["starter", "launch", "operate", "scale"] as const;
       if (isGuest()) {
