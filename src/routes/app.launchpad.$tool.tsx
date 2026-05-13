@@ -216,9 +216,10 @@ function ToolPage() {
     setFeedback(v);
     if (!runId) return;
     try {
+      // Update only the dedicated feedback columns — never overwrite the output JSONB
       await supabase
         .from("tool_runs")
-        .update({ output: { feedback: v, feedback_at: new Date().toISOString() } as never })
+        .update({ feedback: v, feedback_at: new Date().toISOString() })
         .eq("id", runId);
     } catch {
       /* non-blocking */
@@ -567,10 +568,9 @@ function ToolPage() {
                         const out = (r.output ?? null) as Record<string, unknown> | null;
                         setOutput(out);
                         setRunId(r.id);
-                        const meta = ((r as Record<string, unknown>).metadata ?? {}) as Record<string, unknown>;
-                        setFeedback(
-                          meta.feedback === "up" ? "up" : meta.feedback === "down" ? "down" : null,
-                        );
+                        // Read feedback from dedicated columns added by migration
+                        const fb = (r as Record<string, unknown>).feedback as string | undefined;
+                        setFeedback(fb === "up" ? "up" : fb === "down" ? "down" : null);
                       }}
                       className="flex w-full items-center justify-between px-5 py-2.5 text-left transition"
                       style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}

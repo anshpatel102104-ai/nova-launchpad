@@ -133,12 +133,23 @@ function Billing() {
       if (data?.error) throw new Error(data.error);
       // Stripe webhook sync may take a moment
       [800, 2000, 4000].forEach((ms) => setTimeout(refetchAll, ms));
-      return true;
+      return data;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Action failed");
-      return false;
+      return null;
     } finally {
       setBusy(false);
+    }
+  };
+
+  const openBillingPortal = async () => {
+    if (blockIfGuest("Sign up to manage your subscription.")) return;
+    const result = await callManage({
+      action: "billing_portal",
+      returnUrl: window.location.href,
+    });
+    if (result?.url) {
+      window.location.href = result.url;
     }
   };
 
@@ -241,8 +252,7 @@ function Billing() {
               Payment failed — AI tools are locked
             </div>
             <p className="mt-0.5 text-[12.5px] text-rose-100/80">
-              We couldn't charge your card. Update your payment method or re-subscribe to restore
-              access.
+              We couldn't charge your card. Update your payment method to restore access.
             </p>
           </div>
           {hasStripeSub && (
@@ -250,12 +260,10 @@ function Billing() {
               size="sm"
               variant="outline"
               className="border-rose-300/40"
-              onClick={() => {
-                const lookup = PLAN_PRICE_LOOKUP[currentPlan];
-                if (lookup) setCheckoutPriceId(lookup);
-              }}
+              disabled={busy}
+              onClick={openBillingPortal}
             >
-              Update payment
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Update payment"}
             </Button>
           )}
         </div>
@@ -283,7 +291,7 @@ function Billing() {
             disabled={busy}
             onClick={() =>
               callManage({ action: "resume" }).then(
-                (ok) => ok && toast.success("Subscription resumed"),
+                (result) => result?.ok && toast.success("Subscription resumed"),
               )
             }
           >
@@ -707,8 +715,8 @@ function Billing() {
                 <AlertDialogAction
                   disabled={busy}
                   onClick={async () => {
-                    const ok = await callManage({ action: "cancel_at_period_end" });
-                    if (ok) toast.success("Cancellation scheduled");
+                    const result = await callManage({ action: "cancel_at_period_end" });
+                    if (result?.ok) toast.success("Cancellation scheduled");
                     setConfirm(null);
                   }}
                 >
@@ -731,11 +739,11 @@ function Billing() {
                 <AlertDialogAction
                   disabled={busy}
                   onClick={async () => {
-                    const ok = await callManage({
+                    const result = await callManage({
                       action: "switch_plan",
                       newPriceLookupKey: confirm.lookup,
                     });
-                    if (ok) toast.success(`Switched to ${confirm.plan}`);
+                    if (result?.ok) toast.success(`Switched to ${confirm.plan}`);
                     setConfirm(null);
                   }}
                 >
@@ -763,8 +771,8 @@ function Billing() {
                 <AlertDialogAction
                   disabled={busy}
                   onClick={async () => {
-                    const ok = await callManage({ action: "cancel_at_period_end" });
-                    if (ok) toast.success("Downgrade scheduled");
+                    const result = await callManage({ action: "cancel_at_period_end" });
+                    if (result?.ok) toast.success("Downgrade scheduled");
                     setConfirm(null);
                   }}
                 >
