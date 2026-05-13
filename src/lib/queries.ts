@@ -281,3 +281,61 @@ export async function disconnectIntegration(userId: string, integrationKey: stri
     .eq("integration_key", integrationKey);
   if (error) throw error;
 }
+
+// ── AI Dashboard ─────────────────────────────────────────────────────────────
+
+export type GenerateDashboardInput = {
+  business: string;
+  niche?: string;
+  stage?: string;
+  goal?: string;
+  current_revenue?: string;
+  target_customer?: string;
+  biggest_blocker?: string;
+};
+
+export const onboardingResponseQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["onboarding_response", orgId],
+    queryFn: async () => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("onboarding_responses")
+        .select("*")
+        .eq("organization_id", orgId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const aiDashboardQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["ai_dashboard", orgId],
+    queryFn: async () => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("ai_dashboards")
+        .select("*")
+        .eq("organization_id", orgId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export async function generateAiDashboard(input: GenerateDashboardInput) {
+  const { data, error } = await supabase.functions.invoke("generate-ai-dashboard", {
+    body: input,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteAiDashboard(orgId: string) {
+  const { error } = await supabase
+    .from("ai_dashboards")
+    .delete()
+    .eq("organization_id", orgId);
+  if (error) throw error;
+}

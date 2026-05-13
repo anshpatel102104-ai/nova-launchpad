@@ -15,6 +15,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_dashboards: {
+        Row: {
+          biggest_blocker: string | null
+          business: string
+          created_at: string
+          current_revenue: string | null
+          generated_at: string
+          goal: string | null
+          id: string
+          niche: string | null
+          organization_id: string
+          payload: Json
+          stage: string | null
+          target_customer: string | null
+          updated_at: string
+        }
+        Insert: {
+          biggest_blocker?: string | null
+          business: string
+          created_at?: string
+          current_revenue?: string | null
+          generated_at?: string
+          goal?: string | null
+          id?: string
+          niche?: string | null
+          organization_id: string
+          payload: Json
+          stage?: string | null
+          target_customer?: string | null
+          updated_at?: string
+        }
+        Update: {
+          biggest_blocker?: string | null
+          business?: string
+          created_at?: string
+          current_revenue?: string | null
+          generated_at?: string
+          goal?: string | null
+          id?: string
+          niche?: string | null
+          organization_id?: string
+          payload?: Json
+          stage?: string | null
+          target_customer?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_dashboards_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_operator_configs: {
         Row: {
           brand_voice_keywords: Json | null
@@ -770,6 +826,30 @@ export type Database = {
           id?: string
           limit_value?: number | null
           plan?: Database["public"]["Enums"]["plan_tier"]
+        }
+        Relationships: []
+      }
+      plan_tier_limits: {
+        Row: {
+          allowed_tools: Json
+          created_at: string
+          monthly_generation_limit: number | null
+          plan: Database["public"]["Enums"]["plan_tier"]
+          price_usd: number
+        }
+        Insert: {
+          allowed_tools?: Json
+          created_at?: string
+          monthly_generation_limit?: number | null
+          plan: Database["public"]["Enums"]["plan_tier"]
+          price_usd?: number
+        }
+        Update: {
+          allowed_tools?: Json
+          created_at?: string
+          monthly_generation_limit?: number | null
+          plan?: Database["public"]["Enums"]["plan_tier"]
+          price_usd?: number
         }
         Relationships: []
       }
