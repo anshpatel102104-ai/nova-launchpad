@@ -3,15 +3,18 @@
 
 export type PlanId = "starter" | "launch" | "operate" | "scale";
 
-export const PLANS: Record<PlanId, {
-  id: PlanId;
-  name: string;
-  price: number;
-  tagline: string;
-  features: string[];
-  toolLimit: number;
-  systemLimit: number;
-}> = {
+export const PLANS: Record<
+  PlanId,
+  {
+    id: PlanId;
+    name: string;
+    price: number;
+    tagline: string;
+    features: string[];
+    toolLimit: number;
+    systemLimit: number;
+  }
+> = {
   starter: {
     id: "starter",
     name: "Starter",

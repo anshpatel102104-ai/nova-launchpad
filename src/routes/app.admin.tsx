@@ -66,7 +66,7 @@ function AdminHub() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("id, name, created_by, stage, business_type, niche, created_at")
+        .select("id, name, owner_id, stage, business_type, niche, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -475,7 +475,7 @@ function AdminHub() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredOrgs.map((o) => {
-                  const owner = profileById.get(o.created_by);
+                  const owner = profileById.get(o.owner_id);
                   return (
                     <tr key={o.id} className="hover:bg-surface-2/40">
                       <td className="px-4 py-2.5 font-medium">{o.name}</td>

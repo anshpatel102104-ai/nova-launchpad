@@ -38,6 +38,13 @@ import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as AuthInviteRouteImport } from './routes/auth.invite'
+import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
+import { Route as AppNovaOsSlugRouteImport } from './routes/app.nova-os.$slug'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -184,6 +191,41 @@ const AppAiDashboardRoute = AppAiDashboardRouteImport.update({
   path: '/ai-dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthInviteRoute = AuthInviteRouteImport.update({
+  id: '/auth/invite',
+  path: '/auth/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaOsRoute = AppNovaOsRouteImport.update({
+  id: '/nova-os',
+  path: '/nova-os',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaOsSlugRoute = AppNovaOsSlugRouteImport.update({
+  id: '/nova-os/$slug',
+  path: '/nova-os/$slug',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -215,6 +257,13 @@ export interface FileRoutesByFullPath {
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/demo': typeof DemoRoute
+  '/pricing': typeof PricingRoute
+  '/auth/invite': typeof AuthInviteRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/nova-os': typeof AppNovaOsRoute
+  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -245,6 +294,13 @@ export interface FileRoutesByTo {
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
+  '/demo': typeof DemoRoute
+  '/pricing': typeof PricingRoute
+  '/auth/invite': typeof AuthInviteRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/nova-os': typeof AppNovaOsRoute
+  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -277,6 +333,13 @@ export interface FileRoutesById {
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/demo': typeof DemoRoute
+  '/pricing': typeof PricingRoute
+  '/auth/invite': typeof AuthInviteRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/integrations': typeof AppIntegrationsRoute
+  '/app/nova-os': typeof AppNovaOsRoute
+  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -310,6 +373,13 @@ export interface FileRouteTypes {
     | '/app/nova/workflows'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/demo'
+    | '/pricing'
+    | '/auth/invite'
+    | '/app/activity'
+    | '/app/integrations'
+    | '/app/nova-os'
+    | '/app/nova-os/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -340,6 +410,13 @@ export interface FileRouteTypes {
     | '/app/nova/workflows'
     | '/app/launchpad'
     | '/app/nova'
+    | '/demo'
+    | '/pricing'
+    | '/auth/invite'
+    | '/app/activity'
+    | '/app/integrations'
+    | '/app/nova-os'
+    | '/app/nova-os/$slug'
   id:
     | '__root__'
     | '/'
@@ -371,6 +448,13 @@ export interface FileRouteTypes {
     | '/app/nova/workflows'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/demo'
+    | '/pricing'
+    | '/auth/invite'
+    | '/app/activity'
+    | '/app/integrations'
+    | '/app/nova-os'
+    | '/app/nova-os/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -385,6 +469,9 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  DemoRoute: typeof DemoRoute
+  PricingRoute: typeof PricingRoute
+  AuthInviteRoute: typeof AuthInviteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -592,6 +679,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingReturnRouteImport
       parentRoute: typeof AppBillingRoute
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/invite': {
+      id: '/auth/invite'
+      path: '/auth/invite'
+      fullPath: '/auth/invite'
+      preLoaderRoute: typeof AuthInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/integrations': {
+      id: '/app/integrations'
+      path: '/integrations'
+      fullPath: '/app/integrations'
+      preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova-os': {
+      id: '/app/nova-os'
+      path: '/nova-os'
+      fullPath: '/app/nova-os'
+      preLoaderRoute: typeof AppNovaOsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova-os/$slug': {
+      id: '/app/nova-os/$slug'
+      path: '/nova-os/$slug'
+      fullPath: '/app/nova-os/$slug'
+      preLoaderRoute: typeof AppNovaOsSlugRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -625,6 +761,10 @@ interface AppRouteChildren {
   AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
+  AppActivityRoute: typeof AppActivityRoute
+  AppIntegrationsRoute: typeof AppIntegrationsRoute
+  AppNovaOsRoute: typeof AppNovaOsRoute
+  AppNovaOsSlugRoute: typeof AppNovaOsSlugRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -645,6 +785,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,
+  AppActivityRoute: AppActivityRoute,
+  AppIntegrationsRoute: AppIntegrationsRoute,
+  AppNovaOsRoute: AppNovaOsRoute,
+  AppNovaOsSlugRoute: AppNovaOsSlugRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -661,6 +805,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  DemoRoute: DemoRoute,
+  PricingRoute: PricingRoute,
+  AuthInviteRoute: AuthInviteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

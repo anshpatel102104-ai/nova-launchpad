@@ -32,7 +32,9 @@ function NovaOSPage() {
                   <div className="h-9 w-9 rounded-md border border-border bg-surface-elevated grid place-items-center">
                     <sys.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <StatusPill tone={i === 0 ? "primary" : "muted"}>{i === 0 ? "Setup needed" : "Inactive"}</StatusPill>
+                  <StatusPill tone={i === 0 ? "primary" : "muted"}>
+                    {i === 0 ? "Setup needed" : "Inactive"}
+                  </StatusPill>
                 </div>
                 <h3 className="text-sm font-semibold">{sys.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground flex-1">{sys.description}</p>

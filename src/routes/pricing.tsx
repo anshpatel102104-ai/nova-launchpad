@@ -8,7 +8,10 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — Nova OPS" },
-      { name: "description", content: "Simple plans that scale with you. Free, $49, $149, and $299/month." },
+      {
+        name: "description",
+        content: "Simple plans that scale with you. Free, $49, $149, and $299/month.",
+      },
     ],
   }),
   component: PricingPage,
@@ -16,10 +19,10 @@ export const Route = createFileRoute("/pricing")({
 
 const COMPARE = [
   { label: "LaunchPad tools", values: ["2", "All 10", "All 10", "All 10"] },
-  { label: "Nova OS systems",  values: ["—", "1", "4", "All 6"] },
-  { label: "Tool runs / mo",   values: ["10", "200", "1,500", "Unlimited"] },
-  { label: "Integrations",     values: ["—", "Basic", "Full", "Full + custom"] },
-  { label: "Support",          values: ["Community", "Email", "Priority", "Dedicated"] },
+  { label: "Nova OS systems", values: ["—", "1", "4", "All 6"] },
+  { label: "Tool runs / mo", values: ["10", "200", "1,500", "Unlimited"] },
+  { label: "Integrations", values: ["—", "Basic", "Full", "Full + custom"] },
+  { label: "Support", values: ["Community", "Email", "Priority", "Dedicated"] },
 ];
 
 function PricingPage() {
@@ -27,16 +30,26 @@ function PricingPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="mx-auto max-w-7xl h-14 px-4 sm:px-6 flex items-center justify-between">
-          <Link to="/"><Logo /></Link>
-          <Button asChild size="sm"><Link to="/signup">Start free</Link></Button>
+          <Link to="/">
+            <Logo />
+          </Link>
+          <Button asChild size="sm">
+            <Link to="/signup" search={{ plan: undefined }}>
+              Start free
+            </Link>
+          </Button>
         </div>
       </header>
 
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-12">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-primary mb-2">Pricing</p>
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">Operator-grade pricing.</h1>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-primary mb-2">
+              Pricing
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+              Operator-grade pricing.
+            </h1>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
               Start free. Upgrade when you outgrow it. Cancel anytime.
             </p>
@@ -47,7 +60,10 @@ function PricingPage() {
               const plan = PLANS[p];
               const featured = p === "operate";
               return (
-                <div key={p} className={`nova-card p-6 flex flex-col ${featured ? "border-primary/50 nova-glow" : ""}`}>
+                <div
+                  key={p}
+                  className={`nova-card p-6 flex flex-col ${featured ? "border-primary/50 nova-glow" : ""}`}
+                >
                   {featured && (
                     <div className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary text-[10px] font-medium px-2 py-0.5 mb-3 self-start">
                       <Sparkles className="h-3 w-3" /> Most popular
@@ -59,8 +75,15 @@ function PricingPage() {
                     <span className="text-xs text-muted-foreground">/mo</span>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{plan.tagline}</p>
-                  <Button asChild className="w-full mt-5" variant={featured ? "default" : "outline"} size="sm">
-                    <Link to="/signup">{plan.price === 0 ? "Start free" : "Choose plan"}</Link>
+                  <Button
+                    asChild
+                    className="w-full mt-5"
+                    variant={featured ? "default" : "outline"}
+                    size="sm"
+                  >
+                    <Link to="/signup" search={{ plan: p }}>
+                      {plan.price === 0 ? "Start free" : "Choose plan"}
+                    </Link>
                   </Button>
                   <ul className="mt-5 space-y-2">
                     {plan.features.map((f) => (
@@ -84,7 +107,9 @@ function PricingPage() {
                   <tr className="text-xs text-muted-foreground">
                     <th className="text-left p-4 font-medium">Feature</th>
                     {PLAN_ORDER.map((p) => (
-                      <th key={p} className="text-left p-4 font-medium">{PLANS[p].name}</th>
+                      <th key={p} className="text-left p-4 font-medium">
+                        {PLANS[p].name}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -93,7 +118,9 @@ function PricingPage() {
                     <tr key={row.label} className="border-t border-border">
                       <td className="p-4 text-muted-foreground">{row.label}</td>
                       {row.values.map((v, i) => (
-                        <td key={i} className="p-4">{v}</td>
+                        <td key={i} className="p-4">
+                          {v}
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -103,7 +130,11 @@ function PricingPage() {
           </div>
 
           <div className="mt-10 text-center">
-            <Button asChild size="lg"><Link to="/signup">Start free <ArrowRight className="h-4 w-4 ml-1" /></Link></Button>
+            <Button asChild size="lg">
+              <Link to="/signup" search={{ plan: undefined }}>
+                Start free <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

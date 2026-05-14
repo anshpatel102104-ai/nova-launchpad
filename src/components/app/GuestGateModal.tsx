@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useGuest } from "@/lib/guest";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -7,12 +8,30 @@ import { Sparkles, X } from "lucide-react";
 export function GuestGateModal() {
   const { gateOpen, gateReason, closeGate } = useGuest();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleSignUp = () => {
+    setLoading(true);
+    closeGate();
+    navigate({ to: "/signup", search: { plan: undefined } });
+  };
 
   return (
-    <Dialog open={gateOpen} onOpenChange={(o) => !o && closeGate()}>
+    <Dialog
+      open={gateOpen}
+      onOpenChange={(o) => {
+        if (!o) {
+          closeGate();
+          setLoading(false);
+        }
+      }}
+    >
       <DialogContent className="overflow-hidden border-border bg-card p-0 sm:max-w-md">
         <button
-          onClick={closeGate}
+          onClick={() => {
+            closeGate();
+            setLoading(false);
+          }}
           className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
           aria-label="Close"
         >
@@ -33,14 +52,8 @@ export function GuestGateModal() {
           </p>
 
           <div className="mt-6 flex flex-col gap-2">
-            <Button
-              onClick={() => {
-                closeGate();
-                navigate({ to: "/signup", search: { plan: undefined } });
-              }}
-              className="w-full"
-            >
-              Sign up free
+            <Button onClick={handleSignUp} className="w-full" disabled={loading}>
+              {loading ? "Redirecting…" : "Sign up free"}
             </Button>
             <Button
               variant="ghost"

@@ -97,24 +97,48 @@ const PLAN_GEN_LIMITS: Record<string, number | null> = {
 const PLAN_TOOLS: Record<string, string[]> = {
   starter: ["validate-idea", "generate-pitch"],
   launch: [
-    "validate-idea", "generate-pitch",
-    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
-    "idea-vs-idea", "landing-page", "first-10-customers",
+    "validate-idea",
+    "generate-pitch",
+    "generate-gtm-strategy",
+    "generate-offer",
+    "kill-my-idea",
+    "idea-vs-idea",
+    "landing-page",
+    "first-10-customers",
   ],
   operate: [
-    "validate-idea", "generate-pitch",
-    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
-    "idea-vs-idea", "landing-page", "first-10-customers",
-    "generate-ops-plan", "generate-followup-sequence",
-    "funding-score", "investor-emails", "business-plan",
+    "validate-idea",
+    "generate-pitch",
+    "generate-gtm-strategy",
+    "generate-offer",
+    "kill-my-idea",
+    "idea-vs-idea",
+    "landing-page",
+    "first-10-customers",
+    "generate-ops-plan",
+    "generate-followup-sequence",
+    "funding-score",
+    "investor-emails",
+    "business-plan",
   ],
   scale: [
-    "validate-idea", "generate-pitch",
-    "generate-gtm-strategy", "generate-offer", "kill-my-idea",
-    "idea-vs-idea", "landing-page", "first-10-customers",
-    "generate-ops-plan", "generate-followup-sequence",
-    "funding-score", "investor-emails", "business-plan",
-    "analyze-website", "competitor-analysis", "pricing-strategy", "revenue-projector",
+    "validate-idea",
+    "generate-pitch",
+    "generate-gtm-strategy",
+    "generate-offer",
+    "kill-my-idea",
+    "idea-vs-idea",
+    "landing-page",
+    "first-10-customers",
+    "generate-ops-plan",
+    "generate-followup-sequence",
+    "funding-score",
+    "investor-emails",
+    "business-plan",
+    "analyze-website",
+    "competitor-analysis",
+    "pricing-strategy",
+    "revenue-projector",
   ],
 };
 
@@ -169,8 +193,7 @@ export const generatedAssetsQuery = (orgId: string, kind?: string) =>
   queryOptions({
     queryKey: ["generated_assets", orgId, kind ?? "all"],
     queryFn: async () => {
-      if (isGuest())
-        return kind ? GUEST_ASSETS.filter((a) => a.kind === kind) : GUEST_ASSETS;
+      if (isGuest()) return kind ? GUEST_ASSETS.filter((a) => a.kind === kind) : GUEST_ASSETS;
       let q = supabase.from("generated_assets").select("*").eq("organization_id", orgId);
       if (kind) q = q.eq("kind", kind);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(60);
@@ -333,9 +356,6 @@ export async function generateAiDashboard(input: GenerateDashboardInput) {
 }
 
 export async function deleteAiDashboard(orgId: string) {
-  const { error } = await supabase
-    .from("ai_dashboards")
-    .delete()
-    .eq("organization_id", orgId);
+  const { error } = await supabase.from("ai_dashboards").delete().eq("organization_id", orgId);
   if (error) throw error;
 }

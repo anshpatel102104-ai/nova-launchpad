@@ -165,14 +165,22 @@ function Dashboard() {
       <div className="space-y-5 animate-pulse">
         <div
           className="rounded-2xl"
-          style={{ minHeight: 200, background: "var(--surface)", border: "1px solid var(--border)" }}
+          style={{
+            minHeight: 200,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+          }}
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               className="rounded-2xl p-5"
-              style={{ height: 120, background: "var(--surface)", border: "1px solid var(--border)" }}
+              style={{
+                height: 120,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
             />
           ))}
         </div>
@@ -212,7 +220,8 @@ function Dashboard() {
   const totalUsed = usage.reduce((s, r) => s + (r.count as number), 0);
   const limit = plansQ.data?.find((p) => p.plan === sub?.plan)?.monthly_generation_limit ?? null;
   const firstName = (profile?.full_name || "").split(" ")[0] || "there";
-  const planLabel = (sub?.plan ?? "starter").charAt(0).toUpperCase() + (sub?.plan ?? "starter").slice(1);
+  const planLabel =
+    (sub?.plan ?? "starter").charAt(0).toUpperCase() + (sub?.plan ?? "starter").slice(1);
   const orgStage = (org?.stage ?? "Idea") as StageName;
   const stageIdx = STAGES.indexOf(orgStage);
 

@@ -4,17 +4,26 @@ import { StatusPill } from "@/components/app/StatusPill";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Button } from "@/components/ui/button";
 import { NOVA_SYSTEMS } from "@/lib/catalog";
-import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Plug, Power } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  FileQuestion,
+  Plug,
+  Power,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/nova-os/$slug")({
   component: SystemDetail,
 });
 
 const CHECKLIST = [
-  { label: "Connect data source",    done: false },
-  { label: "Configure trigger",      done: false },
+  { label: "Connect data source", done: false },
+  { label: "Configure trigger", done: false },
   { label: "Set output destination", done: false },
-  { label: "Test run",               done: false },
+  { label: "Test run", done: false },
 ];
 
 function SystemDetail() {
@@ -25,16 +34,25 @@ function SystemDetail() {
     return (
       <>
         <PageHeader title="System not found" />
-        <EmptyState title="That system doesn't exist" action={
-          <Button asChild><Link to="/app/nova-os">Back to Nova OS</Link></Button>
-        } />
+        <EmptyState
+          icon={FileQuestion}
+          title="That system doesn't exist"
+          action={
+            <Button asChild>
+              <Link to="/app/nova-os">Back to Nova OS</Link>
+            </Button>
+          }
+        />
       </>
     );
   }
 
   return (
     <>
-      <Link to="/app/nova-os" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4">
+      <Link
+        to="/app/nova-os"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4"
+      >
         <ArrowLeft className="h-3.5 w-3.5" /> All systems
       </Link>
       <PageHeader
@@ -44,7 +62,9 @@ function SystemDetail() {
         actions={
           <>
             <StatusPill tone="warning">Setup needed</StatusPill>
-            <Button><Power className="h-4 w-4 mr-1.5" /> Activate</Button>
+            <Button>
+              <Power className="h-4 w-4 mr-1.5" /> Activate
+            </Button>
           </>
         }
       />
@@ -61,27 +81,36 @@ function SystemDetail() {
           </div>
 
           <div className="nova-card p-5">
-            <SectionHeader title="Setup checklist" description="Complete each step to activate this system." />
+            <SectionHeader
+              title="Setup checklist"
+              description="Complete each step to activate this system."
+            />
             <ul className="divide-y divide-border">
               {CHECKLIST.map((c) => (
                 <li key={c.label} className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {c.done
-                      ? <CheckCircle2 className="h-4 w-4 text-primary" />
-                      : <Circle className="h-4 w-4 text-muted-foreground" />}
+                    {c.done ? (
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                    ) : (
+                      <Circle className="h-4 w-4 text-muted-foreground" />
+                    )}
                     <span className="text-sm">{c.label}</span>
                   </div>
-                  <Button size="sm" variant="ghost">Configure <ArrowRight className="h-3.5 w-3.5 ml-1" /></Button>
+                  <Button size="sm" variant="ghost">
+                    Configure <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  </Button>
                 </li>
               ))}
             </ul>
-            {/* TODO: wire each step to an n8n setup webhook */}
           </div>
 
           <div className="nova-card p-5">
             <SectionHeader title="Activity log" />
-            <EmptyState title="No activity yet" description="Once activated, every run shows up here." />
-            {/* TODO: stream from Supabase system_events */}
+            <EmptyState
+              icon={Activity}
+              title="No activity yet"
+              description="Once activated, every run shows up here."
+            />
           </div>
         </div>
 
@@ -109,9 +138,18 @@ function SystemDetail() {
           <div className="nova-card p-5">
             <SectionHeader title="Status" />
             <ul className="space-y-2.5 text-sm">
-              <li className="flex justify-between"><span className="text-muted-foreground">State</span><StatusPill tone="warning">Inactive</StatusPill></li>
-              <li className="flex justify-between"><span className="text-muted-foreground">Last run</span><span>—</span></li>
-              <li className="flex justify-between"><span className="text-muted-foreground">Errors (24h)</span><span>0</span></li>
+              <li className="flex justify-between">
+                <span className="text-muted-foreground">State</span>
+                <StatusPill tone="warning">Inactive</StatusPill>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-muted-foreground">Last run</span>
+                <span>—</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-muted-foreground">Errors (24h)</span>
+                <span>0</span>
+              </li>
             </ul>
           </div>
         </div>

@@ -76,13 +76,12 @@ function ToolPage() {
   const planTier = subQ.data?.plan ?? "starter";
 
   const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
-  const isToolLocked =
-    !isOwner && !!currentEnt && !currentEnt.allowed_tools.includes(tool.toolKey);
+  const isToolLocked = !isOwner && !!currentEnt && !currentEnt.allowed_tools.includes(tool.toolKey);
 
   // Find the lowest plan that grants access to this tool
   const requiredPlan = isToolLocked
-    ? (["launch", "operate", "scale"] as const).find(
-        (p) => plansQ.data?.find((e) => e.plan === p)?.allowed_tools.includes(tool.toolKey),
+    ? (["launch", "operate", "scale"] as const).find((p) =>
+        plansQ.data?.find((e) => e.plan === p)?.allowed_tools.includes(tool.toolKey),
       )
     : undefined;
 
@@ -126,8 +125,7 @@ function ToolPage() {
 
   const ideaValidatorRuns = useMemo(
     () =>
-      (runsQ.data ?? [])
-        .filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
+      (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
         .length,
     [runsQ.data],
   );
@@ -248,9 +246,7 @@ function ToolPage() {
         open={paywallOpen}
         onOpenChange={setPaywallOpen}
         title={
-          isToolLocked
-            ? `${tool.name} requires the ${requiredPlan ?? "next"} plan`
-            : undefined
+          isToolLocked ? `${tool.name} requires the ${requiredPlan ?? "next"} plan` : undefined
         }
         description={
           isToolLocked
@@ -498,8 +494,7 @@ function ToolPage() {
                   className="text-center text-[11.5px]"
                   style={{ color: "var(--muted-foreground)" }}
                 >
-                  Requires{" "}
-                  {requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)} plan ·{" "}
+                  Requires {requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)} plan ·{" "}
                   <Link
                     to="/app/billing"
                     className="underline transition-colors hover:text-foreground"

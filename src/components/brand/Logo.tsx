@@ -1,6 +1,12 @@
 import { cn } from "@/lib/utils";
 
-export function Logo({ className, showWordmark = true }: { className?: string; showWordmark?: boolean }) {
+export function Logo({
+  className,
+  showWordmark = true,
+}: {
+  className?: string;
+  showWordmark?: boolean;
+}) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <div className="relative h-7 w-7 rounded-sm border border-primary/40 bg-background grid place-items-center nova-glow">
@@ -15,8 +21,12 @@ export function Logo({ className, showWordmark = true }: { className?: string; s
       </div>
       {showWordmark && (
         <div className="leading-none flex items-baseline gap-1">
-          <span className="font-mono text-[13px] font-semibold tracking-[0.18em] uppercase">Nova</span>
-          <span className="font-mono text-[13px] font-semibold tracking-[0.18em] uppercase text-primary">Ops</span>
+          <span className="font-mono text-[13px] font-semibold tracking-[0.18em] uppercase">
+            Nova
+          </span>
+          <span className="font-mono text-[13px] font-semibold tracking-[0.18em] uppercase text-primary">
+            Ops
+          </span>
         </div>
       )}
     </div>

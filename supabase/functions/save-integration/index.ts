@@ -34,8 +34,7 @@ function validateValue(integrationKey: string, value: string): string | null {
       return null;
 
     case "airtable":
-      if (!/^pat[A-Za-z0-9._]{10,}$/.test(value))
-        return "Airtable token must start with pat";
+      if (!/^pat[A-Za-z0-9._]{10,}$/.test(value)) return "Airtable token must start with pat";
       return null;
 
     case "gohighlevel":
