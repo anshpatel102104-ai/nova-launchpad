@@ -12,3 +12,4 @@ N8N_UPSTREAM = "https://launchpad-novaops.app.n8n.cloud"
 # Secrets — set via wrangler CLI (NEVER commit real values):
 #   npx wrangler secret put N8N_PROXY_SECRET        # shared secret, also set on n8n host
 #   npx wrangler secret put SUPABASE_JWT_SECRET     # from Supabase → Settings → API → JWT Secret
+#   npx wrangler secret put ALLOWED_ORIGIN          # comma-separated allowed origins, e.g. https://nova-ops.space

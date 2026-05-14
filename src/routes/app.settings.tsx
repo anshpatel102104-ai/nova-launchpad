@@ -748,53 +748,53 @@ function ConnectorCard({
         </div>
         <div className="mt-3 flex flex-col gap-1.5">
           <div className="flex gap-2">
-          <Input
-            placeholder={
-              conn.soon
-                ? "Coming soon"
-                : isConnected && existing?.value_last4
-                  ? `Connected · ending …${existing.value_last4}`
-                  : conn.hint
-            }
-            value={val}
-            disabled={conn.soon}
-            onChange={(e) => handleChange(e.target.value)}
-            type={conn.type === "key" ? "password" : "text"}
-            className="rounded-xl text-[12.5px]"
-            style={{
-              background: "var(--surface-2)",
-              ...(validationError
-                ? { border: "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)" }
-                : {}),
-            }}
-          />
-          <button
-            onClick={save}
-            disabled={conn.soon}
-            className="shrink-0 rounded-xl px-3 text-[12px] font-semibold transition"
-            style={
-              conn.soon
-                ? {
-                    background: "var(--surface-2)",
-                    color: "var(--muted-foreground)",
-                    cursor: "not-allowed",
-                  }
-                : {
-                    background: isConnected
-                      ? "color-mix(in oklab, var(--primary) 12%, transparent)"
-                      : "linear-gradient(135deg, var(--primary), var(--accent))",
-                    color: isConnected ? "var(--primary)" : "white",
-                    border: isConnected
-                      ? "1px solid color-mix(in oklab, var(--primary) 25%, transparent)"
-                      : "none",
-                    boxShadow: isConnected
-                      ? "none"
-                      : "0 3px 10px color-mix(in oklab, var(--primary) 30%, transparent)",
-                  }
-            }
-          >
-            {conn.soon ? <Lock className="h-3.5 w-3.5" /> : isConnected ? "Update" : "Connect"}
-          </button>
+            <Input
+              placeholder={
+                conn.soon
+                  ? "Coming soon"
+                  : isConnected && existing?.value_last4
+                    ? `Connected · ending …${existing.value_last4}`
+                    : conn.hint
+              }
+              value={val}
+              disabled={conn.soon}
+              onChange={(e) => handleChange(e.target.value)}
+              type={conn.type === "key" ? "password" : "text"}
+              className="rounded-xl text-[12.5px]"
+              style={{
+                background: "var(--surface-2)",
+                ...(validationError
+                  ? { border: "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)" }
+                  : {}),
+              }}
+            />
+            <button
+              onClick={save}
+              disabled={conn.soon}
+              className="shrink-0 rounded-xl px-3 text-[12px] font-semibold transition"
+              style={
+                conn.soon
+                  ? {
+                      background: "var(--surface-2)",
+                      color: "var(--muted-foreground)",
+                      cursor: "not-allowed",
+                    }
+                  : {
+                      background: isConnected
+                        ? "color-mix(in oklab, var(--primary) 12%, transparent)"
+                        : "linear-gradient(135deg, var(--primary), var(--accent))",
+                      color: isConnected ? "var(--primary)" : "white",
+                      border: isConnected
+                        ? "1px solid color-mix(in oklab, var(--primary) 25%, transparent)"
+                        : "none",
+                      boxShadow: isConnected
+                        ? "none"
+                        : "0 3px 10px color-mix(in oklab, var(--primary) 30%, transparent)",
+                    }
+              }
+            >
+              {conn.soon ? <Lock className="h-3.5 w-3.5" /> : isConnected ? "Update" : "Connect"}
+            </button>
           </div>
           {validationError && (
             <div
@@ -827,7 +827,7 @@ function DangerTab() {
     await supabase.from("profiles").update({ full_name: "(deleted)" }).eq("id", user.id);
     await signOut();
     toast.success("Account deleted");
-    navigate({ to: "/login" });
+    navigate({ to: "/auth/sign-in" });
   };
 
   return (

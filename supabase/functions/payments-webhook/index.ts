@@ -22,7 +22,11 @@ function lookupKeyToPlan(key?: string | null): PlanTier | null {
 serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const url = new URL(req.url);
-  const env = (url.searchParams.get("env") || "sandbox") as StripeEnv;
+  const envParam = url.searchParams.get("env") ?? "sandbox";
+  if (envParam !== "sandbox" && envParam !== "live") {
+    return new Response("Invalid env parameter", { status: 400 });
+  }
+  const env = envParam as StripeEnv;
 
   try {
     const event = await verifyWebhook(req, env);

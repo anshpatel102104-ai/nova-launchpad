@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,16 +8,21 @@ import { toast } from "sonner";
 import { AuthShell } from "./auth.sign-in";
 
 export const Route = createFileRoute("/auth/invite")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    token: typeof s.token === "string" ? s.token : undefined,
-    type: typeof s.type === "string" ? s.type : undefined,
-  }),
   component: InvitePage,
 });
 
 function InvitePage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/auth/invite" });
+
+  // Read invite params from URL directly (route not yet in routeTree.gen.ts)
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const search = {
+    token: searchParams.get("token") ?? undefined,
+    type: searchParams.get("type") ?? undefined,
+  };
 
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
