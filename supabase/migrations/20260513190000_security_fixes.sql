@@ -106,3 +106,29 @@ ON CONFLICT (plan) DO UPDATE SET
   monthly_generation_limit = EXCLUDED.monthly_generation_limit,
   allowed_tools            = EXCLUDED.allowed_tools,
   updated_at               = now();
+
+-- 7. Recreate user_credit_balance using plan_tier_limits (plan_entitlements was
+--    dropped by 20260513000001 CASCADE, which also dropped the old view).
+--    Filters credit_ledger to status = 'confirmed' only (reservation pattern).
+CREATE OR REPLACE VIEW public.user_credit_balance AS
+SELECT
+  p.id                                                          AS user_id,
+  COALESCE(ptl.monthly_generation_limit, 999999) * 5           AS starting_credits,
+  COALESCE(SUM(cl.cost), 0)                                     AS credits_used,
+  COALESCE(ptl.monthly_generation_limit, 999999) * 5
+    - COALESCE(SUM(cl.cost), 0)                                 AS credits_remaining
+FROM public.profiles p
+LEFT JOIN public.subscriptions sub
+       ON sub.organization_id IN (
+         SELECT organization_id
+           FROM public.organization_members
+          WHERE user_id = p.id
+       )
+LEFT JOIN public.plan_tier_limits ptl ON ptl.plan = sub.plan::text
+LEFT JOIN public.credit_ledger cl
+       ON cl.user_id = p.id
+      AND cl.created_at >= date_trunc('month', now())
+      AND cl.status = 'confirmed'
+GROUP BY p.id, ptl.monthly_generation_limit;
+
+GRANT SELECT ON public.user_credit_balance TO authenticated, service_role;
