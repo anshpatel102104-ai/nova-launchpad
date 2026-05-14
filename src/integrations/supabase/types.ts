@@ -802,33 +802,6 @@ export type Database = {
         }
         Relationships: []
       }
-      plan_entitlements: {
-        Row: {
-          created_at: string
-          enabled: boolean
-          feature_key: string
-          id: string
-          limit_value: number | null
-          plan: Database["public"]["Enums"]["plan_tier"]
-        }
-        Insert: {
-          created_at?: string
-          enabled?: boolean
-          feature_key: string
-          id?: string
-          limit_value?: number | null
-          plan: Database["public"]["Enums"]["plan_tier"]
-        }
-        Update: {
-          created_at?: string
-          enabled?: boolean
-          feature_key?: string
-          id?: string
-          limit_value?: number | null
-          plan?: Database["public"]["Enums"]["plan_tier"]
-        }
-        Relationships: []
-      }
       plan_tier_limits: {
         Row: {
           allowed_tools: Json

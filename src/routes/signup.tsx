@@ -66,7 +66,8 @@ function SignupPage() {
     const e: Record<string, string> = {};
     if (!fullName.trim()) e.fullName = "Full name is required";
     if (!email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Invalid email";
+    else if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email))
+      e.email = "Invalid email address";
     if (password.length < 8) e.password = "Min 8 characters";
     if (password !== confirm) e.confirm = "Passwords don't match";
     setErrors(e);
@@ -82,7 +83,7 @@ function SignupPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/onboarding`,
           data: { full_name: fullName },
         },
       });
@@ -97,7 +98,7 @@ function SignupPage() {
         const orgName = `${fullName.trim()}'s Business`;
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
-          .insert({ created_by: userId, name: orgName })
+          .insert({ owner_id: userId, name: orgName })
           .select("id")
           .single();
         if (orgErr) throw orgErr;
@@ -118,7 +119,7 @@ function SignupPage() {
         navigate({ to: "/onboarding" });
       } else {
         toast.success("Check your email to confirm your account");
-        navigate({ to: "/login" });
+        navigate({ to: "/auth/sign-in" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign up failed");
@@ -310,7 +311,7 @@ function SignupPage() {
 
           <p className="mt-4 text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground hover:underline font-medium">
+            <Link to="/auth/sign-in" className="text-foreground hover:underline font-medium">
               Sign in →
             </Link>
           </p>
