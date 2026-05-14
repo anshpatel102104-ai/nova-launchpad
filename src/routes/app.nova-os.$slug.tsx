@@ -4,7 +4,16 @@ import { StatusPill } from "@/components/app/StatusPill";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Button } from "@/components/ui/button";
 import { NOVA_SYSTEMS } from "@/lib/catalog";
-import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Plug, Power } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  FileQuestion,
+  Plug,
+  Power,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/nova-os/$slug")({
   component: SystemDetail,
@@ -26,6 +35,7 @@ function SystemDetail() {
       <>
         <PageHeader title="System not found" />
         <EmptyState
+          icon={FileQuestion}
           title="That system doesn't exist"
           action={
             <Button asChild>
@@ -97,6 +107,7 @@ function SystemDetail() {
           <div className="nova-card p-5">
             <SectionHeader title="Activity log" />
             <EmptyState
+              icon={Activity}
               title="No activity yet"
               description="Once activated, every run shows up here."
             />

@@ -29,7 +29,9 @@ export function toggleOwnerMode() {
 // If the check fails or the user is not an admin, localStorage is cleared.
 async function verifyAdminRole(): Promise<boolean> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       setOwnerMode(false);
       return false;

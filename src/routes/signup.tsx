@@ -66,7 +66,7 @@ function SignupPage() {
     const e: Record<string, string> = {};
     if (!fullName.trim()) e.fullName = "Full name is required";
     if (!email.trim()) e.email = "Email is required";
-    else if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email))
+    else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email))
       e.email = "Invalid email address";
     if (password.length < 8) e.password = "Min 8 characters";
     if (password !== confirm) e.confirm = "Passwords don't match";

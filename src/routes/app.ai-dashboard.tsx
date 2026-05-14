@@ -106,7 +106,10 @@ type DashboardPayload = {
 
 // ── Icon registry ──────────────────────────────────────────────────────────────
 
-const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
   target: Target,
   rocket: Rocket,
   users: Users,
@@ -153,7 +156,7 @@ function SectionHeader({
   sub,
   color,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
   sub?: string;
   color: string;
@@ -167,10 +170,7 @@ function SectionHeader({
         <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
       <div>
-        <span
-          className="font-display font-bold text-[15px]"
-          style={{ color: "var(--foreground)" }}
-        >
+        <span className="font-display font-bold text-[15px]" style={{ color: "var(--foreground)" }}>
           {label}
         </span>
         {sub && (
@@ -192,7 +192,8 @@ function GuideCard({ guide }: { guide: Guide }) {
   const toggle = (i: number) =>
     setDone((prev) => {
       const next = new Set(prev);
-      next.has(i) ? next.delete(i) : next.add(i);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
       return next;
     });
 
@@ -227,10 +228,7 @@ function GuideCard({ guide }: { guide: Guide }) {
               {guide.priority}
             </span>
           </div>
-          <p
-            className="text-[11.5px] mt-0.5 truncate"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <p className="text-[11.5px] mt-0.5 truncate" style={{ color: "var(--muted-foreground)" }}>
             {guide.summary}
           </p>
         </div>
@@ -269,7 +267,10 @@ function GuideCard({ guide }: { guide: Guide }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span
-                    className={cn("text-[13px] font-medium", done.has(i) && "line-through opacity-50")}
+                    className={cn(
+                      "text-[13px] font-medium",
+                      done.has(i) && "line-through opacity-50",
+                    )}
                     style={{ color: "var(--foreground)" }}
                   >
                     {step.title}
@@ -424,17 +425,12 @@ function IntakeForm({
 
   const set =
     (k: keyof IntakeValues) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setVals((v) => ({ ...v, [k]: e.target.value }));
 
   const valid = vals.business.trim().length > 8 && vals.goal.trim().length > 4;
 
-  const hasDefaults =
-    !!defaults.business || !!defaults.goal || !!defaults.niche;
+  const hasDefaults = !!defaults.business || !!defaults.goal || !!defaults.niche;
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
@@ -443,8 +439,7 @@ function IntakeForm({
         style={{
           background: "var(--surface)",
           border: "1px solid rgba(139,92,246,0.15)",
-          boxShadow:
-            "0 0 0 1px rgba(139,92,246,0.05), 0 8px 40px rgba(0,0,0,0.4)",
+          boxShadow: "0 0 0 1px rgba(139,92,246,0.05), 0 8px 40px rgba(0,0,0,0.4)",
         }}
       >
         <div className="flex items-center gap-3 mb-7">
@@ -652,10 +647,7 @@ function DashboardView({
             >
               Stage: {data.stage}
             </span>
-            <span
-              className="text-[10.5px] ml-auto"
-              style={{ color: "var(--muted-foreground)" }}
-            >
+            <span className="text-[10.5px] ml-auto" style={{ color: "var(--muted-foreground)" }}>
               Generated {timeAgo}
             </span>
             <button
@@ -687,10 +679,7 @@ function DashboardView({
           >
             {data.headline}
           </h1>
-          <p
-            className="text-[13.5px] max-w-2xl"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <p className="text-[13.5px] max-w-2xl" style={{ color: "var(--muted-foreground)" }}>
             {data.summary}
           </p>
 
@@ -793,16 +782,10 @@ function DashboardView({
                 >
                   {i + 1}
                 </div>
-                <span
-                  className="font-bold text-[13px]"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <span className="font-bold text-[13px]" style={{ color: "var(--foreground)" }}>
                   {phase.phase}
                 </span>
-                <span
-                  className="ml-auto text-[10px]"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
+                <span className="ml-auto text-[10px]" style={{ color: "var(--muted-foreground)" }}>
                   {phase.duration}
                 </span>
               </div>
@@ -868,10 +851,7 @@ function DashboardView({
                 <Sparkles className="h-4 w-4" style={{ color: "#3b82f6" }} />
               </div>
               <div className="flex-1 min-w-0">
-                <div
-                  className="font-semibold text-[13px]"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <div className="font-semibold text-[13px]" style={{ color: "var(--foreground)" }}>
                   {rec.tool}
                 </div>
                 <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
@@ -1015,7 +995,10 @@ function AiDashboardPage() {
         {/* Loading skeleton */}
         {isLoading && !isGenerating && (
           <div className="flex min-h-[60vh] items-center justify-center">
-            <Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+            <Loader2
+              className="h-7 w-7 animate-spin"
+              style={{ color: "var(--muted-foreground)" }}
+            />
           </div>
         )}
 
@@ -1029,16 +1012,10 @@ function AiDashboardPage() {
                 border: "1px solid rgba(139,92,246,0.22)",
               }}
             >
-              <Sparkles
-                className="h-7 w-7 animate-pulse"
-                style={{ color: "#8b5cf6" }}
-              />
+              <Sparkles className="h-7 w-7 animate-pulse" style={{ color: "#8b5cf6" }} />
             </div>
             <div className="text-center">
-              <div
-                className="font-bold text-[16px] mb-1"
-                style={{ color: "var(--foreground)" }}
-              >
+              <div className="font-bold text-[16px] mb-1" style={{ color: "var(--foreground)" }}>
                 Nova is analyzing your business…
               </div>
               <div className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
@@ -1050,11 +1027,7 @@ function AiDashboardPage() {
 
         {/* Intake form */}
         {!isLoading && !isGenerating && (!hasDashboard || showForm) && (
-          <IntakeForm
-            defaults={intakeDefaults}
-            onSubmit={handleSubmit}
-            loading={isGenerating}
-          />
+          <IntakeForm defaults={intakeDefaults} onSubmit={handleSubmit} loading={isGenerating} />
         )}
 
         {/* Dashboard */}

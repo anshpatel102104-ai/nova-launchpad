@@ -221,11 +221,9 @@ Deno.serve(async (req: Request) => {
   const auth = req.headers.get("Authorization");
   if (!auth) return jsonResponse({ error: "Missing Authorization header" }, 401);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: auth } } },
-  );
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: auth } },
+  });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData?.user) return jsonResponse({ error: "Invalid token" }, 401);
@@ -315,8 +313,7 @@ Build the dashboard as if you are the AI operator who knows their business. Ever
     console.error("[generate-ai-dashboard] AI error:", msg);
     if (msg === "RATE_LIMIT")
       return jsonResponse({ error: "Rate limit reached — please wait a moment." }, 429);
-    if (msg === "PAYMENT_REQUIRED")
-      return jsonResponse({ error: "AI credits exhausted." }, 402);
+    if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted." }, 402);
     return jsonResponse({ error: "AI generation failed. Please try again." }, 500);
   }
 

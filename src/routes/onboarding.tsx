@@ -131,10 +131,7 @@ function Onboarding() {
         if (!user) throw new Error("Not authenticated");
 
         // 1. Save the display name immediately (non-critical, no onboarding_complete yet)
-        await supabase
-          .from("profiles")
-          .update({ full_name: name })
-          .eq("id", user.id);
+        await supabase.from("profiles").update({ full_name: name }).eq("id", user.id);
 
         // 2. Create org + membership — if this fails the user can retry
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
@@ -165,10 +162,7 @@ function Onboarding() {
         );
 
         // 4. Only mark onboarding complete AFTER org + responses are saved
-        await supabase
-          .from("profiles")
-          .update({ onboarding_complete: true })
-          .eq("id", user.id);
+        await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
 
         // 5. Trigger n8n dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";

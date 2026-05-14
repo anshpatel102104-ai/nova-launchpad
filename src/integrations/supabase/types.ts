@@ -966,6 +966,8 @@ export type Database = {
           created_at: string;
           duration_ms: number | null;
           error: string | null;
+          feedback: string | null;
+          feedback_at: string | null;
           id: string;
           input: Json;
           organization_id: string;
@@ -982,6 +984,8 @@ export type Database = {
           created_at?: string;
           duration_ms?: number | null;
           error?: string | null;
+          feedback?: string | null;
+          feedback_at?: string | null;
           id?: string;
           input?: Json;
           organization_id: string;
@@ -998,6 +1002,8 @@ export type Database = {
           created_at?: string;
           duration_ms?: number | null;
           error?: string | null;
+          feedback?: string | null;
+          feedback_at?: string | null;
           id?: string;
           input?: Json;
           organization_id?: string;
