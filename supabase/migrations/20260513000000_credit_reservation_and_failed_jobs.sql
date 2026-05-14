@@ -16,22 +16,34 @@ create index if not exists idx_credit_ledger_status
   on public.credit_ledger(user_id, status);
 
 -- ── user_credit_balance view: only count confirmed debits ────────────
+-- Rebuild with status = 'confirmed' filter now that the column exists.
 create or replace view public.user_credit_balance as
 select
-  u.id as user_id,
-  coalesce(alloc.credits, 0) - coalesce(used.credits, 0) as balance
-from auth.users u
-left join (
-  select user_id, sum(amount) as credits
-  from public.credit_allocations
-  group by user_id
-) alloc on alloc.user_id = u.id
-left join (
-  select user_id, sum(cost) as credits
-  from public.credit_ledger
-  where status = 'confirmed'
-  group by user_id
-) used on used.user_id = u.id;
+  p.id                                                            as user_id,
+  coalesce(
+    (select pe.monthly_generation_limit
+       from public.plan_entitlements pe
+       join public.subscriptions sub on sub.plan = pe.plan
+       join public.organization_members om
+         on om.organization_id = sub.organization_id and om.user_id = p.id
+      limit 1),
+    999999) * 5                                                   as starting_credits,
+  coalesce(sum(cl.cost), 0)                                       as credits_used,
+  coalesce(
+    (select pe.monthly_generation_limit
+       from public.plan_entitlements pe
+       join public.subscriptions sub on sub.plan = pe.plan
+       join public.organization_members om
+         on om.organization_id = sub.organization_id and om.user_id = p.id
+      limit 1),
+    999999) * 5 - coalesce(sum(cl.cost), 0)                      as credits_remaining
+from public.profiles p
+left join public.credit_ledger cl
+       on cl.user_id = p.id
+      and cl.created_at >= date_trunc('month', now())
+      and cl.status = 'confirmed'
+group by p.id;
+grant select on public.user_credit_balance to authenticated, service_role;
 
 -- ── ai_operator_configs: add strategy_complete flag ──────────────────
 alter table public.ai_operator_configs
