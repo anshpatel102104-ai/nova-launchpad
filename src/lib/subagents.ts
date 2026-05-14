@@ -1,4 +1,8 @@
 /**
+ * @deprecated Use src/lib/operator.ts instead.
+ * All calls should route through the Master Operator (POST /webhook/operator).
+ * This file is kept for backward compatibility only. Do not add new callers here.
+ *
  * Nova OPS · Launchpad Subagent Client
  * ────────────────────────────────────────────────────────────────────
  * Thin typed wrappers around the 6 n8n subagent webhooks. Each call:
