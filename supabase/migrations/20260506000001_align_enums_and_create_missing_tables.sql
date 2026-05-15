@@ -191,14 +191,16 @@ create policy "integrations_own" on public.user_integrations for all to authenti
 grant all on public.user_integrations to service_role;
 
 -- user_integrations_masked view
+-- Uses value_encrypted / value_last4 (added by 20260423175609);
+-- encrypted_value was the intended name but the earlier migration used value_encrypted.
 create or replace view public.user_integrations_masked as
 select
   id,
   user_id,
   integration_key,
   status,
-  right(coalesce(encrypted_value, ''), 4) as value_last4,
-  (encrypted_value is not null and encrypted_value <> '') as is_connected,
+  value_last4,
+  (value_encrypted is not null) as is_connected,
   created_at,
   updated_at
 from public.user_integrations;
