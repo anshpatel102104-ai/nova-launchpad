@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import {
   ArrowRight,
+  ArrowLeft,
   Lightbulb,
   Hammer,
   DollarSign,
@@ -46,6 +47,13 @@ const CHALLENGES = [
     icon: Megaphone,
   },
 ];
+
+const CHALLENGE_TOOLS: Record<string, string[]> = {
+  fundraising: ["pitch-generator", "funding-score", "investor-emails"],
+  customers: ["first-10-customers", "offer", "followup"],
+  product: ["idea-validator", "kill-my-idea", "gtm-strategy"],
+  marketing: ["gtm-strategy", "landing-page", "website-audit"],
+};
 
 const ANIM_CSS = `
   @keyframes stepIn {
@@ -105,7 +113,7 @@ function Onboarding() {
 
   const canAdvance =
     step === 0
-      ? name.trim().length > 0 && idea.trim().length > 0
+      ? name.trim().length > 0 && idea.trim().length >= 20
       : step === 1
         ? !!stage
         : !!challenge;
@@ -173,7 +181,7 @@ function Onboarding() {
             user_id: user.id,
             operator_name: name,
             primary_niche: challenge,
-            recommended_tools: [],
+            recommended_tools: CHALLENGE_TOOLS[challenge] ?? [],
           }),
         }).catch(() => {
           /* best-effort — failure here doesn't block onboarding */
@@ -288,7 +296,7 @@ function Onboarding() {
                   transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
                   width: i === step ? 28 : 6,
                   background:
-                    i < step ? "#3b82f6" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
+                    i < step ? "#22c55e" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
                   boxShadow:
                     i === step
                       ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)"
@@ -338,7 +346,7 @@ function Onboarding() {
               }}
               aria-label="Go back"
             >
-              <ArrowRight style={{ width: 16, height: 16, transform: "rotate(180deg)" }} />
+              <ArrowLeft style={{ width: 16, height: 16 }} />
             </button>
           )}
           <button
@@ -483,7 +491,11 @@ function Step1({
           style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
         />
         <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
-          {modKey}+Enter to continue · your idea stays private
+          {idea.length === 0
+            ? `${modKey}+Enter to continue · your idea stays private`
+            : idea.length < 20
+              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
+              : `${modKey}+Enter to continue · your idea stays private`}
         </div>
       </div>
     </div>
@@ -614,6 +626,7 @@ const BOOT_LINES = [
 function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
   const [phase, setPhase] = useState<"boot" | "reveal">("boot");
   const [lineIdx, setLineIdx] = useState(0);
+  const [showFallback, setShowFallback] = useState(false);
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -621,6 +634,8 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
       timers.push(setTimeout(() => setLineIdx(i + 1), i * 380 + 200));
     });
     timers.push(setTimeout(() => setPhase("reveal"), BOOT_LINES.length * 380 + 600));
+    // If the user is still on this screen after 7s the redirect may have failed silently
+    timers.push(setTimeout(() => setShowFallback(true), 7000));
     return () => timers.forEach(clearTimeout);
   }, []);
 
@@ -810,6 +825,26 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
               >
                 Skip intro → Go to dashboard
               </button>
+              {showFallback && (
+                <div style={{ fontSize: 11, color: "rgba(240,244,255,0.3)", marginTop: 4 }}>
+                  Taking too long?{" "}
+                  <button
+                    onClick={onSkip}
+                    style={{
+                      fontSize: 11,
+                      color: "#3b82f6",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      padding: 0,
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Click here to go to your dashboard
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

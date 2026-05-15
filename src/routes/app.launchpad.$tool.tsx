@@ -23,6 +23,7 @@ import { toolRunsQuery, subscriptionQuery, planEntitlementsQuery } from "@/lib/q
 import { cn } from "@/lib/utils";
 import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRenderer";
 import { EmptyState } from "@/components/app/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { HANDOFFS } from "@/lib/handoffs";
 import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/draftStore";
 import { PaywallModal } from "@/components/app/PaywallModal";
@@ -481,6 +482,10 @@ function ToolPage() {
                 )}
               </button>
 
+              {savedLabel && !generating && !output && (
+                <p className="text-center text-xs text-muted-foreground">{savedLabel}</p>
+              )}
+
               {isFreeStarter && isIdeaValidator && (
                 <p
                   className="text-center text-[11.5px]"
@@ -544,7 +549,19 @@ function ToolPage() {
                   See all →
                 </Link>
               </div>
-              {toolRuns.length === 0 ? (
+              {runsQ.isLoading ? (
+                <div className="space-y-px px-5 py-3">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-2.5">
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <Skeleton className="h-3 w-3/5 rounded" />
+                        <Skeleton className="h-2.5 w-2/5 rounded" />
+                      </div>
+                      <Skeleton className="h-3 w-3 rounded shrink-0 ml-4" />
+                    </div>
+                  ))}
+                </div>
+              ) : toolRuns.length === 0 ? (
                 <div
                   className="px-5 py-6 text-center text-[12.5px]"
                   style={{ color: "var(--muted-foreground)" }}

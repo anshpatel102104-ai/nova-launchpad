@@ -7,6 +7,9 @@ export type Plan = "Starter" | "Launch" | "Operate" | "Scale";
 export const STAGES: Stage[] = ["Idea", "Validate", "Launch", "Operate", "Scale"];
 
 export type LaunchpadTool = {
+  // `key` drives client-side routing (/app/launchpad/$key) and HANDOFFS lookup.
+  // `toolKey` drives backend execution (webhook path, tool_runs.tool_key).
+  // Keep both in sync — a mismatch silently breaks handoffs and run history.
   key: string;
   toolKey: string;
   name: string;
@@ -14,7 +17,8 @@ export type LaunchpadTool = {
   wired: boolean;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   xp: number;
-  requiredPlan?: "Scale";
+  requiredPlan?: Plan;
+  handoffKey?: string; // matches the key used in the HANDOFFS map (src/lib/handoffs.ts)
 };
 
 export const launchpadCatalog: LaunchpadTool[] = [
@@ -26,6 +30,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Beginner",
     xp: 50,
+    handoffKey: "idea-validator",
   },
   {
     key: "pitch-generator",
@@ -35,6 +40,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    handoffKey: "pitch-generator",
   },
   {
     key: "gtm-strategy",
@@ -44,6 +50,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Advanced",
     xp: 100,
+    handoffKey: "gtm-strategy",
   },
   {
     key: "offer",
@@ -53,6 +60,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    requiredPlan: "Launch",
+    handoffKey: "offer",
   },
   {
     key: "ops-plan",
@@ -62,6 +71,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Advanced",
     xp: 100,
+    requiredPlan: "Operate",
+    handoffKey: "ops-plan",
   },
   {
     key: "followup",
@@ -71,6 +82,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Beginner",
     xp: 50,
+    requiredPlan: "Launch",
+    handoffKey: "followup",
   },
   {
     key: "website-audit",
@@ -80,6 +93,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    requiredPlan: "Operate",
+    handoffKey: "website-audit",
   },
   {
     key: "kill-my-idea",
@@ -89,6 +104,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    handoffKey: "kill-my-idea",
   },
   {
     key: "funding-score",
@@ -98,6 +114,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Advanced",
     xp: 100,
+    handoffKey: "funding-score",
   },
   {
     key: "first-10-customers",
@@ -107,6 +124,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    requiredPlan: "Launch",
+    handoffKey: "first-10-customers",
   },
   {
     key: "business-plan",
@@ -116,6 +135,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Advanced",
     xp: 100,
+    requiredPlan: "Operate",
+    handoffKey: "business-plan",
   },
   {
     key: "investor-emails",
@@ -125,6 +146,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    requiredPlan: "Operate",
+    handoffKey: "investor-emails",
   },
   {
     key: "idea-vs-idea",
@@ -134,6 +157,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Beginner",
     xp: 50,
+    handoffKey: "idea-vs-idea",
   },
   {
     key: "landing-page",
@@ -143,6 +167,8 @@ export const launchpadCatalog: LaunchpadTool[] = [
     wired: true,
     difficulty: "Intermediate",
     xp: 75,
+    requiredPlan: "Launch",
+    handoffKey: "landing-page",
   },
   {
     key: "competitor",
@@ -153,6 +179,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     difficulty: "Advanced",
     xp: 120,
     requiredPlan: "Scale",
+    // No handoffKey — no entry in HANDOFFS; terminal analysis tool
   },
   {
     key: "pricing",
@@ -163,6 +190,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     difficulty: "Advanced",
     xp: 120,
     requiredPlan: "Scale",
+    // No handoffKey — no entry in HANDOFFS; terminal analysis tool
   },
   {
     key: "revenue-projector",
@@ -173,6 +201,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
     difficulty: "Advanced",
     xp: 150,
     requiredPlan: "Scale",
+    // No handoffKey — no entry in HANDOFFS; terminal analysis tool
   },
 ];
 
