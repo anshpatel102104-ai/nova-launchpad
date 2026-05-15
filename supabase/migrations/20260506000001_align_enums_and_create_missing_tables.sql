@@ -124,11 +124,17 @@ create table if not exists public.automation_settings (
 );
 create index if not exists automation_settings_org_idx on public.automation_settings(organization_id);
 alter table public.automation_settings enable row level security;
-create policy "auto_org_read" on public.automation_settings for select to authenticated
-  using (public.is_org_member(organization_id, auth.uid()));
-create policy "auto_org_write" on public.automation_settings for all to authenticated
-  using (public.is_org_member(organization_id, auth.uid()))
-  with check (public.is_org_member(organization_id, auth.uid()));
+do $$ begin
+  if not exists (select 1 from pg_policies where tablename = 'automation_settings' and policyname = 'auto_org_read') then
+    create policy "auto_org_read" on public.automation_settings for select to authenticated
+      using (public.is_org_member(organization_id, auth.uid()));
+  end if;
+  if not exists (select 1 from pg_policies where tablename = 'automation_settings' and policyname = 'auto_org_write') then
+    create policy "auto_org_write" on public.automation_settings for all to authenticated
+      using (public.is_org_member(organization_id, auth.uid()))
+      with check (public.is_org_member(organization_id, auth.uid()));
+  end if;
+end $$;
 grant all on public.automation_settings to service_role;
 
 -- 9. website_analyses
