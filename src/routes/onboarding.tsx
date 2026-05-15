@@ -181,7 +181,7 @@ function Onboarding() {
             user_id: user.id,
             operator_name: name,
             primary_niche: challenge,
-            recommended_tools: (CHALLENGE_TOOLS[challenge] ?? []),
+            recommended_tools: CHALLENGE_TOOLS[challenge] ?? [],
           }),
         }).catch(() => {
           /* best-effort — failure here doesn't block onboarding */
