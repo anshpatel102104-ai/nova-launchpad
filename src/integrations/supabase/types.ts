@@ -1352,9 +1352,10 @@ export type Database = {
       get_org_entitlements: {
         Args: { _org_id: string };
         Returns: {
-          enabled: boolean;
-          feature_key: string;
-          limit_value: number;
+          plan: string;
+          price_usd: number;
+          monthly_generation_limit: number | null;
+          allowed_tools: string[];
         }[];
       };
       get_user_plan: { Args: { _org_id: string }; Returns: string };
