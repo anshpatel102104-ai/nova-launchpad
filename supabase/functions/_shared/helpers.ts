@@ -105,7 +105,7 @@ export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
   if (existing) {
     await ctx.supabase
       .from("usage_tracking")
-      .update({ count: (existing.count as number) + 1, last_used_at: new Date().toISOString() })
+      .update({ count: (existing.count as number) + 1, updated_at: new Date().toISOString() })
       .eq("id", existing.id);
   } else {
     await ctx.supabase.from("usage_tracking").insert({
@@ -221,10 +221,9 @@ export async function runTool(opts: {
       organization_id: ctx.organizationId,
       user_id: ctx.userId,
       tool_run_id: run.id,
-      category: opts.assetCategory,
       kind: opts.toolKey,
       title: opts.assetTitle(input, output),
-      content: output,
+      metadata: output,
     });
 
     await incrementUsage(ctx, opts.toolKey);
