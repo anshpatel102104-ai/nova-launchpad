@@ -14,6 +14,18 @@ export async function runTool(
 ): Promise<{ output: Record<string, unknown>; run_id?: string }> {
   if (!context.orgId) throw new Error("Not signed in to an organization.");
 
+  // analyze-website has a dedicated function with live URL fetching — route it directly.
+  if (toolKey === "analyze-website") {
+    const url = ((input.url || input.context || input.idea || "") as string).trim();
+    const { data, error } = await supabase.functions.invoke("analyze-website", {
+      body: { url },
+    });
+    if (error) throw new Error(error.message);
+    if (data?.error) throw new Error(data.error);
+    if (!data?.output) throw new Error("No output returned from AI. Please try again.");
+    return { output: data.output as Record<string, unknown>, run_id: data.run_id as string | undefined };
+  }
+
   const { data, error } = await supabase.functions.invoke("run-tool", {
     body: {
       toolKey,
