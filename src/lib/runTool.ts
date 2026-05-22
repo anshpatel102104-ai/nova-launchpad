@@ -23,7 +23,10 @@ export async function runTool(
     if (error) throw new Error(error.message);
     if (data?.error) throw new Error(data.error);
     if (!data?.output) throw new Error("No output returned from AI. Please try again.");
-    return { output: data.output as Record<string, unknown>, run_id: data.run_id as string | undefined };
+    return {
+      output: data.output as Record<string, unknown>,
+      run_id: data.run_id as string | undefined,
+    };
   }
 
   const { data, error } = await supabase.functions.invoke("run-tool", {
