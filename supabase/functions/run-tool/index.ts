@@ -683,6 +683,64 @@ const TOOLS: Record<string, ToolConfig> = {
     assetCategory: "ops",
     assetTitle: (i) => `SOP: ${String(i.process).slice(0, 60)}`,
   },
+
+  "generate-ops-plan": {
+    systemPrompt:
+      "You are an operations consultant. Design practical workflow + automation systems for small companies.",
+    buildUserPrompt: (i) =>
+      `Build an ops plan for:\n\nBusiness: ${i.business || i.context || ""}\nTeam size: ${i.team_size || "small"}\nCurrent pains: ${i.pains || i.context || ""}`,
+    schema: {
+      name: "generate_ops",
+      description: "Return a structured ops plan.",
+      parameters: {
+        type: "object",
+        properties: {
+          workflows: { type: "array", items: { type: "string" } },
+          automations: { type: "array", items: { type: "string" } },
+          staffing_notes: { type: "string" },
+          kpis: { type: "array", items: { type: "string" } },
+        },
+        required: ["workflows", "automations", "staffing_notes", "kpis"],
+        additionalProperties: false,
+      },
+    },
+    assetCategory: "ops",
+    assetTitle: (i) => `Ops Plan: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+  },
+
+  "generate-followup-sequence": {
+    systemPrompt:
+      "You are a sales enablement expert writing high-converting multi-touch follow-up sequences.",
+    buildUserPrompt: (i) =>
+      `Build a follow-up sequence for:\n\nContext: ${i.context || i.goal || ""}\nGoal: ${i.goal || ""}\nChannel mix: ${i.channels || "email"}`,
+    schema: {
+      name: "generate_followup",
+      description: "Return a structured follow-up sequence.",
+      parameters: {
+        type: "object",
+        properties: {
+          steps: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                day: { type: "number" },
+                channel: { type: "string" },
+                subject: { type: "string" },
+                body: { type: "string" },
+              },
+              required: ["day", "channel", "subject", "body"],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["steps"],
+        additionalProperties: false,
+      },
+    },
+    assetCategory: "followup",
+    assetTitle: (i) => `Follow-up: ${String(i.goal || i.context || "Sequence").slice(0, 60)}`,
+  },
 };
 
 serve(async (req) => {

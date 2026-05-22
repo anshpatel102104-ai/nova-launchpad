@@ -105,7 +105,7 @@ export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
   if (existing) {
     await ctx.supabase
       .from("usage_tracking")
-      .update({ count: (existing.count as number) + 1, last_used_at: new Date().toISOString() })
+      .update({ count: (existing.count as number) + 1, updated_at: new Date().toISOString() })
       .eq("id", existing.id);
   } else {
     await ctx.supabase.from("usage_tracking").insert({
@@ -126,23 +126,29 @@ export async function callClaude(
     parameters: Record<string, unknown>;
   },
 ): Promise<Record<string, unknown>> {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
 
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+      tools: [
+        {
+          name: schema.name,
+          description: schema.description,
+          input_schema: schema.parameters,
+        },
       ],
-      tools: [{ type: "function", function: schema }],
-      tool_choice: { type: "function", function: { name: schema.name } },
+      tool_choice: { type: "tool", name: schema.name },
     }),
   });
 
@@ -150,13 +156,15 @@ export async function callClaude(
     if (resp.status === 429) throw new Error("RATE_LIMIT");
     if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
     const t = await resp.text();
-    throw new Error(`AI gateway error: ${resp.status} ${t}`);
+    throw new Error(`Anthropic API error: ${resp.status} ${t}`);
   }
 
   const data = await resp.json();
-  const tc = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!tc) throw new Error("No tool call in AI response");
-  return JSON.parse(tc.function.arguments);
+  const toolUse = (data.content as Array<{ type: string; input?: Record<string, unknown> }>)?.find(
+    (b) => b.type === "tool_use",
+  );
+  if (!toolUse?.input) throw new Error("No tool_use block in Anthropic response");
+  return toolUse.input;
 }
 
 export async function runTool(opts: {
@@ -213,10 +221,9 @@ export async function runTool(opts: {
       organization_id: ctx.organizationId,
       user_id: ctx.userId,
       tool_run_id: run.id,
-      category: opts.assetCategory,
       kind: opts.toolKey,
       title: opts.assetTitle(input, output),
-      content: output,
+      metadata: output,
     });
 
     await incrementUsage(ctx, opts.toolKey);

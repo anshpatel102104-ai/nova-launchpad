@@ -331,7 +331,7 @@ Build the dashboard as if you are the AI operator who knows their business. Ever
       target_customer: context.target_customer,
       biggest_blocker: context.biggest_blocker,
       payload,
-      model: "google/gemini-3-flash-preview",
+      model: "claude-sonnet-4-6",
       prompt_version: "v1",
     })
     .select("id, created_at")
