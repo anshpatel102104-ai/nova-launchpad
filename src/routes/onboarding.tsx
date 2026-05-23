@@ -11,10 +11,11 @@ import {
   Users,
   Package,
   Megaphone,
+  CheckCircle2,
+  Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { toast } from "sonner";
 
 type BusinessStage = Database["public"]["Enums"]["business_stage"];
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const STAGES: { id: BusinessStage; label: string; desc: string; icon: React.ElementType }[] = [
-  { id: "Idea", label: "Idea", desc: "Just a concept, nothing built", icon: Lightbulb },
+  { id: "Idea", label: "Idea Stage", desc: "Just a concept, nothing built yet", icon: Lightbulb },
   { id: "Validate", label: "Building", desc: "Actively building the product", icon: Hammer },
   { id: "Operate", label: "Revenue", desc: "I have paying customers", icon: DollarSign },
   { id: "Scale", label: "Scaling", desc: "Growing revenue and team", icon: TrendingUp },
@@ -40,12 +41,7 @@ const CHALLENGES = [
   { id: "fundraising", label: "Fundraising", desc: "Raising capital from investors", icon: Rocket },
   { id: "customers", label: "Getting customers", desc: "Finding my first buyers", icon: Users },
   { id: "product", label: "Building product", desc: "Shipping fast enough", icon: Package },
-  {
-    id: "marketing",
-    label: "Marketing",
-    desc: "Getting visibility and awareness",
-    icon: Megaphone,
-  },
+  { id: "marketing", label: "Marketing", desc: "Getting visibility and awareness", icon: Megaphone },
 ];
 
 const CHALLENGE_TOOLS: Record<string, string[]> = {
@@ -54,40 +50,6 @@ const CHALLENGE_TOOLS: Record<string, string[]> = {
   product: ["idea-validator", "kill-my-idea", "gtm-strategy"],
   marketing: ["gtm-strategy", "landing-page", "website-audit"],
 };
-
-const ANIM_CSS = `
-  @keyframes stepIn {
-    from { opacity: 0; transform: translateX(52px) scale(0.98); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
-  }
-  @keyframes bootLine {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes nameReveal {
-    from { opacity: 0; transform: scale(0.9) translateY(28px); filter: blur(18px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-  }
-  @keyframes lineExpand {
-    from { width: 0; opacity: 0; }
-    to   { width: 140px; opacity: 1; }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes ambientPulse {
-    0%   { opacity: 0.3; }
-    50%  { opacity: 0.7; }
-    100% { opacity: 0.3; }
-  }
-  .ob-step   { animation: stepIn 0.55s cubic-bezier(0.16,1,0.3,1) both; }
-  .ob-input  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f0f4ff; font-size: 14px; outline: none; width: 100%; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; font-family: inherit; }
-  .ob-input:focus { border-color: rgba(59,130,246,0.65); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-  .ob-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; text-align: left; width: 100%; }
-  .ob-card:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
-  .ob-card-sel { border-color: rgba(59,130,246,0.65) !important; background: rgba(59,130,246,0.09) !important; box-shadow: 0 0 28px rgba(59,130,246,0.2), inset 0 0 16px rgba(59,130,246,0.04) !important; }
-`;
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -138,10 +100,8 @@ function Onboarding() {
         } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // 1. Save the display name immediately (non-critical, no onboarding_complete yet)
         await supabase.from("profiles").update({ full_name: name }).eq("id", user.id);
 
-        // 2. Create org + membership — if this fails the user can retry
         const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
         const { data: org, error: orgErr } = await supabase
           .from("organizations")
@@ -155,7 +115,6 @@ function Onboarding() {
           .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
         if (memberErr) throw memberErr;
 
-        // 3. Save onboarding responses
         await supabase.from("onboarding_responses").upsert(
           {
             user_id: user.id,
@@ -169,10 +128,8 @@ function Onboarding() {
           { onConflict: "organization_id" },
         );
 
-        // 4. Only mark onboarding complete AFTER org + responses are saved
         await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
 
-        // 5. Trigger n8n dashboard creation workflow (non-blocking)
         const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
         fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
           method: "POST",
@@ -183,12 +140,10 @@ function Onboarding() {
             primary_niche: challenge,
             recommended_tools: CHALLENGE_TOOLS[challenge] ?? [],
           }),
-        }).catch(() => {
-          /* best-effort — failure here doesn't block onboarding */
-        });
+        }).catch(() => { /* best-effort */ });
 
         setDone(true);
-        setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
+        setTimeout(() => navigate({ to: "/app/dashboard" }), 3200);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Something went wrong");
       } finally {
@@ -204,29 +159,34 @@ function Onboarding() {
       style={{
         position: "fixed",
         inset: 0,
-        background: "#080810",
+        background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #ffffff 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      <style>{ANIM_CSS}</style>
-
-      {/* Neural canvas */}
-      <div style={{ position: "absolute", inset: 0, opacity: 0.3 }}>
-        <NeuralCanvas className="w-full h-full" />
-      </div>
-
-      {/* Center ambient glow */}
+      {/* Subtle background pattern */}
       <div
         style={{
           position: "absolute",
-          width: 700,
+          inset: 0,
+          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(249,115,22,0.08) 1px, transparent 0)",
+          backgroundSize: "24px 24px",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Orange orb */}
+      <div
+        style={{
+          position: "absolute",
+          width: 600,
           height: 500,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%)",
-          animation: "ambientPulse 4s ease-in-out infinite",
+          background: "radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)",
           pointerEvents: "none",
+          top: "10%",
+          right: "-10%",
         }}
       />
 
@@ -238,52 +198,41 @@ function Onboarding() {
           width: "100%",
           maxWidth: 560,
           margin: "0 20px",
-          background: "rgba(11,11,26,0.88)",
-          backdropFilter: "blur(28px) saturate(1.4)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 22,
-          boxShadow:
-            "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
-          padding: "38px 38px 34px",
+          background: "#ffffff",
+          border: "1px solid #fdba74",
+          borderRadius: 20,
+          boxShadow: "0 4px 6px rgba(0,0,0,0.05), 0 20px 60px rgba(249,115,22,0.12), 0 40px 80px rgba(0,0,0,0.06)",
+          padding: "36px 36px 32px",
         }}
       >
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 34,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <div
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
+                width: 32,
+                height: 32,
+                borderRadius: 9,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                fontSize: 11,
+                background: "linear-gradient(135deg, #f97316, #ea580c)",
+                fontSize: 12,
                 fontWeight: 800,
                 color: "#fff",
-                letterSpacing: "0.02em",
+                boxShadow: "0 2px 8px rgba(249,115,22,0.35)",
               }}
             >
               N
             </div>
-            <span
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: "#f0f4ff",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Nova OS
-            </span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>
+                Nova Launchpad
+              </div>
+              <div style={{ fontSize: 10, color: "#f97316", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                AI Mentor Bootcamp
+              </div>
+            </div>
           </div>
           {/* Progress dots */}
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -295,12 +244,8 @@ function Onboarding() {
                   borderRadius: 99,
                   transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
                   width: i === step ? 28 : 6,
-                  background:
-                    i < step ? "#22c55e" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
-                  boxShadow:
-                    i === step
-                      ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)"
-                      : "none",
+                  background: i < step ? "#22c55e" : i === step ? "#f97316" : "#e5e7eb",
+                  boxShadow: i === step ? "0 0 10px rgba(249,115,22,0.5)" : "none",
                 }}
               />
             ))}
@@ -308,38 +253,40 @@ function Onboarding() {
         </div>
 
         {/* Animated step */}
-        <div key={stepKey} className="ob-step">
+        <div
+          key={stepKey}
+          style={{ animation: "stepIn 0.5s cubic-bezier(0.16,1,0.3,1) both" }}
+        >
+          <style>{`
+            @keyframes stepIn {
+              from { opacity: 0; transform: translateX(40px) scale(0.98); }
+              to   { opacity: 1; transform: translateX(0) scale(1); }
+            }
+          `}</style>
           {step === 0 && (
-            <Step1
-              name={name}
-              idea={idea}
-              onName={setName}
-              onIdea={setIdea}
-              onSubmit={advance}
-              modKey={modKey}
-            />
+            <Step1 name={name} idea={idea} onName={setName} onIdea={setIdea} onSubmit={advance} modKey={modKey} />
           )}
           {step === 1 && <Step2 stage={stage} onStage={setStage} />}
           {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
         </div>
 
-        {/* Navigation buttons */}
-        <div style={{ marginTop: 28, display: "flex", gap: 10 }}>
+        {/* Navigation */}
+        <div style={{ marginTop: 24, display: "flex", gap: 10 }}>
           {step > 0 && (
             <button
               onClick={goBack}
               disabled={saving}
               style={{
-                height: 52,
-                width: 52,
+                height: 48,
+                width: 48,
                 borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.1)",
+                border: "1px solid #e5e7eb",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "rgba(255,255,255,0.04)",
-                color: "rgba(240,244,255,0.5)",
+                background: "#f9fafb",
+                color: "#6b7280",
                 transition: "all 0.2s",
                 flexShrink: 0,
                 fontFamily: "inherit",
@@ -354,7 +301,7 @@ function Onboarding() {
             disabled={!canAdvance || saving}
             style={{
               flex: 1,
-              height: 52,
+              height: 48,
               borderRadius: 12,
               border: "none",
               cursor: canAdvance && !saving ? "pointer" : "default",
@@ -362,23 +309,21 @@ function Onboarding() {
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: 15,
               letterSpacing: "-0.01em",
-              background:
-                canAdvance && !saving
-                  ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
-                  : "rgba(255,255,255,0.06)",
-              color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
+              background: canAdvance && !saving
+                ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                : "#f3f4f6",
+              color: canAdvance && !saving ? "#fff" : "#9ca3af",
               transition: "all 0.25s",
-              boxShadow:
-                canAdvance && !saving
-                  ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
-                  : "none",
+              boxShadow: canAdvance && !saving
+                ? "0 4px 20px rgba(249,115,22,0.35), 0 8px 24px rgba(0,0,0,0.08)"
+                : "none",
               fontFamily: "inherit",
             }}
           >
-            {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
+            {saving ? "Creating your bootcamp…" : step < 2 ? "Continue" : "Start Bootcamp"}
             {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
           </button>
         </div>
@@ -388,467 +333,308 @@ function Onboarding() {
 }
 
 function Heading({ step: s }: { step: number }) {
+  const labels = [
+    { label: "Step 1 of 3", title: "Your business idea", highlight: "Let's validate it." },
+    { label: "Step 2 of 3", title: "Your current stage", highlight: "Where are you now?" },
+    { label: "Step 3 of 3", title: "Your biggest challenge", highlight: "We'll focus here." },
+  ];
+  const current = labels[s - 1];
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          color: "#3b82f6",
-          marginBottom: 8,
-        }}
-      >
-        Step {s} of 3
+    <div style={{ marginBottom: 22 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#f97316", marginBottom: 6 }}>
+        {current.label}
       </div>
-      <h2
-        style={{
-          fontSize: "clamp(1.7rem, 5vw, 2.3rem)",
-          fontWeight: 800,
-          color: "#f0f4ff",
-          lineHeight: 1.08,
-          letterSpacing: "-0.04em",
-          margin: 0,
-        }}
-      >
-        {s === 1 && (
-          <>
-            What's your
-            <br />
-            <span style={{ color: "#3b82f6" }}>startup idea</span>?
-          </>
-        )}
-        {s === 2 && (
-          <>
-            What stage
-            <br />
-            <span style={{ color: "#8b5cf6" }}>are you at</span>?
-          </>
-        )}
-        {s === 3 && (
-          <>
-            What's your
-            <br />
-            <span style={{ color: "#06b6d4" }}>biggest challenge</span>?
-          </>
-        )}
+      <h2 style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 800, color: "#111827", lineHeight: 1.15, letterSpacing: "-0.03em", margin: "0 0 6px" }}>
+        {current.title}
       </h2>
-    </div>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}
-    >
-      {children}
+      <p style={{ fontSize: 13.5, color: "#6b7280", margin: 0 }}>{current.highlight}</p>
     </div>
   );
 }
 
 function Step1({
-  name,
-  idea,
-  onName,
-  onIdea,
-  onSubmit,
-  modKey,
+  name, idea, onName, onIdea, onSubmit, modKey,
 }: {
-  name: string;
-  idea: string;
-  onName: (v: string) => void;
-  onIdea: (v: string) => void;
-  onSubmit: () => void;
-  modKey: string;
+  name: string; idea: string; onName: (v: string) => void; onIdea: (v: string) => void; onSubmit: () => void; modKey: string;
 }) {
   return (
     <div>
       <Heading step={1} />
       <div style={{ marginBottom: 14 }}>
-        <FieldLabel>Your name</FieldLabel>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Your name</div>
         <input
           autoFocus
           value={name}
           onChange={(e) => onName(e.target.value)}
           placeholder="Alex Founder"
-          className="ob-input"
-          style={{ height: 44, padding: "0 14px" }}
+          style={{
+            height: 44,
+            padding: "0 14px",
+            width: "100%",
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderRadius: 10,
+            color: "#111827",
+            fontSize: 14,
+            outline: "none",
+            boxSizing: "border-box",
+            fontFamily: "inherit",
+            transition: "border-color 0.2s, box-shadow 0.2s",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#f97316";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.12)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#e5e7eb";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
       </div>
       <div>
-        <FieldLabel>Describe it in one sentence</FieldLabel>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Describe your idea</div>
         <textarea
           value={idea}
           onChange={(e) => onIdea(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-          }}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit(); }}
           placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
           rows={3}
-          className="ob-input"
-          style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
+          style={{
+            padding: "12px 14px",
+            resize: "none",
+            lineHeight: 1.55,
+            width: "100%",
+            background: "#f9fafb",
+            border: "1px solid #e5e7eb",
+            borderRadius: 10,
+            color: "#111827",
+            fontSize: 14,
+            outline: "none",
+            boxSizing: "border-box",
+            fontFamily: "inherit",
+            transition: "border-color 0.2s, box-shadow 0.2s",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "#f97316";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.12)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#e5e7eb";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
-        <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
-          {idea.length === 0
-            ? `${modKey}+Enter to continue · your idea stays private`
-            : idea.length < 20
-              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
-              : `${modKey}+Enter to continue · your idea stays private`}
+        <div style={{ fontSize: 10.5, color: "#9ca3af", marginTop: 5 }}>
+          {idea.length < 20
+            ? `Keep going — ${Math.max(0, 20 - idea.length)} more characters needed`
+            : `${modKey}+Enter to continue`}
         </div>
       </div>
     </div>
   );
 }
 
-function Step2({
-  stage,
-  onStage,
-}: {
-  stage: BusinessStage | "";
-  onStage: (v: BusinessStage) => void;
-}) {
+function Step2({ stage, onStage }: { stage: BusinessStage | ""; onStage: (v: BusinessStage) => void }) {
   return (
     <div>
       <Heading step={2} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {STAGES.map(({ id, label, desc, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onStage(id)}
-            className={`ob-card${stage === id ? " ob-card-sel" : ""}`}
-          >
-            <div
+        {STAGES.map(({ id, label, desc, icon: Icon }) => {
+          const sel = stage === id;
+          return (
+            <button
+              key={id}
+              onClick={() => onStage(id)}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 9,
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
-                transition: "background 0.2s",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 16,
+                borderRadius: 12,
+                cursor: "pointer",
+                background: sel ? "#fff7ed" : "#f9fafb",
+                border: `1.5px solid ${sel ? "#f97316" : "#e5e7eb"}`,
+                transition: "all 0.2s",
+                textAlign: "left",
+                boxShadow: sel ? "0 0 20px rgba(249,115,22,0.15)" : "none",
+                fontFamily: "inherit",
               }}
             >
-              <Icon
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)",
-                }}
-              />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "rgba(240,244,255,0.38)",
-                  lineHeight: 1.4,
-                  marginTop: 2,
-                }}
-              >
-                {desc}
+              <div style={{
+                width: 36, height: 36, borderRadius: 9,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: sel ? "rgba(249,115,22,0.15)" : "#e5e7eb",
+                transition: "background 0.2s",
+              }}>
+                <Icon style={{ width: 16, height: 16, color: sel ? "#f97316" : "#6b7280" }} />
               </div>
-            </div>
-          </button>
-        ))}
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#111827" }}>{label}</div>
+                <div style={{ fontSize: 11.5, color: "#6b7280", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function Step3({
-  challenge,
-  onChallenge,
-}: {
-  challenge: string;
-  onChallenge: (v: string) => void;
-}) {
+function Step3({ challenge, onChallenge }: { challenge: string; onChallenge: (v: string) => void }) {
   return (
     <div>
       <Heading step={3} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {CHALLENGES.map(({ id, label, desc, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onChallenge(id)}
-            className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}
-          >
-            <div
+        {CHALLENGES.map(({ id, label, desc, icon: Icon }) => {
+          const sel = challenge === id;
+          return (
+            <button
+              key={id}
+              onClick={() => onChallenge(id)}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 9,
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
-                transition: "background 0.2s",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 16,
+                borderRadius: 12,
+                cursor: "pointer",
+                background: sel ? "#fff7ed" : "#f9fafb",
+                border: `1.5px solid ${sel ? "#f97316" : "#e5e7eb"}`,
+                transition: "all 0.2s",
+                textAlign: "left",
+                boxShadow: sel ? "0 0 20px rgba(249,115,22,0.15)" : "none",
+                fontFamily: "inherit",
               }}
             >
-              <Icon
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)",
-                }}
-              />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "rgba(240,244,255,0.38)",
-                  lineHeight: 1.4,
-                  marginTop: 2,
-                }}
-              >
-                {desc}
+              <div style={{
+                width: 36, height: 36, borderRadius: 9,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: sel ? "rgba(249,115,22,0.15)" : "#e5e7eb",
+                transition: "background 0.2s",
+              }}>
+                <Icon style={{ width: 16, height: 16, color: sel ? "#f97316" : "#6b7280" }} />
               </div>
-            </div>
-          </button>
-        ))}
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#111827" }}>{label}</div>
+                <div style={{ fontSize: 11.5, color: "#6b7280", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-const BOOT_LINES = [
-  "nova_os://init — kernel loaded",
-  "scanning founder profile…",
-  "calibrating AI tools for your stage…",
-  "building your command center…",
-];
-
 function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
-  const [phase, setPhase] = useState<"boot" | "reveal">("boot");
-  const [lineIdx, setLineIdx] = useState(0);
-  const [showFallback, setShowFallback] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    BOOT_LINES.forEach((_, i) => {
-      timers.push(setTimeout(() => setLineIdx(i + 1), i * 380 + 200));
-    });
-    timers.push(setTimeout(() => setPhase("reveal"), BOOT_LINES.length * 380 + 600));
-    // If the user is still on this screen after 7s the redirect may have failed silently
-    timers.push(setTimeout(() => setShowFallback(true), 7000));
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    const t = setTimeout(() => setShowContent(true), 400);
+    const fallback = setTimeout(onSkip, 8000);
+    return () => { clearTimeout(t); clearTimeout(fallback); };
+  }, [onSkip]);
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: "#080810",
+        background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 60%, #ffffff 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
       }}
     >
-      <style>{ANIM_CSS}</style>
+      <style>{`
+        @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes scaleIn { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+        @keyframes lineGrow { from { width:0; } to { width:120px; } }
+      `}</style>
 
       <div
         style={{
           position: "absolute",
-          inset: 0,
-          opacity: phase === "reveal" ? 0.15 : 0.25,
-          transition: "opacity 1s",
-        }}
-      >
-        <NeuralCanvas className="w-full h-full" />
-      </div>
-
-      {/* Radial glow — intensifies on reveal */}
-      <div
-        style={{
-          position: "absolute",
-          width: 800,
+          width: 700,
           height: 600,
           borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
-          transition: "opacity 1s",
-          opacity: phase === "reveal" ? 1 : 0.4,
-          animation: "ambientPulse 4s ease-in-out infinite",
+          background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          padding: "0 24px",
-          maxWidth: 600,
-        }}
-      >
-        {phase === "boot" && (
-          <div style={{ fontFamily: "monospace", textAlign: "left", display: "inline-block" }}>
-            {BOOT_LINES.slice(0, lineIdx).map((line, i) => (
-              <div
-                key={line}
-                style={{
-                  fontSize: 13,
-                  color: "rgba(59,130,246,0.85)",
-                  lineHeight: 2.1,
-                  animation: "bootLine 0.35s ease both",
-                }}
-              >
-                <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>
-                {line}
-                {i === lineIdx - 1 && (
-                  <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {phase === "reveal" && (
-          <div style={{ animation: "nameReveal 1s cubic-bezier(0.16,1,0.3,1) both" }}>
+      {showContent && (
+        <div style={{ textAlign: "center", padding: "0 24px", maxWidth: 500, position: "relative", zIndex: 10 }}>
+          <div style={{ animation: "scaleIn 0.6s cubic-bezier(0.16,1,0.3,1) both" }}>
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "#3b82f6",
-                marginBottom: 20,
-                animation: "fadeUp 0.6s ease 0.15s both",
-                opacity: 0,
+                width: 72, height: 72, borderRadius: 20,
+                background: "linear-gradient(135deg, #f97316, #ea580c)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 20px",
+                boxShadow: "0 8px 32px rgba(249,115,22,0.35)",
               }}
             >
-              System ready
+              <Star style={{ width: 32, height: 32, color: "#fff", fill: "#fff" }} />
             </div>
+          </div>
 
-            <h1
-              style={{
-                fontSize: "clamp(2.6rem, 7vw, 4.5rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.05em",
-                lineHeight: 1.04,
-                color: "#f0f4ff",
-                margin: "0 0 8px",
-                textShadow: "0 0 60px rgba(59,130,246,0.25)",
-              }}
-            >
-              Nova is ready
-              <br />
-              for you,{" "}
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                {name || "Founder"}
-              </span>
+          <div style={{ animation: "fadeUp 0.6s ease 0.3s both", opacity: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#f97316", marginBottom: 16 }}>
+              Bootcamp Ready
+            </div>
+            <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.06, color: "#111827", margin: "0 0 8px" }}>
+              You're in,{" "}
+              <span style={{ color: "#f97316" }}>{name || "Founder"}</span>
             </h1>
+          </div>
 
-            <div
-              style={{
-                margin: "22px auto 0",
-                height: 2,
-                borderRadius: 2,
-                background:
-                  "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
-                boxShadow: "0 0 20px rgba(59,130,246,0.7)",
-                animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
-              }}
-            />
+          <div
+            style={{
+              margin: "20px auto",
+              height: 3,
+              borderRadius: 3,
+              background: "linear-gradient(90deg, #f97316, #ea580c)",
+              boxShadow: "0 0 16px rgba(249,115,22,0.5)",
+              animation: "lineGrow 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s both",
+              width: 0,
+            }}
+          />
 
-            <p
-              style={{
-                marginTop: 22,
-                fontSize: 16,
-                color: "rgba(240,244,255,0.45)",
-                lineHeight: 1.65,
-                animation: "fadeUp 0.6s ease 0.5s both",
-                opacity: 0,
-              }}
-            >
-              Your AI founder OS is online.
+          <div style={{ animation: "fadeUp 0.6s ease 0.6s both", opacity: 0 }}>
+            <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.65 }}>
+              Your AI mentor bootcamp is ready.
               <br />
-              Let's build something remarkable.
+              Let's go from idea to business.
             </p>
 
-            <div
-              style={{
-                marginTop: 32,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 16,
-                animation: "fadeUp 0.6s ease 0.75s both",
-                opacity: 0,
-              }}
-            >
+            <div style={{ marginTop: 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#3b82f6",
-                    boxShadow: "0 0 10px #3b82f6",
-                    animation: "ambientPulse 1.4s ease-in-out infinite",
-                  }}
-                />
-                <span
-                  style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
-                >
-                  loading dashboard…
-                </span>
+                <CheckCircle2 style={{ width: 16, height: 16, color: "#22c55e" }} />
+                <span style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>Bootcamp plan created</span>
               </div>
-              <button
-                onClick={onSkip}
-                style={{
-                  fontSize: 12,
-                  color: "rgba(240,244,255,0.45)",
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8,
-                  padding: "6px 16px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "all 0.2s",
-                }}
-              >
-                Skip intro → Go to dashboard
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <CheckCircle2 style={{ width: 16, height: 16, color: "#22c55e" }} />
+                <span style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>Nova mentor assigned</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <CheckCircle2 style={{ width: 16, height: 16, color: "#22c55e" }} />
+                <span style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>15 AI missions unlocked</span>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f97316", animation: "scaleIn 1s ease infinite alternate" }} />
+              <span style={{ fontSize: 13, color: "#9ca3af" }}>Taking you to your dashboard…</span>
+              <button onClick={onSkip} style={{ fontSize: 12, color: "#f97316", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" }}>
+                Skip
               </button>
-              {showFallback && (
-                <div style={{ fontSize: 11, color: "rgba(240,244,255,0.3)", marginTop: 4 }}>
-                  Taking too long?{" "}
-                  <button
-                    onClick={onSkip}
-                    style={{
-                      fontSize: 11,
-                      color: "#3b82f6",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      padding: 0,
-                      textDecoration: "underline",
-                    }}
-                  >
-                    Click here to go to your dashboard
-                  </button>
-                </div>
-              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

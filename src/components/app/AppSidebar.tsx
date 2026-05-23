@@ -1,13 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  Rocket,
-  Zap,
-  Users,
-  GitBranch,
-  CheckSquare,
-  BarChart2,
   Settings,
   CreditCard,
   ChevronsLeft,
@@ -24,13 +18,17 @@ import {
   Mail,
   GitCompare,
   Globe,
-  Inbox,
-  Workflow,
-  ListChecks,
   LineChart,
   Shield,
-  Tags,
   Sparkles,
+  TrendingUp,
+  Crosshair,
+  Tags,
+  ClipboardList,
+  Users,
+  Zap,
+  CheckCircle2,
+  DollarSign,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -39,89 +37,76 @@ import { useGuest } from "@/lib/guest";
 import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
 
-type SubItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
-type NavItem = {
+type BootcampTool = {
   to: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  match?: (p: string) => boolean;
-  children?: SubItem[];
-  workspace?: "launchpad" | "nova";
+  toolKey?: string;
 };
 
-const LAUNCHPAD_TOOLS: SubItem[] = [
-  { to: "/app/launchpad/idea-validator", label: "Idea Validator", icon: Lightbulb },
-  { to: "/app/launchpad/pitch-generator", label: "Pitch Generator", icon: Megaphone },
-  { to: "/app/launchpad/gtm-strategy", label: "GTM Strategy", icon: Target },
-  { to: "/app/launchpad/kill-my-idea", label: "Kill My Idea", icon: Skull },
-  { to: "/app/launchpad/funding-score", label: "Funding Score", icon: Trophy },
-  { to: "/app/launchpad/first-10-customers", label: "First 10 Customers", icon: UserPlus },
-  { to: "/app/launchpad/business-plan", label: "Business Plan", icon: FileText },
-  { to: "/app/launchpad/investor-emails", label: "Investor Emails", icon: Mail },
-  { to: "/app/launchpad/idea-vs-idea", label: "Idea vs Idea", icon: GitCompare },
-  { to: "/app/launchpad/landing-page", label: "Landing Page", icon: Globe },
-  { to: "/app/launchpad/competitor", label: "Competitor", icon: Target },
-  { to: "/app/launchpad/pricing", label: "Pricing Strategy", icon: Tags },
-  { to: "/app/launchpad/revenue-projector", label: "Revenue Projector", icon: LineChart },
-];
+type BootcampPhase = {
+  id: string;
+  label: string;
+  color: string;
+  tools: BootcampTool[];
+};
 
-const NOVA_MODULES: SubItem[] = [
-  { to: "/app/nova/crm", label: "CRM Pipeline", icon: Workflow },
-  { to: "/app/nova/leads", label: "Lead Capture", icon: Inbox },
-  { to: "/app/nova/workflows", label: "Automation", icon: GitBranch },
-  { to: "/app/nova/clients", label: "Client Onboarding", icon: ListChecks },
-  { to: "/app/nova/reports", label: "Reporting", icon: LineChart },
-];
-
-const NAV: NavItem[] = [
-  { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+const BOOTCAMP_PHASES: BootcampPhase[] = [
   {
-    to: "/app/ai-dashboard",
-    label: "AI Dashboard",
-    icon: Sparkles,
-    match: (p) => p === "/app/ai-dashboard",
+    id: "validate",
+    label: "Validate",
+    color: "#f97316",
+    tools: [
+      { to: "/app/launchpad/idea-validator", label: "Idea Validator", icon: Lightbulb, toolKey: "validate-idea" },
+      { to: "/app/launchpad/kill-my-idea", label: "Kill My Idea", icon: Skull, toolKey: "kill-my-idea" },
+      { to: "/app/launchpad/idea-vs-idea", label: "Idea vs Idea", icon: GitCompare, toolKey: "idea-vs-idea" },
+    ],
   },
   {
-    to: "/app/launchpad",
-    label: "Launchpad",
-    icon: Rocket,
-    workspace: "launchpad",
-    match: (p) => p.startsWith("/app/launchpad"),
-    children: LAUNCHPAD_TOOLS,
+    id: "position",
+    label: "Position",
+    color: "#ea580c",
+    tools: [
+      { to: "/app/launchpad/gtm-strategy", label: "GTM Strategy", icon: Target, toolKey: "generate-gtm-strategy" },
+      { to: "/app/launchpad/competitor", label: "Competitor Analysis", icon: Crosshair, toolKey: "competitor-analysis" },
+      { to: "/app/launchpad/pricing", label: "Pricing Strategy", icon: Tags, toolKey: "pricing-strategy" },
+    ],
   },
   {
-    to: "/app/nova",
-    label: "Nova OS",
-    icon: Zap,
-    workspace: "nova",
-    match: (p) => p === "/app/nova" || p.startsWith("/app/nova/"),
-    children: NOVA_MODULES,
-  },
-  { to: "/app/leads", label: "Leads", icon: Users, match: (p) => p.startsWith("/app/leads") },
-  {
-    to: "/app/nova/workflows",
-    label: "Workflows",
-    icon: GitBranch,
-    match: (p) => p === "/app/nova/workflows",
+    id: "build",
+    label: "Build",
+    color: "#c2410c",
+    tools: [
+      { to: "/app/launchpad/offer", label: "Offer Builder", icon: Sparkles, toolKey: "generate-offer" },
+      { to: "/app/launchpad/landing-page", label: "Landing Page", icon: Globe, toolKey: "landing-page" },
+      { to: "/app/launchpad/website-audit", label: "Website Auditor", icon: TrendingUp, toolKey: "analyze-website" },
+    ],
   },
   {
-    to: "/app/nova/clients",
-    label: "Clients",
-    icon: CheckSquare,
-    match: (p) => p === "/app/nova/clients",
+    id: "launch",
+    label: "Launch",
+    color: "#9a3412",
+    tools: [
+      { to: "/app/launchpad/first-10-customers", label: "First 10 Customers", icon: UserPlus, toolKey: "first-10-customers" },
+      { to: "/app/launchpad/followup", label: "Follow-Up Sequence", icon: Mail, toolKey: "generate-followup-sequence" },
+      { to: "/app/launchpad/pitch-generator", label: "Pitch Generator", icon: Megaphone, toolKey: "generate-pitch" },
+    ],
   },
   {
-    to: "/app/nova/reports",
-    label: "Reports",
-    icon: BarChart2,
-    match: (p) => p === "/app/nova/reports",
+    id: "scale",
+    label: "Scale",
+    color: "#7c2d12",
+    tools: [
+      { to: "/app/launchpad/business-plan", label: "Business Plan", icon: FileText, toolKey: "business-plan" },
+      { to: "/app/launchpad/ops-plan", label: "Ops Plan", icon: ClipboardList, toolKey: "generate-ops-plan" },
+      { to: "/app/launchpad/funding-score", label: "Funding Score", icon: Trophy, toolKey: "funding-score" },
+      { to: "/app/launchpad/investor-emails", label: "Investor Emails", icon: DollarSign, toolKey: "investor-emails" },
+      { to: "/app/launchpad/revenue-projector", label: "Revenue Projector", icon: LineChart, toolKey: "revenue-projector" },
+    ],
   },
 ];
 
-const FOOTER_NAV: NavItem[] = [
-  { to: "/app/settings", label: "Settings", icon: Settings },
-  { to: "/app/billing", label: "Billing", icon: CreditCard },
-];
+type FooterItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
 const STORAGE = "nova-sidebar-collapsed";
 
@@ -132,17 +117,21 @@ export function AppSidebar() {
   const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    "/app/launchpad": path.startsWith("/app/launchpad"),
-    "/app/nova": path.startsWith("/app/nova"),
+  const [openPhases, setOpenPhases] = useState<Record<string, boolean>>({
+    validate: path.startsWith("/app/launchpad/idea-validator") || path.startsWith("/app/launchpad/kill") || path.startsWith("/app/launchpad/idea-vs"),
+    position: path.startsWith("/app/launchpad/gtm") || path.startsWith("/app/launchpad/competitor") || path.startsWith("/app/launchpad/pricing"),
+    build: path.startsWith("/app/launchpad/offer") || path.startsWith("/app/launchpad/landing") || path.startsWith("/app/launchpad/website-audit"),
+    launch: path.startsWith("/app/launchpad/first") || path === "/app/launchpad/followup" || path.startsWith("/app/launchpad/pitch"),
+    scale: path.startsWith("/app/launchpad/business") || path.startsWith("/app/launchpad/ops") || path.startsWith("/app/launchpad/funding") || path.startsWith("/app/launchpad/investor") || path.startsWith("/app/launchpad/revenue"),
   });
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plan = subQ.data?.plan ?? "starter";
 
-  const footerNav: NavItem[] = [
-    ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield } as NavItem] : []),
-    ...FOOTER_NAV,
+  const footerItems: FooterItem[] = [
+    ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield }] : []),
+    { to: "/app/settings", label: "Settings", icon: Settings },
+    { to: "/app/billing", label: "Billing", icon: CreditCard },
   ];
 
   const exitDemo = () => {
@@ -154,27 +143,13 @@ export function AppSidebar() {
     try {
       const v = localStorage.getItem(STORAGE);
       if (v === "1") setCollapsed(true);
-    } catch {
-      /* */
-    }
+    } catch { /* */ }
   }, []);
-
-  useEffect(() => {
-    setOpenGroups((g) => ({
-      ...g,
-      "/app/launchpad": g["/app/launchpad"] || path.startsWith("/app/launchpad"),
-      "/app/nova": g["/app/nova"] || path.startsWith("/app/nova"),
-    }));
-  }, [path]);
 
   const toggle = () => {
     setCollapsed((c) => {
       const n = !c;
-      try {
-        localStorage.setItem(STORAGE, n ? "1" : "0");
-      } catch {
-        /* */
-      }
+      try { localStorage.setItem(STORAGE, n ? "1" : "0"); } catch { /* */ }
       return n;
     });
   };
@@ -187,111 +162,98 @@ export function AppSidebar() {
     .join("")
     .toUpperCase();
 
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+
   return (
     <aside
       className={cn(
         "hidden lg:flex shrink-0 flex-col relative",
         "transition-[width] duration-200 ease-in-out overflow-hidden",
-        collapsed ? "w-[60px]" : "w-[232px]",
+        collapsed ? "w-[60px]" : "w-[236px]",
       )}
       style={{
-        background: "var(--sidebar)",
-        borderRight: "1px solid rgba(59,130,246,0.08)",
+        background: "#ffffff",
+        borderRight: "1px solid #fed7aa",
       }}
     >
-      {/* Digital rain canvas — sits behind everything */}
-      <DigitalRain />
-
-      {/* Top neon edge line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px z-10"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent)",
-        }}
-      />
-
       {/* Brand */}
       <div
         className={cn(
-          "relative z-10 flex h-14 items-center gap-2.5 px-3",
+          "flex h-14 items-center gap-2.5 px-3",
           collapsed && "justify-center px-0",
         )}
-        style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+        style={{ borderBottom: "1px solid #fed7aa" }}
       >
         <div
           className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white text-[11px] font-bold tracking-tight"
           style={{
-            background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-            boxShadow: "0 0 16px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+            background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
+            boxShadow: "0 2px 8px rgba(249,115,22,0.35)",
           }}
         >
-          LN
+          N
         </div>
         {!collapsed && (
           <div className="min-w-0 leading-tight">
-            <div
-              className="font-display text-[13.5px] font-bold tracking-tight truncate"
-              style={{ color: "var(--foreground)" }}
-            >
-              LaunchpadNOVA
+            <div className="font-display text-[13.5px] font-bold tracking-tight truncate text-gray-900">
+              Nova Launchpad
             </div>
-            <div
-              className="text-[9.5px] font-medium truncate"
-              style={{ color: "rgba(59,130,246,0.7)", letterSpacing: "0.06em" }}
-            >
-              AI BUSINESS OS
+            <div className="text-[9.5px] font-semibold truncate text-orange-500 uppercase tracking-widest">
+              AI Mentor Bootcamp
             </div>
           </div>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="relative z-10 flex-1 overflow-y-auto px-2 py-3">
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
         <div className="space-y-0.5">
-          {NAV.slice(0, 3).map((item) => (
-            <NavRow
-              key={item.to}
-              item={item}
-              path={path}
-              collapsed={collapsed}
-              open={!!openGroups[item.to]}
-              onToggle={() => setOpenGroups((g) => ({ ...g, [item.to]: !g[item.to] }))}
-            />
-          ))}
+          {/* Dashboard */}
+          <SidebarLink
+            to="/app/dashboard"
+            label="Dashboard"
+            icon={LayoutDashboard}
+            active={path === "/app/dashboard" || path === "/app/ai-dashboard"}
+            collapsed={collapsed}
+          />
+          <SidebarLink
+            to="/app/leads"
+            label="Leads & CRM"
+            icon={Users}
+            active={path.startsWith("/app/leads") || path.startsWith("/app/nova")}
+            collapsed={collapsed}
+          />
 
+          {/* Bootcamp phases */}
           {!collapsed && (
-            <div className="mt-5 mb-1 px-2">
+            <div className="mt-4 mb-1.5 px-2">
               <div className="flex items-center gap-2">
-                <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
-                <span
-                  className="text-[8.5px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: "rgba(59,130,246,0.4)" }}
-                >
-                  Ops
+                <div className="h-px flex-1 bg-orange-100" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-orange-400">
+                  Bootcamp
                 </span>
-                <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
+                <div className="h-px flex-1 bg-orange-100" />
               </div>
             </div>
           )}
-          {collapsed && (
-            <div className="my-3 mx-2 h-px" style={{ background: "rgba(59,130,246,0.12)" }} />
-          )}
+          {collapsed && <div className="my-3 mx-2 h-px bg-orange-100" />}
 
-          {NAV.slice(3).map((item) => (
-            <NavRow
-              key={item.to + item.label}
-              item={item}
+          {BOOTCAMP_PHASES.map((phase, phaseIdx) => (
+            <PhaseGroup
+              key={phase.id}
+              phase={phase}
+              phaseNumber={phaseIdx + 1}
               path={path}
               collapsed={collapsed}
-              open={false}
-              onToggle={() => {}}
+              open={!!openPhases[phase.id]}
+              onToggle={() => setOpenPhases((g) => ({ ...g, [phase.id]: !g[phase.id] }))}
             />
           ))}
         </div>
       </nav>
 
       {/* Footer */}
-      <div className="relative z-10 p-2" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
+      <div className="p-2" style={{ borderTop: "1px solid #fed7aa" }}>
         {isGuest && (
           <button
             onClick={exitDemo}
@@ -300,9 +262,9 @@ export function AppSidebar() {
               collapsed && "justify-center px-0",
             )}
             style={{
-              background: "rgba(59,130,246,0.08)",
-              border: "1px solid rgba(59,130,246,0.2)",
-              color: "var(--primary)",
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              color: "#f97316",
             }}
             title={collapsed ? "Exit demo" : undefined}
           >
@@ -312,14 +274,14 @@ export function AppSidebar() {
         )}
 
         <div className="space-y-0.5">
-          {footerNav.map((item) => (
-            <NavRow
+          {footerItems.map((item) => (
+            <SidebarLink
               key={item.to}
-              item={item}
-              path={path}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+              active={path === item.to}
               collapsed={collapsed}
-              open={false}
-              onToggle={() => {}}
             />
           ))}
         </div>
@@ -328,53 +290,33 @@ export function AppSidebar() {
         <Link
           to="/app/settings"
           className={cn(
-            "mt-2 flex items-center gap-2.5 rounded-xl p-2 transition-all duration-200",
+            "mt-2 flex items-center gap-2.5 rounded-xl p-2 transition-all duration-200 hover:bg-orange-50",
             collapsed && "justify-center p-1.5",
           )}
-          style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(59,130,246,0.1)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.3)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.1)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
-          }}
+          style={{ border: "1px solid #fed7aa" }}
         >
           <span
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
-            style={{
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              boxShadow: "0 0 10px rgba(59,130,246,0.4)",
-            }}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+            style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
           >
             {initials}
           </span>
           {!collapsed && (
             <>
               <div className="min-w-0 flex-1">
-                <div
-                  className="truncate text-[11.5px] font-medium leading-tight"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <div className="truncate text-[12px] font-semibold leading-tight text-gray-900">
                   {profile?.full_name || "Account"}
                 </div>
-                <div
-                  className="truncate text-[9.5px] leading-tight"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {currentOrg?.name ?? plan}
+                <div className="truncate text-[10px] leading-tight text-gray-500">
+                  {currentOrg?.name ?? planLabel + " plan"}
                 </div>
               </div>
               <span
-                className="rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide"
+                className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
                 style={{
-                  background: "rgba(59,130,246,0.15)",
-                  color: "var(--primary)",
-                  border: "1px solid rgba(59,130,246,0.2)",
+                  background: "#fff7ed",
+                  color: "#f97316",
+                  border: "1px solid #fed7aa",
                 }}
               >
                 {plan}
@@ -387,18 +329,9 @@ export function AppSidebar() {
         <button
           onClick={toggle}
           className={cn(
-            "mt-1.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] transition-all duration-200",
+            "mt-1.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-gray-400 transition-all duration-200 hover:bg-orange-50 hover:text-orange-500",
             collapsed && "justify-center",
           )}
-          style={{ color: "rgba(255,255,255,0.2)" }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
-            (e.currentTarget as HTMLElement).style.background = "transparent";
-          }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -415,170 +348,134 @@ export function AppSidebar() {
   );
 }
 
-function NavRow({
-  item,
+function SidebarLink({
+  to,
+  label,
+  icon: Icon,
+  active,
+  collapsed,
+}: {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  active: boolean;
+  collapsed: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-all duration-150",
+        collapsed && "justify-center px-0 py-2",
+        active
+          ? "bg-orange-50 text-orange-600"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+      )}
+      title={collapsed ? label : undefined}
+    >
+      <Icon
+        className={cn("h-[15px] w-[15px] shrink-0", active && "text-orange-500")}
+      />
+      {!collapsed && <span className="truncate">{label}</span>}
+    </Link>
+  );
+}
+
+function PhaseGroup({
+  phase,
+  phaseNumber,
   path,
   collapsed,
   open,
   onToggle,
 }: {
-  item: NavItem;
+  phase: BootcampPhase;
+  phaseNumber: number;
   path: string;
   collapsed: boolean;
   open: boolean;
   onToggle: () => void;
 }) {
-  const active = item.match ? item.match(path) : path === item.to;
-  const exactActive = path === item.to;
-  const hasChildren = !!item.children?.length && !collapsed;
-  const isNova = item.workspace === "nova";
+  const phaseActive = phase.tools.some((t) => path === t.to);
 
-  const activeColor = isNova ? "#8b5cf6" : "#3b82f6";
-  const activeGrad = isNova
-    ? "linear-gradient(135deg, #8b5cf6, #f97316)"
-    : "linear-gradient(135deg, #3b82f6, #8b5cf6)";
+  if (collapsed) {
+    return (
+      <div>
+        {phase.tools.map((tool) => {
+          const active = path === tool.to;
+          return (
+            <Link
+              key={tool.to}
+              to={tool.to}
+              title={`[${phase.label}] ${tool.label}`}
+              className={cn(
+                "flex justify-center items-center py-1.5 rounded-lg transition-all duration-150",
+                active ? "bg-orange-50" : "hover:bg-gray-50",
+              )}
+            >
+              <tool.icon
+                className={cn(
+                  "h-[15px] w-[15px] shrink-0",
+                  active ? "text-orange-500" : "text-gray-400",
+                )}
+              />
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="relative flex items-center">
-        {/* Active neon rail */}
-        {active && (
-          <span
-            key={item.to + "-rail"}
-            className="rail-in absolute left-0 top-1 bottom-1 w-[2px] rounded-r-full"
-            style={{
-              background: activeGrad,
-              boxShadow: `0 0 8px ${activeColor}80`,
-            }}
-          />
+      {/* Phase header */}
+      <button
+        onClick={onToggle}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-all duration-150",
+          phaseActive
+            ? "text-orange-600"
+            : "text-gray-500 hover:text-gray-800 hover:bg-gray-50",
         )}
-
-        <Link
-          to={item.to}
+      >
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[9px] font-bold text-white"
+          style={{ background: phase.color }}
+        >
+          {phaseNumber}
+        </span>
+        <span className="flex-1 text-left uppercase tracking-wide text-[10px]">
+          Phase {phaseNumber}: {phase.label}
+        </span>
+        {phaseActive && (
+          <CheckCircle2 className="h-3 w-3 text-orange-500 shrink-0" />
+        )}
+        <ChevronDown
           className={cn(
-            "group relative flex flex-1 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150",
-            collapsed && "justify-center px-0",
+            "h-3 w-3 shrink-0 transition-transform duration-200",
+            open && "rotate-180",
           )}
-          style={
-            active
-              ? {
-                  background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
-                  color: "var(--foreground)",
-                }
-              : {
-                  color: "rgba(240,244,255,0.4)",
-                }
-          }
-          onMouseEnter={(e) => {
-            if (!active) {
-              (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.75)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!active) {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.4)";
-            }
-          }}
-          title={collapsed ? item.label : undefined}
-        >
-          <span
-            style={
-              exactActive
-                ? {
-                    color: activeColor,
-                    filter: `drop-shadow(0 0 4px ${activeColor}80)`,
-                  }
-                : undefined
-            }
-          >
-            <item.icon className="h-[15px] w-[15px] shrink-0 transition-all" />
-          </span>
-          {!collapsed && (
-            <span
-              className="truncate text-[12.5px] font-medium"
-              style={active ? { color: "var(--foreground)" } : undefined}
-            >
-              {item.label}
-            </span>
-          )}
-        </Link>
+        />
+      </button>
 
-        {hasChildren && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              onToggle();
-            }}
-            className="mr-1 flex h-5 w-5 items-center justify-center rounded transition-all"
-            style={{ color: "rgba(255,255,255,0.2)" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
-              (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-            }}
-            aria-label={open ? "Collapse" : "Expand"}
-          >
-            <ChevronDown
-              className={cn("h-3 w-3 transition-transform duration-200", open && "rotate-180")}
-            />
-          </button>
-        )}
-      </div>
-
-      {/* Children */}
-      {hasChildren && open && (
-        <ul
-          className="mt-0.5 ml-3 space-y-0.5 border-l pl-2"
-          style={{ borderColor: "rgba(59,130,246,0.12)" }}
-        >
-          {item.children!.map((c, i) => {
-            const cActive = path === c.to;
-            const cColor = isNova ? "#8b5cf6" : "#3b82f6";
+      {/* Phase tools */}
+      {open && (
+        <ul className="ml-3 mt-0.5 space-y-0.5 border-l-2 pl-2" style={{ borderColor: "#fed7aa" }}>
+          {phase.tools.map((tool, i) => {
+            const active = path === tool.to;
             return (
-              <li
-                key={c.to}
-                className="slide-in-left"
-                style={{ ["--i" as string]: i } as React.CSSProperties}
-              >
+              <li key={tool.to} className="slide-in-left" style={{ ["--i" as string]: i } as React.CSSProperties}>
                 <Link
-                  to={c.to}
-                  className="flex items-center gap-2 rounded-md px-2 py-1 text-[11.5px] transition-all duration-150"
-                  style={
-                    cActive
-                      ? {
-                          background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
-                          color: cColor,
-                        }
-                      : { color: "rgba(240,244,255,0.35)" }
-                  }
-                  onMouseEnter={(e) => {
-                    if (!cActive) {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.7)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!cActive) {
-                      (e.currentTarget as HTMLElement).style.background = "transparent";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.35)";
-                    }
-                  }}
+                  to={tool.to}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1 text-[12px] transition-all duration-150",
+                    active
+                      ? "bg-orange-50 text-orange-600 font-medium"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-800",
+                  )}
                 >
-                  <span
-                    style={
-                      cActive
-                        ? { color: cColor, filter: `drop-shadow(0 0 3px ${cColor}60)` }
-                        : undefined
-                    }
-                  >
-                    <c.icon className="h-3 w-3 shrink-0" />
-                  </span>
-                  <span className="truncate">{c.label}</span>
+                  <tool.icon className={cn("h-3.5 w-3.5 shrink-0", active && "text-orange-500")} />
+                  <span className="truncate">{tool.label}</span>
                 </Link>
               </li>
             );
@@ -586,96 +483,5 @@ function NavRow({
         </ul>
       )}
     </div>
-  );
-}
-
-/* ── Digital Rain Canvas ── */
-function DigitalRain() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const COLS = Math.floor(canvas.offsetWidth / 16);
-    const drops: number[] = Array(COLS)
-      .fill(0)
-      .map(() => (Math.random() * -canvas.offsetHeight) / 14);
-    const speeds: number[] = Array(COLS)
-      .fill(0)
-      .map(() => 0.3 + Math.random() * 0.5);
-
-    const CHARS = "01アウイエオカキクケコサシスセソタチツテトナニヌネノ";
-    let frame = 0;
-
-    const tick = () => {
-      frame++;
-      const H = canvas.height;
-      const W = canvas.width;
-
-      // Fade trail
-      ctx.fillStyle = "rgba(6,6,15,0.05)";
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.font = "10px 'JetBrains Mono', monospace";
-
-      for (let i = 0; i < drops.length; i++) {
-        const y = drops[i] * 14;
-        if (y < 0 || y > H) {
-          drops[i] += speeds[i];
-          continue;
-        }
-
-        // Leading char — bright
-        ctx.fillStyle = "rgba(59,130,246,0.7)";
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = "#3b82f6";
-        const char = CHARS[Math.floor(Math.random() * CHARS.length)];
-        ctx.fillText(char, i * 14, y);
-
-        // Trail char
-        if (drops[i] > 3) {
-          ctx.fillStyle = "rgba(99,102,241,0.2)";
-          ctx.shadowBlur = 0;
-          const trailChar = CHARS[Math.floor(Math.random() * CHARS.length)];
-          ctx.fillText(trailChar, i * 14, y - 14);
-        }
-
-        drops[i] += speeds[i];
-
-        // Reset
-        if (y > H && Math.random() > 0.97) {
-          drops[i] = -Math.random() * 20;
-        }
-      }
-
-      animId = requestAnimationFrame(tick);
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ width: "100%", height: "100%", opacity: 0.35, zIndex: 0 }}
-    />
   );
 }
