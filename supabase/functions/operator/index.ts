@@ -179,18 +179,35 @@ Deno.serve(async (req) => {
   let tokensIn = 0;
   let tokensOut = 0;
 
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 600,
-      system: systemPrompt,
-      messages: conversationHistory,
-    });
-    reply = response.content[0].type === "text" ? response.content[0].text : "";
-    tokensIn = response.usage.input_tokens;
-    tokensOut = response.usage.output_tokens;
-  } catch (e) {
-    return json({ status: "error", error: (e as Error).message }, 500);
+  // TASK-088/089: Retry with exponential backoff + model fallback
+  const MODELS = ["claude-sonnet-4-6", "claude-haiku-4-5-20251001"] as const;
+  let lastError: Error | null = null;
+
+  for (let modelIdx = 0; modelIdx < MODELS.length; modelIdx++) {
+    const model = MODELS[modelIdx];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        if (attempt > 0) await new Promise((r) => setTimeout(r, 800 * attempt));
+        const response = await anthropic.messages.create({
+          model,
+          max_tokens: modelIdx === 0 ? 600 : 400,
+          system: systemPrompt,
+          messages: conversationHistory,
+        });
+        reply = response.content[0].type === "text" ? response.content[0].text : "";
+        tokensIn = response.usage.input_tokens;
+        tokensOut = response.usage.output_tokens;
+        lastError = null;
+        break;
+      } catch (e) {
+        lastError = e as Error;
+      }
+    }
+    if (!lastError) break;
+  }
+
+  if (lastError) {
+    return json({ status: "error", error: lastError.message }, 500);
   }
 
   const durationMs = Date.now() - t0;
