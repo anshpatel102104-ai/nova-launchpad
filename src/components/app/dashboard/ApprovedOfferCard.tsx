@@ -15,9 +15,9 @@ interface Props {
 async function fetchLatestOffer(orgId: string) {
   const { data } = await supabase
     .from("generated_assets")
-    .select("id, title, content, created_at")
+    .select("id, title, metadata, created_at")
     .eq("organization_id", orgId)
-    .eq("category", "offer")
+    .eq("kind", "offer")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -78,7 +78,7 @@ export function ApprovedOfferCard({ orgId }: Props) {
         <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginBottom: 14 }}>
           Build your core offer to see it here.
         </div>
-        <Link to="/app/launchpad/offer">
+        <Link to="/app/launchpad/$tool" params={{ tool: "offer" }}>
           <button
             style={{
               padding: "7px 16px",
@@ -102,7 +102,7 @@ export function ApprovedOfferCard({ orgId }: Props) {
     );
   }
 
-  const content = offer.content as Record<string, unknown>;
+  const content = offer.metadata as Record<string, unknown>;
   const headline = (content?.headline || content?.offer_name || offer.title) as string;
   const promise = (content?.promise || content?.outcome || content?.value_prop || "") as string;
 
@@ -201,7 +201,8 @@ export function ApprovedOfferCard({ orgId }: Props) {
         </div>
       )}
       <Link
-        to="/app/launchpad/offer"
+        to="/app/launchpad/$tool"
+        params={{ tool: "offer" }}
         style={{
           display: "inline-flex",
           alignItems: "center",

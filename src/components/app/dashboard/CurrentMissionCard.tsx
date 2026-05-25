@@ -11,13 +11,16 @@ import { Link } from "@tanstack/react-router";
 import { LANE_META } from "@/lib/lane-classifier";
 import type { Lane } from "@/lib/lane-classifier";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 interface Props {
   userId: string;
 }
 
 async function fetchCurrentMission(userId: string) {
   // Get workspace
-  const { data: ws } = await supabase
+  const { data: ws } = await db
     .from("workspaces")
     .select("id, name, lane, stage, current_mission_id")
     .eq("owner_id", userId)
@@ -26,7 +29,7 @@ async function fetchCurrentMission(userId: string) {
   if (!ws) return null;
 
   // Get active mission
-  const { data: mission } = await supabase
+  const { data: mission } = await db
     .from("missions")
     .select("id, title, description, lane, status")
     .eq("workspace_id", ws.id)
@@ -38,7 +41,7 @@ async function fetchCurrentMission(userId: string) {
   if (!mission) return null;
 
   // Get steps
-  const { data: steps } = await supabase
+  const { data: steps } = await db
     .from("mission_steps")
     .select("id, title, description, tool_key, status, sort_order")
     .eq("mission_id", mission.id)
@@ -126,7 +129,7 @@ export function CurrentMissionCard({ userId }: Props) {
   const lane = (workspace.lane ?? "Idea") as Lane;
   const laneMeta = LANE_META[lane];
   const completedCount = steps.filter(
-    (s) => s.status === "completed" || s.status === "skipped",
+    (s: { status: string }) => s.status === "completed" || s.status === "skipped",
   ).length;
   const allDone = completedCount === steps.length && steps.length > 0;
 

@@ -23,31 +23,21 @@ interface Props {
 }
 
 const ASSET_CATEGORIES = [
-  { key: "pitch", label: "Pitch", icon: Megaphone, to: "/app/launchpad/pitch-generator" },
-  { key: "gtm", label: "GTM Strategy", icon: Target, to: "/app/launchpad/gtm-strategy" },
-  { key: "offer", label: "Offer", icon: Sparkles, to: "/app/launchpad/offer" },
-  {
-    key: "business-plan",
-    label: "Business Plan",
-    icon: FileText,
-    to: "/app/launchpad/business-plan",
-  },
-  { key: "kill-idea", label: "Kill My Idea", icon: Skull, to: "/app/launchpad/kill-my-idea" },
-  { key: "funding", label: "Funding Score", icon: Trophy, to: "/app/launchpad/funding-score" },
-  {
-    key: "customers",
-    label: "First Customers",
-    icon: UserPlus,
-    to: "/app/launchpad/first-10-customers",
-  },
+  { kind: "pitch", label: "Pitch", icon: Megaphone, tool: "pitch-generator" },
+  { kind: "gtm", label: "GTM Strategy", icon: Target, tool: "gtm-strategy" },
+  { kind: "offer", label: "Offer", icon: Sparkles, tool: "offer" },
+  { kind: "business-plan", label: "Business Plan", icon: FileText, tool: "business-plan" },
+  { kind: "kill-idea", label: "Kill My Idea", icon: Skull, tool: "kill-my-idea" },
+  { kind: "funding", label: "Funding Score", icon: Trophy, tool: "funding-score" },
+  { kind: "customers", label: "First Customers", icon: UserPlus, tool: "first-10-customers" },
 ] as const;
 
-type AssetRow = { id: string; category: string | null; title: string; created_at: string };
+type AssetRow = { id: string; kind: string | null; title: string; created_at: string };
 
 async function fetchAssetSummary(orgId: string) {
   const { data } = await supabase
     .from("generated_assets")
-    .select("id, category, title, created_at")
+    .select("id, kind, title, created_at")
     .eq("organization_id", orgId)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -87,15 +77,15 @@ export function LaunchAssetsCard({ orgId }: Props) {
     );
   }
 
-  const byCategory = new Map<string, AssetRow[]>();
+  const byKind = new Map<string, AssetRow[]>();
   for (const a of assets) {
-    const cat = a.category ?? "other";
-    if (!byCategory.has(cat)) byCategory.set(cat, []);
-    byCategory.get(cat)!.push(a);
+    const k = a.kind ?? "other";
+    if (!byKind.has(k)) byKind.set(k, []);
+    byKind.get(k)!.push(a);
   }
 
   const totalAssets = assets.length;
-  const categoriesWithAssets = ASSET_CATEGORIES.filter((c) => byCategory.has(c.key));
+  const categoriesWithAssets = ASSET_CATEGORIES.filter((c) => byKind.has(c.kind));
 
   if (totalAssets === 0) {
     return (
@@ -216,11 +206,16 @@ export function LaunchAssetsCard({ orgId }: Props) {
         }}
       >
         {ASSET_CATEGORIES.map((cat) => {
-          const count = byCategory.get(cat.key)?.length ?? 0;
+          const count = byKind.get(cat.kind)?.length ?? 0;
           const hasAssets = count > 0;
           const Icon = cat.icon;
           return (
-            <Link key={cat.key} to={cat.to} style={{ textDecoration: "none" }}>
+            <Link
+              key={cat.kind}
+              to="/app/launchpad/$tool"
+              params={{ tool: cat.tool }}
+              style={{ textDecoration: "none" }}
+            >
               <div
                 style={{
                   padding: "10px 12px",

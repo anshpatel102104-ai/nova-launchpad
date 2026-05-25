@@ -4,6 +4,9 @@
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare, Send, CheckCircle2, Loader2 } from "lucide-react";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
 import { toast } from "sonner";
 
 type Category = "bug" | "feature" | "billing" | "question" | "other";
@@ -33,8 +36,8 @@ export function SupportWidget() {
       const userId = session?.user?.id ?? null;
       const userEmail = session?.user?.email ?? null;
 
-      await supabase.from("activation_events").insert({
-        user_id: userId,
+      await db.from("activation_events").insert({
+        user_id: userId ?? undefined,
         event_name: "support_request",
         properties: { category, message: message.slice(0, 2000), email: userEmail },
       });

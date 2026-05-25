@@ -25,9 +25,12 @@ type Lane = "Idea" | "Offer" | "Customer" | "Systems";
 
 const LANE_PERSONA: Record<Lane, string> = {
   Idea: "You are advising a founder who is at the idea/validation stage. Focus on market validation, assumption testing, and de-risking before building.",
-  Offer: "You are advising a founder who needs to define and package their offer. Focus on positioning, pricing, and communicating value clearly.",
-  Customer: "You are advising a founder who needs to acquire customers. Focus on outreach, conversion, and building a repeatable sales motion.",
-  Systems: "You are advising a founder who is scaling and building systems. Focus on automation, delegation, SOPs, and growth levers.",
+  Offer:
+    "You are advising a founder who needs to define and package their offer. Focus on positioning, pricing, and communicating value clearly.",
+  Customer:
+    "You are advising a founder who needs to acquire customers. Focus on outreach, conversion, and building a repeatable sales motion.",
+  Systems:
+    "You are advising a founder who is scaling and building systems. Focus on automation, delegation, SOPs, and growth levers.",
 };
 
 const BASE_SYSTEM = `You are Nova, an AI founder operating system. You are direct, practical, and action-oriented.
@@ -62,7 +65,11 @@ Deno.serve(async (req) => {
     session_id?: string;
     context?: Record<string, unknown>;
   };
-  try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
 
   const { message, workspace_id, session_id } = body;
   if (!message?.trim()) return json({ error: "message is required" }, 400);
@@ -131,7 +138,8 @@ Deno.serve(async (req) => {
           credits_remaining: 0,
           credits_needed: 1,
           upgrade_url: "/app/billing",
-          upsell_message: "You've used your 5 free Operator messages this month. Upgrade to continue.",
+          upsell_message:
+            "You've used your 5 free Operator messages this month. Upgrade to continue.",
         });
       }
     }
@@ -143,7 +151,9 @@ Deno.serve(async (req) => {
     `User: ${userName || "Founder"}`,
     lane ? `Lane: ${lane}` : null,
     currentMissionTitle ? `Current mission: "${currentMissionTitle}"` : null,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const systemPrompt = `${BASE_SYSTEM}\n\n${lanePersona}\n\nContext:\n${contextLines}`;
 

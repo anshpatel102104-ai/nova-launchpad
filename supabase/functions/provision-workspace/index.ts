@@ -38,13 +38,13 @@ const MISSION_SEEDS: Record<Lane, MissionSeed> = {
     steps: [
       {
         title: "Run the Idea Validator",
-        description: "Get a structured 0–100 viability score with strengths, weaknesses, and risks.",
+        description:
+          "Get a structured 0–100 viability score with strengths, weaknesses, and risks.",
         tool_key: "idea-validator",
       },
       {
         title: "Kill My Idea (Devil's Advocate)",
-        description:
-          "Let Nova argue against your idea. If it survives this, it's worth pursuing.",
+        description: "Let Nova argue against your idea. If it survives this, it's worth pursuing.",
         tool_key: "kill-my-idea",
       },
       {
@@ -57,8 +57,7 @@ const MISSION_SEEDS: Record<Lane, MissionSeed> = {
   },
   Offer: {
     title: "Build Your Core Offer",
-    description:
-      "Define what you sell, who you sell it to, and why they should buy it today.",
+    description: "Define what you sell, who you sell it to, and why they should buy it today.",
     steps: [
       {
         title: "Build your Offer",
@@ -68,14 +67,12 @@ const MISSION_SEEDS: Record<Lane, MissionSeed> = {
       },
       {
         title: "Create your GTM Strategy",
-        description:
-          "Map your go-to-market: target segment, channels, messaging, and 90-day plan.",
+        description: "Map your go-to-market: target segment, channels, messaging, and 90-day plan.",
         tool_key: "gtm-strategy",
       },
       {
         title: "Write your core positioning sentence",
-        description:
-          "Complete: 'We help [ICP] achieve [outcome] without [pain] in [timeframe].'",
+        description: "Complete: 'We help [ICP] achieve [outcome] without [pain] in [timeframe].'",
         tool_key: null,
       },
     ],
@@ -107,25 +104,21 @@ const MISSION_SEEDS: Record<Lane, MissionSeed> = {
   },
   Systems: {
     title: "Launch Your GTM System",
-    description:
-      "Build the engine that generates customers without you being the bottleneck.",
+    description: "Build the engine that generates customers without you being the bottleneck.",
     steps: [
       {
         title: "Create your GTM Strategy",
-        description:
-          "Document the full go-to-market strategy your team can execute without you.",
+        description: "Document the full go-to-market strategy your team can execute without you.",
         tool_key: "gtm-strategy",
       },
       {
         title: "Build your Operations Plan",
-        description:
-          "Design the processes, automations, and team structure that run the business.",
+        description: "Design the processes, automations, and team structure that run the business.",
         tool_key: "generate-ops-plan",
       },
       {
         title: "Identify your first automation candidate",
-        description:
-          "Pick one manual task happening 3× per week and spec it for automation.",
+        description: "Pick one manual task happening 3× per week and spec it for automation.",
         tool_key: null,
       },
     ],

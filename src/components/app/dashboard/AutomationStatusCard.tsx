@@ -25,15 +25,18 @@ type AutomationSetting = {
   trigger_event?: string | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 async function fetchAutomationData(orgId: string, userId: string | undefined) {
   const [intsRes, autoRes] = await Promise.all([
-    supabase
+    db
       .from("integrations")
       .select("id, integration_key, status, label")
       .eq("user_id", userId ?? "")
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase
+    db
       .from("automation_settings")
       .select("id, name, enabled, trigger_event")
       .eq("organization_id", orgId)

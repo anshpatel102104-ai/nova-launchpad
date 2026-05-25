@@ -46,33 +46,33 @@ const STAGE_CONTEXT: Record<string, string> = {
 export function buildSystemPrompt(context: OperatorContext): string {
   const parts: string[] = [BASE_PERSONA];
 
-  const lane = (context.workspace?.lane as Lane) ?? "Idea";
+  const lane = (context.lane as Lane) ?? "Idea";
   parts.push(LANE_PERSONAS[lane]);
 
-  const stage = context.workspace?.stage ?? "Idea";
+  const stage = context.stage ?? "Idea";
   const stageCtx = STAGE_CONTEXT[stage];
   if (stageCtx) parts.push(`Current stage: ${stageCtx}`);
 
-  const missionTitle = context.activeMission?.title?.toLowerCase() ?? "";
+  const missionTitle = context.current_mission?.title?.toLowerCase() ?? "";
   const missionKey = Object.keys(MISSION_PROMPTS).find((k) =>
     missionTitle.includes(k.replace(/-/g, " ").split(" ")[0]),
   );
   if (missionKey) parts.push(MISSION_PROMPTS[missionKey]);
-  else if (context.activeMission?.title) {
+  else if (context.current_mission?.title) {
     parts.push(
-      `The user's active mission is: "${context.activeMission.title}". Tailor advice to help them complete this mission.`,
+      `The user's active mission is: "${context.current_mission.title}". Tailor advice to help them complete this mission.`,
     );
   }
 
-  if (context.recentToolRuns && context.recentToolRuns.length > 0) {
-    const tools = context.recentToolRuns
+  if (context.recent_tool_runs && context.recent_tool_runs.length > 0) {
+    const tools = context.recent_tool_runs
       .slice(0, 3)
-      .map((r) => r.tool_key)
+      .map((r: { tool_key: string }) => r.tool_key)
       .join(", ");
     parts.push(`Recently used tools: ${tools}. Reference their outputs when giving advice.`);
   }
 
-  const plan = (context.subscription as { plan?: string } | null)?.plan ?? "starter";
+  const plan = context.plan ?? "starter";
   if (plan === "starter") {
     parts.push(
       "The user is on the Starter plan. Do not reference premium features they cannot access.",

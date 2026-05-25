@@ -19,7 +19,11 @@ export const SECURITY_HEADERS = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
-export function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+export function jsonResponse(
+  body: unknown,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...SECURITY_HEADERS, "Content-Type": "application/json", ...extraHeaders },
@@ -50,7 +54,7 @@ export interface ValidationResult {
 
 export function validateBody(
   body: Record<string, unknown>,
-  schema: ValidationSchema
+  schema: ValidationSchema,
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -93,10 +97,13 @@ export function validateBody(
 }
 
 export function sanitizeString(input: string, maxLength = 5000): string {
-  return input
-    .slice(0, maxLength)
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-    .trim();
+  return (
+    input
+      .slice(0, maxLength)
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+      .trim()
+  );
 }
 
 // ── Rate limiting (in-memory, per Deno isolate) ─────────────────────────────
@@ -122,7 +129,7 @@ export interface RateLimitResult {
 
 export function checkRateLimit(
   key: string,
-  opts: RateLimitOptions = { windowMs: 60_000, max: 20 }
+  opts: RateLimitOptions = { windowMs: 60_000, max: 20 },
 ): RateLimitResult {
   const now = Date.now();
   const entry = rateLimitStore.get(key);
@@ -145,6 +152,6 @@ export function rateLimitResponse(resetAt: number): Response {
   return jsonResponse(
     { error: "Too many requests. Please try again shortly.", retry_after_ms: resetAt - Date.now() },
     429,
-    { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) }
+    { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
   );
 }

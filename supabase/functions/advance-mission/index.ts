@@ -24,15 +24,35 @@ function json(body: unknown, status = 200) {
 type Action = "complete_step" | "complete_mission" | "skip_step";
 
 // Next missions to assign after the first one completes, by lane
-const NEXT_MISSIONS: Record<string, Array<{ title: string; description: string; steps: Array<{ title: string; description: string; tool_key: string | null }> }>> = {
+const NEXT_MISSIONS: Record<
+  string,
+  Array<{
+    title: string;
+    description: string;
+    steps: Array<{ title: string; description: string; tool_key: string | null }>;
+  }>
+> = {
   Idea: [
     {
       title: "Build Your GTM Strategy",
       description: "You've validated the idea — now map the path to your first customer.",
       steps: [
-        { title: "Create your GTM Strategy", description: "Define your go-to-market across segment, channel, and messaging.", tool_key: "gtm-strategy" },
-        { title: "Generate your Pitch", description: "Build the pitch that gets investors and early customers excited.", tool_key: "pitch-generator" },
-        { title: "Identify your ICP in one sentence", description: "Complete: '[Name] is a [role] who struggles with [pain] and wants [outcome].'", tool_key: null },
+        {
+          title: "Create your GTM Strategy",
+          description: "Define your go-to-market across segment, channel, and messaging.",
+          tool_key: "gtm-strategy",
+        },
+        {
+          title: "Generate your Pitch",
+          description: "Build the pitch that gets investors and early customers excited.",
+          tool_key: "pitch-generator",
+        },
+        {
+          title: "Identify your ICP in one sentence",
+          description:
+            "Complete: '[Name] is a [role] who struggles with [pain] and wants [outcome].'",
+          tool_key: null,
+        },
       ],
     },
   ],
@@ -41,9 +61,21 @@ const NEXT_MISSIONS: Record<string, Array<{ title: string; description: string; 
       title: "Land Your First 10 Customers",
       description: "Offer is ready — now get people to pay for it.",
       steps: [
-        { title: "Generate First 10 Customers Plan", description: "Precision outreach plan to land 10 customers in 30 days.", tool_key: "first-10-customers" },
-        { title: "Build Follow-Up Sequence", description: "5-step sequence that turns cold leads into paying clients.", tool_key: "followup" },
-        { title: "Send your first paid invoice", description: "Close deal #1 and issue the invoice. No tool needed — just do it.", tool_key: null },
+        {
+          title: "Generate First 10 Customers Plan",
+          description: "Precision outreach plan to land 10 customers in 30 days.",
+          tool_key: "first-10-customers",
+        },
+        {
+          title: "Build Follow-Up Sequence",
+          description: "5-step sequence that turns cold leads into paying clients.",
+          tool_key: "followup",
+        },
+        {
+          title: "Send your first paid invoice",
+          description: "Close deal #1 and issue the invoice. No tool needed — just do it.",
+          tool_key: null,
+        },
       ],
     },
   ],
@@ -52,9 +84,21 @@ const NEXT_MISSIONS: Record<string, Array<{ title: string; description: string; 
       title: "Build Your Revenue System",
       description: "You have customers — now make acquisition repeatable.",
       steps: [
-        { title: "Create your GTM Strategy", description: "Document the full GTM your team can execute without you.", tool_key: "gtm-strategy" },
-        { title: "Build your Operations Plan", description: "Design the processes and automations that run the business.", tool_key: "generate-ops-plan" },
-        { title: "Define your referral loop", description: "Write the one mechanism that turns every customer into a referrer.", tool_key: null },
+        {
+          title: "Create your GTM Strategy",
+          description: "Document the full GTM your team can execute without you.",
+          tool_key: "gtm-strategy",
+        },
+        {
+          title: "Build your Operations Plan",
+          description: "Design the processes and automations that run the business.",
+          tool_key: "generate-ops-plan",
+        },
+        {
+          title: "Define your referral loop",
+          description: "Write the one mechanism that turns every customer into a referrer.",
+          tool_key: null,
+        },
       ],
     },
   ],
@@ -63,9 +107,21 @@ const NEXT_MISSIONS: Record<string, Array<{ title: string; description: string; 
       title: "Scale Your Content Engine",
       description: "Systems are running — now build the content flywheel.",
       steps: [
-        { title: "Generate your GTM content strategy", description: "Map content types, cadence, and distribution channels.", tool_key: "gtm-strategy" },
-        { title: "Build your pitch for partnerships", description: "Create a partnership pitch to accelerate distribution.", tool_key: "pitch-generator" },
-        { title: "Document your first SOPs", description: "Write 3 core SOPs for tasks you repeat more than 3× per week.", tool_key: null },
+        {
+          title: "Generate your GTM content strategy",
+          description: "Map content types, cadence, and distribution channels.",
+          tool_key: "gtm-strategy",
+        },
+        {
+          title: "Build your pitch for partnerships",
+          description: "Create a partnership pitch to accelerate distribution.",
+          tool_key: "pitch-generator",
+        },
+        {
+          title: "Document your first SOPs",
+          description: "Write 3 core SOPs for tasks you repeat more than 3× per week.",
+          tool_key: null,
+        },
       ],
     },
   ],
@@ -91,7 +147,11 @@ Deno.serve(async (req) => {
   const admin = createClient(supabaseUrl, serviceKey);
 
   let body: { action: Action; step_id?: string; mission_id?: string; workspace_id?: string };
-  try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
 
   const { action, step_id, mission_id, workspace_id } = body;
   if (!action) return json({ error: "action is required" }, 400);

@@ -5,6 +5,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { OperatorContext } from "./operator-types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 export async function buildAgentContext(
   userId: string,
   opts: { workspaceId?: string; organizationId?: string } = {},
@@ -19,12 +22,12 @@ export async function buildAgentContext(
         .maybeSingle(),
       // Workspace + current mission
       opts.workspaceId
-        ? supabase
+        ? db
             .from("workspaces")
             .select("id, name, lane, stage, current_mission_id, organization_id")
             .eq("id", opts.workspaceId)
             .maybeSingle()
-        : supabase
+        : db
             .from("workspaces")
             .select("id, name, lane, stage, current_mission_id, organization_id")
             .eq("owner_id", userId)
@@ -32,7 +35,7 @@ export async function buildAgentContext(
             .maybeSingle(),
       // Current mission + step progress
       opts.workspaceId
-        ? supabase
+        ? db
             .from("missions")
             .select("id, title, description, lane, status")
             .eq("workspace_id", opts.workspaceId)
@@ -60,7 +63,7 @@ export async function buildAgentContext(
         : Promise.resolve({ data: null, error: null }),
       // Workspace intake (idea, challenge)
       opts.workspaceId
-        ? supabase
+        ? db
             .from("workspace_intake")
             .select("full_name, idea, challenge, lane")
             .eq("workspace_id", opts.workspaceId)
@@ -79,13 +82,12 @@ export async function buildAgentContext(
   let stepCount = 0;
   let completedSteps = 0;
   if (mission?.id) {
-    const stepsRes = await supabase
-      .from("mission_steps")
-      .select("status")
-      .eq("mission_id", mission.id);
+    const stepsRes = await db.from("mission_steps").select("status").eq("mission_id", mission.id);
     if (stepsRes.data) {
       stepCount = stepsRes.data.length;
-      completedSteps = stepsRes.data.filter((s) => s.status === "completed").length;
+      completedSteps = stepsRes.data.filter(
+        (s: { status: string }) => s.status === "completed",
+      ).length;
     }
   }
 

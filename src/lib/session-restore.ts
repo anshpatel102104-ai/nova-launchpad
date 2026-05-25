@@ -9,7 +9,9 @@ export function saveLastAppPath(path: string): void {
   if (EXCLUDED_PREFIXES.some((p) => path.startsWith(p))) return;
   try {
     localStorage.setItem(STORAGE_KEY, path);
-  } catch {}
+  } catch {
+    // localStorage unavailable (SSR or private browsing)
+  }
 }
 
 export function getLastAppPath(): string | null {
@@ -23,5 +25,7 @@ export function getLastAppPath(): string | null {
 export function clearLastAppPath(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
-  } catch {}
+  } catch {
+    // localStorage unavailable (SSR or private browsing)
+  }
 }
