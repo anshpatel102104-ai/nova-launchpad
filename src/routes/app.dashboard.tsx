@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
+import { AskOperatorCard } from "@/components/app/dashboard/AskOperatorCard";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery,
@@ -458,6 +460,18 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── MISSION + OPERATOR ROW (Sprint 2 Critical) ── */}
+      {profile?.onboarding_complete && user?.id && (
+        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 1 }}>
+          <div className="lg:col-span-7">
+            <CurrentMissionCard userId={user.id} />
+          </div>
+          <div className="lg:col-span-5">
+            <AskOperatorCard workspaceId={undefined} />
+          </div>
+        </section>
+      )}
 
       {/* Onboarding checklist */}
       {!checklistComplete && (
