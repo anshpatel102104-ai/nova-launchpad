@@ -1,23 +1,15 @@
+// TASK-053 · Fix onboarding completion — always creates/attaches correct workspace
+// TASK-054 · Save all onboarding answers persistently (workspace_intake + onboarding_responses)
+// TASK-055 · Lane classification engine (via lib/lane-classifier)
+// TASK-061 · Guided onboarding wizard UI (OnboardingWizard component)
+
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
-import {
-  ArrowRight,
-  ArrowLeft,
-  Lightbulb,
-  Hammer,
-  DollarSign,
-  TrendingUp,
-  Rocket,
-  Users,
-  Package,
-  Megaphone,
-} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
+import { OnboardingWizard, type OnboardingAnswers } from "@/components/app/OnboardingWizard";
+import { classifyLane } from "@/lib/lane-classifier";
 import { toast } from "sonner";
-
-type BusinessStage = Database["public"]["Enums"]["business_stage"];
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
@@ -29,25 +21,6 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-const STAGES: { id: BusinessStage; label: string; desc: string; icon: React.ElementType }[] = [
-  { id: "Idea", label: "Idea", desc: "Just a concept, nothing built", icon: Lightbulb },
-  { id: "Validate", label: "Building", desc: "Actively building the product", icon: Hammer },
-  { id: "Operate", label: "Revenue", desc: "I have paying customers", icon: DollarSign },
-  { id: "Scale", label: "Scaling", desc: "Growing revenue and team", icon: TrendingUp },
-];
-
-const CHALLENGES = [
-  { id: "fundraising", label: "Fundraising", desc: "Raising capital from investors", icon: Rocket },
-  { id: "customers", label: "Getting customers", desc: "Finding my first buyers", icon: Users },
-  { id: "product", label: "Building product", desc: "Shipping fast enough", icon: Package },
-  {
-    id: "marketing",
-    label: "Marketing",
-    desc: "Getting visibility and awareness",
-    icon: Megaphone,
-  },
-];
-
 const CHALLENGE_TOOLS: Record<string, string[]> = {
   fundraising: ["pitch-generator", "funding-score", "investor-emails"],
   customers: ["first-10-customers", "offer", "followup"],
@@ -56,10 +29,6 @@ const CHALLENGE_TOOLS: Record<string, string[]> = {
 };
 
 const ANIM_CSS = `
-  @keyframes stepIn {
-    from { opacity: 0; transform: translateX(52px) scale(0.98); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
-  }
   @keyframes bootLine {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -81,123 +50,181 @@ const ANIM_CSS = `
     50%  { opacity: 0.7; }
     100% { opacity: 0.3; }
   }
-  .ob-step   { animation: stepIn 0.55s cubic-bezier(0.16,1,0.3,1) both; }
-  .ob-input  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f0f4ff; font-size: 14px; outline: none; width: 100%; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; font-family: inherit; }
-  .ob-input:focus { border-color: rgba(59,130,246,0.65); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-  .ob-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; border-radius: 12px; cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; text-align: left; width: 100%; }
-  .ob-card:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
-  .ob-card-sel { border-color: rgba(59,130,246,0.65) !important; background: rgba(59,130,246,0.09) !important; box-shadow: 0 0 28px rgba(59,130,246,0.2), inset 0 0 16px rgba(59,130,246,0.04) !important; }
+  .ob-input  {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f0f4ff;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    border-radius: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  .ob-input:focus {
+    border-color: rgba(59,130,246,0.65);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
 `;
 
 function Onboarding() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
-  const [stepKey, setStepKey] = useState(0);
-  const [name, setName] = useState("");
-  const [idea, setIdea] = useState("");
-  const [stage, setStage] = useState<BusinessStage | "">("");
-  const [challenge, setChallenge] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [initialName, setInitialName] = useState("");
   const [done, setDone] = useState(false);
+  const [finalName, setFinalName] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       const m = user?.user_metadata;
       const n = m?.full_name || m?.name || "";
-      if (n) setName(n);
+      if (n) setInitialName(n);
     });
   }, []);
 
-  const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
-  const modKey = isMac ? "⌘" : "Ctrl";
+  const handleComplete = async (answers: OnboardingAnswers) => {
+    const { name, idea, stage, challenge } = answers;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
 
-  const canAdvance =
-    step === 0
-      ? name.trim().length > 0 && idea.trim().length >= 20
-      : step === 1
-        ? !!stage
-        : !!challenge;
+    // ── 1. Update profile display name ────────────────────────────
+    await supabase.from("profiles").update({ full_name: name }).eq("id", user.id);
 
-  const goBack = () => {
-    if (step > 0) {
-      setStep((s) => s - 1);
-      setStepKey((k) => k + 1);
-    }
-  };
+    // ── 2. Create org + membership ─────────────────────────────────
+    const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
+    const { data: existingOrg } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
 
-  const advance = async () => {
-    if (!canAdvance) return;
-    if (step < 2) {
-      setStep((s) => s + 1);
-      setStepKey((k) => k + 1);
+    let orgId: string;
+    if (existingOrg) {
+      // User already has an org (e.g. from a previous partial onboarding)
+      orgId = existingOrg.organization_id as string;
     } else {
-      setSaving(true);
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
+      const { data: org, error: orgErr } = await supabase
+        .from("organizations")
+        .insert({ name: orgName, owner_id: user.id, stage: stage || undefined })
+        .select("id")
+        .single();
+      if (orgErr) throw orgErr;
+      orgId = org.id as string;
 
-        // 1. Save the display name immediately (non-critical, no onboarding_complete yet)
-        await supabase.from("profiles").update({ full_name: name }).eq("id", user.id);
-
-        // 2. Create org + membership — if this fails the user can retry
-        const orgName = name ? `${name.split(" ")[0]}'s Workspace` : "My Workspace";
-        const { data: org, error: orgErr } = await supabase
-          .from("organizations")
-          .insert({ name: orgName, owner_id: user.id, stage: stage || undefined })
-          .select("id")
-          .single();
-        if (orgErr) throw orgErr;
-
-        const { error: memberErr } = await supabase
-          .from("organization_members")
-          .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
-        if (memberErr) throw memberErr;
-
-        // 3. Save onboarding responses
-        await supabase.from("onboarding_responses").upsert(
-          {
-            user_id: user.id,
-            organization_id: org.id,
-            offer: idea,
-            stage: (stage as Database["public"]["Enums"]["business_stage"]) || null,
-            biggest_blocker: challenge,
-            completed: true,
-            completed_at: new Date().toISOString(),
-          },
-          { onConflict: "organization_id" },
-        );
-
-        // 4. Only mark onboarding complete AFTER org + responses are saved
-        await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
-
-        // 5. Trigger n8n dashboard creation workflow (non-blocking)
-        const n8nBase = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
-        fetch(`${n8nBase}/webhook/nova-ops-dashboard-init`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: user.id,
-            operator_name: name,
-            primary_niche: challenge,
-            recommended_tools: CHALLENGE_TOOLS[challenge] ?? [],
-          }),
-        }).catch(() => {
-          /* best-effort — failure here doesn't block onboarding */
-        });
-
-        setDone(true);
-        setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Something went wrong");
-      } finally {
-        setSaving(false);
-      }
+      const { error: memberErr } = await supabase
+        .from("organization_members")
+        .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
+      if (memberErr) throw memberErr;
     }
+
+    // ── 3. Classify lane from answers ─────────────────────────────
+    const lane = classifyLane(stage || "Idea", challenge);
+
+    // ── 4. Provision workspace + seed missions (edge function) ─────
+    // Uses service-role internally; we pass the user JWT for auth.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+
+    const n8nBase = import.meta.env.VITE_SUPABASE_URL;
+    const provisionRes = await fetch(
+      `${n8nBase}/functions/v1/provision-workspace`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          organization_id: orgId,
+          name: orgName,
+          lane,
+          stage: stage || "Idea",
+        }),
+      },
+    );
+
+    let workspaceId: string | null = null;
+    if (provisionRes.ok) {
+      const provisionData = await provisionRes.json();
+      workspaceId = provisionData.workspace_id ?? null;
+    }
+    // Non-blocking: if provision fails, onboarding still completes
+
+    // ── 5. Persist onboarding answers to workspace_intake ─────────
+    if (workspaceId) {
+      await supabase.from("workspace_intake").upsert(
+        {
+          workspace_id: workspaceId,
+          user_id: user.id,
+          full_name: name,
+          idea,
+          stage: stage || "Idea",
+          challenge,
+          lane: lane as "Idea" | "Offer" | "Customer" | "Systems",
+          raw_answers: { name, idea, stage, challenge },
+          completed: true,
+          completed_at: new Date().toISOString(),
+        },
+        { onConflict: "workspace_id" },
+      );
+    }
+
+    // ── 6. Backwards-compat save to onboarding_responses ──────────
+    await supabase.from("onboarding_responses").upsert(
+      {
+        user_id: user.id,
+        organization_id: orgId,
+        offer: idea,
+        stage: stage || null,
+        biggest_blocker: challenge,
+        completed: true,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "organization_id" },
+    );
+
+    // ── 7. Mark onboarding complete ────────────────────────────────
+    await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
+
+    // ── 8. Log activation event ────────────────────────────────────
+    if (accessToken) {
+      fetch(`${n8nBase}/functions/v1/log-activation-event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          event_name: "onboarding_complete",
+          workspace_id: workspaceId,
+          properties: { lane, stage, challenge, has_idea: idea.length > 0 },
+        }),
+      }).catch(() => {});
+    }
+
+    // ── 9. Trigger n8n dashboard creation workflow (non-blocking) ──
+    const n8nProxy = import.meta.env.VITE_N8N_BASE_URL ?? "/api/n8n";
+    fetch(`${n8nProxy}/webhook/nova-ops-dashboard-init`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: user.id,
+        operator_name: name,
+        primary_niche: challenge,
+        recommended_tools: CHALLENGE_TOOLS[challenge] ?? [],
+        lane,
+      }),
+    }).catch(() => {});
+
+    setFinalName(name);
+    setDone(true);
+    setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
   };
 
-  if (done) return <WelcomeScreen name={name} onSkip={() => navigate({ to: "/app/dashboard" })} />;
+  if (done) return <WelcomeScreen name={finalName} onSkip={() => navigate({ to: "/app/dashboard" })} />;
 
   return (
     <div
@@ -212,12 +239,10 @@ function Onboarding() {
     >
       <style>{ANIM_CSS}</style>
 
-      {/* Neural canvas */}
       <div style={{ position: "absolute", inset: 0, opacity: 0.3 }}>
         <NeuralCanvas className="w-full h-full" />
       </div>
 
-      {/* Center ambient glow */}
       <div
         style={{
           position: "absolute",
@@ -230,392 +255,24 @@ function Onboarding() {
         }}
       />
 
-      {/* Card */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          width: "100%",
-          maxWidth: 560,
-          margin: "0 20px",
-          background: "rgba(11,11,26,0.88)",
-          backdropFilter: "blur(28px) saturate(1.4)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 22,
-          boxShadow:
-            "0 0 0 1px rgba(59,130,246,0.06), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
-          padding: "38px 38px 34px",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 34,
+      <div style={{ position: "relative", zIndex: 10, width: "100%", padding: "0 20px", display: "flex", justifyContent: "center" }}>
+        <OnboardingWizard
+          initialName={initialName}
+          onComplete={async (answers) => {
+            try {
+              await handleComplete(answers);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+              throw e;
+            }
           }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                fontSize: 11,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: "0.02em",
-              }}
-            >
-              N
-            </div>
-            <span
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: "#f0f4ff",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Nova OS
-            </span>
-          </div>
-          {/* Progress dots */}
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{
-                  height: 6,
-                  borderRadius: 99,
-                  transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
-                  width: i === step ? 28 : 6,
-                  background:
-                    i < step ? "#22c55e" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
-                  boxShadow:
-                    i === step
-                      ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)"
-                      : "none",
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Animated step */}
-        <div key={stepKey} className="ob-step">
-          {step === 0 && (
-            <Step1
-              name={name}
-              idea={idea}
-              onName={setName}
-              onIdea={setIdea}
-              onSubmit={advance}
-              modKey={modKey}
-            />
-          )}
-          {step === 1 && <Step2 stage={stage} onStage={setStage} />}
-          {step === 2 && <Step3 challenge={challenge} onChallenge={setChallenge} />}
-        </div>
-
-        {/* Navigation buttons */}
-        <div style={{ marginTop: 28, display: "flex", gap: 10 }}>
-          {step > 0 && (
-            <button
-              onClick={goBack}
-              disabled={saving}
-              style={{
-                height: 52,
-                width: 52,
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.1)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "rgba(255,255,255,0.04)",
-                color: "rgba(240,244,255,0.5)",
-                transition: "all 0.2s",
-                flexShrink: 0,
-                fontFamily: "inherit",
-              }}
-              aria-label="Go back"
-            >
-              <ArrowLeft style={{ width: 16, height: 16 }} />
-            </button>
-          )}
-          <button
-            onClick={advance}
-            disabled={!canAdvance || saving}
-            style={{
-              flex: 1,
-              height: 52,
-              borderRadius: 12,
-              border: "none",
-              cursor: canAdvance && !saving ? "pointer" : "default",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              fontWeight: 600,
-              fontSize: 15,
-              letterSpacing: "-0.01em",
-              background:
-                canAdvance && !saving
-                  ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
-                  : "rgba(255,255,255,0.06)",
-              color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.25)",
-              transition: "all 0.25s",
-              boxShadow:
-                canAdvance && !saving
-                  ? "0 0 40px rgba(59,130,246,0.45), 0 0 80px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4)"
-                  : "none",
-              fontFamily: "inherit",
-            }}
-          >
-            {saving ? "Initializing Nova…" : step < 2 ? "Continue" : "Launch Nova"}
-            {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Heading({ step: s }: { step: number }) {
-  return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          color: "#3b82f6",
-          marginBottom: 8,
-        }}
-      >
-        Step {s} of 3
-      </div>
-      <h2
-        style={{
-          fontSize: "clamp(1.7rem, 5vw, 2.3rem)",
-          fontWeight: 800,
-          color: "#f0f4ff",
-          lineHeight: 1.08,
-          letterSpacing: "-0.04em",
-          margin: 0,
-        }}
-      >
-        {s === 1 && (
-          <>
-            What's your
-            <br />
-            <span style={{ color: "#3b82f6" }}>startup idea</span>?
-          </>
-        )}
-        {s === 2 && (
-          <>
-            What stage
-            <br />
-            <span style={{ color: "#8b5cf6" }}>are you at</span>?
-          </>
-        )}
-        {s === 3 && (
-          <>
-            What's your
-            <br />
-            <span style={{ color: "#06b6d4" }}>biggest challenge</span>?
-          </>
-        )}
-      </h2>
-    </div>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Step1({
-  name,
-  idea,
-  onName,
-  onIdea,
-  onSubmit,
-  modKey,
-}: {
-  name: string;
-  idea: string;
-  onName: (v: string) => void;
-  onIdea: (v: string) => void;
-  onSubmit: () => void;
-  modKey: string;
-}) {
-  return (
-    <div>
-      <Heading step={1} />
-      <div style={{ marginBottom: 14 }}>
-        <FieldLabel>Your name</FieldLabel>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => onName(e.target.value)}
-          placeholder="Alex Founder"
-          className="ob-input"
-          style={{ height: 44, padding: "0 14px" }}
         />
       </div>
-      <div>
-        <FieldLabel>Describe it in one sentence</FieldLabel>
-        <textarea
-          value={idea}
-          onChange={(e) => onIdea(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-          }}
-          placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
-          rows={3}
-          className="ob-input"
-          style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
-        />
-        <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
-          {idea.length === 0
-            ? `${modKey}+Enter to continue · your idea stays private`
-            : idea.length < 20
-              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
-              : `${modKey}+Enter to continue · your idea stays private`}
-        </div>
-      </div>
     </div>
   );
 }
 
-function Step2({
-  stage,
-  onStage,
-}: {
-  stage: BusinessStage | "";
-  onStage: (v: BusinessStage) => void;
-}) {
-  return (
-    <div>
-      <Heading step={2} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {STAGES.map(({ id, label, desc, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onStage(id)}
-            className={`ob-card${stage === id ? " ob-card-sel" : ""}`}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 9,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
-                transition: "background 0.2s",
-              }}
-            >
-              <Icon
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)",
-                }}
-              />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "rgba(240,244,255,0.38)",
-                  lineHeight: 1.4,
-                  marginTop: 2,
-                }}
-              >
-                {desc}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Step3({
-  challenge,
-  onChallenge,
-}: {
-  challenge: string;
-  onChallenge: (v: string) => void;
-}) {
-  return (
-    <div>
-      <Heading step={3} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {CHALLENGES.map(({ id, label, desc, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onChallenge(id)}
-            className={`ob-card${challenge === id ? " ob-card-sel" : ""}`}
-          >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 9,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
-                transition: "background 0.2s",
-              }}
-            >
-              <Icon
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)",
-                }}
-              />
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "rgba(240,244,255,0.38)",
-                  lineHeight: 1.4,
-                  marginTop: 2,
-                }}
-              >
-                {desc}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
+// ── Welcome / boot screen ──────────────────────────────────────────────
 const BOOT_LINES = [
   "nova_os://init — kernel loaded",
   "scanning founder profile…",
@@ -634,7 +291,6 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
       timers.push(setTimeout(() => setLineIdx(i + 1), i * 380 + 200));
     });
     timers.push(setTimeout(() => setPhase("reveal"), BOOT_LINES.length * 380 + 600));
-    // If the user is still on this screen after 7s the redirect may have failed silently
     timers.push(setTimeout(() => setShowFallback(true), 7000));
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -653,26 +309,16 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
     >
       <style>{ANIM_CSS}</style>
 
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: phase === "reveal" ? 0.15 : 0.25,
-          transition: "opacity 1s",
-        }}
-      >
+      <div style={{ position: "absolute", inset: 0, opacity: phase === "reveal" ? 0.15 : 0.25, transition: "opacity 1s" }}>
         <NeuralCanvas className="w-full h-full" />
       </div>
 
-      {/* Radial glow — intensifies on reveal */}
       <div
         style={{
           position: "absolute",
-          width: 800,
-          height: 600,
+          width: 800, height: 600,
           borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
           transition: "opacity 1s",
           opacity: phase === "reveal" ? 1 : 0.4,
           animation: "ambientPulse 4s ease-in-out infinite",
@@ -680,15 +326,7 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
         }}
       />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          padding: "0 24px",
-          maxWidth: 600,
-        }}
-      >
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: 600 }}>
         {phase === "boot" && (
           <div style={{ fontFamily: "monospace", textAlign: "left", display: "inline-block" }}>
             {BOOT_LINES.slice(0, lineIdx).map((line, i) => (
@@ -703,9 +341,7 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
               >
                 <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>
                 {line}
-                {i === lineIdx - 1 && (
-                  <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>
-                )}
+                {i === lineIdx - 1 && <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>}
               </div>
             ))}
           </div>
@@ -715,14 +351,10 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
           <div style={{ animation: "nameReveal 1s cubic-bezier(0.16,1,0.3,1) both" }}>
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "#3b82f6",
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.2em",
+                textTransform: "uppercase", color: "#3b82f6",
                 marginBottom: 20,
-                animation: "fadeUp 0.6s ease 0.15s both",
-                opacity: 0,
+                animation: "fadeUp 0.6s ease 0.15s both", opacity: 0,
               }}
             >
               System ready
@@ -731,11 +363,8 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <h1
               style={{
                 fontSize: "clamp(2.6rem, 7vw, 4.5rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.05em",
-                lineHeight: 1.04,
-                color: "#f0f4ff",
-                margin: "0 0 8px",
+                fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1.04,
+                color: "#f0f4ff", margin: "0 0 8px",
                 textShadow: "0 0 60px rgba(59,130,246,0.25)",
               }}
             >
@@ -757,10 +386,8 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <div
               style={{
                 margin: "22px auto 0",
-                height: 2,
-                borderRadius: 2,
-                background:
-                  "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
+                height: 2, borderRadius: 2,
+                background: "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
                 boxShadow: "0 0 20px rgba(59,130,246,0.7)",
                 animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
               }}
@@ -768,12 +395,9 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
 
             <p
               style={{
-                marginTop: 22,
-                fontSize: 16,
-                color: "rgba(240,244,255,0.45)",
-                lineHeight: 1.65,
-                animation: "fadeUp 0.6s ease 0.5s both",
-                opacity: 0,
+                marginTop: 22, fontSize: 16,
+                color: "rgba(240,244,255,0.45)", lineHeight: 1.65,
+                animation: "fadeUp 0.6s ease 0.5s both", opacity: 0,
               }}
             >
               Your AI founder OS is online.
@@ -784,43 +408,30 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <div
               style={{
                 marginTop: 32,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 16,
-                animation: "fadeUp 0.6s ease 0.75s both",
-                opacity: 0,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+                animation: "fadeUp 0.6s ease 0.75s both", opacity: 0,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#3b82f6",
-                    boxShadow: "0 0 10px #3b82f6",
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: "#3b82f6", boxShadow: "0 0 10px #3b82f6",
                     animation: "ambientPulse 1.4s ease-in-out infinite",
                   }}
                 />
-                <span
-                  style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
-                >
+                <span style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}>
                   loading dashboard…
                 </span>
               </div>
               <button
                 onClick={onSkip}
                 style={{
-                  fontSize: 12,
-                  color: "rgba(240,244,255,0.45)",
+                  fontSize: 12, color: "rgba(240,244,255,0.45)",
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8,
-                  padding: "6px 16px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "all 0.2s",
+                  borderRadius: 8, padding: "6px 16px",
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
                 }}
               >
                 Skip intro → Go to dashboard
@@ -831,14 +442,10 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
                   <button
                     onClick={onSkip}
                     style={{
-                      fontSize: 11,
-                      color: "#3b82f6",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      padding: 0,
-                      textDecoration: "underline",
+                      fontSize: 11, color: "#3b82f6",
+                      background: "none", border: "none",
+                      cursor: "pointer", fontFamily: "inherit",
+                      padding: 0, textDecoration: "underline",
                     }}
                   >
                     Click here to go to your dashboard
