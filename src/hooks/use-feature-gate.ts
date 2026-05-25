@@ -21,7 +21,9 @@ export function useFeatureGate(feature: FeatureKey): GateResult & { isLoading: b
   return { ...result, isLoading };
 }
 
-export function useFeatureGates(features: FeatureKey[]): Record<FeatureKey, GateResult> & { isLoading: boolean } {
+export function useFeatureGates(
+  features: FeatureKey[],
+): Record<FeatureKey, GateResult> & { isLoading: boolean } {
   const { currentOrgId } = useAuth();
   const { data: sub, isLoading } = useQuery({
     ...subscriptionQuery(currentOrgId ?? ""),
@@ -29,9 +31,10 @@ export function useFeatureGates(features: FeatureKey[]): Record<FeatureKey, Gate
   });
 
   const plan = (sub?.plan as Plan) ?? "starter";
-  const results = Object.fromEntries(
-    features.map((f) => [f, checkFeatureGate(f, plan)])
-  ) as Record<FeatureKey, GateResult>;
+  const results = Object.fromEntries(features.map((f) => [f, checkFeatureGate(f, plan)])) as Record<
+    FeatureKey,
+    GateResult
+  >;
 
   return { ...results, isLoading };
 }

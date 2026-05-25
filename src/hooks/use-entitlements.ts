@@ -48,9 +48,7 @@ export function useEntitlement(feature: FeatureKey): EntitlementResult {
   const planResult = checkFeatureGate(feature, plan);
 
   const override = entQ.data?.find(
-    (e) =>
-      e.feature_key === feature &&
-      (!e.expires_at || new Date(e.expires_at) > new Date())
+    (e) => e.feature_key === feature && (!e.expires_at || new Date(e.expires_at) > new Date()),
   );
 
   if (override) {

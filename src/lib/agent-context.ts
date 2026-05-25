@@ -12,7 +12,11 @@ export async function buildAgentContext(
   const [profileRes, workspaceRes, missionRes, runsRes, subRes, intakeRes] =
     await Promise.allSettled([
       // Profile
-      supabase.from("profiles").select("full_name, onboarding_complete").eq("id", userId).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("full_name, onboarding_complete")
+        .eq("id", userId)
+        .maybeSingle(),
       // Workspace + current mission
       opts.workspaceId
         ? supabase
@@ -64,18 +68,12 @@ export async function buildAgentContext(
         : Promise.resolve({ data: null, error: null }),
     ]);
 
-  const profile =
-    profileRes.status === "fulfilled" ? profileRes.value.data : null;
-  const workspace =
-    workspaceRes.status === "fulfilled" ? workspaceRes.value.data : null;
-  const mission =
-    missionRes.status === "fulfilled" ? missionRes.value.data : null;
-  const recentRuns =
-    runsRes.status === "fulfilled" ? (runsRes.value.data ?? []) : [];
-  const sub =
-    subRes.status === "fulfilled" ? subRes.value.data : null;
-  const intake =
-    intakeRes.status === "fulfilled" ? intakeRes.value.data : null;
+  const profile = profileRes.status === "fulfilled" ? profileRes.value.data : null;
+  const workspace = workspaceRes.status === "fulfilled" ? workspaceRes.value.data : null;
+  const mission = missionRes.status === "fulfilled" ? missionRes.value.data : null;
+  const recentRuns = runsRes.status === "fulfilled" ? (runsRes.value.data ?? []) : [];
+  const sub = subRes.status === "fulfilled" ? subRes.value.data : null;
+  const intake = intakeRes.status === "fulfilled" ? intakeRes.value.data : null;
 
   // Get step counts if we have a mission
   let stepCount = 0;

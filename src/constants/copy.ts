@@ -8,7 +8,8 @@
 export const LANE_COPY = {
   Idea: {
     headline: "Turn your idea into a validated opportunity",
-    subheadline: "Validate market fit, stress-test assumptions, and build the case before you build the product.",
+    subheadline:
+      "Validate market fit, stress-test assumptions, and build the case before you build the product.",
     tagline: "From concept to conviction",
     emptyState: "You haven't validated an idea yet. Start with the Idea Validator.",
     ctaLabel: "Validate your idea",
@@ -17,7 +18,8 @@ export const LANE_COPY = {
   },
   Offer: {
     headline: "Build an offer your market can't ignore",
-    subheadline: "Define your positioning, price, promise, and unique mechanism — all in one structured output.",
+    subheadline:
+      "Define your positioning, price, promise, and unique mechanism — all in one structured output.",
     tagline: "From idea to irresistible offer",
     emptyState: "You haven't built your core offer yet. Run the Offer Builder to get started.",
     ctaLabel: "Build your offer",
@@ -26,7 +28,8 @@ export const LANE_COPY = {
   },
   Customer: {
     headline: "Get your first 10 paying customers",
-    subheadline: "A step-by-step outreach playbook, ICP definition, and conversion script — built for your specific offer.",
+    subheadline:
+      "A step-by-step outreach playbook, ICP definition, and conversion script — built for your specific offer.",
     tagline: "From offer to revenue",
     emptyState: "No customers yet. Run First 10 Customers to build your acquisition playbook.",
     ctaLabel: "Find your first customers",
@@ -35,7 +38,8 @@ export const LANE_COPY = {
   },
   Systems: {
     headline: "Automate your business, reclaim your time",
-    subheadline: "Wire automations, systematise delivery, and build a business that runs without you.",
+    subheadline:
+      "Wire automations, systematise delivery, and build a business that runs without you.",
     tagline: "From operator to owner",
     emptyState: "No automations live yet. Start with your first workflow.",
     ctaLabel: "Set up automations",
@@ -111,51 +115,60 @@ export const STAGE_COPY = {
 
 // ── Mission copy ───────────────────────────────────────────────────────────
 
-export const MISSION_COPY: Record<string, {
-  title: string;
-  description: string;
-  why: string;
-  successCriteria: string;
-  estimatedTime: string;
-}> = {
+export const MISSION_COPY: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    why: string;
+    successCriteria: string;
+    estimatedTime: string;
+  }
+> = {
   "validate-your-idea": {
     title: "Validate Your Idea",
-    description: "Run your business idea through the Idea Validator, review the market signal score, and identify the top 3 risks to address.",
+    description:
+      "Run your business idea through the Idea Validator, review the market signal score, and identify the top 3 risks to address.",
     why: "Most ideas fail not from bad execution but from bad assumptions. Validate before you build.",
     successCriteria: "Idea Validator score received and top risks documented",
     estimatedTime: "20–30 minutes",
   },
   "build-your-core-offer": {
     title: "Build Your Core Offer",
-    description: "Define your headline, target buyer, price point, promise, and unique mechanism using the Offer Builder.",
+    description:
+      "Define your headline, target buyer, price point, promise, and unique mechanism using the Offer Builder.",
     why: "A muddy offer is the #1 reason founders can't sell. This mission locks in your positioning.",
     successCriteria: "Offer Builder completed and offer saved",
     estimatedTime: "30–45 minutes",
   },
   "map-your-go-to-market": {
     title: "Map Your Go-to-Market",
-    description: "Generate your GTM strategy: ICP, primary channel, messaging, and first 30-day outreach plan.",
+    description:
+      "Generate your GTM strategy: ICP, primary channel, messaging, and first 30-day outreach plan.",
     why: "The best offer in the world fails without a distribution plan.",
     successCriteria: "GTM Strategy generated and channel selected",
     estimatedTime: "30 minutes",
   },
   "generate-your-pitch": {
     title: "Generate Your Pitch",
-    description: "Create an investor-ready pitch deck outline and elevator pitch you can send this week.",
+    description:
+      "Create an investor-ready pitch deck outline and elevator pitch you can send this week.",
     why: "Even if you're not raising, a pitch forces clarity on your value proposition.",
     successCriteria: "Pitch Generator completed and pitch saved",
     estimatedTime: "25 minutes",
   },
   "find-first-customers": {
     title: "Find Your First Customers",
-    description: "Run the First 10 Customers tool and generate a personalised outreach playbook with specific names, channels, and scripts.",
+    description:
+      "Run the First 10 Customers tool and generate a personalised outreach playbook with specific names, channels, and scripts.",
     why: "Revenue is the only validation that matters. Get your first paying customer this week.",
     successCriteria: "First 10 Customers plan generated and first outreach sent",
     estimatedTime: "45 minutes",
   },
   "capture-first-lead": {
     title: "Capture Your First Lead",
-    description: "Add at least one qualified prospect to your CRM pipeline and send your first outreach message.",
+    description:
+      "Add at least one qualified prospect to your CRM pipeline and send your first outreach message.",
     why: "A pipeline with one lead is infinitely better than ideas in your head.",
     successCriteria: "Lead added to CRM and first contact attempted",
     estimatedTime: "15 minutes",

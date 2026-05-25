@@ -24,13 +24,13 @@ interface Props {
 }
 
 const TOOL_ROUTES: Record<string, string> = {
-  "idea-validator":   "/app/launchpad/idea-validator",
-  "kill-my-idea":     "/app/launchpad/kill-my-idea",
-  "pitch-generator":  "/app/launchpad/pitch-generator",
-  "gtm-strategy":     "/app/launchpad/gtm-strategy",
-  "offer":            "/app/launchpad/offer",
+  "idea-validator": "/app/launchpad/idea-validator",
+  "kill-my-idea": "/app/launchpad/kill-my-idea",
+  "pitch-generator": "/app/launchpad/pitch-generator",
+  "gtm-strategy": "/app/launchpad/gtm-strategy",
+  offer: "/app/launchpad/offer",
   "first-10-customers": "/app/launchpad/first-10-customers",
-  "followup":         "/app/launchpad/followup",
+  followup: "/app/launchpad/followup",
   "generate-ops-plan": "/app/launchpad/ops-plan",
 };
 
@@ -44,19 +44,16 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
       const token = session.session?.access_token;
       if (!token) throw new Error("Not authenticated");
 
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advance-mission`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            action: "complete_step",
-            step_id: stepId,
-            mission_id: missionId,
-            workspace_id: workspaceId,
-          }),
-        },
-      );
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advance-mission`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action: "complete_step",
+          step_id: stepId,
+          mission_id: missionId,
+          workspace_id: workspaceId,
+        }),
+      });
       if (!res.ok) throw new Error("Failed to complete step");
       toast.success("Step completed!");
       onStepComplete?.();
@@ -68,7 +65,9 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
   };
 
   const sorted = [...steps].sort((a, b) => a.sort_order - b.sort_order);
-  const completedCount = sorted.filter((s) => s.status === "completed" || s.status === "skipped").length;
+  const completedCount = sorted.filter(
+    (s) => s.status === "completed" || s.status === "skipped",
+  ).length;
   const progress = sorted.length > 0 ? Math.round((completedCount / sorted.length) * 100) : 0;
 
   return (
@@ -76,14 +75,29 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
       {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "var(--muted-foreground)",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
             Progress
           </span>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>
             {completedCount}/{sorted.length} steps
           </span>
         </div>
-        <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        <div
+          style={{
+            height: 4,
+            borderRadius: 99,
+            background: "rgba(255,255,255,0.08)",
+            overflow: "hidden",
+          }}
+        >
           <div
             style={{
               height: "100%",
@@ -132,11 +146,25 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
 
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: isDone ? "rgba(240,244,255,0.5)" : "#f0f4ff", textDecoration: isDone ? "line-through" : "none" }}>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: isDone ? "rgba(240,244,255,0.5)" : "#f0f4ff",
+                    textDecoration: isDone ? "line-through" : "none",
+                  }}
+                >
                   {step.title}
                 </div>
                 {step.description && !isDone && (
-                  <div style={{ fontSize: 11.5, color: "var(--muted-foreground)", marginTop: 3, lineHeight: 1.5 }}>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "var(--muted-foreground)",
+                      marginTop: 3,
+                      lineHeight: 1.5,
+                    }}
+                  >
                     {step.description}
                   </div>
                 )}
@@ -174,18 +202,26 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                     disabled={isLoading}
                     title="Mark as done"
                     style={{
-                      display: "flex", alignItems: "center",
+                      display: "flex",
+                      alignItems: "center",
                       padding: "5px 8px",
                       borderRadius: 7,
                       border: "1px solid rgba(34,197,94,0.3)",
                       background: "rgba(34,197,94,0.08)",
                       color: "#22c55e",
-                      fontSize: 11.5, fontWeight: 600,
+                      fontSize: 11.5,
+                      fontWeight: 600,
                       cursor: isLoading ? "default" : "pointer",
                       fontFamily: "inherit",
                     }}
                   >
-                    {isLoading ? <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} /> : "Done"}
+                    {isLoading ? (
+                      <Loader2
+                        style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }}
+                      />
+                    ) : (
+                      "Done"
+                    )}
                   </button>
                 </div>
               )}

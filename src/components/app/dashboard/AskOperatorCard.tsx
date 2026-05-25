@@ -41,14 +41,11 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
       const token = session.session?.access_token;
       if (!token) throw new Error("Not authenticated");
 
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/operator`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ message: text, workspace_id: workspaceId }),
-        },
-      );
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/operator`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: text, workspace_id: workspaceId }),
+      });
 
       const data = await res.json();
 
@@ -57,7 +54,10 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
       } else if (data.status === "credit_insufficient") {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: `🔒 ${data.upsell_message}\n\n[Upgrade your plan](/app/billing) to continue.` },
+          {
+            role: "assistant",
+            content: `🔒 ${data.upsell_message}\n\n[Upgrade your plan](/app/billing) to continue.`,
+          },
         ]);
       } else {
         throw new Error(data.error ?? "Operator error");
@@ -107,9 +107,13 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
       >
         <div
           style={{
-            width: 32, height: 32, borderRadius: 9,
+            width: 32,
+            height: 32,
+            borderRadius: 9,
             background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             flexShrink: 0,
           }}
         >
@@ -150,13 +154,24 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
             ].map((q) => (
               <button
                 key={q}
-                onClick={() => { setInput(q); inputRef.current?.focus(); }}
+                onClick={() => {
+                  setInput(q);
+                  inputRef.current?.focus();
+                }}
                 style={{
-                  padding: "7px 12px", borderRadius: 8, textAlign: "left",
-                  border: "1px solid var(--border)", background: "rgba(255,255,255,0.03)",
-                  color: "var(--muted-foreground)", fontSize: 12, cursor: "pointer",
-                  fontFamily: "inherit", transition: "all 0.15s",
-                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 12px",
+                  borderRadius: 8,
+                  textAlign: "left",
+                  border: "1px solid var(--border)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "var(--muted-foreground)",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "all 0.15s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
                 <Sparkles style={{ width: 12, height: 12, color: "#3b82f6", flexShrink: 0 }} />
@@ -179,9 +194,14 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
             {msg.role === "assistant" && (
               <div
                 style={{
-                  width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 7,
+                  flexShrink: 0,
                   background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Bot style={{ width: 12, height: 12, color: "#fff" }} />
@@ -212,15 +232,34 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <div
               style={{
-                width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                width: 26,
+                height: 26,
+                borderRadius: 7,
+                flexShrink: 0,
                 background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <Bot style={{ width: 12, height: 12, color: "#fff" }} />
             </div>
-            <div style={{ padding: "8px 12px", borderRadius: "12px 12px 12px 4px", background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)" }}>
-              <Loader2 style={{ width: 14, height: 14, color: "#3b82f6", animation: "spin 1s linear infinite" }} />
+            <div
+              style={{
+                padding: "8px 12px",
+                borderRadius: "12px 12px 12px 4px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Loader2
+                style={{
+                  width: 14,
+                  height: 14,
+                  color: "#3b82f6",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
             </div>
           </div>
         )}
@@ -262,17 +301,29 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
           onClick={send}
           disabled={!input.trim() || loading}
           style={{
-            width: 36, height: 36, borderRadius: 9, border: "none",
+            width: 36,
+            height: 36,
+            borderRadius: 9,
+            border: "none",
             background:
               input.trim() && !loading
                 ? "linear-gradient(135deg, #3b82f6, #6366f1)"
                 : "rgba(255,255,255,0.08)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             cursor: input.trim() && !loading ? "pointer" : "default",
-            flexShrink: 0, transition: "all 0.2s",
+            flexShrink: 0,
+            transition: "all 0.2s",
           }}
         >
-          <Send style={{ width: 15, height: 15, color: input.trim() && !loading ? "#fff" : "rgba(255,255,255,0.25)" }} />
+          <Send
+            style={{
+              width: 15,
+              height: 15,
+              color: input.trim() && !loading ? "#fff" : "rgba(255,255,255,0.25)",
+            }}
+          />
         </button>
       </div>
     </div>

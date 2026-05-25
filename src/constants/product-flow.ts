@@ -59,65 +59,68 @@ export const USER_LANES: Record<Lane, { label: string; goal: string; firstMissio
 // ── TASK-005 · Stage Map ──────────────────────────────────────────────
 // Full journey from awareness to weekly growth loop.
 export const STAGE_MAP = [
-  { stage: "Awareness",       action: "User discovers Nova via content / referral" },
-  { stage: "Sign-up",         action: "User creates account (email/OAuth)" },
-  { stage: "Onboard",         action: "User completes 3-step wizard → lane assigned" },
-  { stage: "First Mission",   action: "Nova assigns mission; user starts Step 1" },
+  { stage: "Awareness", action: "User discovers Nova via content / referral" },
+  { stage: "Sign-up", action: "User creates account (email/OAuth)" },
+  { stage: "Onboard", action: "User completes 3-step wizard → lane assigned" },
+  { stage: "First Mission", action: "Nova assigns mission; user starts Step 1" },
   { stage: "First AI Output", action: "User runs first tool → sees generated result" },
-  { stage: "Mission Done",    action: "User completes all mission steps (V2 event)" },
-  { stage: "Next Mission",    action: "Nova assigns next mission; loop continues" },
-  { stage: "Weekly Loop",     action: "User returns weekly, completes missions, upgrades plan" },
+  { stage: "Mission Done", action: "User completes all mission steps (V2 event)" },
+  { stage: "Next Mission", action: "Nova assigns next mission; loop continues" },
+  { stage: "Weekly Loop", action: "User returns weekly, completes missions, upgrades plan" },
 ] as const;
 
 // ── TASK-006 · Success Condition Per Stage ────────────────────────────
 export const STAGE_SUCCESS: Record<string, string> = {
-  "Awareness":       "User clicks CTA and lands on sign-up page",
-  "Sign-up":         "User confirms email and profile is created",
-  "Onboard":         "onboarding_complete = true and workspace created",
-  "First Mission":   "Mission status = active; first step unlocked",
+  Awareness: "User clicks CTA and lands on sign-up page",
+  "Sign-up": "User confirms email and profile is created",
+  Onboard: "onboarding_complete = true and workspace created",
+  "First Mission": "Mission status = active; first step unlocked",
   "First AI Output": "tool_run status = succeeded; output rendered",
-  "Mission Done":    "All mission_steps status = completed",
-  "Next Mission":    "New mission assigned with sort_order incremented",
-  "Weekly Loop":     "User returns within 7 days and runs ≥1 tool",
+  "Mission Done": "All mission_steps status = completed",
+  "Next Mission": "New mission assigned with sort_order incremented",
+  "Weekly Loop": "User returns within 7 days and runs ≥1 tool",
 };
 
 // ── TASK-007 · Failure / Drop-Off Condition Per Stage ─────────────────
 export const STAGE_FAILURE: Record<string, string> = {
-  "Awareness":       "User bounces without clicking CTA",
-  "Sign-up":         "User abandons form or doesn't verify email within 24h",
-  "Onboard":         "User exits wizard before step 3 or workspace creation fails",
-  "First Mission":   "User views mission but doesn't start Step 1 within 30 min",
+  Awareness: "User bounces without clicking CTA",
+  "Sign-up": "User abandons form or doesn't verify email within 24h",
+  Onboard: "User exits wizard before step 3 or workspace creation fails",
+  "First Mission": "User views mission but doesn't start Step 1 within 30 min",
   "First AI Output": "Tool run fails (status = failed) or output is empty",
-  "Mission Done":    "≥1 step remains pending after 7 days",
-  "Next Mission":    "No new mission assigned within 1h of completing previous one",
-  "Weekly Loop":     "User does not return within 7 days → trigger nudge workflow",
+  "Mission Done": "≥1 step remains pending after 7 days",
+  "Next Mission": "No new mission assigned within 1h of completing previous one",
+  "Weekly Loop": "User does not return within 7 days → trigger nudge workflow",
 };
 
 // ── TASK-008 · Screen → Desired User Action ───────────────────────────
 export const SCREEN_ACTIONS: Array<{ screen: string; desiredAction: string }> = [
-  { screen: "Landing page",           desiredAction: "Click 'Start free' CTA" },
-  { screen: "Sign-up form",           desiredAction: "Submit email + password" },
-  { screen: "Onboarding step 1",      desiredAction: "Enter name + idea description" },
-  { screen: "Onboarding step 2",      desiredAction: "Select business stage" },
-  { screen: "Onboarding step 3",      desiredAction: "Select biggest challenge" },
-  { screen: "Welcome / boot screen",  desiredAction: "Wait for auto-redirect to dashboard" },
-  { screen: "Dashboard",             desiredAction: "Click 'Start mission' on Current Mission card" },
-  { screen: "Mission detail",        desiredAction: "Click 'Run tool' on first mission step" },
-  { screen: "Tool run page",         desiredAction: "Submit tool input and view output" },
-  { screen: "Generated asset",       desiredAction: "Download or copy output; mark step done" },
-  { screen: "Mission complete",      desiredAction: "Click 'Start next mission'" },
-  { screen: "Billing / paywall",     desiredAction: "Click 'Upgrade plan'" },
+  { screen: "Landing page", desiredAction: "Click 'Start free' CTA" },
+  { screen: "Sign-up form", desiredAction: "Submit email + password" },
+  { screen: "Onboarding step 1", desiredAction: "Enter name + idea description" },
+  { screen: "Onboarding step 2", desiredAction: "Select business stage" },
+  { screen: "Onboarding step 3", desiredAction: "Select biggest challenge" },
+  { screen: "Welcome / boot screen", desiredAction: "Wait for auto-redirect to dashboard" },
+  { screen: "Dashboard", desiredAction: "Click 'Start mission' on Current Mission card" },
+  { screen: "Mission detail", desiredAction: "Click 'Run tool' on first mission step" },
+  { screen: "Tool run page", desiredAction: "Submit tool input and view output" },
+  { screen: "Generated asset", desiredAction: "Download or copy output; mark step done" },
+  { screen: "Mission complete", desiredAction: "Click 'Start next mission'" },
+  { screen: "Billing / paywall", desiredAction: "Click 'Upgrade plan'" },
 ];
 
 // ── TASK-009 · Checklist Item → Activation Behaviour ─────────────────
 export const CHECKLIST_ACTIVATIONS: Array<{ item: string; event: string }> = [
-  { item: "Complete onboarding",        event: V1_ACTIVATION_EVENT === "first_tool_run" ? "onboarding_complete" : "onboarding_complete" },
-  { item: "Create first workspace",     event: "workspace_created" },
+  {
+    item: "Complete onboarding",
+    event: V1_ACTIVATION_EVENT === "first_tool_run" ? "onboarding_complete" : "onboarding_complete",
+  },
+  { item: "Create first workspace", event: "workspace_created" },
   { item: "Get first mission assigned", event: "first_mission_assigned" },
-  { item: "Run first AI tool",          event: V1_ACTIVATION_EVENT },
-  { item: "Complete first mission",     event: V2_ACTIVATION_EVENT },
-  { item: "Return within 7 days",       event: "weekly_return" },
-  { item: "Upgrade to paid plan",       event: "plan_upgraded" },
+  { item: "Run first AI tool", event: V1_ACTIVATION_EVENT },
+  { item: "Complete first mission", event: V2_ACTIVATION_EVENT },
+  { item: "Return within 7 days", event: "weekly_return" },
+  { item: "Upgrade to paid plan", event: "plan_upgraded" },
 ];
 
 // ── TASK-010 · Non-Core Tool Visibility Rules ─────────────────────────

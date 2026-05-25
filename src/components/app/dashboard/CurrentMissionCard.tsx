@@ -71,7 +71,14 @@ export function CurrentMissionCard({ userId }: Props) {
           minHeight: 160,
         }}
       >
-        <Loader2 style={{ width: 20, height: 20, color: "var(--muted-foreground)", animation: "spin 1s linear infinite" }} />
+        <Loader2
+          style={{
+            width: 20,
+            height: 20,
+            color: "var(--muted-foreground)",
+            animation: "spin 1s linear infinite",
+          }}
+        />
       </div>
     );
   }
@@ -97,10 +104,15 @@ export function CurrentMissionCard({ userId }: Props) {
         <Link to="/onboarding">
           <button
             style={{
-              padding: "8px 18px", borderRadius: 9, border: "none",
+              padding: "8px 18px",
+              borderRadius: 9,
+              border: "none",
               background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              color: "#fff", fontSize: 13, fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit",
+              color: "#fff",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "inherit",
             }}
           >
             Start onboarding
@@ -113,7 +125,9 @@ export function CurrentMissionCard({ userId }: Props) {
   const { workspace, mission, steps } = data;
   const lane = (workspace.lane ?? "Idea") as Lane;
   const laneMeta = LANE_META[lane];
-  const completedCount = steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
+  const completedCount = steps.filter(
+    (s) => s.status === "completed" || s.status === "skipped",
+  ).length;
   const allDone = completedCount === steps.length && steps.length > 0;
 
   return (
@@ -142,33 +156,63 @@ export function CurrentMissionCard({ userId }: Props) {
       />
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          marginBottom: 16,
+          position: "relative",
+        }}
+      >
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <div
               style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
-                textTransform: "uppercase", color: laneMeta.color,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: laneMeta.color,
                 background: `${laneMeta.color}18`,
-                padding: "3px 8px", borderRadius: 5,
+                padding: "3px 8px",
+                borderRadius: 5,
               }}
             >
               {laneMeta.label}
             </div>
             <div
               style={{
-                fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
-                textTransform: "uppercase", color: "var(--muted-foreground)",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--muted-foreground)",
               }}
             >
               Current Mission
             </div>
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--foreground)", margin: 0, letterSpacing: "-0.02em" }}>
+          <h3
+            style={{
+              fontSize: 17,
+              fontWeight: 800,
+              color: "var(--foreground)",
+              margin: 0,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {mission.title as string}
           </h3>
           {mission.description && (
-            <p style={{ fontSize: 12.5, color: "var(--muted-foreground)", margin: "4px 0 0", lineHeight: 1.5 }}>
+            <p
+              style={{
+                fontSize: 12.5,
+                color: "var(--muted-foreground)",
+                margin: "4px 0 0",
+                lineHeight: 1.5,
+              }}
+            >
               {mission.description as string}
             </p>
           )}
@@ -178,11 +222,19 @@ export function CurrentMissionCard({ userId }: Props) {
           <Link to="/app/dashboard">
             <button
               style={{
-                display: "flex", alignItems: "center", gap: 5,
-                padding: "7px 14px", borderRadius: 9, border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "7px 14px",
+                borderRadius: 9,
+                border: "none",
                 background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                color: "#fff", fontSize: 12, fontWeight: 700,
-                cursor: "pointer", fontFamily: "inherit", flexShrink: 0,
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                flexShrink: 0,
               }}
             >
               Next mission <ArrowRight style={{ width: 13, height: 13 }} />

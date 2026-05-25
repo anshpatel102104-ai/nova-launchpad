@@ -129,22 +129,19 @@ function Onboarding() {
     const accessToken = sessionData.session?.access_token;
 
     const n8nBase = import.meta.env.VITE_SUPABASE_URL;
-    const provisionRes = await fetch(
-      `${n8nBase}/functions/v1/provision-workspace`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          organization_id: orgId,
-          name: orgName,
-          lane,
-          stage: stage || "Idea",
-        }),
+    const provisionRes = await fetch(`${n8nBase}/functions/v1/provision-workspace`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+      body: JSON.stringify({
+        organization_id: orgId,
+        name: orgName,
+        lane,
+        stage: stage || "Idea",
+      }),
+    });
 
     let workspaceId: string | null = null;
     if (provisionRes.ok) {
@@ -224,7 +221,8 @@ function Onboarding() {
     setTimeout(() => navigate({ to: "/app/dashboard" }), 3600);
   };
 
-  if (done) return <WelcomeScreen name={finalName} onSkip={() => navigate({ to: "/app/dashboard" })} />;
+  if (done)
+    return <WelcomeScreen name={finalName} onSkip={() => navigate({ to: "/app/dashboard" })} />;
 
   return (
     <div
@@ -255,14 +253,25 @@ function Onboarding() {
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 10, width: "100%", padding: "0 20px", display: "flex", justifyContent: "center" }}>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          width: "100%",
+          padding: "0 20px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <OnboardingWizard
           initialName={initialName}
           onComplete={async (answers) => {
             try {
               await handleComplete(answers);
             } catch (e) {
-              toast.error(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+              toast.error(
+                e instanceof Error ? e.message : "Something went wrong. Please try again.",
+              );
               throw e;
             }
           }}
@@ -309,16 +318,25 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
     >
       <style>{ANIM_CSS}</style>
 
-      <div style={{ position: "absolute", inset: 0, opacity: phase === "reveal" ? 0.15 : 0.25, transition: "opacity 1s" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: phase === "reveal" ? 0.15 : 0.25,
+          transition: "opacity 1s",
+        }}
+      >
         <NeuralCanvas className="w-full h-full" />
       </div>
 
       <div
         style={{
           position: "absolute",
-          width: 800, height: 600,
+          width: 800,
+          height: 600,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
+          background:
+            "radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, rgba(139,92,246,0.07) 40%, transparent 70%)",
           transition: "opacity 1s",
           opacity: phase === "reveal" ? 1 : 0.4,
           animation: "ambientPulse 4s ease-in-out infinite",
@@ -326,7 +344,15 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: 600 }}>
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          textAlign: "center",
+          padding: "0 24px",
+          maxWidth: 600,
+        }}
+      >
         {phase === "boot" && (
           <div style={{ fontFamily: "monospace", textAlign: "left", display: "inline-block" }}>
             {BOOT_LINES.slice(0, lineIdx).map((line, i) => (
@@ -341,7 +367,9 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
               >
                 <span style={{ color: "rgba(99,102,241,0.7)", marginRight: 8 }}>›</span>
                 {line}
-                {i === lineIdx - 1 && <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>}
+                {i === lineIdx - 1 && (
+                  <span style={{ animation: "ambientPulse 1s infinite" }}>_</span>
+                )}
               </div>
             ))}
           </div>
@@ -351,10 +379,14 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
           <div style={{ animation: "nameReveal 1s cubic-bezier(0.16,1,0.3,1) both" }}>
             <div
               style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: "0.2em",
-                textTransform: "uppercase", color: "#3b82f6",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "#3b82f6",
                 marginBottom: 20,
-                animation: "fadeUp 0.6s ease 0.15s both", opacity: 0,
+                animation: "fadeUp 0.6s ease 0.15s both",
+                opacity: 0,
               }}
             >
               System ready
@@ -363,8 +395,11 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <h1
               style={{
                 fontSize: "clamp(2.6rem, 7vw, 4.5rem)",
-                fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1.04,
-                color: "#f0f4ff", margin: "0 0 8px",
+                fontWeight: 900,
+                letterSpacing: "-0.05em",
+                lineHeight: 1.04,
+                color: "#f0f4ff",
+                margin: "0 0 8px",
                 textShadow: "0 0 60px rgba(59,130,246,0.25)",
               }}
             >
@@ -386,8 +421,10 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <div
               style={{
                 margin: "22px auto 0",
-                height: 2, borderRadius: 2,
-                background: "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
+                height: 2,
+                borderRadius: 2,
+                background:
+                  "linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent)",
                 boxShadow: "0 0 20px rgba(59,130,246,0.7)",
                 animation: "lineExpand 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both",
               }}
@@ -395,9 +432,12 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
 
             <p
               style={{
-                marginTop: 22, fontSize: 16,
-                color: "rgba(240,244,255,0.45)", lineHeight: 1.65,
-                animation: "fadeUp 0.6s ease 0.5s both", opacity: 0,
+                marginTop: 22,
+                fontSize: 16,
+                color: "rgba(240,244,255,0.45)",
+                lineHeight: 1.65,
+                animation: "fadeUp 0.6s ease 0.5s both",
+                opacity: 0,
               }}
             >
               Your AI founder OS is online.
@@ -408,30 +448,43 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
             <div
               style={{
                 marginTop: 32,
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
-                animation: "fadeUp 0.6s ease 0.75s both", opacity: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 16,
+                animation: "fadeUp 0.6s ease 0.75s both",
+                opacity: 0,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div
                   style={{
-                    width: 6, height: 6, borderRadius: "50%",
-                    background: "#3b82f6", boxShadow: "0 0 10px #3b82f6",
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#3b82f6",
+                    boxShadow: "0 0 10px #3b82f6",
                     animation: "ambientPulse 1.4s ease-in-out infinite",
                   }}
                 />
-                <span style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}>
+                <span
+                  style={{ fontSize: 12, color: "rgba(240,244,255,0.3)", fontFamily: "monospace" }}
+                >
                   loading dashboard…
                 </span>
               </div>
               <button
                 onClick={onSkip}
                 style={{
-                  fontSize: 12, color: "rgba(240,244,255,0.45)",
+                  fontSize: 12,
+                  color: "rgba(240,244,255,0.45)",
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8, padding: "6px 16px",
-                  cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s",
+                  borderRadius: 8,
+                  padding: "6px 16px",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "all 0.2s",
                 }}
               >
                 Skip intro → Go to dashboard
@@ -442,10 +495,14 @@ function WelcomeScreen({ name, onSkip }: { name: string; onSkip: () => void }) {
                   <button
                     onClick={onSkip}
                     style={{
-                      fontSize: 11, color: "#3b82f6",
-                      background: "none", border: "none",
-                      cursor: "pointer", fontFamily: "inherit",
-                      padding: 0, textDecoration: "underline",
+                      fontSize: 11,
+                      color: "#3b82f6",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      padding: 0,
+                      textDecoration: "underline",
                     }}
                   >
                     Click here to go to your dashboard

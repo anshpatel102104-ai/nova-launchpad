@@ -32,17 +32,22 @@ interface Props {
 const STEPS = 3;
 
 const STAGES: Array<{ id: BusinessStage; label: string; desc: string; Icon: React.ElementType }> = [
-  { id: "Idea",     label: "Idea",     desc: "Just a concept, nothing built",   Icon: Lightbulb },
-  { id: "Validate", label: "Building", desc: "Actively building the product",   Icon: Hammer },
-  { id: "Operate",  label: "Revenue",  desc: "I have paying customers",         Icon: DollarSign },
-  { id: "Scale",    label: "Scaling",  desc: "Growing revenue and team",        Icon: TrendingUp },
+  { id: "Idea", label: "Idea", desc: "Just a concept, nothing built", Icon: Lightbulb },
+  { id: "Validate", label: "Building", desc: "Actively building the product", Icon: Hammer },
+  { id: "Operate", label: "Revenue", desc: "I have paying customers", Icon: DollarSign },
+  { id: "Scale", label: "Scaling", desc: "Growing revenue and team", Icon: TrendingUp },
 ];
 
 const CHALLENGES: Array<{ id: string; label: string; desc: string; Icon: React.ElementType }> = [
-  { id: "fundraising", label: "Fundraising",      desc: "Raising capital from investors",   Icon: Rocket },
-  { id: "customers",   label: "Getting customers", desc: "Finding my first buyers",          Icon: Users },
-  { id: "product",     label: "Building product",  desc: "Shipping fast enough",             Icon: Package },
-  { id: "marketing",   label: "Marketing",         desc: "Getting visibility and awareness", Icon: Megaphone },
+  { id: "fundraising", label: "Fundraising", desc: "Raising capital from investors", Icon: Rocket },
+  { id: "customers", label: "Getting customers", desc: "Finding my first buyers", Icon: Users },
+  { id: "product", label: "Building product", desc: "Shipping fast enough", Icon: Package },
+  {
+    id: "marketing",
+    label: "Marketing",
+    desc: "Getting visibility and awareness",
+    Icon: Megaphone,
+  },
 ];
 
 // ── Styles ────────────────────────────────────────────────────────────
@@ -69,12 +74,9 @@ function ProgressDots({ step }: { step: number }) {
             borderRadius: 99,
             transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
             width: i === step ? 28 : 6,
-            background:
-              i < step ? "#22c55e" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
+            background: i < step ? "#22c55e" : i === step ? "#3b82f6" : "rgba(255,255,255,0.12)",
             boxShadow:
-              i === step
-                ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)"
-                : "none",
+              i === step ? "0 0 14px rgba(59,130,246,0.9), 0 0 28px rgba(59,130,246,0.4)" : "none",
           }}
         />
       ))}
@@ -84,9 +86,30 @@ function ProgressDots({ step }: { step: number }) {
 
 function StepLabel({ step }: { step: number }) {
   const labels = [
-    { eyebrow: "Step 1 of 3", heading: <>What's your <span style={{ color: "#3b82f6" }}>startup idea</span>?</> },
-    { eyebrow: "Step 2 of 3", heading: <>What stage <span style={{ color: "#8b5cf6" }}>are you at</span>?</> },
-    { eyebrow: "Step 3 of 3", heading: <>What's your <span style={{ color: "#06b6d4" }}>biggest challenge</span>?</> },
+    {
+      eyebrow: "Step 1 of 3",
+      heading: (
+        <>
+          What's your <span style={{ color: "#3b82f6" }}>startup idea</span>?
+        </>
+      ),
+    },
+    {
+      eyebrow: "Step 2 of 3",
+      heading: (
+        <>
+          What stage <span style={{ color: "#8b5cf6" }}>are you at</span>?
+        </>
+      ),
+    },
+    {
+      eyebrow: "Step 3 of 3",
+      heading: (
+        <>
+          What's your <span style={{ color: "#06b6d4" }}>biggest challenge</span>?
+        </>
+      ),
+    },
   ];
   const { eyebrow, heading } = labels[step];
   return (
@@ -139,9 +162,7 @@ function OptionCard({
         gap: 12,
         padding: "14px 16px",
         borderRadius: 14,
-        border: selected
-          ? `1.5px solid ${accentColor}55`
-          : "1.5px solid rgba(255,255,255,0.07)",
+        border: selected ? `1.5px solid ${accentColor}55` : "1.5px solid rgba(255,255,255,0.07)",
         background: selected
           ? `rgba(${accentColor === "#3b82f6" ? "59,130,246" : accentColor === "#06b6d4" ? "6,182,212" : "255,255,255"},0.07)`
           : "rgba(255,255,255,0.03)",
@@ -175,9 +196,11 @@ export function OnboardingWizard({ initialName = "", onComplete }: Props) {
   const modKey = isMac ? "⌘" : "Ctrl";
 
   const canAdvance =
-    step === 0 ? name.trim().length > 0 && idea.trim().length >= 20
-    : step === 1 ? !!stage
-    : !!challenge;
+    step === 0
+      ? name.trim().length > 0 && idea.trim().length >= 20
+      : step === 1
+        ? !!stage
+        : !!challenge;
 
   const goBack = () => {
     if (step > 0) {
@@ -204,19 +227,35 @@ export function OnboardingWizard({ initialName = "", onComplete }: Props) {
   return (
     <div style={CARD_STYLE}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 34 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 34,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <div
             style={{
-              width: 30, height: 30, borderRadius: 8,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: "0.02em",
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#fff",
+              letterSpacing: "0.02em",
             }}
           >
             N
           </div>
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f0f4ff", letterSpacing: "-0.01em" }}>
+          <span
+            style={{ fontSize: 13.5, fontWeight: 600, color: "#f0f4ff", letterSpacing: "-0.01em" }}
+          >
             Nova OS
           </span>
         </div>
@@ -247,10 +286,14 @@ export function OnboardingWizard({ initialName = "", onComplete }: Props) {
             disabled={saving}
             aria-label="Go back"
             style={{
-              height: 52, width: 52, borderRadius: 12,
+              height: 52,
+              width: 52,
+              borderRadius: 12,
               border: "1px solid rgba(255,255,255,0.1)",
               cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               background: "rgba(255,255,255,0.04)",
               color: "rgba(240,244,255,0.5)",
               transition: "all 0.2s",
@@ -265,11 +308,18 @@ export function OnboardingWizard({ initialName = "", onComplete }: Props) {
           onClick={advance}
           disabled={!canAdvance || saving}
           style={{
-            flex: 1, height: 52, borderRadius: 12, border: "none",
+            flex: 1,
+            height: 52,
+            borderRadius: 12,
+            border: "none",
             cursor: canAdvance && !saving ? "pointer" : "default",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             gap: 8,
-            fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em",
+            fontWeight: 600,
+            fontSize: 15,
+            letterSpacing: "-0.01em",
             background:
               canAdvance && !saving
                 ? "linear-gradient(135deg, #3b82f6 0%, #6366f1 60%, #8b5cf6 100%)"
@@ -294,17 +344,32 @@ export function OnboardingWizard({ initialName = "", onComplete }: Props) {
 // ── Step sub-components ───────────────────────────────────────────────
 
 function Step1({
-  name, idea, modKey, onName, onIdea, onSubmit,
+  name,
+  idea,
+  modKey,
+  onName,
+  onIdea,
+  onSubmit,
 }: {
-  name: string; idea: string; modKey: string;
-  onName: (v: string) => void; onIdea: (v: string) => void;
+  name: string;
+  idea: string;
+  modKey: string;
+  onName: (v: string) => void;
+  onIdea: (v: string) => void;
   onSubmit: () => void;
 }) {
   return (
     <div>
       <StepLabel step={0} />
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}>
+        <div
+          style={{
+            fontSize: 11.5,
+            color: "rgba(240,244,255,0.4)",
+            fontWeight: 500,
+            marginBottom: 7,
+          }}
+        >
           Your name
         </div>
         <input
@@ -317,13 +382,22 @@ function Step1({
         />
       </div>
       <div>
-        <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.4)", fontWeight: 500, marginBottom: 7 }}>
+        <div
+          style={{
+            fontSize: 11.5,
+            color: "rgba(240,244,255,0.4)",
+            fontWeight: 500,
+            marginBottom: 7,
+          }}
+        >
           Describe it in one sentence
         </div>
         <textarea
           value={idea}
           onChange={(e) => onIdea(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
+          }}
           placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
           rows={3}
           className="ob-input"
@@ -333,34 +407,65 @@ function Step1({
           {idea.length === 0
             ? `${modKey}+Enter to continue · your idea stays private`
             : idea.length < 20
-            ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
-            : `${modKey}+Enter to continue · your idea stays private`}
+              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
+              : `${modKey}+Enter to continue · your idea stays private`}
         </div>
       </div>
     </div>
   );
 }
 
-function Step2({ stage, onStage }: { stage: BusinessStage | ""; onStage: (v: BusinessStage) => void }) {
+function Step2({
+  stage,
+  onStage,
+}: {
+  stage: BusinessStage | "";
+  onStage: (v: BusinessStage) => void;
+}) {
   return (
     <div>
       <StepLabel step={1} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {STAGES.map(({ id, label, desc, Icon }) => (
-          <OptionCard key={id} selected={stage === id} onClick={() => onStage(id)} accentColor="#3b82f6">
+          <OptionCard
+            key={id}
+            selected={stage === id}
+            onClick={() => onStage(id)}
+            accentColor="#3b82f6"
+          >
             <div
               style={{
-                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 background: stage === id ? "rgba(59,130,246,0.22)" : "rgba(255,255,255,0.05)",
                 transition: "background 0.2s",
               }}
             >
-              <Icon style={{ width: 16, height: 16, color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)" }} />
+              <Icon
+                style={{
+                  width: 16,
+                  height: 16,
+                  color: stage === id ? "#3b82f6" : "rgba(240,244,255,0.35)",
+                }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: "rgba(240,244,255,0.38)",
+                  lineHeight: 1.4,
+                  marginTop: 2,
+                }}
+              >
+                {desc}
+              </div>
             </div>
           </OptionCard>
         ))}
@@ -369,26 +474,57 @@ function Step2({ stage, onStage }: { stage: BusinessStage | ""; onStage: (v: Bus
   );
 }
 
-function Step3({ challenge, onChallenge }: { challenge: string; onChallenge: (v: string) => void }) {
+function Step3({
+  challenge,
+  onChallenge,
+}: {
+  challenge: string;
+  onChallenge: (v: string) => void;
+}) {
   return (
     <div>
       <StepLabel step={2} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {CHALLENGES.map(({ id, label, desc, Icon }) => (
-          <OptionCard key={id} selected={challenge === id} onClick={() => onChallenge(id)} accentColor="#06b6d4">
+          <OptionCard
+            key={id}
+            selected={challenge === id}
+            onClick={() => onChallenge(id)}
+            accentColor="#06b6d4"
+          >
             <div
               style={{
-                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 background: challenge === id ? "rgba(6,182,212,0.18)" : "rgba(255,255,255,0.05)",
                 transition: "background 0.2s",
               }}
             >
-              <Icon style={{ width: 16, height: 16, color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)" }} />
+              <Icon
+                style={{
+                  width: 16,
+                  height: 16,
+                  color: challenge === id ? "#06b6d4" : "rgba(240,244,255,0.35)",
+                }}
+              />
             </div>
             <div>
               <div style={{ fontSize: 13.5, fontWeight: 700, color: "#f0f4ff" }}>{label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(240,244,255,0.38)", lineHeight: 1.4, marginTop: 2 }}>{desc}</div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: "rgba(240,244,255,0.38)",
+                  lineHeight: 1.4,
+                  marginTop: 2,
+                }}
+              >
+                {desc}
+              </div>
             </div>
           </OptionCard>
         ))}

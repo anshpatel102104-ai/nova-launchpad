@@ -9,11 +9,11 @@ import { toast } from "sonner";
 type Category = "bug" | "feature" | "billing" | "question" | "other";
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: "bug",     label: "Bug report" },
+  { value: "bug", label: "Bug report" },
   { value: "feature", label: "Feature request" },
   { value: "billing", label: "Billing issue" },
-  { value: "question",label: "General question" },
-  { value: "other",   label: "Other" },
+  { value: "question", label: "General question" },
+  { value: "other", label: "Other" },
 ];
 
 export function SupportWidget() {
@@ -27,7 +27,9 @@ export function SupportWidget() {
     if (!message.trim()) return;
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const userId = session?.user?.id ?? null;
       const userEmail = session?.user?.email ?? null;
 
@@ -63,7 +65,9 @@ export function SupportWidget() {
       >
         <CheckCircle2 style={{ width: 28, height: 28, color: "#10b981" }} />
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}>
+          <div
+            style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}
+          >
             Message received
           </div>
           <div style={{ fontSize: 12.5, color: "var(--muted-foreground)" }}>
@@ -107,10 +111,15 @@ export function SupportWidget() {
         }}
       >
         <MessageSquare style={{ width: 14, height: 14, color: "var(--primary)" }} />
-        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>Contact support</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>
+          Contact support
+        </span>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}
+      >
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {CATEGORIES.map((c) => (
             <button
@@ -165,7 +174,9 @@ export function SupportWidget() {
             padding: "9px 18px",
             borderRadius: 9,
             border: "none",
-            background: message.trim() ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "var(--surface-2)",
+            background: message.trim()
+              ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
+              : "var(--surface-2)",
             color: message.trim() ? "#fff" : "var(--muted-foreground)",
             fontSize: 12.5,
             fontWeight: 700,
@@ -174,10 +185,11 @@ export function SupportWidget() {
             transition: "all 0.15s",
           }}
         >
-          {loading
-            ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />
-            : <Send style={{ width: 13, height: 13 }} />
-          }
+          {loading ? (
+            <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />
+          ) : (
+            <Send style={{ width: 13, height: 13 }} />
+          )}
           Send message
         </button>
       </form>

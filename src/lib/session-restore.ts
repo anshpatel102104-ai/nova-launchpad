@@ -2,11 +2,7 @@
 
 const STORAGE_KEY = "nova:last-app-path";
 
-const EXCLUDED_PREFIXES = [
-  "/app/dashboard",
-  "/onboarding",
-  "/auth",
-];
+const EXCLUDED_PREFIXES = ["/app/dashboard", "/onboarding", "/auth"];
 
 export function saveLastAppPath(path: string): void {
   if (!path.startsWith("/app/")) return;

@@ -6,12 +6,7 @@ export type Lane = "Idea" | "Offer" | "Customer" | "Systems";
 
 export type BusinessStage = "Idea" | "Validate" | "Launch" | "Operate" | "Scale";
 
-export type Challenge =
-  | "fundraising"
-  | "customers"
-  | "product"
-  | "marketing"
-  | string;
+export type Challenge = "fundraising" | "customers" | "product" | "marketing" | string;
 
 // Ordered specificity: most specific conditions first.
 const RULES: Array<{
@@ -22,11 +17,23 @@ const RULES: Array<{
   // Systems — operating founders who need process/scale
   { stages: ["Operate", "Scale"], challenges: ["fundraising", "product"], lane: "Systems" },
   // Customer — revenue-stage founders growing their customer base
-  { stages: ["Launch", "Operate", "Scale"], challenges: ["customers", "marketing"], lane: "Customer" },
+  {
+    stages: ["Launch", "Operate", "Scale"],
+    challenges: ["customers", "marketing"],
+    lane: "Customer",
+  },
   // Offer — builders who need to define or refine what they're selling
-  { stages: ["Validate", "Launch"], challenges: ["product", "customers", "marketing"], lane: "Offer" },
+  {
+    stages: ["Validate", "Launch"],
+    challenges: ["product", "customers", "marketing"],
+    lane: "Offer",
+  },
   // Idea — early founders still shaping the concept
-  { stages: ["Idea", "Validate"], challenges: ["fundraising", "product", "customers", "marketing"], lane: "Idea" },
+  {
+    stages: ["Idea", "Validate"],
+    challenges: ["fundraising", "product", "customers", "marketing"],
+    lane: "Idea",
+  },
 ];
 
 export function classifyLane(stage: string, challenge: string): Lane {
@@ -42,22 +49,26 @@ export function classifyLane(stage: string, challenge: string): Lane {
 export const LANE_META: Record<Lane, { label: string; description: string; color: string }> = {
   Idea: {
     label: "Idea Explorer",
-    description: "You're shaping a concept. Nova will help you validate, stress-test, and sharpen your idea into something real.",
+    description:
+      "You're shaping a concept. Nova will help you validate, stress-test, and sharpen your idea into something real.",
     color: "#8b5cf6",
   },
   Offer: {
     label: "Offer Builder",
-    description: "You're defining what you sell. Nova will help you package, price, and position your core offer.",
+    description:
+      "You're defining what you sell. Nova will help you package, price, and position your core offer.",
     color: "#3b82f6",
   },
   Customer: {
     label: "Customer Hunter",
-    description: "You're ready to acquire. Nova will help you land your first customers and build repeatable outreach.",
+    description:
+      "You're ready to acquire. Nova will help you land your first customers and build repeatable outreach.",
     color: "#06b6d4",
   },
   Systems: {
     label: "Systems Operator",
-    description: "You're scaling what works. Nova will help you automate, delegate, and build leverage.",
+    description:
+      "You're scaling what works. Nova will help you automate, delegate, and build leverage.",
     color: "#22c55e",
   },
 };

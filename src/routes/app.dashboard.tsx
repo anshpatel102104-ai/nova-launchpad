@@ -365,7 +365,11 @@ function Dashboard() {
   })();
 
   const resumeLabel = resumePath
-    ? resumePath.split("/").pop()?.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session"
+    ? (resumePath
+        .split("/")
+        .pop()
+        ?.replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
     : null;
 
   return (
@@ -387,17 +391,36 @@ function Dashboard() {
           <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
           <span style={{ color: "var(--muted-foreground)", flex: 1 }}>
             Resume where you left off:
-            <span style={{ color: "var(--foreground)", fontWeight: 600, marginLeft: 4 }}>{resumeLabel}</span>
+            <span style={{ color: "var(--foreground)", fontWeight: 600, marginLeft: 4 }}>
+              {resumeLabel}
+            </span>
           </span>
           <Link
             to={resumePath}
-            style={{ fontSize: 12, color: "var(--primary)", fontWeight: 600, textDecoration: "none", marginRight: 8 }}
+            style={{
+              fontSize: 12,
+              color: "var(--primary)",
+              fontWeight: 600,
+              textDecoration: "none",
+              marginRight: 8,
+            }}
           >
             Continue <ArrowRight style={{ display: "inline", width: 10, height: 10 }} />
           </Link>
           <button
-            onClick={() => { clearLastAppPath(); setResumePath(null); }}
-            style={{ background: "none", border: "none", color: "var(--muted-foreground)", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}
+            onClick={() => {
+              clearLastAppPath();
+              setResumePath(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--muted-foreground)",
+              cursor: "pointer",
+              fontSize: 14,
+              lineHeight: 1,
+              padding: 0,
+            }}
             aria-label="Dismiss"
           >
             ×
@@ -643,10 +666,7 @@ function Dashboard() {
       {/* ── YOUR PATH + WHAT NEXT ROW (Sprint 2 High) ── */}
       {currentOrgId && (
         <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 2 }}>
-          <YourPathCard
-            lane={classifyLane(orgStage, "")}
-            stage={orgStage}
-          />
+          <YourPathCard lane={classifyLane(orgStage, "")} stage={orgStage} />
           <WhatNextCard
             lane={classifyLane(orgStage, "")}
             hasValidatedIdea={succeeded("validate-idea")}

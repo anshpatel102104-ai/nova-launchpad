@@ -5,7 +5,13 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, RefreshCw, Lock, WifiOff, Frown, ArrowRight } from "lucide-react";
 
-export type ErrorVariant = "generic" | "network" | "permission" | "empty" | "rate_limit" | "not_found";
+export type ErrorVariant =
+  | "generic"
+  | "network"
+  | "permission"
+  | "empty"
+  | "rate_limit"
+  | "not_found";
 
 interface Props {
   variant?: ErrorVariant;
@@ -19,14 +25,49 @@ interface Props {
 
 const VARIANT_CONFIG: Record<
   ErrorVariant,
-  { icon: React.ComponentType<{ style?: React.CSSProperties }>; defaultTitle: string; defaultDesc: string; color: string }
+  {
+    icon: React.ComponentType<{ style?: React.CSSProperties }>;
+    defaultTitle: string;
+    defaultDesc: string;
+    color: string;
+  }
 > = {
-  generic:      { icon: AlertCircle, defaultTitle: "Something went wrong",   defaultDesc: "An unexpected error occurred. Try again or contact support.",              color: "#ef4444" },
-  network:      { icon: WifiOff,     defaultTitle: "Connection issue",        defaultDesc: "Check your internet connection and try again.",                           color: "#f59e0b" },
-  permission:   { icon: Lock,        defaultTitle: "Access restricted",       defaultDesc: "You don't have permission to view this. Upgrade your plan to unlock it.", color: "#8b5cf6" },
-  empty:        { icon: Frown,       defaultTitle: "Nothing here yet",        defaultDesc: "Get started by running a tool or adding data.",                          color: "#6366f1" },
-  rate_limit:   { icon: AlertCircle, defaultTitle: "Limit reached",           defaultDesc: "You've hit your monthly limit. Upgrade to continue.",                    color: "#f97316" },
-  not_found:    { icon: AlertCircle, defaultTitle: "Not found",               defaultDesc: "This resource doesn't exist or was removed.",                            color: "#64748b" },
+  generic: {
+    icon: AlertCircle,
+    defaultTitle: "Something went wrong",
+    defaultDesc: "An unexpected error occurred. Try again or contact support.",
+    color: "#ef4444",
+  },
+  network: {
+    icon: WifiOff,
+    defaultTitle: "Connection issue",
+    defaultDesc: "Check your internet connection and try again.",
+    color: "#f59e0b",
+  },
+  permission: {
+    icon: Lock,
+    defaultTitle: "Access restricted",
+    defaultDesc: "You don't have permission to view this. Upgrade your plan to unlock it.",
+    color: "#8b5cf6",
+  },
+  empty: {
+    icon: Frown,
+    defaultTitle: "Nothing here yet",
+    defaultDesc: "Get started by running a tool or adding data.",
+    color: "#6366f1",
+  },
+  rate_limit: {
+    icon: AlertCircle,
+    defaultTitle: "Limit reached",
+    defaultDesc: "You've hit your monthly limit. Upgrade to continue.",
+    color: "#f97316",
+  },
+  not_found: {
+    icon: AlertCircle,
+    defaultTitle: "Not found",
+    defaultDesc: "This resource doesn't exist or was removed.",
+    color: "#64748b",
+  },
 };
 
 export function ErrorState({
@@ -56,10 +97,18 @@ export function ErrorState({
           background: `${cfg.color}08`,
         }}
       >
-        <Icon style={{ width: 14, height: 14, color: cfg.color, flexShrink: 0 } as React.CSSProperties} />
+        <Icon
+          style={{ width: 14, height: 14, color: cfg.color, flexShrink: 0 } as React.CSSProperties}
+        />
         <div style={{ flex: 1 }}>
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--foreground)" }}>{displayTitle}</span>
-          {description && <span style={{ fontSize: 12, color: "var(--muted-foreground)", marginLeft: 6 }}>{displayDesc}</span>}
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--foreground)" }}>
+            {displayTitle}
+          </span>
+          {description && (
+            <span style={{ fontSize: 12, color: "var(--muted-foreground)", marginLeft: 6 }}>
+              {displayDesc}
+            </span>
+          )}
         </div>
         {onRetry && (
           <button

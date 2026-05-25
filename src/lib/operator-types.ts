@@ -57,14 +57,14 @@ export interface OperatorSuccessResponse {
   status: "success";
   session_id: string;
   agent_run_id?: string;
-  reply: string;                   // human-readable markdown reply
-  tool_key?: string;               // if a tool was dispatched
-  tool_output?: Record<string, unknown>;  // raw tool output
-  formatted_output?: string;       // rendered markdown of tool output
+  reply: string; // human-readable markdown reply
+  tool_key?: string; // if a tool was dispatched
+  tool_output?: Record<string, unknown>; // raw tool output
+  formatted_output?: string; // rendered markdown of tool output
   credits_used: number;
   credits_remaining: number;
-  qa_score?: number;               // 0–100 confidence from QA agent
-  suggested_next?: string[];       // tool keys or action slugs to suggest
+  qa_score?: number; // 0–100 confidence from QA agent
+  suggested_next?: string[]; // tool keys or action slugs to suggest
 }
 
 export interface OperatorClarificationResponse {

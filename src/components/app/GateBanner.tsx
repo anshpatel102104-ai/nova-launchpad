@@ -52,7 +52,14 @@ export function GateBanner({ feature, children, fallback }: Props) {
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}>
           Feature locked
         </div>
-        <div style={{ fontSize: 12.5, color: "var(--muted-foreground)", lineHeight: 1.55, maxWidth: 280 }}>
+        <div
+          style={{
+            fontSize: 12.5,
+            color: "var(--muted-foreground)",
+            lineHeight: 1.55,
+            maxWidth: 280,
+          }}
+        >
           {upsell}
         </div>
       </div>

@@ -17,14 +17,22 @@ const LANE_PERSONAS: Record<Lane, string> = {
 };
 
 const MISSION_PROMPTS: Record<string, string> = {
-  "validate-idea": "The user's active mission is validating their business idea. Help them design validation experiments, assess market signal, and decide whether to proceed or pivot.",
-  "build-offer": "The user's active mission is building their core offer. Guide them to define a clear headline, price, promise, and delivery mechanism.",
-  "launch-gtm": "The user's active mission is launching their go-to-market. Help them identify the highest-leverage distribution channel for their specific offer and audience.",
-  "find-customers": "The user's active mission is finding their first customers. Focus exclusively on outreach strategies, lead identification, and conversation starters.",
-  "close-first-deal": "The user's active mission is closing their first paid deal. Help them handle objections, craft proposals, and convert conversations into contracts.",
-  "automate-followup": "The user's active mission is automating follow-up sequences. Help them design the right trigger, message cadence, and personalisation approach.",
-  "build-pipeline": "The user's active mission is building a sales pipeline. Help them set up CRM stages, define qualification criteria, and establish a daily outreach cadence.",
-  "scale-delivery": "The user's active mission is scaling delivery. Help them systemize onboarding, standardise deliverables, and delegate or automate repeatable tasks.",
+  "validate-idea":
+    "The user's active mission is validating their business idea. Help them design validation experiments, assess market signal, and decide whether to proceed or pivot.",
+  "build-offer":
+    "The user's active mission is building their core offer. Guide them to define a clear headline, price, promise, and delivery mechanism.",
+  "launch-gtm":
+    "The user's active mission is launching their go-to-market. Help them identify the highest-leverage distribution channel for their specific offer and audience.",
+  "find-customers":
+    "The user's active mission is finding their first customers. Focus exclusively on outreach strategies, lead identification, and conversation starters.",
+  "close-first-deal":
+    "The user's active mission is closing their first paid deal. Help them handle objections, craft proposals, and convert conversations into contracts.",
+  "automate-followup":
+    "The user's active mission is automating follow-up sequences. Help them design the right trigger, message cadence, and personalisation approach.",
+  "build-pipeline":
+    "The user's active mission is building a sales pipeline. Help them set up CRM stages, define qualification criteria, and establish a daily outreach cadence.",
+  "scale-delivery":
+    "The user's active mission is scaling delivery. Help them systemize onboarding, standardise deliverables, and delegate or automate repeatable tasks.",
 };
 
 const STAGE_CONTEXT: Record<string, string> = {
@@ -46,23 +54,34 @@ export function buildSystemPrompt(context: OperatorContext): string {
   if (stageCtx) parts.push(`Current stage: ${stageCtx}`);
 
   const missionTitle = context.activeMission?.title?.toLowerCase() ?? "";
-  const missionKey = Object.keys(MISSION_PROMPTS).find((k) => missionTitle.includes(k.replace(/-/g, " ").split(" ")[0]));
+  const missionKey = Object.keys(MISSION_PROMPTS).find((k) =>
+    missionTitle.includes(k.replace(/-/g, " ").split(" ")[0]),
+  );
   if (missionKey) parts.push(MISSION_PROMPTS[missionKey]);
   else if (context.activeMission?.title) {
-    parts.push(`The user's active mission is: "${context.activeMission.title}". Tailor advice to help them complete this mission.`);
+    parts.push(
+      `The user's active mission is: "${context.activeMission.title}". Tailor advice to help them complete this mission.`,
+    );
   }
 
   if (context.recentToolRuns && context.recentToolRuns.length > 0) {
-    const tools = context.recentToolRuns.slice(0, 3).map((r) => r.tool_key).join(", ");
+    const tools = context.recentToolRuns
+      .slice(0, 3)
+      .map((r) => r.tool_key)
+      .join(", ");
     parts.push(`Recently used tools: ${tools}. Reference their outputs when giving advice.`);
   }
 
   const plan = (context.subscription as { plan?: string } | null)?.plan ?? "starter";
   if (plan === "starter") {
-    parts.push("The user is on the Starter plan. Do not reference premium features they cannot access.");
+    parts.push(
+      "The user is on the Starter plan. Do not reference premium features they cannot access.",
+    );
   }
 
-  parts.push("Keep responses under 200 words unless a detailed breakdown is explicitly requested. Use bullet points for multi-step advice. End with a specific, actionable next step.");
+  parts.push(
+    "Keep responses under 200 words unless a detailed breakdown is explicitly requested. Use bullet points for multi-step advice. End with a specific, actionable next step.",
+  );
 
   return parts.join("\n\n");
 }
@@ -70,7 +89,7 @@ export function buildSystemPrompt(context: OperatorContext): string {
 export function getMissionPrompt(missionTitle: string): string {
   const title = missionTitle.toLowerCase();
   const key = Object.keys(MISSION_PROMPTS).find((k) =>
-    title.includes(k.replace(/-/g, " ").split(" ")[0])
+    title.includes(k.replace(/-/g, " ").split(" ")[0]),
   );
   return key ? MISSION_PROMPTS[key] : `Help the user complete their mission: "${missionTitle}"`;
 }

@@ -37,7 +37,8 @@ supabase.auth.getSession().then(({ data }) => {
 export function track(event: AnalyticsEvent, opts: TrackOptions = {}): void {
   if (!_userId) return;
 
-  const supabaseUrl = (import.meta as { env: { VITE_SUPABASE_URL?: string } }).env.VITE_SUPABASE_URL;
+  const supabaseUrl = (import.meta as { env: { VITE_SUPABASE_URL?: string } }).env
+    .VITE_SUPABASE_URL;
   if (!supabaseUrl) return;
 
   supabase.auth.getSession().then(({ data }) => {

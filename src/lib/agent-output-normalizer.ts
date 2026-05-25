@@ -39,11 +39,20 @@ function extractBullets(obj: UnknownRecord, ...keys: string[]): string[] {
     const val = obj[key];
     if (Array.isArray(val)) {
       return val
-        .map((v) => (typeof v === "string" ? v : typeof v === "object" && v !== null ? Object.values(v).join(" ") : String(v)))
+        .map((v) =>
+          typeof v === "string"
+            ? v
+            : typeof v === "object" && v !== null
+              ? Object.values(v).join(" ")
+              : String(v),
+        )
         .filter(Boolean);
     }
     if (typeof val === "string" && val.includes("\n")) {
-      return val.split("\n").map((l) => l.replace(/^[-*•]\s*/, "").trim()).filter(Boolean);
+      return val
+        .split("\n")
+        .map((l) => l.replace(/^[-*•]\s*/, "").trim())
+        .filter(Boolean);
     }
   }
   return [];
@@ -79,7 +88,15 @@ function extractSections(obj: UnknownRecord): { title: string; content: string }
 }
 
 export function normalizeAgentOutput(raw: unknown): NormalizedOutput {
-  const empty: NormalizedOutput = { type: "empty", headline: null, body: null, bullets: [], score: null, sections: [], raw: {} };
+  const empty: NormalizedOutput = {
+    type: "empty",
+    headline: null,
+    body: null,
+    bullets: [],
+    score: null,
+    sections: [],
+    raw: {},
+  };
 
   if (!raw || typeof raw !== "object") return empty;
 
@@ -102,10 +119,47 @@ export function normalizeAgentOutput(raw: unknown): NormalizedOutput {
 
   return {
     type: "success",
-    headline: extractString(result as UnknownRecord, "headline", "offer_name", "idea", "title", "name", "summary"),
-    body: extractString(result as UnknownRecord, "summary", "overview", "description", "body", "content", "reply", "analysis", "pitch"),
-    bullets: extractBullets(result as UnknownRecord, "key_insights", "insights", "bullets", "points", "strengths", "weaknesses", "opportunities", "risks", "recommendations", "steps"),
-    score: extractNumber(result as UnknownRecord, "score", "market_score", "viability_score", "funding_score", "confidence"),
+    headline: extractString(
+      result as UnknownRecord,
+      "headline",
+      "offer_name",
+      "idea",
+      "title",
+      "name",
+      "summary",
+    ),
+    body: extractString(
+      result as UnknownRecord,
+      "summary",
+      "overview",
+      "description",
+      "body",
+      "content",
+      "reply",
+      "analysis",
+      "pitch",
+    ),
+    bullets: extractBullets(
+      result as UnknownRecord,
+      "key_insights",
+      "insights",
+      "bullets",
+      "points",
+      "strengths",
+      "weaknesses",
+      "opportunities",
+      "risks",
+      "recommendations",
+      "steps",
+    ),
+    score: extractNumber(
+      result as UnknownRecord,
+      "score",
+      "market_score",
+      "viability_score",
+      "funding_score",
+      "confidence",
+    ),
     sections: extractSections(result as UnknownRecord),
     raw: result as UnknownRecord,
   };

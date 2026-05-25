@@ -36,7 +36,10 @@ const LANE_NEXT_STEPS: Record<Lane, { label: string; to: string }[]> = {
   ],
 };
 
-const LANE_ICONS: Record<Lane, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+const LANE_ICONS: Record<
+  Lane,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
   Idea: Lightbulb,
   Offer: Sparkles,
   Customer: Users,
@@ -55,7 +58,10 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
   const Icon = LANE_ICONS[lane];
   const nextSteps = LANE_NEXT_STEPS[lane];
   const stages = LANE_STAGES[lane];
-  const stageIdx = Math.max(0, stages.findIndex((s) => s.toLowerCase() === stage.toLowerCase()));
+  const stageIdx = Math.max(
+    0,
+    stages.findIndex((s) => s.toLowerCase() === stage.toLowerCase()),
+  );
 
   return (
     <div
@@ -109,10 +115,26 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
           <Icon style={{ width: 18, height: 18, color: meta.color }} />
         </div>
         <div>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: meta.color, marginBottom: 1 }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: meta.color,
+              marginBottom: 1,
+            }}
+          >
             Your Path
           </div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: "var(--foreground)", letterSpacing: "-0.02em" }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 800,
+              color: "var(--foreground)",
+              letterSpacing: "-0.02em",
+            }}
+          >
             {meta.label} Lane
           </div>
         </div>
@@ -175,16 +197,21 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
       </div>
 
       {/* Next steps */}
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: 8 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "var(--muted-foreground)",
+          marginBottom: 8,
+        }}
+      >
         Next steps
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {nextSteps.map((step, i) => (
-          <Link
-            key={step.to}
-            to={step.to}
-            style={{ textDecoration: "none" }}
-          >
+          <Link key={step.to} to={step.to} style={{ textDecoration: "none" }}>
             <div
               style={{
                 display: "flex",
@@ -202,8 +229,10 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
                 (e.currentTarget as HTMLElement).style.background = `${meta.color}10`;
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = i === 0 ? `${meta.color}25` : "rgba(255,255,255,0.05)";
-                (e.currentTarget as HTMLElement).style.background = i === 0 ? `${meta.color}08` : "transparent";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  i === 0 ? `${meta.color}25` : "rgba(255,255,255,0.05)";
+                (e.currentTarget as HTMLElement).style.background =
+                  i === 0 ? `${meta.color}08` : "transparent";
               }}
             >
               <span
@@ -223,7 +252,14 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
               >
                 {i + 1}
               </span>
-              <span style={{ flex: 1, fontSize: 12, fontWeight: i === 0 ? 600 : 500, color: i === 0 ? "var(--foreground)" : "var(--muted-foreground)" }}>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 12,
+                  fontWeight: i === 0 ? 600 : 500,
+                  color: i === 0 ? "var(--foreground)" : "var(--muted-foreground)",
+                }}
+              >
                 {step.label}
               </span>
               {i === 0 && <ArrowRight style={{ width: 11, height: 11, color: meta.color }} />}

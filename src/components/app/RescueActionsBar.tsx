@@ -19,13 +19,16 @@ type RescueAction = "explain" | "pick" | "auto";
 
 type ActionState = { loading: boolean; result: string | null };
 
-const ACTION_CONFIG: Record<RescueAction, {
-  label: string;
-  shortLabel: string;
-  icon: React.ComponentType<{ style?: React.CSSProperties }>;
-  color: string;
-  prompt: (content: string) => string;
-}> = {
+const ACTION_CONFIG: Record<
+  RescueAction,
+  {
+    label: string;
+    shortLabel: string;
+    icon: React.ComponentType<{ style?: React.CSSProperties }>;
+    color: string;
+    prompt: (content: string) => string;
+  }
+> = {
   explain: {
     label: "Explain Simply",
     shortLabel: "Explain",
@@ -53,7 +56,9 @@ const ACTION_CONFIG: Record<RescueAction, {
 };
 
 async function callOperator(prompt: string, workspaceId?: string | null): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) throw new Error("Not authenticated");
 
   const resp = await fetch(
@@ -65,7 +70,7 @@ async function callOperator(prompt: string, workspaceId?: string | null): Promis
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ message: prompt, workspace_id: workspaceId ?? null }),
-    }
+    },
   );
   if (!resp.ok) throw new Error("Operator call failed");
   const json = await resp.json();
@@ -106,53 +111,54 @@ export function RescueActionsBar({ content, workspaceId, onResult }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {(Object.entries(ACTION_CONFIG) as [RescueAction, typeof ACTION_CONFIG[RescueAction]][]).map(
-          ([key, cfg]) => {
-            const { loading } = states[key];
-            const Icon = cfg.icon;
-            return (
-              <button
-                key={key}
-                onClick={() => runAction(key)}
-                disabled={loading}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 5,
-                  padding: "5px 12px",
-                  borderRadius: 7,
-                  border: `1px solid ${cfg.color}30`,
-                  background: activeAction === key ? `${cfg.color}12` : "var(--surface-2)",
-                  color: cfg.color,
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  cursor: loading ? "wait" : "pointer",
-                  fontFamily: "inherit",
-                  transition: "all 0.15s",
-                  opacity: loading ? 0.7 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading) {
-                    (e.currentTarget as HTMLElement).style.background = `${cfg.color}12`;
-                    (e.currentTarget as HTMLElement).style.borderColor = `${cfg.color}50`;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeAction !== key) {
-                    (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                    (e.currentTarget as HTMLElement).style.borderColor = `${cfg.color}30`;
-                  }
-                }}
-              >
-                {loading
-                  ? <Loader2 style={{ width: 11, height: 11, animation: "spin 1s linear infinite" }} />
-                  : <Icon style={{ width: 11, height: 11 } as React.CSSProperties} />
+        {(
+          Object.entries(ACTION_CONFIG) as [RescueAction, (typeof ACTION_CONFIG)[RescueAction]][]
+        ).map(([key, cfg]) => {
+          const { loading } = states[key];
+          const Icon = cfg.icon;
+          return (
+            <button
+              key={key}
+              onClick={() => runAction(key)}
+              disabled={loading}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "5px 12px",
+                borderRadius: 7,
+                border: `1px solid ${cfg.color}30`,
+                background: activeAction === key ? `${cfg.color}12` : "var(--surface-2)",
+                color: cfg.color,
+                fontSize: 11.5,
+                fontWeight: 600,
+                cursor: loading ? "wait" : "pointer",
+                fontFamily: "inherit",
+                transition: "all 0.15s",
+                opacity: loading ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  (e.currentTarget as HTMLElement).style.background = `${cfg.color}12`;
+                  (e.currentTarget as HTMLElement).style.borderColor = `${cfg.color}50`;
                 }
-                {cfg.shortLabel}
-              </button>
-            );
-          }
-        )}
+              }}
+              onMouseLeave={(e) => {
+                if (activeAction !== key) {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                  (e.currentTarget as HTMLElement).style.borderColor = `${cfg.color}30`;
+                }
+              }}
+            >
+              {loading ? (
+                <Loader2 style={{ width: 11, height: 11, animation: "spin 1s linear infinite" }} />
+              ) : (
+                <Icon style={{ width: 11, height: 11 } as React.CSSProperties} />
+              )}
+              {cfg.shortLabel}
+            </button>
+          );
+        })}
       </div>
 
       {/* Result panel */}

@@ -12,7 +12,8 @@ interface Props {
 }
 
 export function UsageBar({ compact = false, showUpgrade = true }: Props) {
-  const { used, limit, remaining, percentUsed, isAtLimit, isNearLimit, isLoading } = useUsageLimit();
+  const { used, limit, remaining, percentUsed, isAtLimit, isNearLimit, isLoading } =
+    useUsageLimit();
 
   if (isLoading) return null;
   if (!limit) return null;
@@ -29,7 +30,14 @@ export function UsageBar({ compact = false, showUpgrade = true }: Props) {
             {used} / {limit}
           </span>
         </div>
-        <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        <div
+          style={{
+            height: 3,
+            borderRadius: 2,
+            background: "rgba(255,255,255,0.08)",
+            overflow: "hidden",
+          }}
+        >
           <div
             style={{
               height: "100%",
@@ -54,10 +62,19 @@ export function UsageBar({ compact = false, showUpgrade = true }: Props) {
         padding: "16px 20px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Zap style={{ width: 14, height: 14, color: barColor }} />
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--foreground)" }}>AI Generations</span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--foreground)" }}>
+            AI Generations
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {(isAtLimit || isNearLimit) && (
@@ -77,13 +94,23 @@ export function UsageBar({ compact = false, showUpgrade = true }: Props) {
               {isAtLimit ? "Limit reached" : "Near limit"}
             </span>
           )}
-          <span style={{ fontSize: 12.5, fontWeight: 700, fontFamily: "monospace", color: barColor }}>
+          <span
+            style={{ fontSize: 12.5, fontWeight: 700, fontFamily: "monospace", color: barColor }}
+          >
             {used} / {limit}
           </span>
         </div>
       </div>
 
-      <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 }}>
+      <div
+        style={{
+          height: 6,
+          borderRadius: 3,
+          background: "rgba(255,255,255,0.08)",
+          overflow: "hidden",
+          marginBottom: 8,
+        }}
+      >
         <div
           style={{
             height: "100%",

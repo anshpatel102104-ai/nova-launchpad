@@ -5,10 +5,7 @@
 export type Plan = "starter" | "growth" | "pro" | "accelerator";
 export type TaskComplexity = "simple" | "standard" | "complex" | "critical";
 
-export type ClaudeModel =
-  | "claude-haiku-4-5-20251001"
-  | "claude-sonnet-4-6"
-  | "claude-opus-4-7";
+export type ClaudeModel = "claude-haiku-4-5-20251001" | "claude-sonnet-4-6" | "claude-opus-4-7";
 
 interface ModelConfig {
   model: ClaudeModel;
@@ -17,16 +14,16 @@ interface ModelConfig {
 }
 
 const PLAN_MODELS: Record<Plan, ClaudeModel> = {
-  starter:     "claude-haiku-4-5-20251001",
-  growth:      "claude-sonnet-4-6",
-  pro:         "claude-sonnet-4-6",
+  starter: "claude-haiku-4-5-20251001",
+  growth: "claude-sonnet-4-6",
+  pro: "claude-sonnet-4-6",
   accelerator: "claude-opus-4-7",
 };
 
 const COMPLEXITY_ESCALATION: Record<TaskComplexity, number> = {
-  simple:   0,
+  simple: 0,
   standard: 0,
-  complex:  1,
+  complex: 1,
   critical: 2,
 };
 
@@ -37,9 +34,13 @@ const MODEL_TIER: ClaudeModel[] = [
 ];
 
 const MODEL_CONFIGS: Record<ClaudeModel, ModelConfig> = {
-  "claude-haiku-4-5-20251001": { model: "claude-haiku-4-5-20251001", maxTokens: 1024,  label: "Fast" },
-  "claude-sonnet-4-6":         { model: "claude-sonnet-4-6",         maxTokens: 4096,  label: "Balanced" },
-  "claude-opus-4-7":           { model: "claude-opus-4-7",           maxTokens: 8192,  label: "Expert" },
+  "claude-haiku-4-5-20251001": {
+    model: "claude-haiku-4-5-20251001",
+    maxTokens: 1024,
+    label: "Fast",
+  },
+  "claude-sonnet-4-6": { model: "claude-sonnet-4-6", maxTokens: 4096, label: "Balanced" },
+  "claude-opus-4-7": { model: "claude-opus-4-7", maxTokens: 8192, label: "Expert" },
 };
 
 const COMPLEX_TOOL_KEYS = new Set([
@@ -51,14 +52,12 @@ const COMPLEX_TOOL_KEYS = new Set([
   "kill-my-idea",
 ]);
 
-const CRITICAL_TOOL_KEYS = new Set([
-  "operator-deep-analysis",
-]);
+const CRITICAL_TOOL_KEYS = new Set(["operator-deep-analysis"]);
 
 export function routeModel(
   plan: Plan = "starter",
   toolKey?: string,
-  complexity?: TaskComplexity
+  complexity?: TaskComplexity,
 ): ModelConfig {
   const baseTierIdx = MODEL_TIER.indexOf(PLAN_MODELS[plan]);
 

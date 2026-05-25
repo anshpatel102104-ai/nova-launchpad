@@ -37,7 +37,16 @@ type Recommendation = {
 };
 
 function pickRecommendation(props: Props): Recommendation {
-  const { lane, hasValidatedIdea, hasPitch, hasOffer, hasGtm, hasLeads, hasAutomation, hasWonLead } = props;
+  const {
+    lane,
+    hasValidatedIdea,
+    hasPitch,
+    hasOffer,
+    hasGtm,
+    hasLeads,
+    hasAutomation,
+    hasWonLead,
+  } = props;
 
   if (lane === "Idea" || (!hasValidatedIdea && !hasOffer)) {
     if (!hasValidatedIdea) {
@@ -175,7 +184,14 @@ export function WhatNextCard(props: Props) {
         }}
       />
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 14,
+        }}
+      >
         <div
           style={{
             fontSize: 9,
