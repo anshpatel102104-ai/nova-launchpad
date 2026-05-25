@@ -147,7 +147,29 @@ Deno.serve(async (req) => {
 
   const systemPrompt = `${BASE_SYSTEM}\n\n${lanePersona}\n\nContext:\n${contextLines}`;
 
-  // ── 4. Call Claude API ────────────────────────────────────────────
+  // ── 4. Load session transcript for multi-turn context ─────────────
+  type MsgRole = "user" | "assistant";
+  const conversationHistory: { role: MsgRole; content: string }[] = [];
+
+  if (sessionId) {
+    const { data: priorRuns } = await admin
+      .from("agent_runs")
+      .select("input, output, created_at")
+      .eq("session_id", sessionId)
+      .eq("agent_type", "operator")
+      .order("created_at", { ascending: true })
+      .limit(10);
+
+    for (const run of priorRuns ?? []) {
+      const input = run.input as { message?: string } | null;
+      const output = run.output as { reply?: string } | null;
+      if (input?.message) conversationHistory.push({ role: "user", content: input.message });
+      if (output?.reply) conversationHistory.push({ role: "assistant", content: output.reply });
+    }
+  }
+  conversationHistory.push({ role: "user", content: message });
+
+  // ── 5. Call Claude API ────────────────────────────────────────────
   const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!anthropicKey) return json({ error: "AI provider not configured" }, 503);
 
@@ -162,7 +184,7 @@ Deno.serve(async (req) => {
       model: "claude-sonnet-4-6",
       max_tokens: 600,
       system: systemPrompt,
-      messages: [{ role: "user", content: message }],
+      messages: conversationHistory,
     });
     reply = response.content[0].type === "text" ? response.content[0].text : "";
     tokensIn = response.usage.input_tokens;
@@ -173,7 +195,7 @@ Deno.serve(async (req) => {
 
   const durationMs = Date.now() - t0;
 
-  // ── 5. Persist agent run ────────────────────────────────────────────
+  // ── 6. Persist agent run ────────────────────────────────────────────
   const { data: agentRun } = await admin
     .from("agent_runs")
     .insert({
