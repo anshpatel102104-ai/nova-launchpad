@@ -5,6 +5,9 @@ import { AskOperatorCard } from "@/components/app/dashboard/AskOperatorCard";
 import { ApprovedOfferCard } from "@/components/app/dashboard/ApprovedOfferCard";
 import { LaunchAssetsCard } from "@/components/app/dashboard/LaunchAssetsCard";
 import { AutomationStatusCard } from "@/components/app/dashboard/AutomationStatusCard";
+import { YourPathCard } from "@/components/app/dashboard/YourPathCard";
+import { WhatNextCard } from "@/components/app/dashboard/WhatNextCard";
+import { classifyLane } from "@/lib/lane-classifier";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery,
@@ -637,10 +640,30 @@ function Dashboard() {
         </section>
       )}
 
+      {/* ── YOUR PATH + WHAT NEXT ROW (Sprint 2 High) ── */}
+      {currentOrgId && (
+        <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 2 }}>
+          <YourPathCard
+            lane={classifyLane(orgStage, "")}
+            stage={orgStage}
+          />
+          <WhatNextCard
+            lane={classifyLane(orgStage, "")}
+            hasValidatedIdea={succeeded("validate-idea")}
+            hasPitch={succeeded("generate-pitch")}
+            hasOffer={succeeded("generate-offer")}
+            hasGtm={succeeded("generate-gtm-strategy")}
+            hasLeads={leads.length > 0}
+            hasAutomation={automations.length > 0}
+            hasWonLead={wonLeads > 0}
+          />
+        </section>
+      )}
+
       {/* Stat row */}
       <section
         className="rise-in grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-        style={{ ["--i" as string]: 2 }}
+        style={{ ["--i" as string]: 3 }}
       >
         <GlowStatCard
           label="Business Stage"
@@ -719,7 +742,7 @@ function Dashboard() {
 
       {/* ── YOUR OUTPUTS ROW (Sprint 3 Critical) ── */}
       {currentOrgId && (
-        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 3 }}>
+        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 4 }}>
           <div className="lg:col-span-4">
             <ApprovedOfferCard orgId={currentOrgId} />
           </div>
@@ -733,7 +756,7 @@ function Dashboard() {
       )}
 
       {/* Activity + Next Action */}
-      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 4 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 5 }}>
         {/* Activity feed */}
         <div
           className="lg:col-span-8 overflow-hidden rounded-2xl"
@@ -1033,7 +1056,7 @@ function Dashboard() {
       <section
         className="rise-in overflow-hidden rounded-2xl"
         style={{
-          ["--i" as string]: 5,
+          ["--i" as string]: 6,
           background: "var(--surface)",
           border: "1px solid rgba(59,130,246,0.1)",
         }}
@@ -1099,7 +1122,7 @@ function Dashboard() {
       </section>
 
       {/* Launchpad + Nova grid */}
-      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 6 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 7 }}>
         {/* Launchpad modules */}
         <div
           className="overflow-hidden rounded-2xl"
