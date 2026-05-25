@@ -2,6 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
 import { AskOperatorCard } from "@/components/app/dashboard/AskOperatorCard";
+import { ApprovedOfferCard } from "@/components/app/dashboard/ApprovedOfferCard";
+import { LaunchAssetsCard } from "@/components/app/dashboard/LaunchAssetsCard";
+import { AutomationStatusCard } from "@/components/app/dashboard/AutomationStatusCard";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery,
@@ -669,8 +672,23 @@ function Dashboard() {
         />
       </section>
 
+      {/* ── YOUR OUTPUTS ROW (Sprint 3 Critical) ── */}
+      {currentOrgId && (
+        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 3 }}>
+          <div className="lg:col-span-4">
+            <ApprovedOfferCard orgId={currentOrgId} />
+          </div>
+          <div className="lg:col-span-5">
+            <LaunchAssetsCard orgId={currentOrgId} />
+          </div>
+          <div className="lg:col-span-3">
+            <AutomationStatusCard orgId={currentOrgId} userId={user?.id} />
+          </div>
+        </section>
+      )}
+
       {/* Activity + Next Action */}
-      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 3 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 4 }}>
         {/* Activity feed */}
         <div
           className="lg:col-span-8 overflow-hidden rounded-2xl"
@@ -970,7 +988,7 @@ function Dashboard() {
       <section
         className="rise-in overflow-hidden rounded-2xl"
         style={{
-          ["--i" as string]: 4,
+          ["--i" as string]: 5,
           background: "var(--surface)",
           border: "1px solid rgba(59,130,246,0.1)",
         }}
@@ -1036,7 +1054,7 @@ function Dashboard() {
       </section>
 
       {/* Launchpad + Nova grid */}
-      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 5 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 6 }}>
         {/* Launchpad modules */}
         <div
           className="overflow-hidden rounded-2xl"
