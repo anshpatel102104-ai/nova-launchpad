@@ -8,8 +8,10 @@ import { LaunchAssetsCard } from "@/components/app/dashboard/LaunchAssetsCard";
 import { AutomationStatusCard } from "@/components/app/dashboard/AutomationStatusCard";
 import { YourPathCard } from "@/components/app/dashboard/YourPathCard";
 import { WhatNextCard } from "@/components/app/dashboard/WhatNextCard";
+import { PlaybookSection } from "@/components/app/dashboard/PlaybookSection";
 import { classifyLane } from "@/lib/lane-classifier";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   organizationQuery,
   subscriptionQuery,
@@ -21,6 +23,7 @@ import {
   integrationsQuery,
   automationSettingsQuery,
 } from "@/lib/queries";
+import { queryOptions } from "@tanstack/react-query";
 import {
   Sparkles,
   Rocket,
@@ -127,6 +130,52 @@ const NOVA_SYSTEMS = [
   { key: "reports", name: "Reporting", icon: LineChart, to: "/app/nova/reports" },
 ] as const;
 
+const PLAN_TIER_PRICES: Record<string, number> = {
+  starter: 0,
+  launch: 49,
+  operate: 149,
+  scale: 299,
+};
+
+const ALL_TOOLS = [
+  { key: "validate-idea", name: "Idea Validator", desc: "Pressure-test your market hypothesis.", icon: Lightbulb, to: "/app/launchpad/idea-validator" },
+  { key: "generate-pitch", name: "Pitch Generator", desc: "Investor-ready pitch in minutes.", icon: Megaphone, to: "/app/launchpad/pitch-generator" },
+  { key: "generate-gtm-strategy", name: "GTM Strategy", desc: "Channels, ICP, and messaging in one plan.", icon: Target, to: "/app/launchpad/gtm-strategy" },
+  { key: "generate-offer", name: "Offer Builder", desc: "Craft an irresistible offer.", icon: Sparkles, to: "/app/launchpad/offer" },
+  { key: "kill-my-idea", name: "Kill My Idea", desc: "Steel-man the worst-case scenario.", icon: Skull, to: "/app/launchpad/kill-my-idea" },
+  { key: "idea-vs-idea", name: "Idea vs Idea", desc: "Compare two ideas side-by-side.", icon: GitCompare, to: "/app/launchpad/idea-vs-idea" },
+  { key: "first-10-customers", name: "First 10 Customers", desc: "Exact playbook to land your first users.", icon: UserPlus, to: "/app/launchpad/first-10-customers" },
+  { key: "generate-followup-sequence", name: "Follow-Up Sequence", desc: "Auto-craft cold outreach sequences.", icon: Mail, to: "/app/launchpad/followup" as string },
+  { key: "generate-ops-plan", name: "Ops Plan", desc: "Systemise your operations.", icon: Settings2, to: "/app/launchpad/ops-plan" },
+  { key: "funding-score", name: "Funding Score", desc: "Investor-readiness rating with fixes.", icon: Trophy, to: "/app/launchpad/funding-score" },
+  { key: "investor-emails", name: "Investor Emails", desc: "Personalised cold investor outreach.", icon: Mail, to: "/app/launchpad/investor-emails" },
+  { key: "business-plan", name: "Business Plan", desc: "Full business plan in minutes.", icon: FileText, to: "/app/launchpad/business-plan" },
+  { key: "analyze-website", name: "Website Audit", desc: "Conversion & SEO analysis.", icon: Globe, to: "/app/launchpad/website-audit" },
+  { key: "competitor-analysis", name: "Competitor Analysis", desc: "Map the competitive landscape.", icon: TrendingUp, to: "/app/launchpad/competitor" },
+  { key: "pricing-strategy", name: "Pricing Strategy", desc: "Optimal pricing for your market.", icon: TrendingUp, to: "/app/launchpad/pricing" },
+  { key: "revenue-projector", name: "Revenue Projector", desc: "Financial model with scenarios.", icon: LineChart, to: "/app/launchpad/revenue-projector" },
+];
+
+// Map each tool to the minimum plan that includes it (cumulative)
+const TOOL_MIN_PLAN: Record<string, string> = {
+  "validate-idea": "starter",
+  "generate-pitch": "starter",
+  "generate-gtm-strategy": "launch",
+  "generate-offer": "launch",
+  "kill-my-idea": "launch",
+  "idea-vs-idea": "launch",
+  "first-10-customers": "launch",
+  "generate-followup-sequence": "launch",
+  "generate-ops-plan": "operate",
+  "funding-score": "operate",
+  "investor-emails": "operate",
+  "business-plan": "operate",
+  "analyze-website": "operate",
+  "competitor-analysis": "scale",
+  "pricing-strategy": "scale",
+  "revenue-projector": "scale",
+};
+
 const QUICK_ACTIONS = [
   { label: "Validate Idea", to: "/app/launchpad/idea-validator" },
   { label: "Generate Pitch", to: "/app/launchpad/pitch-generator" },
@@ -145,6 +194,21 @@ function Dashboard() {
   React.useEffect(() => {
     setResumePath(getLastAppPath());
   }, []);
+
+  const creditQ = useQuery(
+    queryOptions({
+      queryKey: ["user_credit_balance", user?.id],
+      enabled: !!user?.id,
+      queryFn: async () => {
+        const { data } = await supabase
+          .from("user_credit_balance")
+          .select("credits_remaining, starting_credits")
+          .eq("user_id", user!.id)
+          .maybeSingle();
+        return data ?? null;
+      },
+    }),
+  );
 
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -173,6 +237,7 @@ function Dashboard() {
   const integrations = intsQ.data ?? [];
   const automations = autoQ.data ?? [];
 
+  const creditBalance = creditQ.data;
   const isLoading = orgQ.isLoading || subQ.isLoading || runsQ.isLoading;
 
   if (isLoading) {
@@ -373,8 +438,86 @@ function Dashboard() {
         .replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
     : null;
 
+  const planTier = sub?.plan ?? "starter";
+  const planPrice = PLAN_TIER_PRICES[planTier] ?? 0;
+  const userAllowedTools = plansQ.data?.find((p) => p.plan === planTier)?.allowed_tools ?? [];
+
   return (
     <div className="space-y-5">
+      {/* ── WELCOME BAR ── */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-3.5"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid rgba(75,139,244,0.15)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-white text-[13px] font-black"
+            style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
+          >
+            {firstName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
+              Welcome back, {firstName}
+            </div>
+            <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+              {org?.name ?? "Your workspace"}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Plan tier badge */}
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold uppercase tracking-wide"
+            style={{
+              background: "linear-gradient(135deg, rgba(75,139,244,0.15), rgba(139,92,246,0.15))",
+              border: "1px solid rgba(75,139,244,0.25)",
+              color: "#4B8BF4",
+            }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: "#4B8BF4", boxShadow: "0 0 4px rgba(75,139,244,0.8)" }}
+            />
+            {planLabel}{planPrice > 0 ? ` · $${planPrice}/mo` : " · Free"}
+          </span>
+
+          {/* Credit balance */}
+          {creditBalance !== null && creditBalance !== undefined && (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-semibold"
+              style={{
+                background: "rgba(16,185,129,0.08)",
+                border: "1px solid rgba(16,185,129,0.2)",
+                color: "var(--success)",
+              }}
+            >
+              <Zap className="h-3 w-3" />
+              {creditBalance.credits_remaining ?? 0} credits remaining
+            </span>
+          )}
+          {/* Fallback: show usage limit when no credit balance */}
+          {(creditBalance === null || creditBalance === undefined) && limit && (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-semibold"
+              style={{
+                background: "rgba(16,185,129,0.08)",
+                border: "1px solid rgba(16,185,129,0.2)",
+                color: "var(--success)",
+              }}
+            >
+              <Zap className="h-3 w-3" />
+              {Math.max(0, (limit ?? 0) - totalUsed)} generations left
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* ── RESUME BANNER (session restore) ── */}
       {resumePath && (
         <div
@@ -535,6 +678,144 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── AI BUSINESS PLAYBOOK ── */}
+      {currentOrgId && user?.id && (
+        <PlaybookSection orgId={currentOrgId} userId={user.id} />
+      )}
+
+      {/* ── LAUNCHPAD TOOLS GRID ── */}
+      {currentOrgId && (
+        <section
+          className="rise-in overflow-hidden rounded-2xl"
+          style={{
+            ["--i" as string]: 0,
+            background: "var(--surface)",
+            border: "1px solid rgba(75,139,244,0.12)",
+          }}
+        >
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ borderBottom: "1px solid rgba(75,139,244,0.08)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-white"
+                style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)", boxShadow: "0 4px 16px rgba(75,139,244,0.3)" }}
+              >
+                <Rocket className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="font-display text-[14px] font-bold" style={{ color: "var(--foreground)" }}>
+                  Launchpad Tools
+                </div>
+                <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                  {userAllowedTools.length} tools available on your plan
+                </div>
+              </div>
+            </div>
+            <Link
+              to="/app/launchpad"
+              className="inline-flex items-center gap-1 text-[12px] transition-colors"
+              style={{ color: "var(--primary)" }}
+            >
+              Open all <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 lg:grid-cols-4">
+            {ALL_TOOLS.map((tool) => {
+              const unlocked = userAllowedTools.includes(tool.key);
+              const minPlan = TOOL_MIN_PLAN[tool.key] ?? "scale";
+              const minPrice = PLAN_TIER_PRICES[minPlan] ?? 0;
+              const minPlanLabel = minPlan.charAt(0).toUpperCase() + minPlan.slice(1);
+
+              return (
+                <div
+                  key={tool.key}
+                  className="relative overflow-hidden rounded-xl p-3.5 transition-all"
+                  style={{
+                    background: unlocked ? "rgba(75,139,244,0.04)" : "rgba(0,0,0,0.15)",
+                    border: unlocked
+                      ? "1px solid rgba(75,139,244,0.15)"
+                      : "1px solid rgba(255,255,255,0.04)",
+                    opacity: unlocked ? 1 : 0.65,
+                  }}
+                >
+                  {/* Lock overlay */}
+                  {!unlocked && (
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-xl"
+                      style={{ background: "rgba(8,8,20,0.6)", backdropFilter: "blur(2px)", zIndex: 2 }}
+                    >
+                      <span className="text-[16px]">🔒</span>
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(75,139,244,0.2), rgba(139,92,246,0.2))",
+                          border: "1px solid rgba(75,139,244,0.3)",
+                          color: "#4B8BF4",
+                        }}
+                      >
+                        {minPlanLabel}{minPrice > 0 ? ` · $${minPrice}` : ""}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="relative z-[1]">
+                    <div
+                      className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg"
+                      style={
+                        unlocked
+                          ? {
+                              background: "linear-gradient(135deg, rgba(75,139,244,0.15), rgba(139,92,246,0.15))",
+                              border: "1px solid rgba(75,139,244,0.2)",
+                            }
+                          : { background: "var(--surface-2)" }
+                      }
+                    >
+                      <tool.icon
+                        className="h-4 w-4"
+                        style={{ color: unlocked ? "#4B8BF4" : "var(--muted-foreground)" }}
+                      />
+                    </div>
+                    <div
+                      className="text-[12.5px] font-semibold leading-tight"
+                      style={{ color: unlocked ? "var(--foreground)" : "var(--muted-foreground)" }}
+                    >
+                      {tool.name}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-snug" style={{ color: "var(--muted-foreground)" }}>
+                      {tool.desc}
+                    </div>
+                    {unlocked && (
+                      <Link to={tool.to} className="mt-2.5 inline-flex">
+                        <button
+                          className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white transition-all"
+                          style={{
+                            background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
+                            boxShadow: "0 2px 10px rgba(75,139,244,0.3)",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                            (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(75,139,244,0.45)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.transform = "none";
+                            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(75,139,244,0.3)";
+                          }}
+                        >
+                          Run <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ── MISSION + OPERATOR ROW (Sprint 2 Critical) ── */}
       {profile?.onboarding_complete && user?.id && (
