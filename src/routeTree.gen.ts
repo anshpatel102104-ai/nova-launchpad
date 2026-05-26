@@ -45,6 +45,9 @@ import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
 import { Route as AppNovaOsSlugRouteImport } from './routes/app.nova-os.$slug'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AppBlogIndexRouteImport } from './routes/app.blog.index'
+import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -226,6 +229,21 @@ const AppNovaOsSlugRoute = AppNovaOsSlugRouteImport.update({
   path: '/nova-os/$slug',
   getParentRoute: () => AppRoute,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppBlogIndexRoute = AppBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBlogIdRoute = AppBlogIdRouteImport.update({
+  id: '/blog/$id',
+  path: '/blog/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -264,6 +282,9 @@ export interface FileRoutesByFullPath {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/nova-os': typeof AppNovaOsRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
+  '/about': typeof AboutRoute
+  '/app/blog/': typeof AppBlogIndexRoute
+  '/app/blog/$id': typeof AppBlogIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -301,6 +322,9 @@ export interface FileRoutesByTo {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/nova-os': typeof AppNovaOsRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
+  '/about': typeof AboutRoute
+  '/app/blog': typeof AppBlogIndexRoute
+  '/app/blog/$id': typeof AppBlogIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -340,6 +364,9 @@ export interface FileRoutesById {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/nova-os': typeof AppNovaOsRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
+  '/about': typeof AboutRoute
+  '/blog/': typeof AppBlogIndexRoute
+  '/blog/$id': typeof AppBlogIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -380,6 +407,9 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/nova-os'
     | '/app/nova-os/$slug'
+    | '/about'
+    | '/app/blog/'
+    | '/app/blog/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -417,6 +447,9 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/nova-os'
     | '/app/nova-os/$slug'
+    | '/about'
+    | '/app/blog'
+    | '/app/blog/$id'
   id:
     | '__root__'
     | '/'
@@ -455,6 +488,9 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/nova-os'
     | '/app/nova-os/$slug'
+    | '/about'
+    | '/blog/'
+    | '/blog/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -472,6 +508,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   PricingRoute: typeof PricingRoute
   AuthInviteRoute: typeof AuthInviteRoute
+  AboutRoute: typeof AboutRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -728,6 +765,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNovaOsSlugRouteImport
       parentRoute: typeof AppRoute
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/app/blog/'
+      preLoaderRoute: typeof AppBlogIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/blog/$id': {
+      id: '/blog/$id'
+      path: '/blog/$id'
+      fullPath: '/app/blog/$id'
+      preLoaderRoute: typeof AppBlogIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -765,6 +823,8 @@ interface AppRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppNovaOsRoute: typeof AppNovaOsRoute
   AppNovaOsSlugRoute: typeof AppNovaOsSlugRoute
+  AppBlogIndexRoute: typeof AppBlogIndexRoute
+  AppBlogIdRoute: typeof AppBlogIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -789,6 +849,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppNovaOsRoute: AppNovaOsRoute,
   AppNovaOsSlugRoute: AppNovaOsSlugRoute,
+  AppBlogIndexRoute: AppBlogIndexRoute,
+  AppBlogIdRoute: AppBlogIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -808,6 +870,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   PricingRoute: PricingRoute,
   AuthInviteRoute: AuthInviteRoute,
+  AboutRoute: AboutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

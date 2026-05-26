@@ -31,6 +31,8 @@ import {
   Shield,
   Tags,
   Sparkles,
+  PenLine,
+  BookOpen,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -63,7 +65,9 @@ const LAUNCHPAD_TOOLS: SubItem[] = [
   { to: "/app/launchpad/competitor", label: "Competitor", icon: Target },
   { to: "/app/launchpad/pricing", label: "Pricing Strategy", icon: Tags },
   { to: "/app/launchpad/revenue-projector", label: "Revenue Projector", icon: LineChart },
+  { to: "/app/launchpad/blog", label: "Blog Generator", icon: PenLine },
 ];
+
 
 const NOVA_MODULES: SubItem[] = [
   { to: "/app/nova/crm", label: "CRM Pipeline", icon: Workflow },
@@ -96,6 +100,12 @@ const NAV: NavItem[] = [
     workspace: "nova",
     match: (p) => p === "/app/nova" || p.startsWith("/app/nova/"),
     children: NOVA_MODULES,
+  },
+  {
+    to: "/app/blog",
+    label: "Blog Posts",
+    icon: BookOpen,
+    match: (p) => p.startsWith("/app/blog"),
   },
   { to: "/app/leads", label: "Leads", icon: Users, match: (p) => p.startsWith("/app/leads") },
   {
