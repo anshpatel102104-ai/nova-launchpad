@@ -1,5 +1,14 @@
+import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
+import { AskOperatorCard } from "@/components/app/dashboard/AskOperatorCard";
+import { ApprovedOfferCard } from "@/components/app/dashboard/ApprovedOfferCard";
+import { LaunchAssetsCard } from "@/components/app/dashboard/LaunchAssetsCard";
+import { AutomationStatusCard } from "@/components/app/dashboard/AutomationStatusCard";
+import { YourPathCard } from "@/components/app/dashboard/YourPathCard";
+import { WhatNextCard } from "@/components/app/dashboard/WhatNextCard";
+import { classifyLane } from "@/lib/lane-classifier";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery,
@@ -47,6 +56,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { cn } from "@/lib/utils";
+import { getLastAppPath, clearLastAppPath } from "@/lib/session-restore";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -130,6 +140,11 @@ const QUICK_ACTIONS = [
 
 function Dashboard() {
   const { currentOrgId, profile, user } = useAuth();
+  const [resumePath, setResumePath] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setResumePath(getLastAppPath());
+  }, []);
 
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -350,8 +365,70 @@ function Dashboard() {
     };
   })();
 
+  const resumeLabel = resumePath
+    ? (resumePath
+        .split("/")
+        .pop()
+        ?.replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
+    : null;
+
   return (
     <div className="space-y-5">
+      {/* ── RESUME BANNER (session restore) ── */}
+      {resumePath && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 14px",
+            borderRadius: 10,
+            border: "1px solid rgba(59,130,246,0.2)",
+            background: "rgba(59,130,246,0.06)",
+            fontSize: 12.5,
+          }}
+        >
+          <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+          <span style={{ color: "var(--muted-foreground)", flex: 1 }}>
+            Resume where you left off:
+            <span style={{ color: "var(--foreground)", fontWeight: 600, marginLeft: 4 }}>
+              {resumeLabel}
+            </span>
+          </span>
+          <Link
+            to={resumePath}
+            style={{
+              fontSize: 12,
+              color: "var(--primary)",
+              fontWeight: 600,
+              textDecoration: "none",
+              marginRight: 8,
+            }}
+          >
+            Continue <ArrowRight style={{ display: "inline", width: 10, height: 10 }} />
+          </Link>
+          <button
+            onClick={() => {
+              clearLastAppPath();
+              setResumePath(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--muted-foreground)",
+              cursor: "pointer",
+              fontSize: 14,
+              lineHeight: 1,
+              padding: 0,
+            }}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* ── HERO SECTION with NeuralCanvas ── */}
       <div
         className="rise-in relative overflow-hidden rounded-2xl"
@@ -458,6 +535,18 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── MISSION + OPERATOR ROW (Sprint 2 Critical) ── */}
+      {profile?.onboarding_complete && user?.id && (
+        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 1 }}>
+          <div className="lg:col-span-7">
+            <CurrentMissionCard userId={user.id} />
+          </div>
+          <div className="lg:col-span-5">
+            <AskOperatorCard workspaceId={undefined} />
+          </div>
+        </section>
+      )}
 
       {/* Onboarding checklist */}
       {!checklistComplete && (
@@ -575,10 +664,27 @@ function Dashboard() {
         </section>
       )}
 
+      {/* ── YOUR PATH + WHAT NEXT ROW (Sprint 2 High) ── */}
+      {currentOrgId && (
+        <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 2 }}>
+          <YourPathCard lane={classifyLane(orgStage, "")} stage={orgStage} />
+          <WhatNextCard
+            lane={classifyLane(orgStage, "")}
+            hasValidatedIdea={succeeded("validate-idea")}
+            hasPitch={succeeded("generate-pitch")}
+            hasOffer={succeeded("generate-offer")}
+            hasGtm={succeeded("generate-gtm-strategy")}
+            hasLeads={leads.length > 0}
+            hasAutomation={automations.length > 0}
+            hasWonLead={wonLeads > 0}
+          />
+        </section>
+      )}
+
       {/* Stat row */}
       <section
         className="rise-in grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-        style={{ ["--i" as string]: 2 }}
+        style={{ ["--i" as string]: 3 }}
       >
         <GlowStatCard
           label="Business Stage"
@@ -655,8 +761,23 @@ function Dashboard() {
         />
       </section>
 
+      {/* ── YOUR OUTPUTS ROW (Sprint 3 Critical) ── */}
+      {currentOrgId && (
+        <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 4 }}>
+          <div className="lg:col-span-4">
+            <ApprovedOfferCard orgId={currentOrgId} />
+          </div>
+          <div className="lg:col-span-5">
+            <LaunchAssetsCard orgId={currentOrgId} />
+          </div>
+          <div className="lg:col-span-3">
+            <AutomationStatusCard orgId={currentOrgId} userId={user?.id} />
+          </div>
+        </section>
+      )}
+
       {/* Activity + Next Action */}
-      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 3 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 5 }}>
         {/* Activity feed */}
         <div
           className="lg:col-span-8 overflow-hidden rounded-2xl"
@@ -956,7 +1077,7 @@ function Dashboard() {
       <section
         className="rise-in overflow-hidden rounded-2xl"
         style={{
-          ["--i" as string]: 4,
+          ["--i" as string]: 6,
           background: "var(--surface)",
           border: "1px solid rgba(59,130,246,0.1)",
         }}
@@ -1022,7 +1143,7 @@ function Dashboard() {
       </section>
 
       {/* Launchpad + Nova grid */}
-      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 5 }}>
+      <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 7 }}>
         {/* Launchpad modules */}
         <div
           className="overflow-hidden rounded-2xl"

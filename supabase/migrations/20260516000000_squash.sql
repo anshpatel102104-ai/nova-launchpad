@@ -40,30 +40,6 @@ create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
 begin new.updated_at = now(); return new; end $$;
 
-create or replace function public.is_org_member(_org_id uuid, _user_id uuid)
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (
-    select 1 from public.organization_members
-    where organization_id = _org_id and user_id = _user_id
-  )
-$$;
-
-create or replace function public.is_org_owner(_org_id uuid, _user_id uuid)
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (
-    select 1 from public.organization_members
-    where organization_id = _org_id and user_id = _user_id and role in ('owner', 'admin')
-  )
-$$;
-
-create or replace function public.is_org_admin(_org_id uuid, _user_id uuid)
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (
-    select 1 from public.organization_members
-    where organization_id = _org_id and user_id = _user_id and role in ('owner', 'admin')
-  )
-$$;
-
 -- ── 3. Core Tables ────────────────────────────────────────────────────
 
 -- profiles
@@ -131,6 +107,32 @@ create table if not exists public.organization_members (
 alter table public.organization_members enable row level security;
 create index if not exists idx_org_members_user on public.organization_members(user_id);
 create index if not exists idx_org_members_org  on public.organization_members(organization_id);
+
+-- is_org_member helpers — defined here so organization_members table already exists
+-- (SQL-language functions resolve table references at creation time)
+create or replace function public.is_org_member(_org_id uuid, _user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.organization_members
+    where organization_id = _org_id and user_id = _user_id
+  )
+$$;
+
+create or replace function public.is_org_owner(_org_id uuid, _user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.organization_members
+    where organization_id = _org_id and user_id = _user_id and role in ('owner', 'admin')
+  )
+$$;
+
+create or replace function public.is_org_admin(_org_id uuid, _user_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.organization_members
+    where organization_id = _org_id and user_id = _user_id and role in ('owner', 'admin')
+  )
+$$;
 
 -- subscriptions
 create table if not exists public.subscriptions (

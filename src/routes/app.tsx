@@ -1,3 +1,4 @@
+import React from "react";
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app/AppSidebar";
 import { AppTopbar } from "@/components/app/AppTopbar";
@@ -5,6 +6,7 @@ import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore } from "@/lib/guest";
+import { saveLastAppPath } from "@/lib/session-restore";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async ({ location }) => {
@@ -31,6 +33,11 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+
+  React.useEffect(() => {
+    saveLastAppPath(path);
+  }, [path]);
+
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <AppSidebar />

@@ -898,3 +898,40 @@
   .bg-cosmic   { background-color: var(--cosmic); }
   .bg-nebula   { background-color: var(--nebula); }
 }
+
+/* ─── TASK-072 · Mobile-safe utilities ─────────────────────────────────────── */
+
+/* Prevent horizontal overflow on mobile */
+.mobile-safe { max-width: 100%; overflow-x: hidden; }
+
+/* Min touch target (WCAG 2.5.5) */
+.touch-target { min-height: 44px; min-width: 44px; }
+
+@media (max-width: 640px) {
+  /* Vertical stack on mobile */
+  .mobile-stack { flex-direction: column !important; }
+
+  /* Unclip max-height on small screens */
+  .mobile-unclip { max-height: none !important; }
+
+  /* Full-width on mobile */
+  .mobile-full { width: 100% !important; }
+
+  /* Tighter padding on mobile */
+  .mobile-px-tight { padding-left: 12px !important; padding-right: 12px !important; }
+
+  /* Prevent iOS zoom on input focus (font-size must be >= 16px) */
+  input, textarea, select { font-size: max(16px, 1em) !important; }
+
+  /* Chat textarea */
+  .chat-input-mobile { min-height: 44px; font-size: 16px; }
+}
+
+/* Remove iOS tap highlight */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* iOS momentum scrolling */
+.scroll-smooth-ios { -webkit-overflow-scrolling: touch; overflow-y: auto; }
