@@ -67,4 +67,7 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
   "idea-vs-idea": [
     { to: "/app/launchpad/idea-validator", toolKey: "idea-validator", label: "Validate winner" },
   ],
+  blog: [
+    { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
+  ],
 };
