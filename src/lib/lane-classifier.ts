@@ -16,6 +16,8 @@ const RULES: Array<{
 }> = [
   // Systems — operating founders who need process/scale
   { stages: ["Operate", "Scale"], challenges: ["fundraising", "product"], lane: "Systems" },
+  // Systems — Launch-stage founder raising capital needs pitch + systems
+  { stages: ["Launch"], challenges: ["fundraising"], lane: "Systems" },
   // Customer — revenue-stage founders growing their customer base
   {
     stages: ["Launch", "Operate", "Scale"],

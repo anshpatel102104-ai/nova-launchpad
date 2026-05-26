@@ -131,8 +131,8 @@ function Onboarding() {
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData.session?.access_token;
 
-    const n8nBase = import.meta.env.VITE_SUPABASE_URL;
-    const provisionRes = await fetch(`${n8nBase}/functions/v1/provision-workspace`, {
+    const supabaseBase = import.meta.env.VITE_SUPABASE_URL;
+    const provisionRes = await fetch(`${supabaseBase}/functions/v1/provision-workspace`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -143,6 +143,7 @@ function Onboarding() {
         name: orgName,
         lane,
         stage: stage || "Idea",
+        idea,
       }),
     });
 
@@ -191,7 +192,7 @@ function Onboarding() {
 
     // ── 8. Log activation event ────────────────────────────────────
     if (accessToken) {
-      fetch(`${n8nBase}/functions/v1/log-activation-event`, {
+      fetch(`${supabaseBase}/functions/v1/log-activation-event`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

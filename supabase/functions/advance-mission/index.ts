@@ -23,7 +23,8 @@ function json(body: unknown, status = 200) {
 
 type Action = "complete_step" | "complete_mission" | "skip_step";
 
-// Next missions to assign after the first one completes, by lane
+// Next missions to assign after the first one completes, by lane.
+// Descriptions are written at a 5th-grade reading level with clear WHY, WHAT, and HOW.
 const NEXT_MISSIONS: Record<
   string,
   Array<{
@@ -34,23 +35,43 @@ const NEXT_MISSIONS: Record<
 > = {
   Idea: [
     {
-      title: "Build Your GTM Strategy",
-      description: "You've validated the idea — now map the path to your first customer.",
+      title: "Go to Market — Find Your First Customer",
+      description:
+        "You've proven your idea is solid. Now it's time to find the first person who will pay for it. " +
+        "This mission builds your go-to-market plan and your pitch — the tools you need to walk out the door and get your first sale.",
       steps: [
         {
-          title: "Create your GTM Strategy",
-          description: "Define your go-to-market across segment, channel, and messaging.",
+          title: "Step 1 — Build a Full Go-To-Market Plan",
+          description:
+            "Open the GTM Strategy tool. Tell Nova about your business, who your ideal customer is, and what problem you solve. " +
+            "Nova will create a detailed plan that covers: (1) which type of customer to target first, " +
+            "(2) exactly where to find them (LinkedIn, cold email, local networking, Facebook groups, etc.), " +
+            "(3) what to say to get their attention, and (4) a week-by-week schedule for the next 90 days. " +
+            "After reading the plan, highlight the ONE channel you will focus on for the first 30 days. " +
+            "Write it on a sticky note and put it somewhere you see every day.",
           tool_key: "gtm-strategy",
         },
         {
-          title: "Generate your Pitch",
-          description: "Build the pitch that gets investors and early customers excited.",
+          title: "Step 2 — Create a Pitch That Gets People Excited",
+          description:
+            "A pitch is the story you tell about your business that makes people want to learn more or invest. " +
+            "Open the Pitch Generator tool and describe your business, the problem you solve, and who your customer is. " +
+            "Nova will write a short, compelling pitch you can use in emails, social media posts, investor meetings, or conversations. " +
+            "Practice saying the pitch out loud 5 times. Then record yourself on your phone saying it. " +
+            "Watch it back. If you sound confident and clear, you're ready. If you stumble, practice more. " +
+            "Share your pitch with one trusted person and ask: 'Does this make sense? Would you buy this?'",
           tool_key: "pitch-generator",
         },
         {
-          title: "Identify your ICP in one sentence",
+          title: "Step 3 — Write Down Your Ideal Customer Profile (ICP)",
           description:
-            "Complete: '[Name] is a [role] who struggles with [pain] and wants [outcome].'",
+            "An ICP (Ideal Customer Profile) is a detailed description of the PERFECT person or company to buy from you. " +
+            "Open a Google Doc or notes app. Fill in these blanks: " +
+            "'My ideal customer is a [job title or type of person] who works at/runs [type of company or situation]. " +
+            "They struggle with [specific problem]. They want [specific result]. They currently [how they solve the problem today]. " +
+            "They are willing to pay [price range] for a solution.' " +
+            "Be as specific as possible. The more specific your ICP, the easier it is to find and sell to them. " +
+            "Save this document — you will use it in every sales and marketing decision going forward.",
           tool_key: null,
         },
       ],
@@ -58,22 +79,44 @@ const NEXT_MISSIONS: Record<
   ],
   Offer: [
     {
-      title: "Land Your First 10 Customers",
-      description: "Offer is ready — now get people to pay for it.",
+      title: "Close Your First 10 Paying Customers",
+      description:
+        "Your offer is built — now let's fill it with paying customers. " +
+        "This mission gives you the exact scripts, strategies, and sequences to go from zero customers to ten. " +
+        "Each step builds on the last. Do them in order.",
       steps: [
         {
-          title: "Generate First 10 Customers Plan",
-          description: "Precision outreach plan to land 10 customers in 30 days.",
+          title: "Step 1 — Get Your First 10 Customers Blueprint",
+          description:
+            "Open the First 10 Customers tool. Enter your offer details, your target customer type, and your price. " +
+            "Nova will give you a specific, step-by-step plan to land 10 customers within 30 days. " +
+            "The plan will include outreach scripts, platforms to use, and daily actions. " +
+            "After reading the output, DO THIS: make a list of 20 specific people or businesses who fit your target customer. " +
+            "Not categories — actual names or company names. Real people. This list is your 'hit list.' " +
+            "Your goal is to reach out to all 20 within the next 7 days.",
           tool_key: "first-10-customers",
         },
         {
-          title: "Build Follow-Up Sequence",
-          description: "5-step sequence that turns cold leads into paying clients.",
+          title: "Step 2 — Set Up Your Follow-Up Email Sequence",
+          description:
+            "Most people say no the first time — not because they don't want your product, but because they're busy. " +
+            "The key is following up without being annoying. Open the Follow-Up Sequence tool. " +
+            "Tell Nova your business type and target customer. Nova will write 5 emails spread over 14 days. " +
+            "Each email has one job: Email 1 introduces you. Email 2 gives free value. Email 3 handles the most common objection. " +
+            "Email 4 shares a story or testimonial. Email 5 makes a clear, direct ask for the sale. " +
+            "Set these up as templates in your email tool right now. Every prospect on your hit list gets this sequence after your first message.",
           tool_key: "followup",
         },
         {
-          title: "Send your first paid invoice",
-          description: "Close deal #1 and issue the invoice. No tool needed — just do it.",
+          title: "Step 3 — Send Your First Invoice and Get Paid",
+          description:
+            "The moment you get a 'yes' — even a soft yes like 'sounds interesting, tell me more' — send an invoice immediately. " +
+            "Don't wait until everything is 'perfect.' A verbal yes means nothing until money is exchanged. " +
+            "Use any invoicing tool (Wave, PayPal, Stripe, Venmo for small amounts) to send a professional invoice. " +
+            "Include: what they're buying, the price, and a due date (usually 7 days). " +
+            "Add a note that says payment is required before work begins. " +
+            "When you receive your first payment, come back and mark this complete. " +
+            "Congratulations — you're officially a business owner with a paying customer.",
           tool_key: null,
         },
       ],
@@ -81,22 +124,46 @@ const NEXT_MISSIONS: Record<
   ],
   Customer: [
     {
-      title: "Build Your Revenue System",
-      description: "You have customers — now make acquisition repeatable.",
+      title: "Turn Customer Acquisition into a Repeatable System",
+      description:
+        "You've gotten customers — amazing! But if getting each customer requires your personal time and effort, " +
+        "your business can only grow as fast as you can work. " +
+        "This mission helps you build a system that brings in customers even when you're not actively selling.",
       steps: [
         {
-          title: "Create your GTM Strategy",
-          description: "Document the full GTM your team can execute without you.",
+          title: "Step 1 — Document Your Full Go-To-Market Strategy",
+          description:
+            "Open the GTM Strategy tool and enter your current business details: how you currently get customers, your pricing, and your target customer. " +
+            "This time, ask Nova to build a strategy a team member could execute. " +
+            "The goal is to turn YOUR personal selling skills into a documented process anyone could follow. " +
+            "After getting the output, take each major step in the strategy and write: " +
+            "'Who does this? How long does it take? What does success look like?' " +
+            "This becomes your Sales & Marketing Playbook. Store it in a shared Google Doc your whole team can access.",
           tool_key: "gtm-strategy",
         },
         {
-          title: "Build your Operations Plan",
-          description: "Design the processes and automations that run the business.",
+          title: "Step 2 — Build Your Operations Plan",
+          description:
+            "An operations plan answers the question: 'How does this business actually work every day?' " +
+            "Open the Operations Plan tool. Describe your current business in detail — " +
+            "how you deliver your product or service, how customers interact with you, how you get paid, and any recurring tasks. " +
+            "Nova will output a plan that shows your key processes, tools to use, team roles, and automation opportunities. " +
+            "After reading the plan, identify the 3 tasks that take the most time in your week. " +
+            "Those are the first things to automate or delegate. If you can free up even 5 hours per week, you can use that time to get more customers.",
           tool_key: "generate-ops-plan",
         },
         {
-          title: "Define your referral loop",
-          description: "Write the one mechanism that turns every customer into a referrer.",
+          title: "Step 3 — Design Your Referral System",
+          description:
+            "The cheapest and most powerful way to get new customers is through referrals — happy customers telling their friends. " +
+            "Right now, referrals probably happen randomly when a happy customer mentions you. " +
+            "Your job is to make referrals happen ON PURPOSE. Here's how: " +
+            "(1) After every successful project or sale, send a 3-sentence message: " +
+            "'Thanks for working with me. I'm glad I could help with [specific result]. " +
+            "If you know anyone else who struggles with [problem], I'd love an introduction.' " +
+            "(2) Consider offering a small incentive: 'For every referral that becomes a client, I'll give you [discount/cash/gift].' " +
+            "(3) Write this referral message as a template. Send it to your last 5 customers this week. " +
+            "Mark complete when you've sent the referral message to at least 3 past customers.",
           tool_key: null,
         },
       ],
@@ -104,22 +171,47 @@ const NEXT_MISSIONS: Record<
   ],
   Systems: [
     {
-      title: "Scale Your Content Engine",
-      description: "Systems are running — now build the content flywheel.",
+      title: "Build Your Content and Brand Authority Engine",
+      description:
+        "Your operations are running. Now it's time to make people come to YOU instead of you always going to them. " +
+        "Content marketing and thought leadership put your business in front of thousands of potential customers " +
+        "while you sleep. This mission builds that engine.",
       steps: [
         {
-          title: "Generate your GTM content strategy",
-          description: "Map content types, cadence, and distribution channels.",
+          title: "Step 1 — Create a Content Strategy That Attracts Your Ideal Customers",
+          description:
+            "Open the GTM Strategy tool and ask Nova to build a CONTENT-focused GTM strategy for your business. " +
+            "Tell it: your business type, your target customer, and the platforms where your customers spend time " +
+            "(LinkedIn, Instagram, YouTube, TikTok, Twitter/X, industry blogs, etc.). " +
+            "Nova will create a content plan that includes: what topics to cover, what formats to use " +
+            "(short videos, long articles, social posts), how often to post, and how to repurpose one piece of content across multiple platforms. " +
+            "Pick ONE platform to start. Post consistently for 30 days before adding a second platform.",
           tool_key: "gtm-strategy",
         },
         {
-          title: "Build your pitch for partnerships",
-          description: "Create a partnership pitch to accelerate distribution.",
+          title: "Step 2 — Build a Partnership Pitch to Accelerate Your Reach",
+          description:
+            "A partnership is when another business promotes you to their audience — and you do the same for them. " +
+            "This is one of the fastest ways to grow because you're borrowing someone else's trust with their customers. " +
+            "Open the Pitch Generator tool and select 'Partnership Pitch' as the type. " +
+            "Describe your business and the type of business you want to partner with (complementary, not a competitor). " +
+            "Nova will write a professional partnership proposal email you can send. " +
+            "After getting the pitch, make a list of 10 businesses that serve your same target customer but don't compete with you. " +
+            "Send the partnership pitch to all 10 this week.",
           tool_key: "pitch-generator",
         },
         {
-          title: "Document your first SOPs",
-          description: "Write 3 core SOPs for tasks you repeat more than 3× per week.",
+          title: "Step 3 — Write Your First 3 Standard Operating Procedures (SOPs)",
+          description:
+            "An SOP is a step-by-step instruction guide for one task in your business. " +
+            "Think of it as the manual that lets someone else do your job without asking you a hundred questions. " +
+            "Identify the 3 tasks YOU do most often that someone else could do if they had instructions. " +
+            "For each task, open a Google Doc and write: (1) The name of the task. (2) When to do it and how often. " +
+            "(3) Every single step in order, numbered, like a recipe. (4) What 'done correctly' looks like. " +
+            "(5) Common mistakes to avoid. " +
+            "Keep each SOP under 1 page. Simple is better. " +
+            "Once written, give it to someone else to test — if they can do the task correctly without asking you anything, the SOP is ready. " +
+            "Store all SOPs in a shared folder labeled 'Business Playbook.'",
           tool_key: null,
         },
       ],
@@ -162,7 +254,7 @@ Deno.serve(async (req) => {
 
     const { error } = await admin
       .from("mission_steps")
-      .update({ status: "completed", completed_at: new Date().toISOString(), updated_by: userId })
+      .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("id", step_id);
     if (error) return json({ error: error.message }, 500);
 
@@ -249,10 +341,12 @@ Deno.serve(async (req) => {
 
     const nextOrder = ((existingMissions?.[0]?.sort_order as number) ?? 0) + 1;
 
-    // Only assign if there are more missions defined
+    // nextMissions is 0-indexed; the first next mission is always at index 0.
+    // We only have one next mission per lane currently, so we always use index 0.
+    const nextMissionIndex = 0;
     let newMissionId: string | null = null;
-    if (nextMissions[nextOrder - 1]) {
-      const seed = nextMissions[nextOrder - 1];
+    if (nextMissions[nextMissionIndex]) {
+      const seed = nextMissions[nextMissionIndex];
       const { data: newMission } = await admin
         .from("missions")
         .insert({

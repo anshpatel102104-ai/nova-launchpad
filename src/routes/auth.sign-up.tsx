@@ -22,7 +22,7 @@ function SignUp() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/app/dashboard`,
+        emailRedirectTo: `${window.location.origin}/onboarding`,
         data: { full_name: fullName },
       },
     });
