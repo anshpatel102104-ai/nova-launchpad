@@ -56,6 +56,9 @@ export function CurrentMissionCard({ userId }: Props) {
     queryKey: ["current-mission", userId],
     queryFn: () => fetchCurrentMission(userId),
     staleTime: 30_000,
+    // Retry for up to 20 seconds after onboarding — workspace provisioning may still be in flight.
+    retry: 4,
+    retryDelay: 5_000,
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["current-mission", userId] });
@@ -97,30 +100,37 @@ export function CurrentMissionCard({ userId }: Props) {
           textAlign: "center",
         }}
       >
-        <Target style={{ width: 28, height: 28, color: "#3b82f6", margin: "0 auto 12px" }} />
+        <Loader2
+          style={{
+            width: 24,
+            height: 24,
+            color: "#3b82f6",
+            margin: "0 auto 12px",
+            animation: "spin 1s linear infinite",
+          }}
+        />
         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)", marginBottom: 6 }}>
-          No active mission
+          Setting up your mission…
         </div>
         <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-          Complete onboarding to get your first mission.
+          Nova is building your personalized action plan based on your business idea. This takes just a few seconds.
         </div>
-        <Link to="/onboarding">
-          <button
-            style={{
-              padding: "8px 18px",
-              borderRadius: 9,
-              border: "none",
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "inherit",
-            }}
-          >
-            Start onboarding
-          </button>
-        </Link>
+        <button
+          onClick={refresh}
+          style={{
+            padding: "8px 18px",
+            borderRadius: 9,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(255,255,255,0.06)",
+            color: "rgba(240,244,255,0.7)",
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Check again
+        </button>
       </div>
     );
   }

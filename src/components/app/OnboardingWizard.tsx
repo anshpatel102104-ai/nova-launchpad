@@ -32,20 +32,55 @@ interface Props {
 const STEPS = 3;
 
 const STAGES: Array<{ id: BusinessStage; label: string; desc: string; Icon: React.ElementType }> = [
-  { id: "Idea", label: "Idea", desc: "Just a concept, nothing built", Icon: Lightbulb },
-  { id: "Validate", label: "Building", desc: "Actively building the product", Icon: Hammer },
-  { id: "Operate", label: "Revenue", desc: "I have paying customers", Icon: DollarSign },
-  { id: "Scale", label: "Scaling", desc: "Growing revenue and team", Icon: TrendingUp },
+  {
+    id: "Idea",
+    label: "Just an idea",
+    desc: "I have a concept but haven't built anything yet",
+    Icon: Lightbulb,
+  },
+  {
+    id: "Validate",
+    label: "Building it",
+    desc: "I'm actively creating the product or service",
+    Icon: Hammer,
+  },
+  {
+    id: "Operate",
+    label: "I have customers",
+    desc: "Real people are paying me money",
+    Icon: DollarSign,
+  },
+  {
+    id: "Scale",
+    label: "Growing fast",
+    desc: "I'm making money and want to grow bigger",
+    Icon: TrendingUp,
+  },
 ];
 
 const CHALLENGES: Array<{ id: string; label: string; desc: string; Icon: React.ElementType }> = [
-  { id: "fundraising", label: "Fundraising", desc: "Raising capital from investors", Icon: Rocket },
-  { id: "customers", label: "Getting customers", desc: "Finding my first buyers", Icon: Users },
-  { id: "product", label: "Building product", desc: "Shipping fast enough", Icon: Package },
+  {
+    id: "fundraising",
+    label: "Getting investment",
+    desc: "I need money from investors to grow",
+    Icon: Rocket,
+  },
+  {
+    id: "customers",
+    label: "Finding customers",
+    desc: "I need real paying customers — fast",
+    Icon: Users,
+  },
+  {
+    id: "product",
+    label: "Building the product",
+    desc: "I need to ship my product or service",
+    Icon: Package,
+  },
   {
     id: "marketing",
-    label: "Marketing",
-    desc: "Getting visibility and awareness",
+    label: "Getting attention",
+    desc: "Nobody knows I exist yet",
     Icon: Megaphone,
   },
 ];
@@ -87,26 +122,29 @@ function ProgressDots({ step }: { step: number }) {
 function StepLabel({ step }: { step: number }) {
   const labels = [
     {
-      eyebrow: "Step 1 of 3",
+      eyebrow: "Step 1 of 3 · Your Business Idea",
       heading: (
         <>
-          What's your <span style={{ color: "#3b82f6" }}>startup idea</span>?
+          Tell us about your{" "}
+          <span style={{ color: "#3b82f6" }}>business idea</span>
         </>
       ),
     },
     {
-      eyebrow: "Step 2 of 3",
+      eyebrow: "Step 2 of 3 · Your Progress",
       heading: (
         <>
-          What stage <span style={{ color: "#8b5cf6" }}>are you at</span>?
+          Where are you{" "}
+          <span style={{ color: "#8b5cf6" }}>right now</span>?
         </>
       ),
     },
     {
-      eyebrow: "Step 3 of 3",
+      eyebrow: "Step 3 of 3 · Your Biggest Problem",
       heading: (
         <>
-          What's your <span style={{ color: "#06b6d4" }}>biggest challenge</span>?
+          What's holding{" "}
+          <span style={{ color: "#06b6d4" }}>you back</span>?
         </>
       ),
     },
@@ -390,7 +428,7 @@ function Step1({
             marginBottom: 7,
           }}
         >
-          Describe it in one sentence
+          Describe your idea — who it helps and what it does
         </div>
         <textarea
           value={idea}
@@ -398,17 +436,17 @@ function Step1({
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
           }}
-          placeholder="e.g. AI that writes investor updates in 30 seconds so founders can focus on building"
+          placeholder="e.g. A meal-planning app for busy parents that automatically creates a grocery list based on what's already in their fridge"
           rows={3}
           className="ob-input"
           style={{ padding: "12px 14px", resize: "none", lineHeight: 1.55 }}
         />
         <div style={{ fontSize: 10.5, color: "rgba(240,244,255,0.25)", marginTop: 5 }}>
           {idea.length === 0
-            ? `${modKey}+Enter to continue · your idea stays private`
+            ? `Tip: answer "who is it for?" and "what does it do?" — Nova uses this to personalize your action plan`
             : idea.length < 20
-              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"}`
-              : `${modKey}+Enter to continue · your idea stays private`}
+              ? `Keep going — ${20 - idea.length} more character${20 - idea.length === 1 ? "" : "s"} needed`
+              : `Looks good! Press ${modKey}+Enter to continue · your idea stays private`}
         </div>
       </div>
     </div>
