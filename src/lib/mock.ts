@@ -203,6 +203,17 @@ export const launchpadCatalog: LaunchpadTool[] = [
     requiredPlan: "Scale",
     // No handoffKey — no entry in HANDOFFS; terminal analysis tool
   },
+  {
+    key: "blog",
+    toolKey: "blog",
+    name: "Blog Post Generator",
+    desc: "SEO-optimized blog post from a topic or keyword.",
+    wired: true,
+    difficulty: "Beginner",
+    xp: 50,
+    requiredPlan: "Launch",
+    handoffKey: "blog",
+  },
 ];
 
 export type NovaModule = {

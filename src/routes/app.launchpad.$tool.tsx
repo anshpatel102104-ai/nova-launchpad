@@ -798,6 +798,8 @@ function placeholderFor(key: string): string {
       return "Describe your product, value delivered, target customer segments, and current pricing (if any).";
     case "revenue-projector":
       return "Describe your business model, current MRR (if any), CAC estimate, and growth targets.";
+    case "blog":
+      return "Enter the topic or primary keyword. Add your target audience and any specific angle you want to cover.";
     default:
       return "Describe your business, audience, and goal. The more specific, the better the output.";
   }

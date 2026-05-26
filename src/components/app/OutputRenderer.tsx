@@ -332,6 +332,8 @@ export function OutputBody({ toolKey, output }: { toolKey: string; output: Out }
       return <PricingOut o={o} />;
     case "revenue-projector":
       return <RevenueOut o={o} />;
+    case "blog":
+      return <BlogOut o={o} />;
     default:
       return <GenericOut o={o} />;
   }
@@ -1772,6 +1774,80 @@ function RevenueOut({ o }: { o: Record<string, unknown> }) {
         <Block title="Revenue risks" accent="warning">
           <BulletList items={risks} accent="warning" />
         </Block>
+      )}
+    </div>
+  );
+}
+
+function BlogOut({ o }: { o: Record<string, unknown> }) {
+  const title = str(o.title);
+  const metaDesc = str(o.meta_description);
+  const body = str(o.body_markdown ?? o.body);
+  const tags = arr(o.suggested_tags ?? o.tags);
+  const readability = num(o.readability_score, 0);
+  return (
+    <div className="space-y-3">
+      {title && (
+        <div
+          className="rounded-xl p-5"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
+            style={{ color: "var(--primary)" }}
+          >
+            Title
+          </div>
+          <div
+            className="font-display text-[1.25rem] font-semibold leading-tight tracking-tight"
+            style={{ color: "var(--foreground)" }}
+          >
+            {title}
+          </div>
+          {metaDesc && (
+            <div className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+              {metaDesc}
+            </div>
+          )}
+        </div>
+      )}
+      {readability > 0 && <ScoreGauge value={readability} label="Readability score" />}
+      {body && (
+        <Block title="Article">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{body}</div>
+        </Block>
+      )}
+      {tags.length > 0 && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+        >
+          <div
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            Suggested tags
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {tags.map((t, i) => (
+              <span
+                key={i}
+                className="rounded-full px-2.5 py-0.5 text-[11.5px]"
+                style={{
+                  background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+                  border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+                  color: "var(--primary)",
+                }}
+              >
+                {typeof t === "string" ? t : JSON.stringify(t)}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
