@@ -33,6 +33,7 @@ import {
   Sparkles,
   PenLine,
   BookOpen,
+  Crosshair,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,12 @@ const NOVA_MODULES: SubItem[] = [
 
 const NAV: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    to: "/app/mentor",
+    label: "Mission Control",
+    icon: Crosshair,
+    match: (p) => p === "/app/mentor",
+  },
   {
     to: "/app/ai-dashboard",
     label: "AI Dashboard",
