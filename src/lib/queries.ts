@@ -502,10 +502,7 @@ export const mentorKPIsQuery = (orgId: string) =>
           .eq("organization_id", orgId)
           .order("created_at", { ascending: false })
           .limit(200),
-        supabase
-          .from("automation_settings")
-          .select("id,status")
-          .eq("organization_id", orgId),
+        supabase.from("automation_settings").select("id,status").eq("organization_id", orgId),
       ]);
 
       const leads = leadsRes.data ?? [];
@@ -514,25 +511,37 @@ export const mentorKPIsQuery = (orgId: string) =>
 
       const wonLeads = leads.filter((l) => l.stage === "Won").length;
       const totalLeads = leads.length;
-      const pipelineValue = leads.reduce((s, l) => s + ((l as { value?: number }).value ?? 3200), 0);
+      const pipelineValue = leads.reduce(
+        (s, l) => s + ((l as { value?: number }).value ?? 3200),
+        0,
+      );
       const completedRuns = runs.filter((r) => r.status === "succeeded").length;
-      const activeAutomations = autos.filter((a) => (a as { status?: string }).status === "active").length;
+      const activeAutomations = autos.filter(
+        (a) => (a as { status?: string }).status === "active",
+      ).length;
 
       // Execution index: weighted score from activity signals
       const execIndex = Math.min(
         100,
         Math.round(
           Math.min(completedRuns * 4, 40) +
-          Math.min(activeAutomations * 12, 24) +
-          Math.min(wonLeads * 8, 24) +
-          (totalLeads > 0 ? 12 : 0),
+            Math.min(activeAutomations * 12, 24) +
+            Math.min(wonLeads * 8, 24) +
+            (totalLeads > 0 ? 12 : 0),
         ),
       );
 
       // CAC ratio heuristic (improves as closed deals grow vs total runs cost)
-      const cacRatio = completedRuns > 0
-        ? Math.min(4.0, Math.max(0.5, wonLeads > 0 ? (wonLeads * 3.5) / Math.max(1, completedRuns * 0.3) : 0.8))
-        : 0;
+      const cacRatio =
+        completedRuns > 0
+          ? Math.min(
+              4.0,
+              Math.max(
+                0.5,
+                wonLeads > 0 ? (wonLeads * 3.5) / Math.max(1, completedRuns * 0.3) : 0.8,
+              ),
+            )
+          : 0;
 
       return {
         mrr: wonLeads * 420, // rough MRR signal per won deal

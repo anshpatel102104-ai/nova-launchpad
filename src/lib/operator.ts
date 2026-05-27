@@ -363,12 +363,8 @@ export type AutomationParams = {
   integrations?: string[];
 };
 
-export const runAutomation = (
-  _uid: string,
-  params: AutomationParams,
-  _t?: string,
-  _s?: string,
-) => invokeTool("automation", params);
+export const runAutomation = (_uid: string, params: AutomationParams, _t?: string, _s?: string) =>
+  invokeTool("automation", params);
 
 // ─── Client Reporting ────────────────────────────────────────────────────────
 
@@ -397,13 +393,7 @@ export const sendMessage = (
 
 // ─── Mentor Agent ─────────────────────────────────────────────────────────────
 
-export type MentorAgentId =
-  | "growth"
-  | "offer"
-  | "sales"
-  | "content"
-  | "automation"
-  | "finance";
+export type MentorAgentId = "growth" | "offer" | "sales" | "content" | "automation" | "finance";
 
 export type MentorAgentParams = {
   agent_id: MentorAgentId;

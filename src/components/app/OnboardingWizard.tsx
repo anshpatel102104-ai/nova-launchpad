@@ -38,56 +38,118 @@ const TOTAL_STEPS = 6;
 // ── Question data ─────────────────────────────────────────────────────────────
 
 const STAGES = [
-  { id: "Idea",     label: "Just an idea",     desc: "Haven't built anything yet",     Icon: Lightbulb },
-  { id: "Validate", label: "Building it",       desc: "Actively creating the product",  Icon: Hammer },
-  { id: "Operate",  label: "Have customers",    desc: "Real people are paying me",      Icon: DollarSign },
-  { id: "Scale",    label: "Growing fast",      desc: "Revenue is coming in",           Icon: TrendingUp },
+  { id: "Idea", label: "Just an idea", desc: "Haven't built anything yet", Icon: Lightbulb },
+  { id: "Validate", label: "Building it", desc: "Actively creating the product", Icon: Hammer },
+  { id: "Operate", label: "Have customers", desc: "Real people are paying me", Icon: DollarSign },
+  { id: "Scale", label: "Growing fast", desc: "Revenue is coming in", Icon: TrendingUp },
 ];
 
 const CUSTOMERS = [
-  { id: "Small businesses",    label: "Small businesses",    desc: "Local shops, agencies, SMBs",    Icon: Briefcase },
-  { id: "Consumers",           label: "Consumers",           desc: "Everyday people (B2C)",          Icon: ShoppingBag },
-  { id: "Freelancers/Creators", label: "Freelancers / Creators", desc: "Solopreneurs, content creators", Icon: Users },
-  { id: "Enterprises",         label: "Enterprises",         desc: "Mid-market or large companies",  Icon: Building2 },
+  {
+    id: "Small businesses",
+    label: "Small businesses",
+    desc: "Local shops, agencies, SMBs",
+    Icon: Briefcase,
+  },
+  { id: "Consumers", label: "Consumers", desc: "Everyday people (B2C)", Icon: ShoppingBag },
+  {
+    id: "Freelancers/Creators",
+    label: "Freelancers / Creators",
+    desc: "Solopreneurs, content creators",
+    Icon: Users,
+  },
+  {
+    id: "Enterprises",
+    label: "Enterprises",
+    desc: "Mid-market or large companies",
+    Icon: Building2,
+  },
 ];
 
 const GOALS = [
-  { id: "Get first customers",  label: "Get first customers",  desc: "Land paying customers ASAP",       Icon: Target },
-  { id: "Reach $10k MRR",       label: "Reach $10k MRR",       desc: "Hit meaningful recurring revenue", Icon: BarChart2 },
-  { id: "Raise funding",        label: "Raise funding",        desc: "Secure investors or grants",       Icon: Rocket },
-  { id: "Scale to $100k+",      label: "Scale to $100k+",      desc: "Build a real growth engine",       Icon: Layers },
+  {
+    id: "Get first customers",
+    label: "Get first customers",
+    desc: "Land paying customers ASAP",
+    Icon: Target,
+  },
+  {
+    id: "Reach $10k MRR",
+    label: "Reach $10k MRR",
+    desc: "Hit meaningful recurring revenue",
+    Icon: BarChart2,
+  },
+  { id: "Raise funding", label: "Raise funding", desc: "Secure investors or grants", Icon: Rocket },
+  {
+    id: "Scale to $100k+",
+    label: "Scale to $100k+",
+    desc: "Build a real growth engine",
+    Icon: Layers,
+  },
 ];
 
 const REVENUES = [
-  { id: "Pre-revenue",  label: "Pre-revenue",  desc: "$0 — not yet monetised",       Icon: DollarSign },
-  { id: "$1–$1k/mo",   label: "$1 – $1k/mo",  desc: "Early traction",               Icon: Banknote },
-  { id: "$1k–$10k/mo", label: "$1k – $10k/mo", desc: "Product-market fit forming",   Icon: TrendingUp },
-  { id: "$10k+/mo",    label: "$10k+/mo",      desc: "Established revenue",          Icon: BarChart2 },
+  { id: "Pre-revenue", label: "Pre-revenue", desc: "$0 — not yet monetised", Icon: DollarSign },
+  { id: "$1–$1k/mo", label: "$1 – $1k/mo", desc: "Early traction", Icon: Banknote },
+  {
+    id: "$1k–$10k/mo",
+    label: "$1k – $10k/mo",
+    desc: "Product-market fit forming",
+    Icon: TrendingUp,
+  },
+  { id: "$10k+/mo", label: "$10k+/mo", desc: "Established revenue", Icon: BarChart2 },
 ];
 
 const CHALLENGES = [
-  { id: "Finding customers",   label: "Finding customers",   desc: "No leads, no pipeline",         Icon: UserX },
-  { id: "Building the product", label: "Building product",   desc: "Shipping is the bottleneck",    Icon: Package },
-  { id: "Marketing & awareness", label: "Getting attention", desc: "Nobody knows I exist",          Icon: Megaphone },
-  { id: "Fundraising",          label: "Raising capital",    desc: "Need investors or revenue",     Icon: Rocket },
+  {
+    id: "Finding customers",
+    label: "Finding customers",
+    desc: "No leads, no pipeline",
+    Icon: UserX,
+  },
+  {
+    id: "Building the product",
+    label: "Building product",
+    desc: "Shipping is the bottleneck",
+    Icon: Package,
+  },
+  {
+    id: "Marketing & awareness",
+    label: "Getting attention",
+    desc: "Nobody knows I exist",
+    Icon: Megaphone,
+  },
+  { id: "Fundraising", label: "Raising capital", desc: "Need investors or revenue", Icon: Rocket },
 ];
 
 const STEP_META = [
-  { eyebrow: "Step 1 of 6 · Your Idea",            heading: "What's your", accent: "#f97316" },
-  { eyebrow: "Step 2 of 6 · Your Stage",           heading: "Where are you", accent: "#f97316" },
-  { eyebrow: "Step 3 of 6 · Your Customer",        heading: "Who do you", accent: "#fb923c" },
-  { eyebrow: "Step 4 of 6 · Your Goal",            heading: "What do you want", accent: "#f97316" },
-  { eyebrow: "Step 5 of 6 · Your Revenue",         heading: "Current monthly", accent: "#fb923c" },
-  { eyebrow: "Step 6 of 6 · Your Challenge",       heading: "Biggest thing", accent: "#f97316" },
+  { eyebrow: "Step 1 of 6 · Your Idea", heading: "What's your", accent: "#f97316" },
+  { eyebrow: "Step 2 of 6 · Your Stage", heading: "Where are you", accent: "#f97316" },
+  { eyebrow: "Step 3 of 6 · Your Customer", heading: "Who do you", accent: "#fb923c" },
+  { eyebrow: "Step 4 of 6 · Your Goal", heading: "What do you want", accent: "#f97316" },
+  { eyebrow: "Step 5 of 6 · Your Revenue", heading: "Current monthly", accent: "#fb923c" },
+  { eyebrow: "Step 6 of 6 · Your Challenge", heading: "Biggest thing", accent: "#f97316" },
 ];
 
 const HEADINGS = [
-  <>"What's your <span style={{ color: "#f97316" }}>business idea</span>?"</>,
-  <>Where are you <span style={{ color: "#f97316" }}>right now</span>?</>,
-  <>Who do you <span style={{ color: "#fb923c" }}>sell to</span>?</>,
-  <>What do you want to <span style={{ color: "#f97316" }}>achieve</span> in 90 days?</>,
-  <>Current monthly <span style={{ color: "#fb923c" }}>revenue</span>?</>,
-  <>Biggest thing <span style={{ color: "#f97316" }}>holding you back</span>?</>,
+  <>
+    "What's your <span style={{ color: "#f97316" }}>business idea</span>?"
+  </>,
+  <>
+    Where are you <span style={{ color: "#f97316" }}>right now</span>?
+  </>,
+  <>
+    Who do you <span style={{ color: "#fb923c" }}>sell to</span>?
+  </>,
+  <>
+    What do you want to <span style={{ color: "#f97316" }}>achieve</span> in 90 days?
+  </>,
+  <>
+    Current monthly <span style={{ color: "#fb923c" }}>revenue</span>?
+  </>,
+  <>
+    Biggest thing <span style={{ color: "#f97316" }}>holding you back</span>?
+  </>,
 ];
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -121,8 +183,8 @@ function ProgressBar({ step }: { step: number }) {
               i < step
                 ? "#f97316"
                 : i === step
-                ? "linear-gradient(90deg, #f97316, #fbbf24)"
-                : "rgba(255,255,255,0.08)",
+                  ? "linear-gradient(90deg, #f97316, #fbbf24)"
+                  : "rgba(255,255,255,0.08)",
             boxShadow: i === step ? "0 0 10px rgba(249,115,22,0.6)" : "none",
           }}
         />
@@ -214,7 +276,14 @@ function MCGrid({
           <IconBox Icon={Icon} selected={value === id} />
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f7f0e8" }}>{label}</div>
-            <div style={{ fontSize: 11, color: "rgba(240,230,220,0.38)", lineHeight: 1.4, marginTop: 2 }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "rgba(240,230,220,0.38)",
+                lineHeight: 1.4,
+                marginTop: 2,
+              }}
+            >
               {desc}
             </div>
           </div>
@@ -231,37 +300,52 @@ export function OnboardingWizard({ onComplete }: Props) {
   const [key, setKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  const [idea, setIdea]                   = useState("");
-  const [stage, setStage]                 = useState("");
+  const [idea, setIdea] = useState("");
+  const [stage, setStage] = useState("");
   const [targetCustomer, setTargetCustomer] = useState("");
-  const [goal, setGoal]                   = useState("");
-  const [revenue, setRevenue]             = useState("");
-  const [challenge, setChallenge]         = useState("");
+  const [goal, setGoal] = useState("");
+  const [revenue, setRevenue] = useState("");
+  const [challenge, setChallenge] = useState("");
 
   const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const modKey = isMac ? "⌘" : "Ctrl";
 
   const canAdvance =
-    step === 0 ? idea.trim().length >= 20
-    : step === 1 ? !!stage
-    : step === 2 ? !!targetCustomer
-    : step === 3 ? !!goal
-    : step === 4 ? !!revenue
-    : !!challenge;
+    step === 0
+      ? idea.trim().length >= 20
+      : step === 1
+        ? !!stage
+        : step === 2
+          ? !!targetCustomer
+          : step === 3
+            ? !!goal
+            : step === 4
+              ? !!revenue
+              : !!challenge;
 
   const goBack = () => {
-    if (step > 0) { setStep(s => s - 1); setKey(k => k + 1); }
+    if (step > 0) {
+      setStep((s) => s - 1);
+      setKey((k) => k + 1);
+    }
   };
 
   const advance = async () => {
     if (!canAdvance || saving) return;
     if (step < TOTAL_STEPS - 1) {
-      setStep(s => s + 1);
-      setKey(k => k + 1);
+      setStep((s) => s + 1);
+      setKey((k) => k + 1);
     } else {
       setSaving(true);
       try {
-        await onComplete({ idea, stage, target_customer: targetCustomer, goal, revenue, challenge });
+        await onComplete({
+          idea,
+          stage,
+          target_customer: targetCustomer,
+          goal,
+          revenue,
+          challenge,
+        });
       } finally {
         setSaving(false);
       }
@@ -273,19 +357,47 @@ export function OnboardingWizard({ onComplete }: Props) {
   return (
     <div style={CARD}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 28,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 8,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "linear-gradient(135deg, #f97316, #ea580c)",
-            fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: "0.02em",
-          }}>N</div>
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f7f0e8", letterSpacing: "-0.01em" }}>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#fff",
+              letterSpacing: "0.02em",
+            }}
+          >
+            N
+          </div>
+          <span
+            style={{ fontSize: 13.5, fontWeight: 600, color: "#f7f0e8", letterSpacing: "-0.01em" }}
+          >
             Nova OS
           </span>
         </div>
-        <div style={{ fontSize: 11, color: "rgba(249,115,22,0.7)", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        <div
+          style={{
+            fontSize: 11,
+            color: "rgba(249,115,22,0.7)",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
           {eyebrow.split("·")[0].trim()}
         </div>
       </div>
@@ -297,10 +409,28 @@ export function OnboardingWizard({ onComplete }: Props) {
 
       {/* Step heading */}
       <div key={key} style={{ marginBottom: 22 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(249,115,22,0.75)", marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(249,115,22,0.75)",
+            marginBottom: 8,
+          }}
+        >
           {eyebrow.split("·")[1]?.trim()}
         </div>
-        <h2 style={{ fontSize: "clamp(1.6rem, 4.5vw, 2.1rem)", fontWeight: 800, color: "#f7f0e8", lineHeight: 1.1, letterSpacing: "-0.04em", margin: 0 }}>
+        <h2
+          style={{
+            fontSize: "clamp(1.6rem, 4.5vw, 2.1rem)",
+            fontWeight: 800,
+            color: "#f7f0e8",
+            lineHeight: 1.1,
+            letterSpacing: "-0.04em",
+            margin: 0,
+          }}
+        >
           {HEADINGS[step]}
         </h2>
       </div>
@@ -312,8 +442,10 @@ export function OnboardingWizard({ onComplete }: Props) {
             <textarea
               autoFocus
               value={idea}
-              onChange={e => setIdea(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) advance(); }}
+              onChange={(e) => setIdea(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) advance();
+              }}
               placeholder="e.g. A SaaS tool for freelance designers to automate client invoicing and follow-ups, saving 3+ hours a week"
               rows={4}
               style={{
@@ -331,23 +463,31 @@ export function OnboardingWizard({ onComplete }: Props) {
                 boxSizing: "border-box",
                 transition: "border-color 0.2s, box-shadow 0.2s",
               }}
-              onFocus={e => { e.target.style.borderColor = "rgba(249,115,22,0.55)"; e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.1)"; }}
-              onBlur={e => { e.target.style.borderColor = "rgba(249,115,22,0.2)"; e.target.style.boxShadow = "none"; }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "rgba(249,115,22,0.55)";
+                e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "rgba(249,115,22,0.2)";
+                e.target.style.boxShadow = "none";
+              }}
             />
             <div style={{ fontSize: 10.5, color: "rgba(240,230,220,0.3)", marginTop: 6 }}>
               {idea.length === 0
                 ? `Describe who it's for and what it does — Nova personalizes your entire dashboard from this`
                 : idea.length < 20
-                ? `${20 - idea.length} more characters needed`
-                : `Good — press ${modKey}+Enter to continue`}
+                  ? `${20 - idea.length} more characters needed`
+                  : `Good — press ${modKey}+Enter to continue`}
             </div>
           </div>
         )}
-        {step === 1 && <MCGrid options={STAGES}    value={stage}          onChange={setStage} />}
-        {step === 2 && <MCGrid options={CUSTOMERS}  value={targetCustomer} onChange={setTargetCustomer} />}
-        {step === 3 && <MCGrid options={GOALS}      value={goal}           onChange={setGoal} />}
-        {step === 4 && <MCGrid options={REVENUES}   value={revenue}        onChange={setRevenue} />}
-        {step === 5 && <MCGrid options={CHALLENGES} value={challenge}      onChange={setChallenge} />}
+        {step === 1 && <MCGrid options={STAGES} value={stage} onChange={setStage} />}
+        {step === 2 && (
+          <MCGrid options={CUSTOMERS} value={targetCustomer} onChange={setTargetCustomer} />
+        )}
+        {step === 3 && <MCGrid options={GOALS} value={goal} onChange={setGoal} />}
+        {step === 4 && <MCGrid options={REVENUES} value={revenue} onChange={setRevenue} />}
+        {step === 5 && <MCGrid options={CHALLENGES} value={challenge} onChange={setChallenge} />}
       </div>
 
       {/* Navigation */}
@@ -357,11 +497,19 @@ export function OnboardingWizard({ onComplete }: Props) {
             onClick={goBack}
             disabled={saving}
             style={{
-              height: 52, width: 52, borderRadius: 12,
+              height: 52,
+              width: 52,
+              borderRadius: 12,
               border: "1px solid rgba(255,255,255,0.09)",
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(255,255,255,0.04)", color: "rgba(240,230,220,0.4)",
-              transition: "all 0.2s", flexShrink: 0, fontFamily: "inherit",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(255,255,255,0.04)",
+              color: "rgba(240,230,220,0.4)",
+              transition: "all 0.2s",
+              flexShrink: 0,
+              fontFamily: "inherit",
             }}
           >
             <ArrowLeft style={{ width: 16, height: 16 }} />
@@ -371,26 +519,36 @@ export function OnboardingWizard({ onComplete }: Props) {
           onClick={advance}
           disabled={!canAdvance || saving}
           style={{
-            flex: 1, height: 52, borderRadius: 12, border: "none",
+            flex: 1,
+            height: 52,
+            borderRadius: 12,
+            border: "none",
             cursor: canAdvance && !saving ? "pointer" : "default",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em",
-            background: canAdvance && !saving
-              ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
-              : "rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            fontWeight: 600,
+            fontSize: 15,
+            letterSpacing: "-0.01em",
+            background:
+              canAdvance && !saving
+                ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                : "rgba(255,255,255,0.06)",
             color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.2)",
             transition: "all 0.25s",
-            boxShadow: canAdvance && !saving
-              ? "0 0 40px rgba(249,115,22,0.4), 0 8px 24px rgba(0,0,0,0.4)"
-              : "none",
+            boxShadow:
+              canAdvance && !saving
+                ? "0 0 40px rgba(249,115,22,0.4), 0 8px 24px rgba(0,0,0,0.4)"
+                : "none",
             fontFamily: "inherit",
           }}
         >
           {saving
             ? "Building your dashboard…"
             : step < TOTAL_STEPS - 1
-            ? "Continue"
-            : "Launch Nova"}
+              ? "Continue"
+              : "Launch Nova"}
           {!saving && <ArrowRight style={{ width: 17, height: 17 }} />}
         </button>
       </div>
