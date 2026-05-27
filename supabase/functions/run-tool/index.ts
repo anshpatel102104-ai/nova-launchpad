@@ -1121,8 +1121,7 @@ const TOOLS: Record<string, ToolConfig> = {
   niche_validator: {
     systemPrompt:
       "You are a market research expert. Validate the given niche for business viability — assess demand, competition, monetisation potential, and entry timing.",
-    buildUserPrompt: (i) =>
-      `Niche: ${i.niche_idea}\nGeography: ${i.geography || "global"}`,
+    buildUserPrompt: (i) => `Niche: ${i.niche_idea}\nGeography: ${i.geography || "global"}`,
     schema: {
       name: "niche_validation",
       description: "Validate a niche for business viability",

@@ -98,7 +98,12 @@ Deno.serve(async (req) => {
         messages: [{ role: "user", content: message }],
       });
       const reply = resp.content[0].type === "text" ? resp.content[0].text : "";
-      return json({ success: true, response: reply, agent_id, session_id: session_id ?? crypto.randomUUID() });
+      return json({
+        success: true,
+        response: reply,
+        agent_id,
+        session_id: session_id ?? crypto.randomUUID(),
+      });
     } catch (e) {
       return json({ success: false, error: e instanceof Error ? e.message : "AI error" }, 500);
     }

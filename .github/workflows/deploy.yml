@@ -65,7 +65,12 @@ jobs:
             20260521161020 20260521161700 \
             20260516000000 \
             20260525000001 20260525000002 \
-            20260527000001 20260527000002; do
+            20260527000001 20260527000002 20260527000003 \
+            20260527135748 20260527135830 20260527135900 \
+            20260527143022 20260527143424 \
+            20260527181328 20260527185300 \
+            20260527195731 20260527195858 \
+            20260527202035 20260527202052 20260527202122 20260527202150 20260527202205; do
             supabase migration repair --status applied "$v" || true
           done
         env:
@@ -115,7 +120,7 @@ jobs:
 
       - name: Deploy Cloudflare Worker
         working-directory: cloudflare/n8n-proxy
-        run: bunx wrangler deploy
+        run: bunx wrangler deploy --config wrangler.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
