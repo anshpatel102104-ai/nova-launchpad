@@ -14,7 +14,19 @@
 ALTER TABLE public.organizations
   ADD COLUMN IF NOT EXISTS owner_id uuid references auth.users(id) on delete cascade;
 
-UPDATE public.organizations SET owner_id = created_by WHERE owner_id IS NULL;
+-- Backfill owner_id from created_by only if created_by exists (live DB).
+-- On a fresh preview DB built from the squash migration, organizations is
+-- already created with owner_id so created_by does not exist — skip safely.
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'organizations'
+      AND column_name  = 'created_by'
+  ) THEN
+    UPDATE public.organizations SET owner_id = created_by WHERE owner_id IS NULL;
+  END IF;
+END $$;
 
 DO $$ BEGIN
   BEGIN
