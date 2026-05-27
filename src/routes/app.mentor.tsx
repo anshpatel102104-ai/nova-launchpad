@@ -94,7 +94,7 @@ interface AgentDef {
   id: MentorAgentId;
   role: string;
   codename: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   color: string;
   orbit: 1 | 2 | 3;
   brief: BriefStep[];
