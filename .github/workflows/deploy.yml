@@ -26,22 +26,38 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Reconcile migration history
-        # Local migration files use different timestamps than what was applied
-        # to the remote DB via the Supabase dashboard. Mark them all as applied
-        # so db push only runs truly new migrations going forward.
+        # All pre-squash migrations were applied directly to production via the
+        # Supabase dashboard and are represented by the squash file. Mark them
+        # applied so db push only runs migrations added after the squash.
         run: |
           for v in \
             20260422075843 20260422075900 20260422185038 \
             20260423055721 20260423055740 20260423173016 \
             20260423174303 20260423174336 20260423175609 \
             20260423195043 20260425063354 \
-            20260429220000 20260429220500 20260429230000 \
+            20260428174811 20260428174824 \
+            20260429203640 20260429203712 \
+            20260429220000 20260429220500 20260429225621 \
+            20260429225635 20260429225652 20260429225758 \
+            20260429225851 20260429230000 20260429230301 \
+            20260430052516 20260430052547 20260430052713 \
+            20260504224413 \
+            20260505162951 20260505165803 20260505170109 \
+            20260505170156 20260505194546 \
             20260506000000 20260506000001 20260506000002 \
             20260506000003 20260506000004 20260506000005 \
             20260506000006 20260508000001 \
+            20260508183635 \
             20260511000001 20260511000002 \
             20260512000001 20260512000002 \
-            20260513000001; do
+            20260512152647 20260512152651 \
+            20260512152937 20260512152942 \
+            20260513000001 20260513180806 \
+            20260513180830 20260513194544 \
+            20260521153617 20260521160701 \
+            20260521160907 20260521160937 \
+            20260521161020 20260521161700 \
+            20260516000000; do
             supabase migration repair --status applied "$v" || true
           done
         env:

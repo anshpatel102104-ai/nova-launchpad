@@ -11,16 +11,13 @@ import { Link } from "@tanstack/react-router";
 import { LANE_META } from "@/lib/lane-classifier";
 import type { Lane } from "@/lib/lane-classifier";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 interface Props {
   userId: string;
 }
 
 async function fetchCurrentMission(userId: string) {
   // Get workspace
-  const { data: ws } = await db
+  const { data: ws } = await supabase
     .from("workspaces")
     .select("id, name, lane, stage, current_mission_id")
     .eq("owner_id", userId)
@@ -29,7 +26,7 @@ async function fetchCurrentMission(userId: string) {
   if (!ws) return null;
 
   // Get active mission
-  const { data: mission } = await db
+  const { data: mission } = await supabase
     .from("missions")
     .select("id, title, description, lane, status")
     .eq("workspace_id", ws.id)
@@ -41,7 +38,7 @@ async function fetchCurrentMission(userId: string) {
   if (!mission) return null;
 
   // Get steps
-  const { data: steps } = await db
+  const { data: steps } = await supabase
     .from("mission_steps")
     .select("id, title, description, tool_key, status, sort_order")
     .eq("mission_id", mission.id)

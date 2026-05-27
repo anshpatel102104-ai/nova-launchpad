@@ -16,29 +16,26 @@ type Integration = {
   id: string;
   integration_key: string | null;
   status: string | null;
-  label: string | null;
+  value_hint: string | null;
 };
 type AutomationSetting = {
   id: string;
-  name?: string | null;
+  key: string;
+  label?: string | null;
   enabled?: boolean | null;
-  trigger_event?: string | null;
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
 
 async function fetchAutomationData(orgId: string, userId: string | undefined) {
   const [intsRes, autoRes] = await Promise.all([
-    db
-      .from("integrations")
-      .select("id, integration_key, status, label")
+    supabase
+      .from("user_integrations")
+      .select("id, integration_key, status, value_hint")
       .eq("user_id", userId ?? "")
       .order("created_at", { ascending: false })
       .limit(20),
-    db
+    supabase
       .from("automation_settings")
-      .select("id, name, enabled, trigger_event")
+      .select("id, key, label, enabled")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false })
       .limit(10),
@@ -278,7 +275,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
                   whiteSpace: "nowrap",
                 }}
               >
-                {a.name ?? a.trigger_event ?? "Automation"}
+                {a.label ?? a.key ?? "Automation"}
               </div>
               <span
                 style={{
@@ -315,7 +312,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
               }}
             >
               <CheckCircle2 style={{ width: 10, height: 10 }} />
-              {i.label ?? i.integration_key?.split(":").pop() ?? "Connected"}
+              {i.value_hint ?? i.integration_key?.split(":").pop() ?? "Connected"}
             </span>
           ))}
         </div>
