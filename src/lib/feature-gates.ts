@@ -1,9 +1,8 @@
-// TASK-011 · Feature gating
-// Checks whether the current user's plan allows access to a given feature.
-// Gates are evaluated client-side against the subscription plan; critical
-// enforcement lives server-side in edge functions.
+// Feature gating — client-side UI only.
+// Critical enforcement is server-side in the run-tool edge function.
+// Plan names match the subscriptions.plan enum: starter | launch | operate | scale.
 
-export type Plan = "starter" | "growth" | "pro" | "accelerator";
+export type Plan = "starter" | "launch" | "operate" | "scale";
 
 export type FeatureKey =
   | "operator_chat"
@@ -38,114 +37,114 @@ interface FeatureConfig {
 
 const FEATURE_GATES: Record<FeatureKey, FeatureConfig> = {
   operator_chat: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "Operator Chat",
     upsell: "Upgrade to chat with your AI co-founder.",
   },
   operator_unlimited: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Unlimited Operator",
-    upsell: "Upgrade to Growth for unlimited Operator messages.",
+    upsell: "Upgrade to Launch for unlimited Operator messages.",
   },
   mission_engine: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "Mission Engine",
     upsell: "Complete onboarding to access missions.",
   },
   advanced_tools: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Advanced Tools",
-    upsell: "Upgrade to Growth to unlock advanced AI tools.",
+    upsell: "Upgrade to Launch to unlock advanced AI tools.",
   },
   gtm_strategy: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "GTM Strategy",
     upsell: "Upgrade to access GTM Strategy.",
   },
   business_plan: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Business Plan",
-    upsell: "Upgrade to Growth to generate business plans.",
+    upsell: "Upgrade to Launch to generate business plans.",
   },
   funding_score: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Funding Score",
-    upsell: "Upgrade to Growth to get your funding score.",
+    upsell: "Upgrade to Launch to get your funding score.",
   },
   first_10_customers: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "First 10 Customers",
     upsell: "Upgrade to access customer acquisition tools.",
   },
   investor_emails: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Investor Emails",
-    upsell: "Upgrade to Growth to generate investor outreach.",
+    upsell: "Upgrade to Launch to generate investor outreach.",
   },
   kill_my_idea: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "Kill My Idea",
     upsell: "Upgrade to access idea stress-testing.",
   },
   idea_vs_idea: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Idea vs Idea",
-    upsell: "Upgrade to Growth to compare ideas side by side.",
+    upsell: "Upgrade to Launch to compare ideas side by side.",
   },
   nova_systems: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "Nova OS",
     upsell: "Upgrade to access Nova OS systems.",
   },
   crm_pipeline: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "CRM Pipeline",
     upsell: "Upgrade to access the CRM pipeline.",
   },
   lead_capture: {
-    plans: ["starter", "growth", "pro", "accelerator"],
+    plans: ["starter", "launch", "operate", "scale"],
     label: "Lead Capture",
     upsell: "Upgrade to start capturing leads.",
   },
   automation_workflows: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Automation Workflows",
-    upsell: "Upgrade to Growth to wire automations.",
+    upsell: "Upgrade to Launch to wire automations.",
   },
   follow_up_sequences: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Follow-Up Sequences",
-    upsell: "Upgrade to Growth for automated follow-ups.",
+    upsell: "Upgrade to Launch for automated follow-ups.",
   },
   client_onboarding: {
-    plans: ["pro", "accelerator"],
+    plans: ["operate", "scale"],
     label: "Client Onboarding",
-    upsell: "Upgrade to Pro for client onboarding flows.",
+    upsell: "Upgrade to Operate for client onboarding flows.",
   },
   reports_analytics: {
-    plans: ["growth", "pro", "accelerator"],
+    plans: ["launch", "operate", "scale"],
     label: "Reports & Analytics",
-    upsell: "Upgrade to Growth for detailed reporting.",
+    upsell: "Upgrade to Launch for detailed reporting.",
   },
   api_access: {
-    plans: ["pro", "accelerator"],
+    plans: ["operate", "scale"],
     label: "API Access",
-    upsell: "Upgrade to Pro for API access.",
+    upsell: "Upgrade to Operate for API access.",
   },
   white_label: {
-    plans: ["accelerator"],
+    plans: ["scale"],
     label: "White Label",
-    upsell: "Upgrade to Accelerator for white-label options.",
+    upsell: "Upgrade to Scale for white-label options.",
   },
   custom_integrations: {
-    plans: ["pro", "accelerator"],
+    plans: ["operate", "scale"],
     label: "Custom Integrations",
-    upsell: "Upgrade to Pro for custom integrations.",
+    upsell: "Upgrade to Operate for custom integrations.",
   },
   priority_support: {
-    plans: ["pro", "accelerator"],
+    plans: ["operate", "scale"],
     label: "Priority Support",
-    upsell: "Upgrade to Pro for priority support.",
+    upsell: "Upgrade to Operate for priority support.",
   },
 };
 

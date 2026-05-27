@@ -1,9 +1,5 @@
-// TASK-080 · Secure Backend Operator Endpoint
-// TASK-082 · Route All Provider Calls Through Backend Only
-//
-// Single entry point for all AI operator requests from the client.
+// Single entry point for all AI operator and mentor-agent requests from the client.
 // No AI provider calls happen client-side — everything flows through here.
-// Routes to Claude API via n8n or direct (depending on complexity).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.27.0";
@@ -39,6 +35,17 @@ You never ask more than one clarifying question at a time.
 When you recommend a tool, name it explicitly (e.g., "Run the Idea Validator now").
 Response format: 2–4 short paragraphs max, or a numbered list. No long preambles.`;
 
+type MentorAgentId = "growth" | "offer" | "sales" | "content" | "automation" | "finance";
+
+const MENTOR_PERSONAS: Record<MentorAgentId, string> = {
+  growth: `You are a Growth Mentor — a seasoned growth hacker and marketing strategist. You specialise in user acquisition, retention, viral loops, and channel optimisation. Be data-driven, channel-specific, and always push the founder to their next 10x growth lever.`,
+  offer: `You are an Offer Mentor — an expert offer architect trained in Alex Hormozi's $100M Offers framework. You help founders build irresistible offers with value stacking, guarantees, and pricing psychology. Push for specificity and concrete positioning.`,
+  sales: `You are a Sales Mentor — a battle-tested B2B sales coach. You specialise in discovery calls, closing techniques, pipeline management, and objection handling. Focus on concrete scripts, talk tracks, and daily revenue-generating activities.`,
+  content: `You are a Content Mentor — a social media and content strategist with expertise in LinkedIn, Twitter/X, short-form video, and email newsletters. Help founders build a content engine that generates leads on autopilot.`,
+  automation: `You are an Automation Mentor — a workflow automation expert with deep knowledge of no-code tools (n8n, Make, Zapier) and AI agents. Help founders eliminate manual work, save hours per week, and build scalable systems.`,
+  finance: `You are a Finance Mentor — a startup finance expert covering cash flow, pricing, unit economics, and fundraising. Be precise with numbers, help founders understand their financial levers, and always tie advice back to profitability.`,
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -64,6 +71,10 @@ Deno.serve(async (req) => {
     mission_id?: string;
     session_id?: string;
     context?: Record<string, unknown>;
+    // Mentor agent fields
+    agent_id?: MentorAgentId;
+    org_id?: string;
+    business_context?: string;
   };
   try {
     body = await req.json();
@@ -71,8 +82,27 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const { message, workspace_id, session_id } = body;
+  const { message, workspace_id, session_id, agent_id, business_context } = body;
   if (!message?.trim()) return json({ error: "message is required" }, 400);
+
+  // ── Mentor agent fast-path ─────────────────────────────────────────
+  if (agent_id) {
+    const persona = MENTOR_PERSONAS[agent_id] ?? MENTOR_PERSONAS.growth;
+    const mentorSystem = `${persona}\n\nBusiness context:\n${business_context || "Not provided"}\n\nBe concise, specific, and always end with one clear next action.`;
+    const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
+    try {
+      const resp = await anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 600,
+        system: mentorSystem,
+        messages: [{ role: "user", content: message }],
+      });
+      const reply = resp.content[0].type === "text" ? resp.content[0].text : "";
+      return json({ success: true, response: reply, agent_id, session_id: session_id ?? crypto.randomUUID() });
+    } catch (e) {
+      return json({ success: false, error: e instanceof Error ? e.message : "AI error" }, 500);
+    }
+  }
 
   const sessionId = session_id ?? crypto.randomUUID();
   const t0 = Date.now();

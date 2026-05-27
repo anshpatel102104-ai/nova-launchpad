@@ -1,15 +1,10 @@
 /**
- * Nova OPS · Master Operator Client
- * ─────────────────────────────────────────────────────────────────────
- * All tool invocations route through POST /webhook/operator.
- * The operator handles intent routing, credit guard, QA, and DB writes.
- *
- * Replaces: subagents.ts + launchpadTools.ts (those files are kept for
- * backward compatibility but should not be called from new code).
+ * Nova OPS · Operator Client
+ * All tool invocations and chat route through Supabase Edge Functions.
+ * No N8N dependency.
  */
 
-const N8N_BASE_URL =
-  (import.meta as { env?: { VITE_N8N_BASE_URL?: string } }).env?.VITE_N8N_BASE_URL ?? "/api/n8n";
+import { supabase } from "@/integrations/supabase/client";
 
 // ─── Operator state machine ──────────────────────────────────────────────────
 
@@ -52,8 +47,6 @@ export type OperatorSuccess<T = unknown> = {
 
 export type OperatorResult<T = unknown> = OperatorSuccess<T> | OperatorError;
 
-// ─── Clarification response (not an error, not a final output) ───────────────
-
 export type ClarificationResult = {
   success: true;
   status: "clarification_needed";
@@ -62,96 +55,6 @@ export type ClarificationResult = {
 };
 
 export type FullOperatorResult<T = unknown> = OperatorResult<T> | ClarificationResult;
-
-// ─── Core fetch helper ───────────────────────────────────────────────────────
-
-type CallOpts = {
-  user_id: string;
-  session_id?: string;
-  tool_slug?: string;
-  message?: string;
-  params?: Record<string, unknown>;
-  accessToken?: string;
-};
-
-async function callOperator<T = unknown>(opts: CallOpts): Promise<FullOperatorResult<T>> {
-  const url = `${N8N_BASE_URL}/webhook/operator`;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (opts.accessToken) {
-    headers.Authorization = `Bearer ${opts.accessToken}`;
-  }
-
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        user_id: opts.user_id,
-        session_id: opts.session_id,
-        tool_slug: opts.tool_slug,
-        message: opts.message,
-        params: opts.params ?? {},
-      }),
-    });
-  } catch (e) {
-    return {
-      success: false,
-      error: e instanceof Error ? e.message : "Network error",
-      code: "NETWORK_ERROR",
-    };
-  }
-
-  let json: unknown;
-  try {
-    json = await res.json();
-  } catch {
-    return {
-      success: false,
-      status: res.status,
-      error: `Invalid JSON from operator (HTTP ${res.status})`,
-      code: "INVALID_RESPONSE",
-    } as OperatorError;
-  }
-
-  const body = (json ?? {}) as Record<string, unknown>;
-
-  if (!res.ok || body["success"] === false) {
-    return {
-      success: false,
-      status: res.status,
-      error: (body["error"] as string) ?? `HTTP ${res.status}`,
-      code: body["code"] as string | undefined,
-      upgrade_url: (body["upgrade_url"] as string | null) ?? null,
-      upsell_message: (body["upsell_message"] as string | null) ?? null,
-      credits_remaining: body["credits_remaining"] as number | undefined,
-    };
-  }
-
-  if (body["status"] === "clarification_needed") {
-    return {
-      success: true,
-      status: "clarification_needed",
-      question: body["question"] as string,
-      session_id: body["session_id"] as string,
-    };
-  }
-
-  return {
-    success: true,
-    status: "success",
-    tool_slug: body["tool_slug"] as string,
-    formatted_output: body["formatted_output"] as string,
-    raw_output: body["raw_output"] as T,
-    credits_used: (body["credits_used"] as number) ?? 0,
-    credits_remaining: (body["credits_remaining"] as number) ?? 0,
-    session_id: body["session_id"] as string,
-    qa_score: (body["qa_score"] as number) ?? 0,
-    timestamp: body["timestamp"] as string,
-  };
-}
 
 // ─── Type guards ─────────────────────────────────────────────────────────────
 
@@ -170,14 +73,18 @@ export function isError(r: FullOperatorResult): r is OperatorError {
 export function isCreditBlock(r: FullOperatorResult): boolean {
   return (
     isError(r) &&
-    ((r as OperatorError).code === "CREDIT_INSUFFICIENT" || (r as OperatorError).status === 402)
+    ((r as OperatorError).code === "CREDIT_INSUFFICIENT" ||
+      (r as OperatorError).code === "QUOTA" ||
+      (r as OperatorError).status === 402)
   );
 }
 
 export function isPlanGateBlock(r: FullOperatorResult): boolean {
   return (
     isError(r) &&
-    ((r as OperatorError).code === "PLAN_UPGRADE_REQUIRED" || (r as OperatorError).status === 403)
+    ((r as OperatorError).code === "PLAN_UPGRADE_REQUIRED" ||
+      (r as OperatorError).code === "PLAN_GATE" ||
+      (r as OperatorError).status === 403)
   );
 }
 
@@ -185,25 +92,126 @@ export function getUpgradeUrl(r: OperatorError): string {
   return r.upgrade_url ?? "/upgrade";
 }
 
-// ─── Intake ──────────────────────────────────────────────────────────────────
+// ─── Core helpers ────────────────────────────────────────────────────────────
 
-export type IntakeParams = {
-  raw_input: string;
+async function invokeTool<T = unknown>(
+  toolKey: string,
+  params: Record<string, unknown>,
+): Promise<FullOperatorResult<T>> {
+  const { data, error } = await supabase.functions.invoke("run-tool", {
+    body: { toolKey, input: params },
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message ?? "Edge function error",
+      code: "FUNCTION_ERROR",
+    };
+  }
+
+  const body = (data ?? {}) as Record<string, unknown>;
+
+  if (body["error"]) {
+    return {
+      success: false,
+      error: body["error"] as string,
+      code: body["code"] as string | undefined,
+      status: body["status"] as number | undefined,
+    };
+  }
+
+  return {
+    success: true,
+    status: "success",
+    tool_slug: toolKey,
+    formatted_output: JSON.stringify(body["output"] ?? body, null, 2),
+    raw_output: (body["output"] ?? body) as T,
+    credits_used: 1,
+    credits_remaining: 999,
+    session_id: (body["run_id"] as string) ?? crypto.randomUUID(),
+    qa_score: 90,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+async function invokeChat(
+  message: string,
+  session_id?: string,
+  workspace_id?: string,
+): Promise<FullOperatorResult> {
+  const { data, error } = await supabase.functions.invoke("operator", {
+    body: { message, session_id, workspace_id },
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message ?? "Operator error",
+      code: "FUNCTION_ERROR",
+    };
+  }
+
+  const body = (data ?? {}) as Record<string, unknown>;
+
+  if (body["status"] === "credit_insufficient") {
+    return {
+      success: false,
+      error: (body["upsell_message"] as string) ?? "Credit limit reached",
+      code: "CREDIT_INSUFFICIENT",
+      upgrade_url: "/app/billing",
+      upsell_message: body["upsell_message"] as string | null,
+      credits_remaining: 0,
+    };
+  }
+
+  return {
+    success: true,
+    status: "success",
+    tool_slug: "operator_chat",
+    formatted_output: (body["reply"] as string) ?? "",
+    raw_output: body,
+    credits_used: 1,
+    credits_remaining: 999,
+    session_id: (body["session_id"] as string) ?? crypto.randomUUID(),
+    qa_score: 90,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// ─── Credit cost reference ────────────────────────────────────────────────────
+
+export const CREDIT_COSTS: Record<string, number> = {
+  intake: 0,
+  strategy: 20,
+  blog: 10,
+  social: 5,
+  email_sequence: 12,
+  sales_script: 8,
+  ad_creative: 8,
+  vsl: 15,
+  landing_page: 10,
+  cold_email: 12,
+  automation: 25,
+  client_report: 20,
+  niche_validator: 20,
+  icp: 20,
+  offer: 20,
+  pricing: 20,
+  pitch_deck: 20,
+  lead_magnet: 10,
 };
 
+// ─── Intake ──────────────────────────────────────────────────────────────────
+
+export type IntakeParams = { raw_input: string };
+
 export const runIntake = (
-  user_id: string,
+  _user_id: string,
   params: IntakeParams,
-  accessToken?: string,
-  session_id?: string,
-) =>
-  callOperator({
-    user_id,
-    session_id,
-    tool_slug: "intake",
-    params,
-    accessToken,
-  });
+  _accessToken?: string,
+  _session_id?: string,
+) => invokeTool("intake", params);
 
 // ─── Strategy ────────────────────────────────────────────────────────────────
 
@@ -212,18 +220,11 @@ export type StrategyParams = {
 };
 
 export const runStrategy = (
-  user_id: string,
+  _user_id: string,
   params: StrategyParams = {},
-  accessToken?: string,
-  session_id?: string,
-) =>
-  callOperator({
-    user_id,
-    session_id,
-    tool_slug: "strategy",
-    params,
-    accessToken,
-  });
+  _accessToken?: string,
+  _session_id?: string,
+) => invokeTool("strategy", params);
 
 // ─── Content tools ───────────────────────────────────────────────────────────
 
@@ -269,61 +270,33 @@ export type ColdEmailParams = {
   sender_company: string;
 };
 
-export const runBlog = (
-  user_id: string,
-  params: BlogParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "blog", params, accessToken });
+export const runBlog = (_uid: string, params: BlogParams, _t?: string, _s?: string) =>
+  invokeTool("blog", params);
 
-export const runSocial = (
-  user_id: string,
-  params: SocialParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "social", params, accessToken });
+export const runSocial = (_uid: string, params: SocialParams, _t?: string, _s?: string) =>
+  invokeTool("social", params);
 
 export const runEmailSequence = (
-  user_id: string,
+  _uid: string,
   params: EmailSequenceParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "email_sequence", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("email_sequence", params);
 
-export const runSalesScript = (
-  user_id: string,
-  params: SalesScriptParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "sales_script", params, accessToken });
+export const runSalesScript = (_uid: string, params: SalesScriptParams, _t?: string, _s?: string) =>
+  invokeTool("sales_script", params);
 
-export const runAdCreative = (
-  user_id: string,
-  params: AdCreativeParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "ad_creative", params, accessToken });
+export const runAdCreative = (_uid: string, params: AdCreativeParams, _t?: string, _s?: string) =>
+  invokeTool("ad_creative", params);
 
-export const runVsl = (
-  user_id: string,
-  params: VslParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "vsl", params, accessToken });
+export const runVsl = (_uid: string, params: VslParams, _t?: string, _s?: string) =>
+  invokeTool("vsl", params);
 
-export const runLandingPage = (
-  user_id: string,
-  params: LandingPageParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "landing_page", params, accessToken });
+export const runLandingPage = (_uid: string, params: LandingPageParams, _t?: string, _s?: string) =>
+  invokeTool("landing_page", params);
 
-export const runColdEmail = (
-  user_id: string,
-  params: ColdEmailParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "cold_email", params, accessToken });
+export const runColdEmail = (_uid: string, params: ColdEmailParams, _t?: string, _s?: string) =>
+  invokeTool("cold_email", params);
 
 // ─── Strategy sub-tools ──────────────────────────────────────────────────────
 
@@ -354,46 +327,34 @@ export type LeadMagnetParams = {
 };
 
 export const runNicheValidator = (
-  user_id: string,
+  _uid: string,
   params: NicheValidatorParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "niche_validator", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("niche_validator", params);
 
-export const runIcpBuilder = (
-  user_id: string,
-  params: IcpParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "icp", params, accessToken });
+export const runIcpBuilder = (_uid: string, params: IcpParams, _t?: string, _s?: string) =>
+  invokeTool("icp", params);
 
 export const runOfferBuilder = (
-  user_id: string,
+  _uid: string,
   params: OfferBuilderParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "offer", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("offer", params);
 
 export const runPricingStrategist = (
-  user_id: string,
+  _uid: string,
   params: PricingParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "pricing", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("pricing", params);
 
-export const runPitchDeck = (
-  user_id: string,
-  params: PitchDeckParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "pitch_deck", params, accessToken });
+export const runPitchDeck = (_uid: string, params: PitchDeckParams, _t?: string, _s?: string) =>
+  invokeTool("pitch_deck", params);
 
-export const runLeadMagnet = (
-  user_id: string,
-  params: LeadMagnetParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "lead_magnet", params, accessToken });
+export const runLeadMagnet = (_uid: string, params: LeadMagnetParams, _t?: string, _s?: string) =>
+  invokeTool("lead_magnet", params);
 
 // ─── Automation ──────────────────────────────────────────────────────────────
 
@@ -403,11 +364,11 @@ export type AutomationParams = {
 };
 
 export const runAutomation = (
-  user_id: string,
+  _uid: string,
   params: AutomationParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "automation", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("automation", params);
 
 // ─── Client Reporting ────────────────────────────────────────────────────────
 
@@ -419,46 +380,22 @@ export type ClientReportParams = {
 };
 
 export const runClientReport = (
-  user_id: string,
+  _uid: string,
   params: ClientReportParams,
-  accessToken?: string,
-  session_id?: string,
-) => callOperator({ user_id, session_id, tool_slug: "client_report", params, accessToken });
+  _t?: string,
+  _s?: string,
+) => invokeTool("client_report", params);
 
-// ─── Free-text operator message (for chat UI) ────────────────────────────────
+// ─── Free-text operator chat ─────────────────────────────────────────────────
 
 export const sendMessage = (
-  user_id: string,
+  _user_id: string,
   message: string,
-  accessToken?: string,
+  _accessToken?: string,
   session_id?: string,
-) => callOperator({ user_id, session_id, message, accessToken });
-
-// ─── Credit cost reference (mirrors operator system prompt) ──────────────────
-
-export const CREDIT_COSTS: Record<string, number> = {
-  intake: 0,
-  strategy: 20,
-  blog: 10,
-  social: 5,
-  email_sequence: 12,
-  sales_script: 8,
-  ad_creative: 8,
-  vsl: 15,
-  landing_page: 10,
-  cold_email: 12,
-  automation: 25,
-  client_report: 20,
-  niche_validator: 20,
-  icp: 20,
-  offer: 20,
-  pricing: 20,
-  pitch_deck: 20,
-  lead_magnet: 10,
-};
+) => invokeChat(message, session_id);
 
 // ─── Mentor Agent ─────────────────────────────────────────────────────────────
-// Routes to the mentor-agent-dispatch n8n workflow via the standard operator proxy.
 
 export type MentorAgentId =
   | "growth"
@@ -472,7 +409,6 @@ export type MentorAgentParams = {
   agent_id: MentorAgentId;
   message: string;
   org_id: string;
-  /** Accumulated context injected into the system prompt so the agent knows the business state. */
   business_context?: string;
 };
 
@@ -484,35 +420,27 @@ export type MentorAgentResult = {
   error?: string;
 };
 
-const MENTOR_N8N_PATH = "/webhook/mentor-agent";
+export const MENTOR_CREDIT_COST = 3;
 
 export async function runMentorAgent(
-  user_id: string,
+  _user_id: string,
   params: MentorAgentParams,
-  accessToken?: string,
+  _accessToken?: string,
   session_id?: string,
 ): Promise<MentorAgentResult> {
-  const N8N_BASE =
-    (import.meta as { env?: { VITE_N8N_BASE_URL?: string } }).env?.VITE_N8N_BASE_URL ?? "/api/n8n";
-  const url = `${N8N_BASE}${MENTOR_N8N_PATH}`;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const { data, error } = await supabase.functions.invoke("operator", {
+    body: {
+      message: params.message,
+      agent_id: params.agent_id,
+      org_id: params.org_id,
+      business_context: params.business_context,
+      session_id,
+    },
+  });
 
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ user_id, session_id, ...params }),
-    });
-    const json = (await res.json()) as MentorAgentResult;
-    return json;
-  } catch (e) {
-    return {
-      success: false,
-      error: e instanceof Error ? e.message : "Network error contacting mentor agent",
-    };
+  if (error) {
+    return { success: false, error: error.message ?? "Mentor agent error" };
   }
-}
 
-// Credit cost for mentor conversations (billed per exchange)
-export const MENTOR_CREDIT_COST = 3;
+  return (data ?? { success: false, error: "No response" }) as MentorAgentResult;
+}

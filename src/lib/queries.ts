@@ -393,14 +393,21 @@ export type MentorInsight = {
   read: boolean;
   n8n_run_id: string | null;
   created_at: string;
+  // UI-derived fields (enriched client-side)
+  color?: string;
+  agent?: string;
+  ago?: string;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
 
 export const mentorSessionQuery = (orgId: string, agentId: string) =>
   queryOptions({
     queryKey: ["mentor_session", orgId, agentId],
     queryFn: async (): Promise<MentorSession | null> => {
       if (isGuest()) return null;
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("mentor_agent_sessions")
         .select("*")
         .eq("org_id", orgId)
@@ -417,7 +424,7 @@ export const mentorInsightsQuery = (orgId: string) =>
     queryKey: ["mentor_insights", orgId],
     queryFn: async (): Promise<MentorInsight[]> => {
       if (isGuest()) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("mentor_insights")
         .select("*")
         .eq("org_id", orgId)
@@ -435,8 +442,7 @@ export async function saveMentorMessage(
   agentId: string,
   newMessages: MentorMessage[],
 ): Promise<void> {
-  // Load existing messages first
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("mentor_agent_sessions")
     .select("messages")
     .eq("org_id", orgId)
@@ -446,7 +452,7 @@ export async function saveMentorMessage(
   const prior: MentorMessage[] = (existing?.messages as MentorMessage[]) ?? [];
   const merged = [...prior, ...newMessages];
 
-  const { error } = await supabase.from("mentor_agent_sessions").upsert(
+  const { error } = await db.from("mentor_agent_sessions").upsert(
     {
       org_id: orgId,
       user_id: userId,
@@ -461,7 +467,7 @@ export async function saveMentorMessage(
 
 /** Mark all insights for an org as read. */
 export async function markInsightsRead(orgId: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await db
     .from("mentor_insights")
     .update({ read: true })
     .eq("org_id", orgId)
