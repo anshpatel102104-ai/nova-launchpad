@@ -1,6 +1,7 @@
 name = "nova-n8n-proxy"
 main = "src/worker.ts"
 compatibility_date = "2026-01-15"
+account_id = "25b7202ade639506ffce966e37a116e1"
 
 # Routes: update zone_name to match your Cloudflare zone after domain is added.
 # Uncomment and adjust before deploying:
