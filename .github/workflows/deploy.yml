@@ -62,6 +62,7 @@ jobs:
           done
           # Mark squash + all post-squash migrations as applied (they ran via MCP)
           for v in \
+            20260521161020 20260521161700 \
             20260516000000 \
             20260525000001 20260525000002 \
             20260527000001 20260527000002; do
