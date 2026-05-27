@@ -4,9 +4,10 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
-  // Routes: uncomment after nova-ops.space is added as a zone in the Cloudflare dashboard.
-  // "routes": [{ "pattern": "nova-ops.space/*", "zone_name": "nova-ops.space" }],
-  // Without routes the worker is reachable at: https://nova-launchpad.<account>.workers.dev
+  // Route wired to nova-ops.space zone. Requires the domain to be added as a zone in
+  // the Cloudflare dashboard (Workers & Pages → your Worker → Settings → Domains & Routes).
+  "routes": [{ "pattern": "nova-ops.space/*", "zone_name": "nova-ops.space" }],
+  // Worker is also reachable at: https://nova-launchpad.<account>.workers.dev
   "vars": {
     // Public env vars available at runtime on the Worker
     "VITE_N8N_BASE_URL": "/api/n8n",
