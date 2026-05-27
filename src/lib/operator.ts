@@ -456,3 +456,63 @@ export const CREDIT_COSTS: Record<string, number> = {
   pitch_deck: 20,
   lead_magnet: 10,
 };
+
+// ─── Mentor Agent ─────────────────────────────────────────────────────────────
+// Routes to the mentor-agent-dispatch n8n workflow via the standard operator proxy.
+
+export type MentorAgentId =
+  | "growth"
+  | "offer"
+  | "sales"
+  | "content"
+  | "automation"
+  | "finance";
+
+export type MentorAgentParams = {
+  agent_id: MentorAgentId;
+  message: string;
+  org_id: string;
+  /** Accumulated context injected into the system prompt so the agent knows the business state. */
+  business_context?: string;
+};
+
+export type MentorAgentResult = {
+  success: boolean;
+  response?: string;
+  agent_id?: string;
+  session_id?: string;
+  error?: string;
+};
+
+const MENTOR_N8N_PATH = "/webhook/mentor-agent";
+
+export async function runMentorAgent(
+  user_id: string,
+  params: MentorAgentParams,
+  accessToken?: string,
+  session_id?: string,
+): Promise<MentorAgentResult> {
+  const N8N_BASE =
+    (import.meta as { env?: { VITE_N8N_BASE_URL?: string } }).env?.VITE_N8N_BASE_URL ?? "/api/n8n";
+  const url = `${N8N_BASE}${MENTOR_N8N_PATH}`;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ user_id, session_id, ...params }),
+    });
+    const json = (await res.json()) as MentorAgentResult;
+    return json;
+  } catch (e) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Network error contacting mentor agent",
+    };
+  }
+}
+
+// Credit cost for mentor conversations (billed per exchange)
+export const MENTOR_CREDIT_COST = 3;

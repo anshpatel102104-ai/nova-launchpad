@@ -361,3 +361,182 @@ export async function deleteAiDashboard(orgId: string) {
   const { error } = await supabase.from("ai_dashboards").delete().eq("organization_id", orgId);
   if (error) throw error;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mentor Agent Queries
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type MentorMessage = {
+  role: "user" | "agent";
+  text: string;
+  ts: string;
+};
+
+export type MentorSession = {
+  id: string;
+  org_id: string;
+  user_id: string;
+  agent_id: string;
+  messages: MentorMessage[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type MentorInsight = {
+  id: string;
+  org_id: string;
+  agent_id: string;
+  type: "signal" | "opportunity" | "warning" | "recommendation";
+  title: string;
+  detail: string;
+  priority: "high" | "medium" | "low";
+  read: boolean;
+  n8n_run_id: string | null;
+  created_at: string;
+};
+
+export const mentorSessionQuery = (orgId: string, agentId: string) =>
+  queryOptions({
+    queryKey: ["mentor_session", orgId, agentId],
+    queryFn: async (): Promise<MentorSession | null> => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("mentor_agent_sessions")
+        .select("*")
+        .eq("org_id", orgId)
+        .eq("agent_id", agentId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as MentorSession | null;
+    },
+    staleTime: 0,
+  });
+
+export const mentorInsightsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["mentor_insights", orgId],
+    queryFn: async (): Promise<MentorInsight[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("mentor_insights")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return (data ?? []) as MentorInsight[];
+    },
+  });
+
+/** Upsert (create or append message) for a mentor chat session. */
+export async function saveMentorMessage(
+  orgId: string,
+  userId: string,
+  agentId: string,
+  newMessages: MentorMessage[],
+): Promise<void> {
+  // Load existing messages first
+  const { data: existing } = await supabase
+    .from("mentor_agent_sessions")
+    .select("messages")
+    .eq("org_id", orgId)
+    .eq("agent_id", agentId)
+    .maybeSingle();
+
+  const prior: MentorMessage[] = (existing?.messages as MentorMessage[]) ?? [];
+  const merged = [...prior, ...newMessages];
+
+  const { error } = await supabase.from("mentor_agent_sessions").upsert(
+    {
+      org_id: orgId,
+      user_id: userId,
+      agent_id: agentId,
+      messages: merged,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "org_id,agent_id" },
+  );
+  if (error) throw error;
+}
+
+/** Mark all insights for an org as read. */
+export async function markInsightsRead(orgId: string): Promise<void> {
+  const { error } = await supabase
+    .from("mentor_insights")
+    .update({ read: true })
+    .eq("org_id", orgId)
+    .eq("read", false);
+  if (error) throw error;
+}
+
+/** Derive live KPI metrics from existing tables (no new DB tables needed). */
+export const mentorKPIsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["mentor_kpis", orgId],
+    queryFn: async () => {
+      if (isGuest()) {
+        return {
+          mrr: 0,
+          pipelineValue: 0,
+          execIndex: 0,
+          cacRatio: 0,
+          wonLeads: 0,
+          totalLeads: 0,
+          completedRuns: 0,
+          activeAutomations: 0,
+        };
+      }
+
+      // Parallel fetch from existing tables
+      const [leadsRes, runsRes, autoRes] = await Promise.all([
+        supabase.from("leads").select("id,stage,value").eq("organization_id", orgId),
+        supabase
+          .from("tool_runs")
+          .select("id,status,tool_key,created_at")
+          .eq("organization_id", orgId)
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("automation_settings")
+          .select("id,status")
+          .eq("organization_id", orgId),
+      ]);
+
+      const leads = leadsRes.data ?? [];
+      const runs = runsRes.data ?? [];
+      const autos = autoRes.data ?? [];
+
+      const wonLeads = leads.filter((l) => l.stage === "Won").length;
+      const totalLeads = leads.length;
+      const pipelineValue = leads.reduce((s, l) => s + ((l as { value?: number }).value ?? 3200), 0);
+      const completedRuns = runs.filter((r) => r.status === "succeeded").length;
+      const activeAutomations = autos.filter((a) => (a as { status?: string }).status === "active").length;
+
+      // Execution index: weighted score from activity signals
+      const execIndex = Math.min(
+        100,
+        Math.round(
+          Math.min(completedRuns * 4, 40) +
+          Math.min(activeAutomations * 12, 24) +
+          Math.min(wonLeads * 8, 24) +
+          (totalLeads > 0 ? 12 : 0),
+        ),
+      );
+
+      // CAC ratio heuristic (improves as closed deals grow vs total runs cost)
+      const cacRatio = completedRuns > 0
+        ? Math.min(4.0, Math.max(0.5, wonLeads > 0 ? (wonLeads * 3.5) / Math.max(1, completedRuns * 0.3) : 0.8))
+        : 0;
+
+      return {
+        mrr: wonLeads * 420, // rough MRR signal per won deal
+        pipelineValue,
+        execIndex,
+        cacRatio: Math.round(cacRatio * 10) / 10,
+        wonLeads,
+        totalLeads,
+        completedRuns,
+        activeAutomations,
+      };
+    },
+  });

@@ -935,3 +935,39 @@ button, a, [role="button"] {
 
 /* iOS momentum scrolling */
 .scroll-smooth-ios { -webkit-overflow-scrolling: touch; overflow-y: auto; }
+
+/* ── Mission Control animations ── */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-right { animation: slideInRight 240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-in-bottom { animation: slideInBottom 240ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Radar sweep */
+@keyframes radarSweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.radar-sweep { animation: radarSweep 4s linear infinite; transform-origin: center; }
+
+/* Signal pulse ring — expands and fades */
+@keyframes signalPulse {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  100% { transform: scale(2.4);  opacity: 0; }
+}
+.signal-pulse { animation: signalPulse 2s ease-out infinite; }
+
+/* Telemetry number flicker */
+@keyframes telemFlicker {
+  0%, 94%, 100% { opacity: 1; }
+  95%            { opacity: 0.7; }
+  97%            { opacity: 1; }
+  98%            { opacity: 0.8; }
+}
+.telem-flicker { animation: telemFlicker 6s ease-in-out infinite; }
