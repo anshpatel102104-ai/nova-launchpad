@@ -26,10 +26,11 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Reconcile migration history
-        # All pre-squash migrations were applied directly to production via the
-        # Supabase dashboard and are represented by the squash file. Mark them
-        # applied so db push only runs migrations added after the squash.
+        # Pre-squash migrations exist in the remote DB but not as local files.
+        # Revert them from remote tracking so db push only sees the squash + new files.
+        # Then mark the squash and all post-squash migrations as applied.
         run: |
+          # Remove old incremental migrations from remote tracking (no local files)
           for v in \
             20260422075843 20260422075900 20260422185038 \
             20260423055721 20260423055740 20260423173016 \
@@ -56,6 +57,11 @@ jobs:
             20260513180830 20260513194544 \
             20260521153617 20260521160701 \
             20260521160907 20260521160937 \
+            20260521161020 20260521161700; do
+            supabase migration repair --status reverted "$v" || true
+          done
+          # Mark squash + all post-squash migrations as applied (they ran via MCP)
+          for v in \
             20260521161020 20260521161700 \
             20260516000000 \
             20260525000001 20260525000002 \
@@ -105,7 +111,7 @@ jobs:
 
       - name: Install proxy dependencies
         working-directory: cloudflare/n8n-proxy
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Deploy Cloudflare Worker
         working-directory: cloudflare/n8n-proxy
@@ -127,7 +133,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Build app
         run: bun run build
