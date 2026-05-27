@@ -553,7 +553,7 @@ function MissionBriefPanel({
       await saveMentorMessage(orgId, userId, agent.id, [agentMsg]);
       qc.invalidateQueries({ queryKey: ["mentor_session", orgId, agent.id] });
     } catch {
-      toast.error("Agent unreachable. Check n8n connection.");
+      toast.error("Agent unreachable. Please try again.");
     } finally {
       setSending(false);
     }

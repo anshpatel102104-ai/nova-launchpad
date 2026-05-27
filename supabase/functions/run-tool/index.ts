@@ -741,6 +741,703 @@ const TOOLS: Record<string, ToolConfig> = {
     assetCategory: "followup",
     assetTitle: (i) => `Follow-up: ${String(i.goal || i.context || "Sequence").slice(0, 60)}`,
   },
+
+  // ── Operator tool slugs ──────────────────────────────────────────────────────
+
+  intake: {
+    systemPrompt:
+      "You are a business intake specialist. Extract and structure key business information from the raw input provided by the founder.",
+    buildUserPrompt: (i) => `Raw intake from founder: ${i.raw_input || i.context || ""}`,
+    schema: {
+      name: "intake_result",
+      description: "Structured business intake summary",
+      parameters: {
+        type: "object",
+        properties: {
+          business_name: { type: "string" },
+          industry: { type: "string" },
+          stage: { type: "string" },
+          primary_goal: { type: "string" },
+          key_challenges: { type: "array", items: { type: "string" } },
+          icp_summary: { type: "string" },
+          recommended_lane: {
+            type: "string",
+            enum: ["Idea", "Offer", "Customer", "Systems"],
+          },
+        },
+        required: [
+          "business_name",
+          "industry",
+          "stage",
+          "primary_goal",
+          "key_challenges",
+          "icp_summary",
+          "recommended_lane",
+        ],
+      },
+    },
+    assetCategory: "intake",
+    assetTitle: (i) => `Intake: ${String(i.raw_input || "Business").slice(0, 60)}`,
+  },
+
+  strategy: {
+    systemPrompt:
+      "You are a startup strategist. Build a focused go-to-market and growth strategy covering ICP, offer, pricing, channels, and 90-day priorities.",
+    buildUserPrompt: (i) => {
+      const areas = Array.isArray(i.focus_areas) ? (i.focus_areas as string[]).join(", ") : "all";
+      return `Build a strategy. Focus areas: ${areas}.\nContext: ${JSON.stringify(i)}`;
+    },
+    schema: {
+      name: "strategy_result",
+      description: "Comprehensive startup strategy",
+      parameters: {
+        type: "object",
+        properties: {
+          icp: { type: "string" },
+          offer_recommendation: { type: "string" },
+          pricing_recommendation: { type: "string" },
+          top_channels: { type: "array", items: { type: "string" } },
+          niche_recommendation: { type: "string" },
+          ninety_day_priorities: { type: "array", items: { type: "string" } },
+          key_risks: { type: "array", items: { type: "string" } },
+        },
+        required: [
+          "icp",
+          "offer_recommendation",
+          "pricing_recommendation",
+          "top_channels",
+          "niche_recommendation",
+          "ninety_day_priorities",
+          "key_risks",
+        ],
+      },
+    },
+    assetCategory: "strategy",
+    assetTitle: (_i) => `Strategy Plan`,
+  },
+
+  blog: {
+    systemPrompt:
+      "You are an expert content marketer and SEO copywriter. Write a comprehensive, well-structured blog post that ranks for the given keyword and provides genuine value to the reader.",
+    buildUserPrompt: (i) =>
+      `Write a blog post.\nTopic: ${i.topic}\nPrimary keyword: ${i.primary_keyword || "not specified"}\nTarget audience: ${i.audience || "startup founders"}`,
+    schema: {
+      name: "blog_post",
+      description: "Generate a complete blog post",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          meta_description: { type: "string" },
+          intro: { type: "string" },
+          sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                heading: { type: "string" },
+                body: { type: "string" },
+              },
+              required: ["heading", "body"],
+            },
+          },
+          conclusion: { type: "string" },
+          cta: { type: "string" },
+        },
+        required: ["title", "meta_description", "intro", "sections", "conclusion", "cta"],
+      },
+    },
+    assetCategory: "content",
+    assetTitle: (i) => `Blog: ${String(i.topic).slice(0, 60)}`,
+  },
+
+  social: {
+    systemPrompt:
+      "You are a social media expert. Write high-engagement social posts for the given platform, with hooks that stop the scroll and CTAs that drive action.",
+    buildUserPrompt: (i) =>
+      `Platform: ${i.platform || "LinkedIn"}\nTopic: ${i.topic}\nCTA goal: ${i.cta || "drive engagement"}\nTone: ${i.tone || "professional"}`,
+    schema: {
+      name: "social_post",
+      description: "Generate social media posts",
+      parameters: {
+        type: "object",
+        properties: {
+          platform: { type: "string" },
+          posts: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                hook: { type: "string" },
+                body: { type: "string" },
+                cta: { type: "string" },
+                hashtags: { type: "array", items: { type: "string" } },
+              },
+              required: ["hook", "body", "cta", "hashtags"],
+            },
+          },
+        },
+        required: ["platform", "posts"],
+      },
+    },
+    assetCategory: "content",
+    assetTitle: (i) => `Social Post: ${String(i.topic).slice(0, 60)}`,
+  },
+
+  email_sequence: {
+    systemPrompt:
+      "You are an email marketing expert. Write compelling email sequences that nurture leads, build trust, and drive conversions.",
+    buildUserPrompt: (i) =>
+      `Sequence type: ${i.sequence_type || "nurture"}\nTopic: ${i.topic}\nEmail count: ${i.email_count || 5}\nAudience: ${i.audience || "prospects"}`,
+    schema: {
+      name: "email_sequence",
+      description: "Generate an email sequence",
+      parameters: {
+        type: "object",
+        properties: {
+          sequence_name: { type: "string" },
+          emails: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                number: { type: "number" },
+                send_day: { type: "number" },
+                subject: { type: "string" },
+                preview_text: { type: "string" },
+                body: { type: "string" },
+                cta: { type: "string" },
+              },
+              required: ["number", "send_day", "subject", "preview_text", "body", "cta"],
+            },
+          },
+        },
+        required: ["sequence_name", "emails"],
+      },
+    },
+    assetCategory: "email",
+    assetTitle: (i) => `Email Sequence: ${String(i.topic).slice(0, 60)}`,
+  },
+
+  sales_script: {
+    systemPrompt:
+      "You are a sales coach. Write a battle-tested sales script for the given call type, with strong openers, discovery questions, objection handling, and a clear close.",
+    buildUserPrompt: (i) =>
+      `Script type: ${i.script_type || "discovery"}\nScenario: ${i.scenario_notes || "B2B SaaS sales call"}`,
+    schema: {
+      name: "sales_script",
+      description: "Generate a sales call script",
+      parameters: {
+        type: "object",
+        properties: {
+          script_type: { type: "string" },
+          opener: { type: "string" },
+          discovery_questions: { type: "array", items: { type: "string" } },
+          pitch_section: { type: "string" },
+          objection_handlers: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                objection: { type: "string" },
+                response: { type: "string" },
+              },
+              required: ["objection", "response"],
+            },
+          },
+          close: { type: "string" },
+          follow_up: { type: "string" },
+        },
+        required: [
+          "script_type",
+          "opener",
+          "discovery_questions",
+          "pitch_section",
+          "objection_handlers",
+          "close",
+          "follow_up",
+        ],
+      },
+    },
+    assetCategory: "sales",
+    assetTitle: (i) => `Sales Script: ${String(i.script_type || "Discovery").slice(0, 60)}`,
+  },
+
+  ad_creative: {
+    systemPrompt:
+      "You are a direct-response advertising expert. Write ad creative variants that stop the scroll, speak to pain, and drive clicks for the given offer and platform.",
+    buildUserPrompt: (i) =>
+      `Offer: ${i.offer}\nAudience pain: ${i.audience_pain}\nPlatform: ${i.platform || "meta"}`,
+    schema: {
+      name: "ad_creative",
+      description: "Generate ad creative variants",
+      parameters: {
+        type: "object",
+        properties: {
+          platform: { type: "string" },
+          variants: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                headline: { type: "string" },
+                primary_text: { type: "string" },
+                description: { type: "string" },
+                cta: { type: "string" },
+                angle: { type: "string" },
+              },
+              required: ["headline", "primary_text", "description", "cta", "angle"],
+            },
+          },
+          targeting_notes: { type: "string" },
+        },
+        required: ["platform", "variants", "targeting_notes"],
+      },
+    },
+    assetCategory: "ads",
+    assetTitle: (i) => `Ad Creative: ${String(i.offer).slice(0, 60)}`,
+  },
+
+  vsl: {
+    systemPrompt:
+      "You are a VSL (Video Sales Letter) copywriter. Write a complete, high-converting VSL script using proven direct-response frameworks.",
+    buildUserPrompt: (i) =>
+      `Product: ${i.product_summary}\nLength target: ${i.length_minutes || 10} minutes`,
+    schema: {
+      name: "vsl_script",
+      description: "Generate a VSL script",
+      parameters: {
+        type: "object",
+        properties: {
+          hook: { type: "string" },
+          problem_agitation: { type: "string" },
+          solution_reveal: { type: "string" },
+          proof_section: { type: "string" },
+          offer_stack: { type: "string" },
+          guarantee: { type: "string" },
+          close_and_cta: { type: "string" },
+          full_script: { type: "string" },
+          estimated_minutes: { type: "number" },
+        },
+        required: [
+          "hook",
+          "problem_agitation",
+          "solution_reveal",
+          "proof_section",
+          "offer_stack",
+          "guarantee",
+          "close_and_cta",
+          "full_script",
+          "estimated_minutes",
+        ],
+      },
+    },
+    assetCategory: "copy",
+    assetTitle: (i) => `VSL: ${String(i.product_summary).slice(0, 60)}`,
+  },
+
+  landing_page: {
+    systemPrompt:
+      "You are a conversion-focused copywriter. Write complete landing page copy for the given product including headline, subheadline, hero, features, social proof, FAQ, and CTA sections.",
+    buildUserPrompt: (i) =>
+      `Offer: ${i.offer}\nAudience awareness: ${i.audience_awareness || "solution_aware"}\nPrimary CTA: ${i.primary_cta || "Get Started"}`,
+    schema: {
+      name: "landing_page_copy",
+      description: "Generate complete landing page copy",
+      parameters: {
+        type: "object",
+        properties: {
+          headline: { type: "string" },
+          subheadline: { type: "string" },
+          hero_copy: { type: "string" },
+          features: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { title: { type: "string" }, description: { type: "string" } },
+              required: ["title", "description"],
+            },
+          },
+          social_proof: { type: "string" },
+          faq: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { question: { type: "string" }, answer: { type: "string" } },
+              required: ["question", "answer"],
+            },
+          },
+          cta_copy: { type: "string" },
+        },
+        required: [
+          "headline",
+          "subheadline",
+          "hero_copy",
+          "features",
+          "social_proof",
+          "faq",
+          "cta_copy",
+        ],
+      },
+    },
+    assetCategory: "copy",
+    assetTitle: (i) => `Landing Page: ${String(i.offer).slice(0, 60)}`,
+  },
+
+  cold_email: {
+    systemPrompt:
+      "You are a cold email specialist. Write personalized cold outreach emails that feel human, lead with value, and get replies.",
+    buildUserPrompt: (i) =>
+      `ICP: ${i.icp}\nOffer: ${i.offer}\nSender: ${i.sender_name} at ${i.sender_company}`,
+    schema: {
+      name: "cold_email",
+      description: "Generate cold email variants",
+      parameters: {
+        type: "object",
+        properties: {
+          subject_lines: { type: "array", items: { type: "string" } },
+          emails: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                angle: { type: "string" },
+                subject: { type: "string" },
+                body: { type: "string" },
+                ps_line: { type: "string" },
+              },
+              required: ["angle", "subject", "body", "ps_line"],
+            },
+          },
+          follow_up_template: { type: "string" },
+        },
+        required: ["subject_lines", "emails", "follow_up_template"],
+      },
+    },
+    assetCategory: "sales",
+    assetTitle: (i) => `Cold Email: ${String(i.icp).slice(0, 60)}`,
+  },
+
+  niche_validator: {
+    systemPrompt:
+      "You are a market research expert. Validate the given niche for business viability — assess demand, competition, monetisation potential, and entry timing.",
+    buildUserPrompt: (i) =>
+      `Niche: ${i.niche_idea}\nGeography: ${i.geography || "global"}`,
+    schema: {
+      name: "niche_validation",
+      description: "Validate a niche for business viability",
+      parameters: {
+        type: "object",
+        properties: {
+          verdict: { type: "string", enum: ["strong", "viable", "risky", "avoid"] },
+          demand_score: { type: "number" },
+          competition_score: { type: "number" },
+          monetisation_score: { type: "number" },
+          overall_score: { type: "number" },
+          strengths: { type: "array", items: { type: "string" } },
+          risks: { type: "array", items: { type: "string" } },
+          sub_niches: { type: "array", items: { type: "string" } },
+          recommended_entry: { type: "string" },
+        },
+        required: [
+          "verdict",
+          "demand_score",
+          "competition_score",
+          "monetisation_score",
+          "overall_score",
+          "strengths",
+          "risks",
+          "sub_niches",
+          "recommended_entry",
+        ],
+      },
+    },
+    assetCategory: "research",
+    assetTitle: (i) => `Niche Validation: ${String(i.niche_idea).slice(0, 60)}`,
+  },
+
+  icp: {
+    systemPrompt:
+      "You are an ICP (Ideal Customer Profile) strategist. Define the most profitable, reachable, and conversion-ready customer profile for the given offer.",
+    buildUserPrompt: (i) =>
+      `Niche: ${i.niche}\nOffer: ${i.offer}\nExisting customers: ${i.current_customer_examples || "none yet"}`,
+    schema: {
+      name: "icp_profile",
+      description: "Define the ideal customer profile",
+      parameters: {
+        type: "object",
+        properties: {
+          primary_icp: { type: "string" },
+          demographics: { type: "string" },
+          psychographics: { type: "string" },
+          pain_points: { type: "array", items: { type: "string" } },
+          goals: { type: "array", items: { type: "string" } },
+          buying_triggers: { type: "array", items: { type: "string" } },
+          objections: { type: "array", items: { type: "string" } },
+          where_to_find_them: { type: "array", items: { type: "string" } },
+          message_that_resonates: { type: "string" },
+        },
+        required: [
+          "primary_icp",
+          "demographics",
+          "psychographics",
+          "pain_points",
+          "goals",
+          "buying_triggers",
+          "objections",
+          "where_to_find_them",
+          "message_that_resonates",
+        ],
+      },
+    },
+    assetCategory: "strategy",
+    assetTitle: (i) => `ICP: ${String(i.niche).slice(0, 60)}`,
+  },
+
+  offer: {
+    systemPrompt:
+      "You are an expert offer architect. Design an irresistible offer for the given product or service using value stacking, pricing psychology, and urgency mechanics.",
+    buildUserPrompt: (i) =>
+      `Core product: ${i.core_product}\nTarget market: ${i.target_market}\nPrice target: ${i.price_target || "market rate"}`,
+    schema: {
+      name: "generate_offer",
+      description: "Generate an irresistible offer",
+      parameters: {
+        type: "object",
+        properties: {
+          offer_name: { type: "string" },
+          core_deliverable: { type: "string" },
+          bonuses: { type: "array", items: { type: "string" } },
+          guarantee: { type: "string" },
+          price: { type: "string" },
+          urgency_mechanic: { type: "string" },
+          headline: { type: "string" },
+          one_liner: { type: "string" },
+        },
+        required: [
+          "offer_name",
+          "core_deliverable",
+          "bonuses",
+          "guarantee",
+          "price",
+          "urgency_mechanic",
+          "headline",
+          "one_liner",
+        ],
+      },
+    },
+    assetCategory: "offer",
+    assetTitle: (i) => `Offer: ${String(i.core_product).slice(0, 60)}`,
+  },
+
+  pricing: {
+    systemPrompt:
+      "You are a pricing strategist. Design an optimal pricing strategy for the given business model and market.",
+    buildUserPrompt: (i) =>
+      `Business model: ${i.business_model}\nValue estimate: ${i.offer_value_estimate}\nMarket avg: ${i.market_avg_price || "unknown"}`,
+    schema: {
+      name: "pricing_strategy",
+      description: "Generate a pricing strategy",
+      parameters: {
+        type: "object",
+        properties: {
+          recommended_model: { type: "string" },
+          recommended_price: { type: "string" },
+          tiers: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                price: { type: "string" },
+                features: { type: "array", items: { type: "string" } },
+              },
+              required: ["name", "price", "features"],
+            },
+          },
+          psychological_tactics: { type: "array", items: { type: "string" } },
+          rationale: { type: "string" },
+        },
+        required: [
+          "recommended_model",
+          "recommended_price",
+          "tiers",
+          "psychological_tactics",
+          "rationale",
+        ],
+      },
+    },
+    assetCategory: "strategy",
+    assetTitle: (i) => `Pricing Strategy: ${String(i.business_model).slice(0, 60)}`,
+  },
+
+  pitch_deck: {
+    systemPrompt:
+      "You are a world-class pitch deck consultant. Create a compelling, investor-grade pitch deck outline and copy for the given startup.",
+    buildUserPrompt: (i) =>
+      `Company: ${i.company_name}\nProblem: ${i.problem}\nSolution: ${i.solution}\nTraction: ${i.traction || "pre-launch"}\nAsk: ${i.ask_amount || "$500k"}\nDeck type: ${i.deck_type || "seed"}`,
+    schema: {
+      name: "pitch_deck",
+      description: "Generate pitch deck content",
+      parameters: {
+        type: "object",
+        properties: {
+          slides: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                slide_number: { type: "number" },
+                title: { type: "string" },
+                key_points: { type: "array", items: { type: "string" } },
+                speaker_notes: { type: "string" },
+              },
+              required: ["slide_number", "title", "key_points", "speaker_notes"],
+            },
+          },
+          elevator_pitch: { type: "string" },
+          one_line_summary: { type: "string" },
+        },
+        required: ["slides", "elevator_pitch", "one_line_summary"],
+      },
+    },
+    assetCategory: "funding",
+    assetTitle: (i) => `Pitch Deck: ${String(i.company_name).slice(0, 60)}`,
+  },
+
+  lead_magnet: {
+    systemPrompt:
+      "You are a lead generation expert. Create a high-value lead magnet concept and complete content outline for the given niche and ICP pain point.",
+    buildUserPrompt: (i) =>
+      `Niche: ${i.niche}\nICP pain point: ${i.icp_pain_point}\nFormat: ${i.format || "pdf_guide"}`,
+    schema: {
+      name: "lead_magnet",
+      description: "Generate a lead magnet",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          subtitle: { type: "string" },
+          format: { type: "string" },
+          sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                heading: { type: "string" },
+                content: { type: "string" },
+              },
+              required: ["heading", "content"],
+            },
+          },
+          opt_in_headline: { type: "string" },
+          opt_in_subtext: { type: "string" },
+          delivery_sequence: { type: "array", items: { type: "string" } },
+        },
+        required: [
+          "title",
+          "subtitle",
+          "format",
+          "sections",
+          "opt_in_headline",
+          "opt_in_subtext",
+          "delivery_sequence",
+        ],
+      },
+    },
+    assetCategory: "growth",
+    assetTitle: (i) => `Lead Magnet: ${String(i.niche).slice(0, 60)}`,
+  },
+
+  automation: {
+    systemPrompt:
+      "You are an automation architect. Design a practical, implementable automation workflow for the given business process using real tools.",
+    buildUserPrompt: (i) =>
+      `Process: ${i.process_description}\nIntegrations: ${Array.isArray(i.integrations) ? (i.integrations as string[]).join(", ") : "any"}`,
+    schema: {
+      name: "automation_plan",
+      description: "Generate an automation workflow plan",
+      parameters: {
+        type: "object",
+        properties: {
+          workflow_name: { type: "string" },
+          trigger: { type: "string" },
+          steps: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                step: { type: "number" },
+                action: { type: "string" },
+                tool: { type: "string" },
+                notes: { type: "string" },
+              },
+              required: ["step", "action", "tool", "notes"],
+            },
+          },
+          integrations_needed: { type: "array", items: { type: "string" } },
+          time_saved_per_week: { type: "string" },
+          implementation_effort: { type: "string", enum: ["low", "medium", "high"] },
+        },
+        required: [
+          "workflow_name",
+          "trigger",
+          "steps",
+          "integrations_needed",
+          "time_saved_per_week",
+          "implementation_effort",
+        ],
+      },
+    },
+    assetCategory: "ops",
+    assetTitle: (i) => `Automation: ${String(i.process_description).slice(0, 60)}`,
+  },
+
+  client_report: {
+    systemPrompt:
+      "You are a client success manager. Generate a comprehensive client performance report for the given period with key metrics, wins, areas for improvement, and next steps.",
+    buildUserPrompt: (i) =>
+      `Client ID: ${i.client_id}\nPeriod: ${i.period_label || `${i.period_start} to ${i.period_end}`}`,
+    schema: {
+      name: "client_report",
+      description: "Generate a client performance report",
+      parameters: {
+        type: "object",
+        properties: {
+          report_title: { type: "string" },
+          period: { type: "string" },
+          executive_summary: { type: "string" },
+          key_metrics: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                metric: { type: "string" },
+                value: { type: "string" },
+                trend: { type: "string", enum: ["up", "down", "flat"] },
+                note: { type: "string" },
+              },
+              required: ["metric", "value", "trend", "note"],
+            },
+          },
+          wins: { type: "array", items: { type: "string" } },
+          improvements: { type: "array", items: { type: "string" } },
+          next_steps: { type: "array", items: { type: "string" } },
+        },
+        required: [
+          "report_title",
+          "period",
+          "executive_summary",
+          "key_metrics",
+          "wins",
+          "improvements",
+          "next_steps",
+        ],
+      },
+    },
+    assetCategory: "reports",
+    assetTitle: (i) => `Client Report: ${String(i.client_id).slice(0, 60)}`,
+  },
 };
 
 serve(async (req) => {
