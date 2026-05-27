@@ -94,10 +94,15 @@ function Onboarding() {
     } catch { /* non-blocking */ }
 
     // ── 4. Save onboarding answers ────────────────────────────────────
-    await supabase.from("onboarding_responses").upsert(
+    const { error: onboardingErr } = await supabase.from("onboarding_responses").upsert(
       {
         user_id: user.id,
+        organization_id: orgId,
         offer: idea,
+        niche: target_customer,
+        target_customer,
+        goal,
+        current_revenue: revenue,
         stage: (stage || null) as "Idea" | "Validate" | "Launch" | "Operate" | "Scale" | null,
         biggest_blocker: challenge,
         completed: true,
@@ -105,6 +110,10 @@ function Onboarding() {
       },
       { onConflict: "user_id" },
     );
+    if (onboardingErr) {
+      console.error("[onboarding] Failed to save responses:", onboardingErr.message);
+      // Non-fatal — continue so profile still gets marked complete
+    }
 
     if (workspaceId) {
       await supabase.from("workspace_intake").upsert(
@@ -124,7 +133,11 @@ function Onboarding() {
     }
 
     // ── 5. Mark onboarding complete ───────────────────────────────────
-    await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
+    const { error: profileErr } = await supabase
+      .from("profiles")
+      .update({ onboarding_complete: true })
+      .eq("id", user.id);
+    if (profileErr) throw new Error("Failed to mark onboarding complete: " + profileErr.message);
 
     // ── 6. Generate AI dashboard (non-blocking — happens in background) ──
     fetch(`${supabaseBase}/functions/v1/generate-ai-dashboard`, {
@@ -138,8 +151,9 @@ function Onboarding() {
         current_revenue: revenue,
         target_customer,
         biggest_blocker: challenge,
+        organization_id: orgId,
       }),
-    }).catch(() => {});
+    }).catch((e) => console.warn("[onboarding] AI dashboard gen failed (non-blocking):", e));
 
     // ── 7. Log activation event ───────────────────────────────────────
     fetch(`${supabaseBase}/functions/v1/log-activation-event`, {
