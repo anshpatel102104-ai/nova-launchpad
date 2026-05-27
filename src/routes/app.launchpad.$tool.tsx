@@ -451,14 +451,14 @@ function ToolPage() {
                   boxShadow:
                     "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent) => {
                   if (!generating && context && effectiveWired) {
                     (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
                     (e.currentTarget as HTMLElement).style.boxShadow =
                       "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
                   }
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
@@ -586,10 +586,10 @@ function ToolPage() {
                       }}
                       className="flex w-full items-center justify-between px-5 py-2.5 text-left transition"
                       style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={(e: React.MouseEvent) => {
                         (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={(e: React.MouseEvent) => {
                         (e.currentTarget as HTMLElement).style.background = "transparent";
                       }}
                     >
@@ -708,7 +708,7 @@ function ToolPage() {
                         color: "var(--foreground)",
                         opacity: 0.85,
                       }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={(e: React.MouseEvent) => {
                         (e.currentTarget as HTMLElement).style.borderColor =
                           "color-mix(in oklab, var(--primary) 40%, transparent)";
                         (e.currentTarget as HTMLElement).style.background =
@@ -716,7 +716,7 @@ function ToolPage() {
                         (e.currentTarget as HTMLElement).style.color = "var(--primary)";
                         (e.currentTarget as HTMLElement).style.opacity = "1";
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={(e: React.MouseEvent) => {
                         (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
                         (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                         (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
