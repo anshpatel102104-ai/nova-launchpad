@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   LogOut,
   Sun,
@@ -22,6 +22,7 @@ import { useGuest } from "@/lib/guest";
 import { useQuery } from "@tanstack/react-query";
 import { subscriptionQuery } from "@/lib/queries";
 import { AiOperator } from "@/components/app/AiOperator";
+import { NovaChatModal } from "@/components/app/NovaChatModal";
 import { StagePill } from "@/components/app/StagePill";
 import { cn } from "@/lib/utils";
 import { useOwnerMode, useOwnerModeShortcut, toggleOwnerMode } from "@/lib/ownerMode";
@@ -67,6 +68,7 @@ export function AppTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [opOpen, setOpOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const themeRef = useRef<HTMLDivElement | null>(null);
 
@@ -104,7 +106,11 @@ export function AppTopbar() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setOpOpen((o) => !o);
+        if (e.shiftKey) {
+          setChatOpen((o) => !o);
+        } else {
+          setOpOpen((o) => !o);
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -174,24 +180,28 @@ export function AppTopbar() {
         {/* Center search pill */}
         <div className="flex flex-1 justify-center">
           <button
-            onClick={() => setOpOpen(true)}
+            onClick={() => setChatOpen(true)}
             className="hidden md:flex items-center gap-2.5 rounded-xl px-3.5 py-2 text-[12.5px] transition w-full max-w-md"
             style={{
               background: "color-mix(in oklab, var(--surface-2) 90%, transparent)",
               border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
               color: "var(--muted-foreground)",
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(e: React.MouseEvent) => {
               (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--primary) 30%, transparent)";
+                "color-mix(in oklab, var(--primary) 40%, transparent)";
+              (e.currentTarget as HTMLElement).style.background =
+                "color-mix(in oklab, var(--surface-2) 100%, transparent)";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: React.MouseEvent) => {
               (e.currentTarget as HTMLElement).style.borderColor =
                 "color-mix(in oklab, var(--border) 70%, transparent)";
+              (e.currentTarget as HTMLElement).style.background =
+                "color-mix(in oklab, var(--surface-2) 90%, transparent)";
             }}
           >
             <Search className="h-3.5 w-3.5 shrink-0 opacity-60" />
-            <span className="flex-1 text-left truncate opacity-60">Ask Nova or run a command…</span>
+            <span className="flex-1 text-left truncate opacity-60">Ask Nova AI anything…</span>
             <kbd
               className="hidden sm:inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-mono text-[10px]"
               style={{
@@ -200,7 +210,8 @@ export function AppTopbar() {
                 color: "var(--muted-foreground)",
               }}
             >
-              <Command className="h-2.5 w-2.5" />K
+              <Command className="h-2.5 w-2.5" />
+              ⇧K
             </kbd>
           </button>
         </div>
@@ -467,6 +478,7 @@ export function AppTopbar() {
         </div>
       </header>
       <AiOperator open={opOpen} onOpenChange={setOpOpen} />
+      <NovaChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
     </>
   );
 }
