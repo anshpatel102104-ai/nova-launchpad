@@ -75,7 +75,7 @@ type CallOpts = {
 };
 
 async function callOperator<T = unknown>(opts: CallOpts): Promise<FullOperatorResult<T>> {
-  const url = `${N8N_BASE_URL}/webhook/operator`;
+  const url = `${N8N_BASE_URL}/webhook/ai-operator-router`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
