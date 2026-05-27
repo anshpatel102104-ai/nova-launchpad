@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import {
@@ -927,6 +927,30 @@ function AiDashboardPage() {
       biggest_blocker: saved.biggest_blocker ?? undefined,
     });
   }, [dashboardQ.data, generateMutation]);
+
+  // ── Auto-generate on first visit after onboarding ────────────────────────
+  const autoFired = useRef(false);
+  useEffect(() => {
+    if (autoFired.current) return;
+    if (dashboardQ.isLoading || onboardingQ.isLoading) return;
+    if (dashboardQ.data) return; // already have one
+    if (generateMutation.isPending) return;
+
+    const ob = onboardingQ.data;
+    const business = ob?.offer || ob?.business_type || "";
+    if (!business) return; // no onboarding data yet
+
+    autoFired.current = true;
+    generateMutation.mutate({
+      business,
+      niche: ob?.niche ?? undefined,
+      stage: ob?.stage ?? "Validate",
+      goal: ob?.goal ?? undefined,
+      current_revenue: ob?.current_revenue ?? undefined,
+      target_customer: ob?.target_customer ?? undefined,
+      biggest_blocker: ob?.biggest_blocker ?? undefined,
+    });
+  }, [dashboardQ.isLoading, dashboardQ.data, onboardingQ.isLoading, onboardingQ.data, generateMutation]);
 
   // ── Derive intake defaults from onboarding or last saved dashboard ──────────
   const intakeDefaults: Partial<GenerateDashboardInput> = (() => {

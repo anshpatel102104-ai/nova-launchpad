@@ -153,7 +153,7 @@ function Onboarding() {
     }).catch(() => {});
 
     setDone(true);
-    setTimeout(() => navigate({ to: "/app/dashboard" }), 3200);
+    setTimeout(() => navigate({ to: "/app/ai-dashboard" }), 3200);
   };
 
   if (done) return <WelcomeScreen onSkip={() => navigate({ to: "/app/dashboard" })} />;
