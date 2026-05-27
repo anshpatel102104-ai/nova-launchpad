@@ -9,9 +9,6 @@ import { checkFeatureGate } from "@/lib/feature-gates";
 import type { FeatureKey, GateResult, Plan } from "@/lib/feature-gates";
 import { subscriptionQuery } from "@/lib/queries";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 interface EntitlementRow {
   feature_key: string;
   enabled: boolean;
@@ -20,7 +17,7 @@ interface EntitlementRow {
 }
 
 async function fetchEntitlements(orgId: string): Promise<EntitlementRow[]> {
-  const { data } = await db
+  const { data } = await supabase
     .from("feature_entitlements")
     .select("feature_key, enabled, limit_override, expires_at")
     .eq("organization_id", orgId);

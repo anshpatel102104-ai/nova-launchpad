@@ -7,9 +7,6 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
 import { OnboardingWizard, type OnboardingAnswers } from "@/components/app/OnboardingWizard";
 import { classifyLane } from "@/lib/lane-classifier";
 import { toast } from "sonner";
@@ -156,7 +153,7 @@ function Onboarding() {
 
     // ── 5. Persist onboarding answers to workspace_intake ─────────
     if (workspaceId) {
-      await db.from("workspace_intake").upsert(
+      await supabase.from("workspace_intake").upsert(
         {
           workspace_id: workspaceId,
           user_id: user.id,

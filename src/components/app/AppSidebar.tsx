@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -344,11 +344,11 @@ export function AppSidebar() {
             background: "rgba(255,255,255,0.03)",
             border: "1px solid rgba(59,130,246,0.1)",
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={(e: MouseEvent) => {
             (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.3)";
             (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={(e: MouseEvent) => {
             (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.1)";
             (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
           }}
@@ -400,11 +400,11 @@ export function AppSidebar() {
             collapsed && "justify-center",
           )}
           style={{ color: "rgba(255,255,255,0.2)" }}
-          onMouseEnter={(e) => {
+          onMouseEnter={(e: MouseEvent) => {
             (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
             (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={(e: MouseEvent) => {
             (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
             (e.currentTarget as HTMLElement).style.background = "transparent";
           }}
@@ -478,13 +478,13 @@ function NavRow({
                   color: "rgba(240,244,255,0.4)",
                 }
           }
-          onMouseEnter={(e) => {
+          onMouseEnter={(e: MouseEvent) => {
             if (!active) {
               (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
               (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.75)";
             }
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={(e: MouseEvent) => {
             if (!active) {
               (e.currentTarget as HTMLElement).style.background = "transparent";
               (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.4)";
@@ -522,11 +522,11 @@ function NavRow({
             }}
             className="mr-1 flex h-5 w-5 items-center justify-center rounded transition-all"
             style={{ color: "rgba(255,255,255,0.2)" }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(e: MouseEvent) => {
               (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
               (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.08)";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: MouseEvent) => {
               (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
               (e.currentTarget as HTMLElement).style.background = "transparent";
             }}
@@ -565,13 +565,13 @@ function NavRow({
                         }
                       : { color: "rgba(240,244,255,0.35)" }
                   }
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: MouseEvent) => {
                     if (!cActive) {
                       (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
                       (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.7)";
                     }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: MouseEvent) => {
                     if (!cActive) {
                       (e.currentTarget as HTMLElement).style.background = "transparent";
                       (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.35)";

@@ -518,12 +518,12 @@ function Dashboard() {
                   boxShadow:
                     "0 4px 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 8px 30px rgba(59,130,246,0.55), 0 0 60px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 4px 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.2)";
@@ -615,10 +615,10 @@ function Dashboard() {
                 <Link
                   to={c.to}
                   className="flex items-center gap-3 px-5 py-3 transition-all"
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
@@ -808,10 +808,10 @@ function Dashboard() {
               to="/app/launchpad/history"
               className="inline-flex items-center gap-1 text-[12px] transition-colors"
               style={{ color: "var(--primary)" }}
-              onMouseEnter={(e) => {
+              onMouseEnter={(e: React.MouseEvent) => {
                 (e.currentTarget as HTMLElement).style.textShadow = "0 0 8px rgba(59,130,246,0.6)";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={(e: React.MouseEvent) => {
                 (e.currentTarget as HTMLElement).style.textShadow = "none";
               }}
             >
@@ -866,10 +866,10 @@ function Dashboard() {
                   <li
                     key={r.id}
                     className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                    onMouseEnter={(e) => {
+                    onMouseEnter={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.background = "transparent";
                     }}
                   >
@@ -918,10 +918,10 @@ function Dashboard() {
                 <li
                   key={l.id}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
@@ -1029,12 +1029,12 @@ function Dashboard() {
                   background: "linear-gradient(135deg, #8b5cf6, #f97316)",
                   boxShadow: "0 4px 15px rgba(139,92,246,0.3)",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 8px 25px rgba(139,92,246,0.5)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 4px 15px rgba(139,92,246,0.3)";
@@ -1120,14 +1120,14 @@ function Dashboard() {
                   border: "1px solid rgba(59,130,246,0.12)",
                   color: "var(--foreground)",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.35)";
                   (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.08)";
                   (e.currentTarget as HTMLElement).style.color = "var(--primary)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
                     "0 0 12px rgba(59,130,246,0.15)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.12)";
                   (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                   (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
@@ -1204,11 +1204,11 @@ function Dashboard() {
                     border: "1px solid rgba(59,130,246,0.08)",
                     background: "transparent",
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.25)";
                     (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.05)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.08)";
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
@@ -1311,10 +1311,10 @@ function Dashboard() {
                 <li
                   key={s.key}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.03)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
@@ -1359,10 +1359,10 @@ function Dashboard() {
                     to={s.to}
                     className="text-[11.5px] transition-colors inline-flex items-center gap-1"
                     style={{ color: "var(--muted-foreground)" }}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.color = "var(--accent)";
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                     }}
                   >
