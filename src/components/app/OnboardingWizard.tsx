@@ -125,8 +125,7 @@ function StepLabel({ step }: { step: number }) {
       eyebrow: "Step 1 of 3 · Your Business Idea",
       heading: (
         <>
-          Tell us about your{" "}
-          <span style={{ color: "#3b82f6" }}>business idea</span>
+          Tell us about your <span style={{ color: "#3b82f6" }}>business idea</span>
         </>
       ),
     },
@@ -134,8 +133,7 @@ function StepLabel({ step }: { step: number }) {
       eyebrow: "Step 2 of 3 · Your Progress",
       heading: (
         <>
-          Where are you{" "}
-          <span style={{ color: "#8b5cf6" }}>right now</span>?
+          Where are you <span style={{ color: "#8b5cf6" }}>right now</span>?
         </>
       ),
     },
@@ -143,8 +141,7 @@ function StepLabel({ step }: { step: number }) {
       eyebrow: "Step 3 of 3 · Your Biggest Problem",
       heading: (
         <>
-          What's holding{" "}
-          <span style={{ color: "#06b6d4" }}>you back</span>?
+          What's holding <span style={{ color: "#06b6d4" }}>you back</span>?
         </>
       ),
     },

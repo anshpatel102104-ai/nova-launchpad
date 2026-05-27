@@ -2,15 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import {
-  ArrowLeft,
-  Copy,
-  Download,
-  Clock,
-  Check,
-  BookOpen,
-  Tag,
-} from "lucide-react";
+import { ArrowLeft, Copy, Download, Clock, Check, BookOpen, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -128,7 +120,10 @@ function BlogReaderPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+      <div
+        className="flex items-center gap-2 text-[12px]"
+        style={{ color: "var(--muted-foreground)" }}
+      >
         <Link
           to="/app/blog"
           className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
@@ -170,9 +165,7 @@ function BlogReaderPage() {
         >
           {/* Meta row */}
           <div className="flex flex-wrap items-center gap-2">
-            {score > 0 && (
-              <ScorePill score={score} />
-            )}
+            {score > 0 && <ScorePill score={score} />}
             {mins > 0 && (
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px]"
@@ -197,10 +190,7 @@ function BlogReaderPage() {
                 <Tag className="h-3 w-3" /> {keyword}
               </span>
             )}
-            <span
-              className="ml-auto text-[11px]"
-              style={{ color: "var(--muted-foreground)" }}
-            >
+            <span className="ml-auto text-[11px]" style={{ color: "var(--muted-foreground)" }}>
               {new Date(run.created_at).toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "long",
@@ -243,7 +233,8 @@ function BlogReaderPage() {
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                (e.currentTarget as HTMLElement).style.background = "color-mix(in oklab, var(--surface-2) 80%, var(--primary))";
+                (e.currentTarget as HTMLElement).style.background =
+                  "color-mix(in oklab, var(--surface-2) 80%, var(--primary))";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -251,9 +242,13 @@ function BlogReaderPage() {
               }}
             >
               {copied ? (
-                <><Check className="h-3.5 w-3.5 text-[color:var(--success)]" /> Copied</>
+                <>
+                  <Check className="h-3.5 w-3.5 text-[color:var(--success)]" /> Copied
+                </>
               ) : (
-                <><Copy className="h-3.5 w-3.5" /> Copy markdown</>
+                <>
+                  <Copy className="h-3.5 w-3.5" /> Copy markdown
+                </>
               )}
             </button>
             <button
@@ -266,7 +261,8 @@ function BlogReaderPage() {
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                (e.currentTarget as HTMLElement).style.background = "color-mix(in oklab, var(--surface-2) 80%, var(--primary))";
+                (e.currentTarget as HTMLElement).style.background =
+                  "color-mix(in oklab, var(--surface-2) 80%, var(--primary))";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -317,9 +313,7 @@ function BlogReaderPage() {
 
         {/* Tags */}
         {tags.length > 0 && (
-          <div
-            className="flex flex-wrap items-center gap-2 px-8 pb-7"
-          >
+          <div className="flex flex-wrap items-center gap-2 px-8 pb-7">
             <span
               className="text-[11px] font-semibold uppercase tracking-[0.1em]"
               style={{ color: "var(--muted-foreground)" }}
@@ -367,8 +361,7 @@ function BlogReaderPage() {
 
 /* ── Readability score pill ── */
 function ScorePill({ score }: { score: number }) {
-  const color =
-    score >= 70 ? "var(--success)" : score >= 50 ? "var(--primary)" : "var(--warning)";
+  const color = score >= 70 ? "var(--success)" : score >= 50 ? "var(--primary)" : "var(--warning)";
   const bg =
     score >= 70
       ? "color-mix(in oklab, var(--success) 12%, transparent)"
@@ -387,10 +380,7 @@ function ScorePill({ score }: { score: number }) {
       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
       style={{ background: bg, border: `1px solid ${border}`, color }}
     >
-      <span
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ background: color }}
-      />
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
       {score}/100 readability
     </span>
   );
@@ -423,8 +413,15 @@ function MarkdownBody({ text }: { text: string }) {
       nodes.push(
         <ul key={`ul-${i}`} className="my-3 space-y-1.5 pl-4">
           {items.map((it, j) => (
-            <li key={j} className="flex gap-2.5 text-[14px] leading-relaxed" style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}>
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--muted-foreground)", flexShrink: 0 }} />
+            <li
+              key={j}
+              className="flex gap-2.5 text-[14px] leading-relaxed"
+              style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}
+            >
+              <span
+                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                style={{ background: "var(--muted-foreground)", flexShrink: 0 }}
+              />
               <span>{inlineFormat(it)}</span>
             </li>
           ))}
@@ -441,7 +438,11 @@ function MarkdownBody({ text }: { text: string }) {
       nodes.push(
         <ol key={`ol-${i}`} className="my-3 space-y-1.5 pl-4 list-decimal">
           {items.map((it, j) => (
-            <li key={j} className="text-[14px] leading-relaxed pl-1" style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}>
+            <li
+              key={j}
+              className="text-[14px] leading-relaxed pl-1"
+              style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}
+            >
               {inlineFormat(it)}
             </li>
           ))}
@@ -450,7 +451,11 @@ function MarkdownBody({ text }: { text: string }) {
       void n;
     } else if (/^---$/.test(line.trim())) {
       nodes.push(
-        <hr key={i} className="my-5" style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }} />,
+        <hr
+          key={i}
+          className="my-5"
+          style={{ borderColor: "color-mix(in oklab, var(--border) 60%, transparent)" }}
+        />,
       );
       i++;
     } else if (line.trim() === "") {
@@ -458,7 +463,11 @@ function MarkdownBody({ text }: { text: string }) {
       i++;
     } else {
       nodes.push(
-        <p key={i} className="text-[14px] leading-[1.8] my-1" style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}>
+        <p
+          key={i}
+          className="text-[14px] leading-[1.8] my-1"
+          style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}
+        >
           {inlineFormat(line)}
         </p>,
       );
@@ -471,7 +480,10 @@ function MarkdownBody({ text }: { text: string }) {
 
 function H1({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mt-6 mb-3 font-display text-[1.4rem] font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+    <h2
+      className="mt-6 mb-3 font-display text-[1.4rem] font-bold tracking-tight"
+      style={{ color: "var(--foreground)" }}
+    >
       {children}
     </h2>
   );
@@ -479,7 +491,10 @@ function H1({ children }: { children: React.ReactNode }) {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-5 mb-2 font-display text-[1.15rem] font-semibold" style={{ color: "var(--foreground)" }}>
+    <h3
+      className="mt-5 mb-2 font-display text-[1.15rem] font-semibold"
+      style={{ color: "var(--foreground)" }}
+    >
       {children}
     </h3>
   );

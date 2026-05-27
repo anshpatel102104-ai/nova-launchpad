@@ -42,14 +42,26 @@ function AboutPage() {
           >
             LN
           </div>
-          <span className="font-display text-[13.5px] font-bold tracking-tight" style={{ color: "#f0f4ff" }}>
+          <span
+            className="font-display text-[13.5px] font-bold tracking-tight"
+            style={{ color: "#f0f4ff" }}
+          >
             LaunchpadNOVA
           </span>
         </Link>
-        <nav className="hidden items-center gap-6 text-[13px] md:flex" style={{ color: "rgba(240,244,255,0.5)" }}>
-          <Link to="/" className="transition-colors hover:text-white">Home</Link>
-          <Link to="/pricing" className="transition-colors hover:text-white">Pricing</Link>
-          <Link to="/about" style={{ color: "#3b82f6" }}>About</Link>
+        <nav
+          className="hidden items-center gap-6 text-[13px] md:flex"
+          style={{ color: "rgba(240,244,255,0.5)" }}
+        >
+          <Link to="/" className="transition-colors hover:text-white">
+            Home
+          </Link>
+          <Link to="/pricing" className="transition-colors hover:text-white">
+            Pricing
+          </Link>
+          <Link to="/about" style={{ color: "#3b82f6" }}>
+            About
+          </Link>
         </nav>
         <Link
           to="/auth/sign-in"
@@ -95,9 +107,9 @@ function AboutPage() {
           className="mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed"
           style={{ color: "rgba(240,244,255,0.55)" }}
         >
-          LaunchpadNOVA is an AI-powered business OS that combines strategic intelligence,
-          content generation, and operational automation — all in one place. From validating your
-          first idea to scaling your operations, Nova is the co-founder you never had.
+          LaunchpadNOVA is an AI-powered business OS that combines strategic intelligence, content
+          generation, and operational automation — all in one place. From validating your first idea
+          to scaling your operations, Nova is the co-founder you never had.
         </p>
       </section>
 
@@ -113,7 +125,8 @@ function AboutPage() {
           <div
             className="h-px mb-8"
             style={{
-              background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.4), transparent)",
+              background:
+                "linear-gradient(90deg, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.4), transparent)",
             }}
           />
           <div className="grid gap-10 md:grid-cols-2 md:gap-16 items-center">
@@ -134,17 +147,33 @@ function AboutPage() {
                 className="mt-4 text-[14px] leading-relaxed"
                 style={{ color: "rgba(240,244,255,0.55)" }}
               >
-                Big companies have entire departments for strategy, marketing, and operations.
-                Solo founders and small teams don't. Nova changes that — giving every founder
+                Big companies have entire departments for strategy, marketing, and operations. Solo
+                founders and small teams don't. Nova changes that — giving every founder
                 enterprise-grade AI intelligence at a fraction of the cost, without the complexity.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Rocket, label: "Launch faster", desc: "Go from idea to execution in hours, not months" },
-                { icon: Target, label: "Sharper strategy", desc: "AI-validated decisions backed by real market signal" },
-                { icon: Zap, label: "Automate ops", desc: "Workflows that run while you focus on growth" },
-                { icon: BarChart2, label: "Scale smarter", desc: "Data-driven projections and revenue modeling" },
+                {
+                  icon: Rocket,
+                  label: "Launch faster",
+                  desc: "Go from idea to execution in hours, not months",
+                },
+                {
+                  icon: Target,
+                  label: "Sharper strategy",
+                  desc: "AI-validated decisions backed by real market signal",
+                },
+                {
+                  icon: Zap,
+                  label: "Automate ops",
+                  desc: "Workflows that run while you focus on growth",
+                },
+                {
+                  icon: BarChart2,
+                  label: "Scale smarter",
+                  desc: "Data-driven projections and revenue modeling",
+                },
               ].map(({ icon: Icon, label, desc }) => (
                 <div
                   key={label}
@@ -158,7 +187,10 @@ function AboutPage() {
                   <div className="text-[13px] font-semibold" style={{ color: "#f0f4ff" }}>
                     {label}
                   </div>
-                  <div className="mt-1 text-[11.5px] leading-relaxed" style={{ color: "rgba(240,244,255,0.4)" }}>
+                  <div
+                    className="mt-1 text-[11.5px] leading-relaxed"
+                    style={{ color: "rgba(240,244,255,0.4)" }}
+                  >
                     {desc}
                   </div>
                 </div>
@@ -224,8 +256,8 @@ function AboutPage() {
                 style={{ color: "rgba(240,244,255,0.5)" }}
               >
                 Enter a topic or keyword and Nova crafts a full-length, SEO-structured blog post —
-                complete with meta description, suggested tags, and a readability score. No
-                writer's block. No agency fees.
+                complete with meta description, suggested tags, and a readability score. No writer's
+                block. No agency fees.
               </p>
               <ul className="mt-5 space-y-2">
                 {[
@@ -235,7 +267,11 @@ function AboutPage() {
                   "Readability score so every post lands well",
                   "Export as Markdown with one click",
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[13px]" style={{ color: "rgba(240,244,255,0.6)" }}>
+                  <li
+                    key={item}
+                    className="flex items-start gap-2.5 text-[13px]"
+                    style={{ color: "rgba(240,244,255,0.6)" }}
+                  >
                     <span
                       className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
                       style={{ background: "#8b5cf6" }}
@@ -359,7 +395,10 @@ function AboutPage() {
               <div className="text-[14px] font-semibold" style={{ color: "#f0f4ff" }}>
                 {title}
               </div>
-              <div className="mt-2 text-[13px] leading-relaxed" style={{ color: "rgba(240,244,255,0.45)" }}>
+              <div
+                className="mt-2 text-[13px] leading-relaxed"
+                style={{ color: "rgba(240,244,255,0.45)" }}
+              >
                 {desc}
               </div>
             </div>
@@ -424,9 +463,13 @@ function AboutPage() {
       >
         © {new Date().getFullYear()} LaunchpadNOVA. All rights reserved.
         <span className="mx-2">·</span>
-        <Link to="/pricing" className="transition-colors hover:text-white/60">Pricing</Link>
+        <Link to="/pricing" className="transition-colors hover:text-white/60">
+          Pricing
+        </Link>
         <span className="mx-2">·</span>
-        <Link to="/about" className="transition-colors hover:text-white/60">About</Link>
+        <Link to="/about" className="transition-colors hover:text-white/60">
+          About
+        </Link>
       </footer>
     </div>
   );

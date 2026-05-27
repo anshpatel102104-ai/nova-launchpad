@@ -1809,7 +1809,10 @@ function BlogOut({ o }: { o: Record<string, unknown> }) {
             {title}
           </div>
           {metaDesc && (
-            <div className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="mt-2 text-[13px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {metaDesc}
             </div>
           )}
@@ -1824,7 +1827,10 @@ function BlogOut({ o }: { o: Record<string, unknown> }) {
       {tags.length > 0 && (
         <div
           className="rounded-xl p-4"
-          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
         >
           <div
             className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]"

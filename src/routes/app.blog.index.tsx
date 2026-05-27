@@ -24,7 +24,8 @@ function BlogIndexPage() {
   const posts = useMemo(
     () =>
       ((q.data ?? []) as BlogRun[]).filter(
-        (r) => (r as unknown as { tool_key: string }).tool_key === "blog" && r.status === "succeeded",
+        (r) =>
+          (r as unknown as { tool_key: string }).tool_key === "blog" && r.status === "succeeded",
       ),
     [q.data],
   );
@@ -40,7 +41,10 @@ function BlogIndexPage() {
           >
             Blog Posts
           </h1>
-          <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+          <p
+            className="mt-1 max-w-xl text-[13.5px] leading-relaxed"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             All blog posts you've generated. Click any post to open the full reader view.
           </p>
         </div>
@@ -65,7 +69,10 @@ function BlogIndexPage() {
             <div
               key={i}
               className="overflow-hidden rounded-2xl p-5 space-y-3"
-              style={{ background: "var(--surface)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+              }}
             >
               <Skeleton className="h-4 w-3/4 rounded" />
               <Skeleton className="h-3 w-full rounded" />
@@ -103,7 +110,8 @@ function BlogIndexPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => {
             const out = post.output ?? {};
-            const title = str(out.title) || str((post.input as Record<string, unknown>).title) || "Untitled";
+            const title =
+              str(out.title) || str((post.input as Record<string, unknown>).title) || "Untitled";
             const meta = str(out.meta_description);
             const score = num(out.readability_score);
             const tags = arr(out.suggested_tags).slice(0, 3);

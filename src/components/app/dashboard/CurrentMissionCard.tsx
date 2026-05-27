@@ -113,7 +113,8 @@ export function CurrentMissionCard({ userId }: Props) {
           Setting up your mission…
         </div>
         <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-          Nova is building your personalized action plan based on your business idea. This takes just a few seconds.
+          Nova is building your personalized action plan based on your business idea. This takes
+          just a few seconds.
         </div>
         <button
           onClick={refresh}

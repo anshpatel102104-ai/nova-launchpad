@@ -68,7 +68,6 @@ const LAUNCHPAD_TOOLS: SubItem[] = [
   { to: "/app/launchpad/blog", label: "Blog Generator", icon: PenLine },
 ];
 
-
 const NOVA_MODULES: SubItem[] = [
   { to: "/app/nova/crm", label: "CRM Pipeline", icon: Workflow },
   { to: "/app/nova/leads", label: "Lead Capture", icon: Inbox },
