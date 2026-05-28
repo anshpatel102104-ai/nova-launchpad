@@ -74,16 +74,51 @@ const STAGES = ["Idea", "Validate", "Launch", "Operate", "Scale"] as const;
 type StageName = (typeof STAGES)[number];
 
 const LAUNCHPAD_TILES = [
-  { key: "validate-idea", name: "Idea Validator", icon: Lightbulb, to: "/app/launchpad/idea-validator" },
-  { key: "generate-pitch", name: "Pitch Generator", icon: Megaphone, to: "/app/launchpad/pitch-generator" },
-  { key: "generate-gtm-strategy", name: "GTM Strategy", icon: Target, to: "/app/launchpad/gtm-strategy" },
+  {
+    key: "validate-idea",
+    name: "Idea Validator",
+    icon: Lightbulb,
+    to: "/app/launchpad/idea-validator",
+  },
+  {
+    key: "generate-pitch",
+    name: "Pitch Generator",
+    icon: Megaphone,
+    to: "/app/launchpad/pitch-generator",
+  },
+  {
+    key: "generate-gtm-strategy",
+    name: "GTM Strategy",
+    icon: Target,
+    to: "/app/launchpad/gtm-strategy",
+  },
   { key: "generate-offer", name: "Offer Builder", icon: Sparkles, to: "/app/launchpad/offer" },
   { key: "kill-my-idea", name: "Kill My Idea", icon: Skull, to: "/app/launchpad/kill-my-idea" },
   { key: "funding-score", name: "Funding Score", icon: Trophy, to: "/app/launchpad/funding-score" },
-  { key: "first-10-customers", name: "First 10 Customers", icon: UserPlus, to: "/app/launchpad/first-10-customers" },
-  { key: "business-plan", name: "Business Plan", icon: FileText, to: "/app/launchpad/business-plan" },
-  { key: "investor-emails", name: "Investor Emails", icon: Mail, to: "/app/launchpad/investor-emails" },
-  { key: "idea-vs-idea", name: "Idea vs Idea", icon: GitCompare, to: "/app/launchpad/idea-vs-idea" },
+  {
+    key: "first-10-customers",
+    name: "First 10 Customers",
+    icon: UserPlus,
+    to: "/app/launchpad/first-10-customers",
+  },
+  {
+    key: "business-plan",
+    name: "Business Plan",
+    icon: FileText,
+    to: "/app/launchpad/business-plan",
+  },
+  {
+    key: "investor-emails",
+    name: "Investor Emails",
+    icon: Mail,
+    to: "/app/launchpad/investor-emails",
+  },
+  {
+    key: "idea-vs-idea",
+    name: "Idea vs Idea",
+    icon: GitCompare,
+    to: "/app/launchpad/idea-vs-idea",
+  },
 ] as const;
 
 const NOVA_SYSTEMS = [
@@ -159,10 +194,16 @@ function Dashboard() {
   const allRunsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
   const usageQ = useQuery({ ...usageQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plansQ = useQuery(planEntitlementsQuery());
-  const assetsQ = useQuery({ ...generatedAssetsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const assetsQ = useQuery({
+    ...generatedAssetsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const intsQ = useQuery({ ...integrationsQuery(user?.id ?? ""), enabled: !!user?.id });
-  const autoQ = useQuery({ ...automationSettingsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const autoQ = useQuery({
+    ...automationSettingsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
 
   const org = orgQ.data;
   const sub = subQ.data;
@@ -179,13 +220,31 @@ function Dashboard() {
   if (isLoading) {
     return (
       <div className="space-y-5 animate-pulse">
-        <div className="rounded-2xl" style={{ minHeight: 220, background: "var(--surface)", border: "1px solid var(--border)" }} />
+        <div
+          className="rounded-2xl"
+          style={{
+            minHeight: 220,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+          }}
+        />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl p-5" style={{ height: 120, background: "var(--surface)", border: "1px solid var(--border)" }} />
+            <div
+              key={i}
+              className="rounded-2xl p-5"
+              style={{
+                height: 120,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
+            />
           ))}
         </div>
-        <div className="rounded-2xl" style={{ height: 260, background: "var(--surface)", border: "1px solid var(--border)" }} />
+        <div
+          className="rounded-2xl"
+          style={{ height: 260, background: "var(--surface)", border: "1px solid var(--border)" }}
+        />
       </div>
     );
   }
@@ -195,7 +254,10 @@ function Dashboard() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <div
           className="flex h-16 w-16 items-center justify-center rounded-2xl text-white"
-          style={{ background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 0 40px rgba(249,115,22,0.4)" }}
+          style={{
+            background: "linear-gradient(135deg, #F97316, #EA580C)",
+            boxShadow: "0 0 40px rgba(249,115,22,0.4)",
+          }}
         >
           <Sparkles className="h-8 w-8" />
         </div>
@@ -215,69 +277,157 @@ function Dashboard() {
   const totalUsed = usage.reduce((s, r) => s + (r.count as number), 0);
   const limit = plansQ.data?.find((p) => p.plan === sub?.plan)?.monthly_generation_limit ?? null;
   const firstName = (profile?.full_name || "").split(" ")[0] || "there";
-  const planLabel = (sub?.plan ?? "starter").charAt(0).toUpperCase() + (sub?.plan ?? "starter").slice(1);
+  const planLabel =
+    (sub?.plan ?? "starter").charAt(0).toUpperCase() + (sub?.plan ?? "starter").slice(1);
   const orgStage = (org?.stage ?? "Idea") as StageName;
   const stageIdx = STAGES.indexOf(orgStage);
 
-  const succeeded = (k: string) => allRuns.some((r) => r.tool_key === k && r.status === "succeeded");
+  const succeeded = (k: string) =>
+    allRuns.some((r) => r.tool_key === k && r.status === "succeeded");
   const inProgress = (k: string) => allRuns.some((r) => r.tool_key === k && r.status === "running");
   const launchpadStatus = (k: string): "complete" | "in-progress" | "not-started" =>
     succeeded(k) ? "complete" : inProgress(k) ? "in-progress" : "not-started";
-  const launchpadComplete = LAUNCHPAD_TILES.filter((t) => launchpadStatus(t.key) === "complete").length;
+  const launchpadComplete = LAUNCHPAD_TILES.filter(
+    (t) => launchpadStatus(t.key) === "complete",
+  ).length;
 
   const novaStatus = (k: string): "active" | "setup" | "inactive" => {
     if (k === "crm" || k === "leads") return leads.length > 0 ? "active" : "setup";
     if (k === "workflows" || k === "followup")
-      return automations.length > 0 ? "active" : integrations.some((i) => i.integration_key?.startsWith("nova:webhook:") && i.status === "connected") ? "active" : "setup";
-    if (k === "clients") return assets.some((a) => a.kind === "client-onboarding") ? "active" : "setup";
+      return automations.length > 0
+        ? "active"
+        : integrations.some(
+              (i) => i.integration_key?.startsWith("nova:webhook:") && i.status === "connected",
+            )
+          ? "active"
+          : "setup";
+    if (k === "clients")
+      return assets.some((a) => a.kind === "client-onboarding") ? "active" : "setup";
     if (k === "reports") return allRuns.length > 5 ? "active" : "inactive";
     return "inactive";
   };
   const novaActive = NOVA_SYSTEMS.filter((s) => novaStatus(s.key) === "active").length;
   const wonLeads = leads.filter((l) => l.stage === "Won").length;
-  const qualifiedPipe = leads.filter((l) => ["Qualified", "Proposal"].includes(l.stage as string)).length;
+  const qualifiedPipe = leads.filter((l) =>
+    ["Qualified", "Proposal"].includes(l.stage as string),
+  ).length;
 
   const checklist = [
-    { id: "profile", label: "Complete your profile", done: !!profile?.onboarding_complete, to: "/app/settings" },
-    { id: "validate", label: "Validate your first idea", done: succeeded("validate-idea"), to: "/app/launchpad/idea-validator" },
-    { id: "pitch", label: "Generate your pitch", done: succeeded("generate-pitch"), to: "/app/launchpad/pitch-generator" },
-    { id: "gtm", label: "Map your go-to-market", done: succeeded("generate-gtm-strategy"), to: "/app/launchpad/gtm-strategy" },
+    {
+      id: "profile",
+      label: "Complete your profile",
+      done: !!profile?.onboarding_complete,
+      to: "/app/settings",
+    },
+    {
+      id: "validate",
+      label: "Validate your first idea",
+      done: succeeded("validate-idea"),
+      to: "/app/launchpad/idea-validator",
+    },
+    {
+      id: "pitch",
+      label: "Generate your pitch",
+      done: succeeded("generate-pitch"),
+      to: "/app/launchpad/pitch-generator",
+    },
+    {
+      id: "gtm",
+      label: "Map your go-to-market",
+      done: succeeded("generate-gtm-strategy"),
+      to: "/app/launchpad/gtm-strategy",
+    },
     { id: "lead", label: "Capture your first lead", done: leads.length > 0, to: "/app/nova/leads" },
-    { id: "automate", label: "Wire an automation", done: automations.length > 0, to: "/app/nova/workflows" },
+    {
+      id: "automate",
+      label: "Wire an automation",
+      done: automations.length > 0,
+      to: "/app/nova/workflows",
+    },
   ];
   const checklistDone = checklist.filter((c) => c.done).length;
   const checklistComplete = checklistDone === checklist.length;
 
   const nextAction = (() => {
     if (!succeeded("validate-idea"))
-      return { title: "Validate your idea first", desc: "Pressure-test market signal before you build anything.", cta: "Run validator", to: "/app/launchpad/idea-validator", icon: Lightbulb };
+      return {
+        title: "Validate your idea first",
+        desc: "Pressure-test market signal before you build anything.",
+        cta: "Run validator",
+        to: "/app/launchpad/idea-validator",
+        icon: Lightbulb,
+      };
     if (!succeeded("generate-pitch"))
-      return { title: "Generate your pitch", desc: "Investor-ready pitch you can send today.", cta: "Generate pitch", to: "/app/launchpad/pitch-generator", icon: Megaphone };
+      return {
+        title: "Generate your pitch",
+        desc: "Investor-ready pitch you can send today.",
+        cta: "Generate pitch",
+        to: "/app/launchpad/pitch-generator",
+        icon: Megaphone,
+      };
     if (!succeeded("generate-gtm-strategy"))
-      return { title: "Map your go-to-market", desc: "Channels, ICP, and messaging in one plan.", cta: "Plan GTM", to: "/app/launchpad/gtm-strategy", icon: Target };
+      return {
+        title: "Map your go-to-market",
+        desc: "Channels, ICP, and messaging in one plan.",
+        cta: "Plan GTM",
+        to: "/app/launchpad/gtm-strategy",
+        icon: Target,
+      };
     if (leads.length === 0)
-      return { title: "Capture your first lead", desc: "Track every prospect from first touch to close.", cta: "Add a lead", to: "/app/nova/leads", icon: UserPlus };
+      return {
+        title: "Capture your first lead",
+        desc: "Track every prospect from first touch to close.",
+        cta: "Add a lead",
+        to: "/app/nova/leads",
+        icon: UserPlus,
+      };
     if (automations.length === 0)
-      return { title: "Automate your follow-ups", desc: "Wire a sequence so no lead goes cold.", cta: "Open workflows", to: "/app/nova/workflows", icon: Zap };
+      return {
+        title: "Automate your follow-ups",
+        desc: "Wire a sequence so no lead goes cold.",
+        cta: "Open workflows",
+        to: "/app/nova/workflows",
+        icon: Zap,
+      };
     if (wonLeads === 0)
-      return { title: "Move a lead to Won", desc: "Watch the funnel come alive in your CRM.", cta: "Open pipeline", to: "/app/nova/crm", icon: Trophy };
-    return { title: "Open your reports", desc: "See conversion, pipeline velocity, and revenue trends.", cta: "View reports", to: "/app/nova/reports", icon: LineChart };
+      return {
+        title: "Move a lead to Won",
+        desc: "Watch the funnel come alive in your CRM.",
+        cta: "Open pipeline",
+        to: "/app/nova/crm",
+        icon: Trophy,
+      };
+    return {
+      title: "Open your reports",
+      desc: "See conversion, pipeline velocity, and revenue trends.",
+      cta: "View reports",
+      to: "/app/nova/reports",
+      icon: LineChart,
+    };
   })();
 
   const resumeLabel = resumePath
-    ? (resumePath.split("/").pop()?.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
+    ? (resumePath
+        .split("/")
+        .pop()
+        ?.replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
     : null;
 
   return (
     <div className="space-y-5">
-
       {/* ── RESUME BANNER ── */}
       {resumePath && (
         <div
           style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
-            borderRadius: 10, border: "1px solid rgba(249,115,22,0.2)",
-            background: "rgba(249,115,22,0.06)", fontSize: 12.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "8px 14px",
+            borderRadius: 10,
+            border: "1px solid rgba(249,115,22,0.2)",
+            background: "rgba(249,115,22,0.06)",
+            fontSize: 12.5,
           }}
         >
           <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
@@ -285,13 +435,35 @@ function Dashboard() {
             Resume where you left off:{" "}
             <span style={{ color: "var(--foreground)", fontWeight: 600 }}>{resumeLabel}</span>
           </span>
-          <Link to={resumePath} style={{ fontSize: 12, color: "var(--primary)", fontWeight: 600, textDecoration: "none", marginRight: 8 }}>
+          <Link
+            to={resumePath}
+            style={{
+              fontSize: 12,
+              color: "var(--primary)",
+              fontWeight: 600,
+              textDecoration: "none",
+              marginRight: 8,
+            }}
+          >
             Continue <ArrowRight style={{ display: "inline", width: 10, height: 10 }} />
           </Link>
           <button
-            onClick={() => { clearLastAppPath(); setResumePath(null); }}
-            style={{ background: "none", border: "none", color: "var(--muted-foreground)", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}
-          >×</button>
+            onClick={() => {
+              clearLastAppPath();
+              setResumePath(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--muted-foreground)",
+              cursor: "pointer",
+              fontSize: 14,
+              lineHeight: 1,
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -303,7 +475,8 @@ function Dashboard() {
           minHeight: "220px",
           background: "var(--surface)",
           border: "1px solid rgba(249,115,22,0.18)",
-          boxShadow: "0 0 0 1px rgba(249,115,22,0.06), 0 2px 4px rgba(0,0,0,0.5), 0 16px 60px rgba(0,0,0,0.4)",
+          boxShadow:
+            "0 0 0 1px rgba(249,115,22,0.06), 0 2px 4px rgba(0,0,0,0.5), 0 16px 60px rgba(0,0,0,0.4)",
         }}
       >
         <OrbitalHero />
@@ -312,12 +485,36 @@ function Dashboard() {
         {/* Top glow bar */}
         <div
           className="absolute top-0 left-0 right-0 h-px z-[2]"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.7), rgba(251,191,36,0.4), transparent)" }}
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(249,115,22,0.7), rgba(251,191,36,0.4), transparent)",
+          }}
         />
         {/* Corner accent brackets */}
-        <div className="absolute top-0 left-0 w-6 h-6 z-[2]" style={{ borderTop: "1.5px solid rgba(249,115,22,0.5)", borderLeft: "1.5px solid rgba(249,115,22,0.5)", borderRadius: "2px 0 0 0" }} />
-        <div className="absolute top-0 right-0 w-6 h-6 z-[2]" style={{ borderTop: "1.5px solid rgba(249,115,22,0.3)", borderRight: "1.5px solid rgba(249,115,22,0.3)", borderRadius: "0 2px 0 0" }} />
-        <div className="absolute bottom-0 left-0 w-6 h-6 z-[2]" style={{ borderBottom: "1.5px solid rgba(249,115,22,0.3)", borderLeft: "1.5px solid rgba(249,115,22,0.3)", borderRadius: "0 0 0 2px" }} />
+        <div
+          className="absolute top-0 left-0 w-6 h-6 z-[2]"
+          style={{
+            borderTop: "1.5px solid rgba(249,115,22,0.5)",
+            borderLeft: "1.5px solid rgba(249,115,22,0.5)",
+            borderRadius: "2px 0 0 0",
+          }}
+        />
+        <div
+          className="absolute top-0 right-0 w-6 h-6 z-[2]"
+          style={{
+            borderTop: "1.5px solid rgba(249,115,22,0.3)",
+            borderRight: "1.5px solid rgba(249,115,22,0.3)",
+            borderRadius: "0 2px 0 0",
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-6 h-6 z-[2]"
+          style={{
+            borderBottom: "1.5px solid rgba(249,115,22,0.3)",
+            borderLeft: "1.5px solid rgba(249,115,22,0.3)",
+            borderRadius: "0 0 0 2px",
+          }}
+        />
 
         {/* Content */}
         <div className="relative z-[3] flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-8">
@@ -325,7 +522,11 @@ function Dashboard() {
             <div className="flex items-center gap-2.5 mb-3">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em]"
-                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", color: "var(--primary)" }}
+                style={{
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.25)",
+                  color: "var(--primary)",
+                }}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
                 Founder Mission Control
@@ -342,7 +543,8 @@ function Dashboard() {
               className="font-display font-black tracking-tight leading-none"
               style={{
                 fontSize: "clamp(1.8rem, 3vw + 0.8rem, 2.8rem)",
-                background: "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.85) 45%, rgba(249,115,22,0.9) 100%)",
+                background:
+                  "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.85) 45%, rgba(249,115,22,0.9) 100%)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
@@ -350,10 +552,16 @@ function Dashboard() {
               }}
             >
               {greetingFor()},{" "}
-              <span style={{ WebkitBackgroundClip: "text", backgroundClip: "text" }}>{firstName}</span>
+              <span style={{ WebkitBackgroundClip: "text", backgroundClip: "text" }}>
+                {firstName}
+              </span>
             </h1>
-            <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: "rgba(240,235,228,0.55)" }}>
-              {org?.name ? `${org.name} · ` : ""}Your AI command center across the entire business journey.
+            <p
+              className="mt-2 text-[13.5px] leading-relaxed"
+              style={{ color: "rgba(240,235,228,0.55)" }}
+            >
+              {org?.name ? `${org.name} · ` : ""}Your AI command center across the entire business
+              journey.
             </p>
 
             {/* Stage progress bar */}
@@ -364,18 +572,30 @@ function Dashboard() {
                     <div
                       className="h-1.5 w-8 rounded-full transition-all duration-500"
                       style={{
-                        background: i <= stageIdx
-                          ? "linear-gradient(90deg, #F97316, #FBBF24)"
-                          : "rgba(255,255,255,0.1)",
+                        background:
+                          i <= stageIdx
+                            ? "linear-gradient(90deg, #F97316, #FBBF24)"
+                            : "rgba(255,255,255,0.1)",
                         boxShadow: i <= stageIdx ? "0 0 6px rgba(249,115,22,0.5)" : "none",
                       }}
                     />
-                    <span className="text-[8px] font-mono uppercase tracking-wide" style={{ color: i <= stageIdx ? "rgba(249,115,22,0.8)" : "rgba(255,255,255,0.2)" }}>
+                    <span
+                      className="text-[8px] font-mono uppercase tracking-wide"
+                      style={{
+                        color: i <= stageIdx ? "rgba(249,115,22,0.8)" : "rgba(255,255,255,0.2)",
+                      }}
+                    >
                       {s}
                     </span>
                   </div>
                   {i < STAGES.length - 1 && (
-                    <div className="h-px w-3 mb-3" style={{ background: i < stageIdx ? "rgba(249,115,22,0.4)" : "rgba(255,255,255,0.08)" }} />
+                    <div
+                      className="h-px w-3 mb-3"
+                      style={{
+                        background:
+                          i < stageIdx ? "rgba(249,115,22,0.4)" : "rgba(255,255,255,0.08)",
+                      }}
+                    />
                   )}
                 </React.Fragment>
               ))}
@@ -386,8 +606,16 @@ function Dashboard() {
             {/* System status */}
             <div className="flex gap-2 flex-wrap justify-end">
               {[
-                { label: "Tools", value: `${launchpadComplete}/${LAUNCHPAD_TILES.length}`, color: "#F97316" },
-                { label: "Systems", value: `${novaActive}/${NOVA_SYSTEMS.length}`, color: "#FBBF24" },
+                {
+                  label: "Tools",
+                  value: `${launchpadComplete}/${LAUNCHPAD_TILES.length}`,
+                  color: "#F97316",
+                },
+                {
+                  label: "Systems",
+                  value: `${novaActive}/${NOVA_SYSTEMS.length}`,
+                  color: "#FBBF24",
+                },
                 { label: "Leads", value: `${leads.length}`, color: "#10b981" },
               ].map(({ label, value, color }) => (
                 <div
@@ -395,8 +623,18 @@ function Dashboard() {
                   className="rounded-xl px-3 py-2 text-center"
                   style={{ background: `${color}08`, border: `1px solid ${color}20`, minWidth: 68 }}
                 >
-                  <div className="font-mono" style={{ fontSize: "8px", color: `${color}99`, letterSpacing: "0.1em" }}>{label}</div>
-                  <div className="font-mono font-black tabular-nums mt-0.5" style={{ fontSize: "18px", color, letterSpacing: "-0.02em" }}>{value}</div>
+                  <div
+                    className="font-mono"
+                    style={{ fontSize: "8px", color: `${color}99`, letterSpacing: "0.1em" }}
+                  >
+                    {label}
+                  </div>
+                  <div
+                    className="font-mono font-black tabular-nums mt-0.5"
+                    style={{ fontSize: "18px", color, letterSpacing: "-0.02em" }}
+                  >
+                    {value}
+                  </div>
                 </div>
               ))}
             </div>
@@ -406,15 +644,18 @@ function Dashboard() {
                 className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition-all duration-200"
                 style={{
                   background: "linear-gradient(135deg, #F97316, #EA580C)",
-                  boxShadow: "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  boxShadow:
+                    "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
                 }}
                 onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(249,115,22,0.55), 0 0 60px rgba(249,115,22,0.18), inset 0 1px 0 rgba(255,255,255,0.2)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 8px 30px rgba(249,115,22,0.55), 0 0 60px rgba(249,115,22,0.18), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
               >
                 <nextAction.icon className="h-4 w-4" />
@@ -442,7 +683,12 @@ function Dashboard() {
           <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(249,115,22,0.7)" }}>Nova AI · </span>
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: "rgba(249,115,22,0.7)" }}
+          >
+            Nova AI ·{" "}
+          </span>
           <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
             {nextAction.desc}
           </span>
@@ -450,7 +696,11 @@ function Dashboard() {
         <Link to={nextAction.to}>
           <button
             className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all"
-            style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.22)", color: "var(--primary)" }}
+            style={{
+              background: "rgba(249,115,22,0.1)",
+              border: "1px solid rgba(249,115,22,0.22)",
+              color: "var(--primary)",
+            }}
             onMouseEnter={(e: React.MouseEvent) => {
               (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.18)";
             }}
@@ -479,7 +729,11 @@ function Dashboard() {
       {!checklistComplete && (
         <section
           className="rise-in overflow-hidden rounded-2xl"
-          style={{ ["--i" as string]: 1, background: "var(--surface)", border: "1px solid rgba(249,115,22,0.12)" }}
+          style={{
+            ["--i" as string]: 1,
+            background: "var(--surface)",
+            border: "1px solid rgba(249,115,22,0.12)",
+          }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
@@ -488,12 +742,18 @@ function Dashboard() {
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
-                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}
+                style={{
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.2)",
+                }}
               >
                 <ListChecks className="h-4 w-4" style={{ color: "var(--primary)" }} />
               </div>
               <div>
-                <div className="font-display text-[13px] font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+                <div
+                  className="font-display text-[13px] font-bold tracking-tight"
+                  style={{ color: "var(--foreground)" }}
+                >
                   Get your workspace live
                 </div>
                 <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
@@ -502,7 +762,10 @@ function Dashboard() {
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-3">
-              <div className="h-1.5 w-32 overflow-hidden rounded-full" style={{ background: "var(--surface-2)" }}>
+              <div
+                className="h-1.5 w-32 overflow-hidden rounded-full"
+                style={{ background: "var(--surface-2)" }}
+              >
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
@@ -512,37 +775,65 @@ function Dashboard() {
                   }}
                 />
               </div>
-              <span className="text-[11px] font-mono font-semibold" style={{ color: "var(--primary)" }}>
+              <span
+                className="text-[11px] font-mono font-semibold"
+                style={{ color: "var(--primary)" }}
+              >
                 {Math.round((checklistDone / checklist.length) * 100)}%
               </span>
             </div>
           </div>
-          <ul className="grid gap-px sm:grid-cols-2 lg:grid-cols-3" style={{ background: "rgba(249,115,22,0.04)" }}>
+          <ul
+            className="grid gap-px sm:grid-cols-2 lg:grid-cols-3"
+            style={{ background: "rgba(249,115,22,0.04)" }}
+          >
             {checklist.map((c) => (
               <li key={c.id} style={{ background: "var(--surface)" }}>
                 <Link
                   to={c.to}
                   className="flex items-center gap-3 px-5 py-3 transition-all"
-                  onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.04)"; }}
-                  onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                  onMouseEnter={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.04)";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
                 >
                   <span
                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]"
-                    style={c.done
-                      ? { background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", color: "var(--success)" }
-                      : { background: "var(--surface-2)", border: "1px solid rgba(249,115,22,0.15)", color: "var(--muted-foreground)" }}
+                    style={
+                      c.done
+                        ? {
+                            background: "rgba(16,185,129,0.12)",
+                            border: "1px solid rgba(16,185,129,0.3)",
+                            color: "var(--success)",
+                          }
+                        : {
+                            background: "var(--surface-2)",
+                            border: "1px solid rgba(249,115,22,0.15)",
+                            color: "var(--muted-foreground)",
+                          }
+                    }
                   >
                     {c.done ? <Check className="h-3 w-3" /> : <Clock className="h-2.5 w-2.5" />}
                   </span>
                   <span
                     className="flex-1 text-[12.5px]"
-                    style={c.done
-                      ? { color: "var(--muted-foreground)", textDecoration: "line-through", textDecorationColor: "rgba(255,255,255,0.2)" }
-                      : { color: "var(--foreground)" }}
+                    style={
+                      c.done
+                        ? {
+                            color: "var(--muted-foreground)",
+                            textDecoration: "line-through",
+                            textDecorationColor: "rgba(255,255,255,0.2)",
+                          }
+                        : { color: "var(--foreground)" }
+                    }
                   >
                     {c.label}
                   </span>
-                  {!c.done && <ArrowRight className="h-3 w-3" style={{ color: "var(--muted-foreground)" }} />}
+                  {!c.done && (
+                    <ArrowRight className="h-3 w-3" style={{ color: "var(--muted-foreground)" }} />
+                  )}
                 </Link>
               </li>
             ))}
@@ -568,7 +859,10 @@ function Dashboard() {
       )}
 
       {/* ── STAT ROW ── */}
-      <section className="rise-in grid gap-3 sm:grid-cols-2 lg:grid-cols-4" style={{ ["--i" as string]: 3 }}>
+      <section
+        className="rise-in grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        style={{ ["--i" as string]: 3 }}
+      >
         <MissionStatCard
           label="Business Stage"
           value={orgStage}
@@ -582,7 +876,10 @@ function Dashboard() {
                   key={s}
                   className="h-0.5 flex-1 rounded-full transition-all"
                   style={{
-                    background: i <= stageIdx ? "linear-gradient(90deg, #F97316, #FBBF24)" : "rgba(255,255,255,0.08)",
+                    background:
+                      i <= stageIdx
+                        ? "linear-gradient(90deg, #F97316, #FBBF24)"
+                        : "rgba(255,255,255,0.08)",
                     boxShadow: i <= stageIdx ? "0 0 4px rgba(249,115,22,0.4)" : "none",
                   }}
                 />
@@ -596,7 +893,11 @@ function Dashboard() {
           sub={launchpadComplete === 0 ? "Run your first tool" : "tools completed"}
           icon={Rocket}
           color="#EA580C"
-          rightSlot={<OrangeProgressRing percent={Math.round((launchpadComplete / LAUNCHPAD_TILES.length) * 100)} />}
+          rightSlot={
+            <OrangeProgressRing
+              percent={Math.round((launchpadComplete / LAUNCHPAD_TILES.length) * 100)}
+            />
+          }
         />
         <MissionStatCard
           label="Nova Systems"
@@ -613,7 +914,12 @@ function Dashboard() {
                     key={s.key}
                     className="h-2 w-2 rounded-full transition-colors"
                     style={{
-                      background: st === "active" ? "var(--success)" : st === "setup" ? "var(--warning)" : "rgba(255,255,255,0.08)",
+                      background:
+                        st === "active"
+                          ? "var(--success)"
+                          : st === "setup"
+                            ? "var(--warning)"
+                            : "rgba(255,255,255,0.08)",
                       boxShadow: st === "active" ? "0 0 6px rgba(16,185,129,0.6)" : "none",
                     }}
                   />
@@ -659,10 +965,16 @@ function Dashboard() {
             style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
           >
             <div>
-              <div className="text-[9.5px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(249,115,22,0.6)" }}>
+              <div
+                className="text-[9.5px] font-bold uppercase tracking-[0.18em]"
+                style={{ color: "rgba(249,115,22,0.6)" }}
+              >
                 Live Activity
               </div>
-              <h3 className="mt-0.5 font-display text-[14px] font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+              <h3
+                className="mt-0.5 font-display text-[14px] font-bold tracking-tight"
+                style={{ color: "var(--foreground)" }}
+              >
                 Recent across your workspace
               </h3>
             </div>
@@ -670,8 +982,12 @@ function Dashboard() {
               to="/app/launchpad/history"
               className="inline-flex items-center gap-1 text-[12px] transition-colors"
               style={{ color: "var(--primary)" }}
-              onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.textShadow = "0 0 8px rgba(249,115,22,0.6)"; }}
-              onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.textShadow = "none"; }}
+              onMouseEnter={(e: React.MouseEvent) => {
+                (e.currentTarget as HTMLElement).style.textShadow = "0 0 8px rgba(249,115,22,0.6)";
+              }}
+              onMouseLeave={(e: React.MouseEvent) => {
+                (e.currentTarget as HTMLElement).style.textShadow = "none";
+              }}
             >
               View all <ArrowUpRight className="h-3 w-3" />
             </Link>
@@ -680,18 +996,26 @@ function Dashboard() {
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-2xl"
-                style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)" }}
+                style={{
+                  background: "rgba(249,115,22,0.08)",
+                  border: "1px solid rgba(249,115,22,0.15)",
+                }}
               >
                 <Activity className="h-5 w-5" style={{ color: "var(--primary)", opacity: 0.5 }} />
               </div>
-              <p className="mt-4 text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>Nothing here yet</p>
+              <p className="mt-4 text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+                Nothing here yet
+              </p>
               <p className="mt-1 text-[12px] max-w-xs" style={{ color: "var(--muted-foreground)" }}>
                 Run a tool, capture a lead, or wire an automation. Activity appears instantly.
               </p>
               <Link to="/app/launchpad" className="mt-4">
                 <button
                   className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-semibold text-white"
-                  style={{ background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 4px 15px rgba(249,115,22,0.3)" }}
+                  style={{
+                    background: "linear-gradient(135deg, #F97316, #EA580C)",
+                    boxShadow: "0 4px 15px rgba(249,115,22,0.3)",
+                  }}
                 >
                   Run a tool
                 </button>
@@ -700,32 +1024,64 @@ function Dashboard() {
           ) : (
             <ul className="divide-y" style={{ borderColor: "rgba(249,115,22,0.06)" }}>
               {recentRuns.slice(0, 6).map((r) => {
-                const Icon = r.status === "succeeded" ? CheckCircle2 : r.status === "failed" ? XCircle : Loader2;
-                const color = r.status === "succeeded" ? "var(--success)" : r.status === "failed" ? "var(--destructive)" : "var(--primary)";
+                const Icon =
+                  r.status === "succeeded"
+                    ? CheckCircle2
+                    : r.status === "failed"
+                      ? XCircle
+                      : Loader2;
+                const color =
+                  r.status === "succeeded"
+                    ? "var(--success)"
+                    : r.status === "failed"
+                      ? "var(--destructive)"
+                      : "var(--primary)";
                 return (
                   <li
                     key={r.id}
                     className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                    onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)"; }}
-                    onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    onMouseEnter={(e: React.MouseEvent) => {
+                      (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)";
+                    }}
+                    onMouseLeave={(e: React.MouseEvent) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                    }}
                   >
                     <span
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                      style={{ background: `color-mix(in oklab, ${color} 10%, transparent)`, border: `1px solid color-mix(in oklab, ${color} 20%, transparent)` }}
+                      style={{
+                        background: `color-mix(in oklab, ${color} 10%, transparent)`,
+                        border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+                      }}
                     >
-                      <Icon className={cn("h-3.5 w-3.5", r.status === "running" && "animate-spin")} style={{ color }} />
+                      <Icon
+                        className={cn("h-3.5 w-3.5", r.status === "running" && "animate-spin")}
+                        style={{ color }}
+                      />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
+                      <div
+                        className="truncate text-[13px] font-medium"
+                        style={{ color: "var(--foreground)" }}
+                      >
                         {r.tool_key.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </div>
                       <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                        {new Date(r.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                        {new Date(r.created_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
                       </div>
                     </div>
                     <span
                       className="rounded-full px-2 py-0.5 text-[10px] font-medium capitalize"
-                      style={{ background: `color-mix(in oklab, ${color} 10%, transparent)`, color, border: `1px solid color-mix(in oklab, ${color} 20%, transparent)` }}
+                      style={{
+                        background: `color-mix(in oklab, ${color} 10%, transparent)`,
+                        color,
+                        border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+                      }}
                     >
                       {r.status}
                     </span>
@@ -736,24 +1092,40 @@ function Dashboard() {
                 <li
                   key={l.id}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                  onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)"; }}
-                  onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                  onMouseEnter={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
                 >
                   <span
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                    style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}
+                    style={{
+                      background: "rgba(249,115,22,0.1)",
+                      border: "1px solid rgba(249,115,22,0.2)",
+                    }}
                   >
                     <UserCheck className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-medium" style={{ color: "var(--foreground)" }}>Lead added · {l.name}</div>
+                    <div
+                      className="truncate text-[13px] font-medium"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Lead added · {l.name}
+                    </div>
                     <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                       {l.source ?? "Manual"} · {new Date(l.created_at).toLocaleDateString()}
                     </div>
                   </div>
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-medium capitalize"
-                    style={{ background: "rgba(249,115,22,0.1)", color: "var(--primary)", border: "1px solid rgba(249,115,22,0.2)" }}
+                    style={{
+                      background: "rgba(249,115,22,0.1)",
+                      color: "var(--primary)",
+                      border: "1px solid rgba(249,115,22,0.2)",
+                    }}
                   >
                     {l.stage}
                   </span>
@@ -766,37 +1138,77 @@ function Dashboard() {
         {/* Next action card */}
         <div
           className="lg:col-span-4 relative overflow-hidden rounded-2xl"
-          style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.2)", boxShadow: "0 0 40px rgba(249,115,22,0.06)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid rgba(249,115,22,0.2)",
+            boxShadow: "0 0 40px rgba(249,115,22,0.06)",
+          }}
         >
-          <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full" style={{ background: "radial-gradient(circle, rgba(249,115,22,0.15), transparent 70%)", filter: "blur(20px)" }} />
-          <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full" style={{ background: "radial-gradient(circle, rgba(251,191,36,0.08), transparent 70%)", filter: "blur(15px)" }} />
-          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.6), transparent)" }} />
+          <div
+            className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(249,115,22,0.15), transparent 70%)",
+              filter: "blur(20px)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(251,191,36,0.08), transparent 70%)",
+              filter: "blur(15px)",
+            }}
+          />
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.6), transparent)",
+            }}
+          />
 
           <div className="relative p-5">
-            <div className="text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: "rgba(249,115,22,0.7)" }}>Next Action</div>
+            <div
+              className="text-[9px] font-bold uppercase tracking-[0.22em]"
+              style={{ color: "rgba(249,115,22,0.7)" }}
+            >
+              Next Action
+            </div>
             <div
               className="mt-4 flex h-12 w-12 items-center justify-center rounded-xl text-white"
-              style={{ background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 4px 20px rgba(249,115,22,0.4)" }}
+              style={{
+                background: "linear-gradient(135deg, #F97316, #EA580C)",
+                boxShadow: "0 4px 20px rgba(249,115,22,0.4)",
+              }}
             >
               <nextAction.icon className="h-6 w-6" />
             </div>
-            <div className="mt-3 font-display text-[17px] font-bold tracking-tight leading-snug" style={{ color: "var(--foreground)" }}>
+            <div
+              className="mt-3 font-display text-[17px] font-bold tracking-tight leading-snug"
+              style={{ color: "var(--foreground)" }}
+            >
               {nextAction.title}
             </div>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+            <p
+              className="mt-1.5 text-[12.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {nextAction.desc}
             </p>
             <Link to={nextAction.to} className="mt-5 inline-flex">
               <button
                 className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all"
-                style={{ background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 4px 15px rgba(249,115,22,0.3)" }}
+                style={{
+                  background: "linear-gradient(135deg, #F97316, #EA580C)",
+                  boxShadow: "0 4px 15px rgba(249,115,22,0.3)",
+                }}
                 onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 25px rgba(249,115,22,0.5)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 8px 25px rgba(249,115,22,0.5)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 15px rgba(249,115,22,0.3)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 4px 15px rgba(249,115,22,0.3)";
                 }}
               >
                 {nextAction.cta} <ArrowRight className="h-3.5 w-3.5" />
@@ -804,11 +1216,19 @@ function Dashboard() {
             </Link>
             {limit && (
               <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="flex items-center justify-between text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                <div
+                  className="flex items-center justify-between text-[11px]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   <span>AI generations this month</span>
-                  <span className="font-mono font-semibold" style={{ color: "var(--primary)" }}>{totalUsed} / {limit}</span>
+                  <span className="font-mono font-semibold" style={{ color: "var(--primary)" }}>
+                    {totalUsed} / {limit}
+                  </span>
                 </div>
-                <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full" style={{ background: "var(--surface-2)" }}>
+                <div
+                  className="mt-1.5 h-1 w-full overflow-hidden rounded-full"
+                  style={{ background: "var(--surface-2)" }}
+                >
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -827,20 +1247,34 @@ function Dashboard() {
       {/* ── QUICK ACTIONS ── */}
       <section
         className="rise-in overflow-hidden rounded-2xl"
-        style={{ ["--i" as string]: 6, background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
+        style={{
+          ["--i" as string]: 6,
+          background: "var(--surface)",
+          border: "1px solid rgba(249,115,22,0.1)",
+        }}
       >
         <div
           className="flex items-center justify-between px-5 py-3"
           style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
         >
-          <div className="text-[9.5px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(249,115,22,0.5)" }}>
+          <div
+            className="text-[9.5px] font-bold uppercase tracking-[0.18em]"
+            style={{ color: "rgba(249,115,22,0.5)" }}
+          >
             Quick Launch
           </div>
-          <span className="hidden sm:inline text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+          <span
+            className="hidden sm:inline text-[11px]"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Press{" "}
             <kbd
               className="font-mono text-[10px] rounded px-1.5 py-0.5"
-              style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)", color: "var(--primary)" }}
+              style={{
+                background: "rgba(249,115,22,0.08)",
+                border: "1px solid rgba(249,115,22,0.2)",
+                color: "var(--primary)",
+              }}
             >
               ⌘K
             </kbd>{" "}
@@ -852,12 +1286,17 @@ function Dashboard() {
             <Link key={a.to + a.label} to={a.to} className="shrink-0">
               <button
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
-                style={{ background: "var(--surface-2)", border: "1px solid rgba(249,115,22,0.12)", color: "var(--foreground)" }}
+                style={{
+                  background: "var(--surface-2)",
+                  border: "1px solid rgba(249,115,22,0.12)",
+                  color: "var(--foreground)",
+                }}
                 onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.35)";
                   (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.08)";
                   (e.currentTarget as HTMLElement).style.color = "var(--primary)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 0 12px rgba(249,115,22,0.15)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 0 12px rgba(249,115,22,0.15)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.12)";
@@ -877,7 +1316,11 @@ function Dashboard() {
       {/* ── AI OPERATORS PREVIEW ── */}
       <section
         className="rise-in overflow-hidden rounded-2xl"
-        style={{ ["--i" as string]: 6, background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
+        style={{
+          ["--i" as string]: 6,
+          background: "var(--surface)",
+          border: "1px solid rgba(249,115,22,0.1)",
+        }}
       >
         <div
           className="flex items-center justify-between px-5 py-4"
@@ -886,13 +1329,23 @@ function Dashboard() {
           <div className="flex items-center gap-3">
             <div
               className="flex h-8 w-8 items-center justify-center rounded-xl"
-              style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}
+              style={{
+                background: "rgba(249,115,22,0.1)",
+                border: "1px solid rgba(249,115,22,0.2)",
+              }}
             >
               <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
             </div>
             <div>
-              <div className="font-display text-[13px] font-bold" style={{ color: "var(--foreground)" }}>AI Operators</div>
-              <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>Your virtual executive team</div>
+              <div
+                className="font-display text-[13px] font-bold"
+                style={{ color: "var(--foreground)" }}
+              >
+                AI Operators
+              </div>
+              <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Your virtual executive team
+              </div>
             </div>
           </div>
           <Link
@@ -932,8 +1385,18 @@ function Dashboard() {
                   <op.icon className="h-4 w-4" style={{ color: op.color }} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold leading-tight" style={{ color: "var(--foreground)" }}>{op.role}</div>
-                  <div className="text-[8.5px] font-mono mt-0.5" style={{ color: op.color, opacity: 0.7 }}>{op.codename}</div>
+                  <div
+                    className="text-[10px] font-semibold leading-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {op.role}
+                  </div>
+                  <div
+                    className="text-[8.5px] font-mono mt-0.5"
+                    style={{ color: op.color, opacity: 0.7 }}
+                  >
+                    {op.codename}
+                  </div>
                 </div>
               </div>
             </Link>
@@ -944,7 +1407,10 @@ function Dashboard() {
       {/* ── LAUNCHPAD + NOVA GRID ── */}
       <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 7 }}>
         {/* Launchpad modules */}
-        <div className="overflow-hidden rounded-2xl" style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}>
+        <div
+          className="overflow-hidden rounded-2xl"
+          style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
+        >
           <div
             className="flex items-center justify-between px-5 py-4"
             style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
@@ -952,16 +1418,30 @@ function Dashboard() {
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
-                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}
+                style={{
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.2)",
+                }}
               >
                 <Rocket className="h-4 w-4" style={{ color: "var(--primary)" }} />
               </div>
               <div>
-                <div className="font-display text-[13px] font-bold" style={{ color: "var(--foreground)" }}>Launchpad modules</div>
-                <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{launchpadComplete} of {LAUNCHPAD_TILES.length} complete</div>
+                <div
+                  className="font-display text-[13px] font-bold"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  Launchpad modules
+                </div>
+                <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                  {launchpadComplete} of {LAUNCHPAD_TILES.length} complete
+                </div>
               </div>
             </div>
-            <Link to="/app/launchpad" className="inline-flex items-center gap-1 text-[12px] transition-colors" style={{ color: "var(--primary)" }}>
+            <Link
+              to="/app/launchpad"
+              className="inline-flex items-center gap-1 text-[12px] transition-colors"
+              style={{ color: "var(--primary)" }}
+            >
               Open <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
@@ -991,17 +1471,41 @@ function Dashboard() {
                 >
                   <span
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
-                    style={st === "complete"
-                      ? { background: "rgba(16,185,129,0.12)", color: "var(--success)", border: "1px solid rgba(16,185,129,0.2)" }
-                      : st === "in-progress"
-                        ? { background: "rgba(249,115,22,0.12)", color: "var(--primary)", border: "1px solid rgba(249,115,22,0.2)" }
-                        : { background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+                    style={
+                      st === "complete"
+                        ? {
+                            background: "rgba(16,185,129,0.12)",
+                            color: "var(--success)",
+                            border: "1px solid rgba(16,185,129,0.2)",
+                          }
+                        : st === "in-progress"
+                          ? {
+                              background: "rgba(249,115,22,0.12)",
+                              color: "var(--primary)",
+                              border: "1px solid rgba(249,115,22,0.2)",
+                            }
+                          : { background: "var(--surface-2)", color: "var(--muted-foreground)" }
+                    }
                   >
-                    {st === "complete" ? <Check className="h-3 w-3" /> : st === "in-progress" ? <Loader2 className="h-3 w-3 animate-spin" /> : <t.icon className="h-3 w-3" />}
+                    {st === "complete" ? (
+                      <Check className="h-3 w-3" />
+                    ) : st === "in-progress" ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <t.icon className="h-3 w-3" />
+                    )}
                   </span>
                   <div className="min-w-0">
-                    <div className="truncate text-[11.5px] font-medium leading-tight" style={{ color: "var(--foreground)" }}>{t.name}</div>
-                    <div className="text-[10px] capitalize" style={{ color: "var(--muted-foreground)" }}>
+                    <div
+                      className="truncate text-[11.5px] font-medium leading-tight"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {t.name}
+                    </div>
+                    <div
+                      className="text-[10px] capitalize"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {st === "complete" ? "Done" : st === "in-progress" ? "Running" : "Ready"}
                     </div>
                   </div>
@@ -1012,7 +1516,10 @@ function Dashboard() {
         </div>
 
         {/* Nova systems */}
-        <div className="overflow-hidden rounded-2xl" style={{ background: "var(--surface)", border: "1px solid rgba(251,191,36,0.12)" }}>
+        <div
+          className="overflow-hidden rounded-2xl"
+          style={{ background: "var(--surface)", border: "1px solid rgba(251,191,36,0.12)" }}
+        >
           <div
             className="flex items-center justify-between px-5 py-4"
             style={{ borderBottom: "1px solid rgba(251,191,36,0.08)" }}
@@ -1020,16 +1527,30 @@ function Dashboard() {
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
-                style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)" }}
+                style={{
+                  background: "rgba(251,191,36,0.1)",
+                  border: "1px solid rgba(251,191,36,0.2)",
+                }}
               >
                 <Zap className="h-4 w-4" style={{ color: "#FBBF24" }} />
               </div>
               <div>
-                <div className="font-display text-[13px] font-bold" style={{ color: "var(--foreground)" }}>Nova OS systems</div>
-                <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{novaActive} of {NOVA_SYSTEMS.length} active</div>
+                <div
+                  className="font-display text-[13px] font-bold"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  Nova OS systems
+                </div>
+                <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                  {novaActive} of {NOVA_SYSTEMS.length} active
+                </div>
               </div>
             </div>
-            <Link to="/app/nova" className="inline-flex items-center gap-1 text-[12px] transition-colors" style={{ color: "#FBBF24" }}>
+            <Link
+              to="/app/nova"
+              className="inline-flex items-center gap-1 text-[12px] transition-colors"
+              style={{ color: "#FBBF24" }}
+            >
               Open <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
@@ -1040,8 +1561,12 @@ function Dashboard() {
                 <li
                   key={s.key}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
-                  onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "rgba(251,191,36,0.03)"; }}
-                  onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                  onMouseEnter={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(251,191,36,0.03)";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
                 >
                   <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
@@ -1050,15 +1575,30 @@ function Dashboard() {
                       border: `1px solid ${st === "active" ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.05)"}`,
                     }}
                   >
-                    <s.icon className="h-3.5 w-3.5" style={{ color: st === "active" ? "var(--success)" : "var(--muted-foreground)" }} />
+                    <s.icon
+                      className="h-3.5 w-3.5"
+                      style={{
+                        color: st === "active" ? "var(--success)" : "var(--muted-foreground)",
+                      }}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{s.name}</div>
-                    <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                    <div className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
+                      {s.name}
+                    </div>
+                    <div
+                      className="flex items-center gap-1.5 text-[11px]"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       <span
                         className="h-1.5 w-1.5 rounded-full"
                         style={{
-                          background: st === "active" ? "var(--success)" : st === "setup" ? "var(--warning)" : "rgba(255,255,255,0.15)",
+                          background:
+                            st === "active"
+                              ? "var(--success)"
+                              : st === "setup"
+                                ? "var(--warning)"
+                                : "rgba(255,255,255,0.15)",
                           boxShadow: st === "active" ? "0 0 5px rgba(16,185,129,0.5)" : "none",
                         }}
                       />
@@ -1069,8 +1609,12 @@ function Dashboard() {
                     to={s.to}
                     className="text-[11.5px] transition-colors inline-flex items-center gap-1"
                     style={{ color: "var(--muted-foreground)" }}
-                    onMouseEnter={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.color = "#FBBF24"; }}
-                    onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)"; }}
+                    onMouseEnter={(e: React.MouseEvent) => {
+                      (e.currentTarget as HTMLElement).style.color = "#FBBF24";
+                    }}
+                    onMouseLeave={(e: React.MouseEvent) => {
+                      (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                    }}
                   >
                     {st === "active" ? "Open" : "Configure"} <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -1086,11 +1630,21 @@ function Dashboard() {
 
 /* ── Mission stat card ── */
 function MissionStatCard({
-  label, value, sub, icon: Icon, color, rightSlot, trend,
+  label,
+  value,
+  sub,
+  icon: Icon,
+  color,
+  rightSlot,
+  trend,
 }: {
-  label: string; value: string | number; sub: string;
-  icon: React.ComponentType<{ className?: string }>; color: string;
-  rightSlot?: React.ReactNode; trend?: boolean;
+  label: string;
+  value: string | number;
+  sub: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  rightSlot?: React.ReactNode;
+  trend?: boolean;
 }) {
   return (
     <div
@@ -1101,10 +1655,18 @@ function MissionStatCard({
         boxShadow: `0 0 0 1px ${color}0a, 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3)`,
       }}
     >
-      <div className="absolute top-0 left-0 right-0 h-px rounded-t-2xl" style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }} />
+      <div
+        className="absolute top-0 left-0 right-0 h-px rounded-t-2xl"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
+      />
       <div className="flex items-start justify-between">
         <div className="min-w-0">
-          <div className="text-[9.5px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--muted-foreground)" }}>{label}</div>
+          <div
+            className="text-[9.5px] font-bold uppercase tracking-[0.16em]"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            {label}
+          </div>
           <div
             className="mt-2 font-display font-black leading-none tabular-nums flex items-baseline gap-1.5"
             style={{ fontSize: "2rem", color: "var(--foreground)", letterSpacing: "-0.04em" }}
@@ -1112,11 +1674,16 @@ function MissionStatCard({
             {value}
             {trend && <TrendingUp className="h-4 w-4 inline" style={{ color: "var(--success)" }} />}
           </div>
-          <div className="mt-2 text-[11px]" style={{ color: "var(--muted-foreground)" }}>{sub}</div>
+          <div className="mt-2 text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            {sub}
+          </div>
         </div>
         <div
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
-          style={{ background: `linear-gradient(135deg, ${color}, ${color}aa)`, boxShadow: `0 4px 16px ${color}40, inset 0 1px 0 rgba(255,255,255,0.15)` }}
+          style={{
+            background: `linear-gradient(135deg, ${color}, ${color}aa)`,
+            boxShadow: `0 4px 16px ${color}40, inset 0 1px 0 rgba(255,255,255,0.15)`,
+          }}
         >
           <Icon className="h-5 w-5" />
         </div>
@@ -1127,16 +1694,27 @@ function MissionStatCard({
 }
 
 function OrangeProgressRing({ percent }: { percent: number }) {
-  const r = 15, c = 2 * Math.PI * r;
+  const r = 15,
+    c = 2 * Math.PI * r;
   return (
     <div className="mt-3">
       <svg width="40" height="40" viewBox="0 0 40 40">
         <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(249,115,22,0.1)" strokeWidth="3" />
         <circle
-          cx="20" cy="20" r={r} fill="none" stroke="url(#orangeProg)" strokeWidth="3"
-          strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * percent) / 100}
+          cx="20"
+          cy="20"
+          r={r}
+          fill="none"
+          stroke="url(#orangeProg)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c - (c * percent) / 100}
           transform="rotate(-90 20 20)"
-          style={{ transition: "stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1)", filter: "drop-shadow(0 0 4px #F97316)" }}
+          style={{
+            transition: "stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+            filter: "drop-shadow(0 0 4px #F97316)",
+          }}
         />
         <defs>
           <linearGradient id="orangeProg" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1144,7 +1722,13 @@ function OrangeProgressRing({ percent }: { percent: number }) {
             <stop offset="100%" stopColor="#FBBF24" />
           </linearGradient>
         </defs>
-        <text x="20" y="23" textAnchor="middle" fill="#F97316" style={{ fontSize: 8, fontWeight: 800, fontFamily: "JetBrains Mono, monospace" }}>
+        <text
+          x="20"
+          y="23"
+          textAnchor="middle"
+          fill="#F97316"
+          style={{ fontSize: 8, fontWeight: 800, fontFamily: "JetBrains Mono, monospace" }}
+        >
           {percent}%
         </text>
       </svg>

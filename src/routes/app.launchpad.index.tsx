@@ -138,7 +138,7 @@ function LaunchpadOverview() {
     }).length;
   }, [runsByTool]);
 
-  const availableCount = launchpadCatalog.filter((t) => isOwner ? true : t.wired).length;
+  const availableCount = launchpadCatalog.filter((t) => (isOwner ? true : t.wired)).length;
 
   return (
     <div className="space-y-7">
@@ -160,11 +160,13 @@ function LaunchpadOverview() {
               opacity: 0.85,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 40%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--primary) 40%, transparent)";
               (e.currentTarget as HTMLElement).style.opacity = "1";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--border) 80%, transparent)";
+              (e.currentTarget as HTMLElement).style.borderColor =
+                "color-mix(in oklab, var(--border) 80%, transparent)";
               (e.currentTarget as HTMLElement).style.opacity = "0.85";
             }}
           >
@@ -178,18 +180,40 @@ function LaunchpadOverview() {
         className="grid grid-cols-3 gap-3 rounded-2xl p-4 overflow-hidden relative"
         style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
       >
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.4), transparent)" }} />
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.4), transparent)",
+          }}
+        />
         {[
-          { label: "Total Tools", value: launchpadCatalog.length, sub: "in the execution lab", color: "#F97316" },
+          {
+            label: "Total Tools",
+            value: launchpadCatalog.length,
+            sub: "in the execution lab",
+            color: "#F97316",
+          },
           { label: "Available Now", value: availableCount, sub: "ready to run", color: "#10b981" },
-          { label: "Completed", value: totalCompleted, sub: `of ${launchpadCatalog.length} total`, color: "#FBBF24" },
+          {
+            label: "Completed",
+            value: totalCompleted,
+            sub: `of ${launchpadCatalog.length} total`,
+            color: "#FBBF24",
+          },
         ].map(({ label, value, sub, color }) => (
           <div key={label} className="text-center">
-            <div className="font-mono font-black tabular-nums" style={{ fontSize: "1.8rem", color, letterSpacing: "-0.04em", lineHeight: 1 }}>
+            <div
+              className="font-mono font-black tabular-nums"
+              style={{ fontSize: "1.8rem", color, letterSpacing: "-0.04em", lineHeight: 1 }}
+            >
               {value}
             </div>
-            <div className="mt-1 text-[11px] font-semibold" style={{ color: "var(--foreground)" }}>{label}</div>
-            <div className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{sub}</div>
+            <div className="mt-1 text-[11px] font-semibold" style={{ color: "var(--foreground)" }}>
+              {label}
+            </div>
+            <div className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              {sub}
+            </div>
           </div>
         ))}
       </div>
@@ -206,7 +230,11 @@ function LaunchpadOverview() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search execution tools…"
             className="w-full rounded-xl py-2 pl-9 pr-4 text-[13px] outline-none transition"
-            style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
             onFocus={(e) => {
               (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.4)";
               (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px rgba(249,115,22,0.08)";
@@ -228,9 +256,15 @@ function LaunchpadOverview() {
                 key={f.key}
                 onClick={() => setFilter(f.key)}
                 className="rounded-lg px-3 py-1 text-[12px] font-medium transition"
-                style={filter === f.key
-                  ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }
-                  : { color: "var(--muted-foreground)" }}
+                style={
+                  filter === f.key
+                    ? {
+                        background: "var(--surface)",
+                        color: "var(--foreground)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                      }
+                    : { color: "var(--muted-foreground)" }
+                }
               >
                 {f.label}
               </button>
@@ -242,14 +276,23 @@ function LaunchpadOverview() {
             className="flex rounded-xl p-1"
             style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
           >
-            {[{ key: "category", label: "Categories" }, { key: "grid", label: "Grid" }].map((v) => (
+            {[
+              { key: "category", label: "Categories" },
+              { key: "grid", label: "Grid" },
+            ].map((v) => (
               <button
                 key={v.key}
                 onClick={() => setViewMode(v.key as "grid" | "category")}
                 className="rounded-lg px-3 py-1 text-[12px] font-medium transition"
-                style={viewMode === v.key
-                  ? { background: "var(--surface)", color: "var(--primary)", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }
-                  : { color: "var(--muted-foreground)" }}
+                style={
+                  viewMode === v.key
+                    ? {
+                        background: "var(--surface)",
+                        color: "var(--primary)",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                      }
+                    : { color: "var(--muted-foreground)" }
+                }
               >
                 {v.label}
               </button>
@@ -270,10 +313,15 @@ function LaunchpadOverview() {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-px w-6" style={{ background: cat.color, opacity: 0.5 }} />
                   <div>
-                    <h3 className="font-display text-[15px] font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+                    <h3
+                      className="font-display text-[15px] font-bold tracking-tight"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {cat.label}
                     </h3>
-                    <p className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{cat.description}</p>
+                    <p className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                      {cat.description}
+                    </p>
                   </div>
                   <div className="h-px flex-1" style={{ background: cat.color, opacity: 0.12 }} />
                 </div>
@@ -340,7 +388,7 @@ function ToolCard({
   const Icon = ICONS[tool.key] ?? Rocket;
   const locked = isOwner ? false : !tool.wired;
   const colors = ICON_COLORS[tool.key];
-  const gradFrom = colors?.from ?? (categoryColor ?? "var(--primary)");
+  const gradFrom = colors?.from ?? categoryColor ?? "var(--primary)";
   const gradTo = colors?.to ?? gradFrom;
   const iconGrad = `linear-gradient(135deg, ${gradFrom}, ${gradTo})`;
   const glowColor = colors?.glow ?? `${gradFrom}35`;
@@ -380,7 +428,9 @@ function ToolCard({
         {!locked && (
           <div
             className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{ background: `linear-gradient(90deg, transparent, ${gradFrom}60, transparent)` }}
+            style={{
+              background: `linear-gradient(90deg, transparent, ${gradFrom}60, transparent)`,
+            }}
           />
         )}
 
@@ -399,7 +449,9 @@ function ToolCard({
               className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-card transition-all duration-300 group-hover:scale-105"
               style={{
                 background: locked ? "var(--surface-2)" : iconGrad,
-                boxShadow: locked ? "none" : `0 4px 12px rgba(0,0,0,0.3), 0 0 16px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                boxShadow: locked
+                  ? "none"
+                  : `0 4px 12px rgba(0,0,0,0.3), 0 0 16px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.15)`,
               }}
             >
               {locked ? (
@@ -413,23 +465,56 @@ function ToolCard({
             <div className="flex flex-col items-end gap-1.5">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                style={locked
-                  ? { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--muted-foreground)" }
-                  : hasRuns
-                    ? { background: "color-mix(in oklab, var(--success) 12%, transparent)", border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)", color: "var(--success)" }
-                    : { background: `${gradFrom}12`, border: `1px solid ${gradFrom}25`, color: gradFrom }}
+                style={
+                  locked
+                    ? {
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--border)",
+                        color: "var(--muted-foreground)",
+                      }
+                    : hasRuns
+                      ? {
+                          background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                          border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
+                          color: "var(--success)",
+                        }
+                      : {
+                          background: `${gradFrom}12`,
+                          border: `1px solid ${gradFrom}25`,
+                          color: gradFrom,
+                        }
+                }
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: locked ? "var(--muted-foreground)" : hasRuns ? "var(--success)" : gradFrom }} />
-                {locked ? "Soon" : hasRuns ? `${runCount} run${runCount !== 1 ? "s" : ""}` : "Ready"}
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: locked
+                      ? "var(--muted-foreground)"
+                      : hasRuns
+                        ? "var(--success)"
+                        : gradFrom,
+                  }}
+                />
+                {locked
+                  ? "Soon"
+                  : hasRuns
+                    ? `${runCount} run${runCount !== 1 ? "s" : ""}`
+                    : "Ready"}
               </span>
             </div>
           </div>
 
           <div className="mt-4">
-            <div className="font-display text-[15px] font-semibold tracking-tight" style={{ color: "var(--foreground)" }}>
+            <div
+              className="font-display text-[15px] font-semibold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
               {tool.name}
             </div>
-            <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+            <p
+              className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {tool.desc}
             </p>
           </div>
@@ -438,7 +523,11 @@ function ToolCard({
           {!locked && (
             <div
               className="mt-3 rounded-lg px-3 py-2 text-[11px] leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ background: `${gradFrom}08`, border: `1px solid ${gradFrom}15`, color: "var(--muted-foreground)" }}
+              style={{
+                background: `${gradFrom}08`,
+                border: `1px solid ${gradFrom}15`,
+                color: "var(--muted-foreground)",
+              }}
             >
               <span style={{ color: gradFrom, fontWeight: 600 }}>Output: </span>
               {`A complete ${tool.name.toLowerCase()} — ready to use immediately`}
@@ -448,11 +537,25 @@ function ToolCard({
           <div className="mt-4 flex items-center justify-between">
             <span
               className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-              style={tool.difficulty === "Beginner"
-                ? { background: "color-mix(in oklab, var(--success) 12%, transparent)", color: "var(--success)", border: "1px solid color-mix(in oklab, var(--success) 25%, transparent)" }
-                : tool.difficulty === "Intermediate"
-                  ? { background: `${gradFrom}12`, color: gradFrom, border: `1px solid ${gradFrom}25` }
-                  : { background: "color-mix(in oklab, var(--warning) 12%, transparent)", color: "var(--warning)", border: "1px solid color-mix(in oklab, var(--warning) 25%, transparent)" }}
+              style={
+                tool.difficulty === "Beginner"
+                  ? {
+                      background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                      color: "var(--success)",
+                      border: "1px solid color-mix(in oklab, var(--success) 25%, transparent)",
+                    }
+                  : tool.difficulty === "Intermediate"
+                    ? {
+                        background: `${gradFrom}12`,
+                        color: gradFrom,
+                        border: `1px solid ${gradFrom}25`,
+                      }
+                    : {
+                        background: "color-mix(in oklab, var(--warning) 12%, transparent)",
+                        color: "var(--warning)",
+                        border: "1px solid color-mix(in oklab, var(--warning) 25%, transparent)",
+                      }
+              }
             >
               {tool.difficulty}
             </span>
@@ -465,7 +568,10 @@ function ToolCard({
                 <ChevronRight className="h-3.5 w-3.5" />
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+              <span
+                className="flex items-center gap-1 text-[11.5px]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 <Clock className="h-3 w-3" /> Launching soon
               </span>
             )}
@@ -475,8 +581,20 @@ function ToolCard({
         {/* Corner aerospace brackets */}
         {!locked && (
           <>
-            <div className="absolute top-0 left-0 w-3 h-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: `1px solid ${gradFrom}50`, borderLeft: `1px solid ${gradFrom}50` }} />
-            <div className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderBottom: `1px solid ${gradFrom}30`, borderRight: `1px solid ${gradFrom}30` }} />
+            <div
+              className="absolute top-0 left-0 w-3 h-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                borderTop: `1px solid ${gradFrom}50`,
+                borderLeft: `1px solid ${gradFrom}50`,
+              }}
+            />
+            <div
+              className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                borderBottom: `1px solid ${gradFrom}30`,
+                borderRight: `1px solid ${gradFrom}30`,
+              }}
+            />
           </>
         )}
       </div>
