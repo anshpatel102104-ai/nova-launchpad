@@ -1,5 +1,5 @@
 // TASK-081 · Standardized Operator Response Contract
-// All AI operator calls — whether via edge function, n8n, or direct — return this shape.
+// All AI operator calls — whether via edge function or direct — return this shape.
 // Type guards let callers discriminate without casting.
 
 import type { Lane } from "./lane-classifier";

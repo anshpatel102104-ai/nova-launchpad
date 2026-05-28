@@ -46,13 +46,6 @@ const INTEGRATIONS = [
   { key: "gohighlevel", name: "GoHighLevel", hint: "API key", type: "key", soon: false },
   { key: "airtable", name: "Airtable", hint: "Personal access token", type: "key", soon: false },
   {
-    key: "n8n",
-    name: "n8n webhook",
-    hint: "https://n8n.example.com/webhook/...",
-    type: "url",
-    soon: false,
-  },
-  {
     key: "zapier",
     name: "Zapier webhook",
     hint: "https://hooks.zapier.com/hooks/catch/...",
@@ -95,17 +88,6 @@ function validateIntegrationValue(key: IntegrationKey, value: string): string | 
     case "gohighlevel":
       if (value.length < 10) return "API key is too short";
       return null;
-
-    case "n8n": {
-      try {
-        const u = new URL(value);
-        if (u.protocol !== "https:") return "Must be an https:// URL";
-        if (!u.pathname.includes("/webhook")) return "URL must contain /webhook";
-      } catch {
-        return "Must be a valid https:// URL";
-      }
-      return null;
-    }
 
     case "zapier": {
       try {

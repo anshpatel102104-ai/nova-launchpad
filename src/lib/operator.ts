@@ -1,7 +1,7 @@
 /**
  * Nova OPS · Operator Client
  * All tool invocations and chat route through Supabase Edge Functions.
- * No N8N dependency.
+ * All AI runs via Claude through Supabase Edge Functions.
  */
 
 import { supabase } from "@/integrations/supabase/client";

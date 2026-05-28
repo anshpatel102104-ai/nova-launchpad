@@ -47,15 +47,6 @@ const INTEGRATIONS = [
     settingsKey: "airtable",
   },
   {
-    id: "n8n",
-    name: "n8n",
-    icon: Workflow,
-    desc: "Run automation workflows behind every system.",
-    connected: true,
-    notes: "Internal — required for all Nova OS systems.",
-    settingsKey: "n8n",
-  },
-  {
     id: "webhook",
     name: "Webhook",
     icon: Webhook,

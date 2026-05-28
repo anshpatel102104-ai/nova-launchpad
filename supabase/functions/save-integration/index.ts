@@ -12,7 +12,6 @@ const ALLOWED_FLAT = new Set([
   "stripe",
   "gohighlevel",
   "airtable",
-  "n8n",
   "zapier",
   "slack",
   "google_calendar",
@@ -41,7 +40,6 @@ function validateValue(integrationKey: string, value: string): string | null {
       if (value.length < 10) return "API key is too short";
       return null;
 
-    case "n8n":
     case "zapier":
     case "slack": {
       let url: URL;
@@ -55,8 +53,6 @@ function validateValue(integrationKey: string, value: string): string | null {
         return "Must be a hooks.zapier.com URL";
       if (integrationKey === "slack" && !url.hostname.includes("slack.com"))
         return "Must be a hooks.slack.com URL";
-      if (integrationKey === "n8n" && !url.pathname.includes("/webhook"))
-        return "n8n URL must contain /webhook";
       return null;
     }
 

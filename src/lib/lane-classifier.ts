@@ -47,7 +47,7 @@ export function classifyLane(stage: string, challenge: string): Lane {
   return "Idea";
 }
 
-// Human-readable label and description for each lane (used in UI and n8n)
+// Human-readable label and description for each lane (used in UI)
 export const LANE_META: Record<Lane, { label: string; description: string; color: string }> = {
   Idea: {
     label: "Idea Explorer",

@@ -1,6 +1,6 @@
 // TASK-083 · Agent Context Packaging Logic
 // Assembles the full context payload sent to the AI operator on every call.
-// Keeps context consistent whether called from edge function, n8n, or frontend.
+// Keeps context consistent whether called from edge function or frontend.
 
 import { supabase } from "@/integrations/supabase/client";
 import type { OperatorContext } from "./operator-types";

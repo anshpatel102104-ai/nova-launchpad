@@ -118,7 +118,7 @@ function SystemDetail() {
           <div className="nova-card p-5">
             <SectionHeader title="Connected services" />
             <ul className="space-y-2 text-sm">
-              {["Supabase", "Google Workspace", "n8n"].map((svc) => (
+              {["Supabase", "Google Workspace", "Claude AI"].map((svc) => (
                 <li key={svc} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Plug className="h-3.5 w-3.5 text-muted-foreground" />
