@@ -334,6 +334,30 @@ export function OutputBody({ toolKey, output }: { toolKey: string; output: Out }
       return <RevenueOut o={o} />;
     case "blog":
       return <BlogOut o={o} />;
+    case "social":
+      return <SocialOut o={o} />;
+    case "email_sequence":
+      return <EmailSequenceOut o={o} />;
+    case "sales_script":
+      return <SalesScriptOut o={o} />;
+    case "ad_creative":
+      return <AdCreativeOut o={o} />;
+    case "vsl":
+      return <VslOut o={o} />;
+    case "cold_email":
+      return <ColdEmailOut o={o} />;
+    case "niche_validator":
+      return <NicheValidatorOut o={o} />;
+    case "icp":
+      return <IcpOut o={o} />;
+    case "pitch_deck":
+      return <PitchDeckOut o={o} />;
+    case "lead_magnet":
+      return <LeadMagnetOut o={o} />;
+    case "automation":
+      return <AutomationOut o={o} />;
+    case "client_report":
+      return <ClientReportOut o={o} />;
     default:
       return <GenericOut o={o} />;
   }
@@ -1854,6 +1878,1093 @@ function BlogOut({ o }: { o: Record<string, unknown> }) {
             ))}
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function SocialOut({ o }: { o: Record<string, unknown> }) {
+  const platform = str(o.platform);
+  const posts = arr(o.posts);
+  return (
+    <div className="space-y-3">
+      {platform && (
+        <div
+          className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em]"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            color: "var(--primary)",
+          }}
+        >
+          {platform}
+        </div>
+      )}
+      {posts.map((p, i) => {
+        const post = typeof p === "object" && p ? (p as Record<string, unknown>) : {};
+        const hook = str(post.hook);
+        const body = str(post.body ?? post.copy ?? post.content);
+        const cta = str(post.cta);
+        const hashtags = arr(post.hashtags ?? post.tags);
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              Post {i + 1}
+            </div>
+            <div className="space-y-2 p-4">
+              {hook && (
+                <div
+                  className="text-[13.5px] font-semibold leading-relaxed"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {hook}
+                </div>
+              )}
+              {body && (
+                <div
+                  className="whitespace-pre-wrap text-[13px] leading-relaxed"
+                  style={{ color: "color-mix(in oklab, var(--foreground) 85%, transparent)" }}
+                >
+                  {body}
+                </div>
+              )}
+              {cta && (
+                <div className="text-[12.5px] font-medium" style={{ color: "var(--primary)" }}>
+                  {cta}
+                </div>
+              )}
+              {hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {hashtags.map((h, j) => (
+                    <span
+                      key={j}
+                      className="rounded-full px-2 py-0.5 text-[11px]"
+                      style={{
+                        background: "color-mix(in oklab, var(--primary) 8%, transparent)",
+                        color: "var(--primary)",
+                      }}
+                    >
+                      {typeof h === "string" ? h : String(h)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function EmailSequenceOut({ o }: { o: Record<string, unknown> }) {
+  const name = str(o.sequence_name ?? o.name);
+  const emails = arr(o.emails);
+  return (
+    <div className="space-y-3">
+      {name && (
+        <Block title="Sequence name" accent="primary">
+          {name}
+        </Block>
+      )}
+      {emails.map((e, i) => {
+        const email = typeof e === "object" && e ? (e as Record<string, unknown>) : {};
+        const subject = str(email.subject);
+        const preview = str(email.preview_text);
+        const body = str(email.body ?? email.content);
+        const cta = str(email.cta);
+        const day = email.send_day != null ? str(email.send_day) : String(i + 1);
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-4 py-2.5"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              }}
+            >
+              <div
+                className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Email {i + 1}
+              </div>
+              <span
+                className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                style={{
+                  background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+                  color: "var(--primary)",
+                }}
+              >
+                Day {day}
+              </span>
+            </div>
+            <div className="space-y-2 p-4">
+              {subject && (
+                <div className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
+                  {subject}
+                </div>
+              )}
+              {preview && (
+                <div className="text-[12px] italic" style={{ color: "var(--muted-foreground)" }}>
+                  {preview}
+                </div>
+              )}
+              {body && (
+                <div
+                  className="whitespace-pre-wrap text-[13px] leading-relaxed"
+                  style={{ color: "color-mix(in oklab, var(--foreground) 85%, transparent)" }}
+                >
+                  {body}
+                </div>
+              )}
+              {cta && (
+                <div className="text-[12.5px] font-medium" style={{ color: "var(--primary)" }}>
+                  CTA: {cta}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SalesScriptOut({ o }: { o: Record<string, unknown> }) {
+  const scriptType = str(o.script_type);
+  const opener = str(o.opener);
+  const questions = arr(o.discovery_questions);
+  const pitch = str(o.pitch_section);
+  const objections = arr(o.objection_handlers);
+  const close = str(o.close);
+  const followUp = str(o.follow_up);
+  return (
+    <div className="space-y-3">
+      {scriptType && (
+        <div
+          className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em]"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            color: "var(--primary)",
+          }}
+        >
+          {scriptType}
+        </div>
+      )}
+      {opener && (
+        <Block title="Opener" accent="primary">
+          {opener}
+        </Block>
+      )}
+      {questions.length > 0 && (
+        <Block title="Discovery questions">
+          <BulletList items={questions} accent="primary" />
+        </Block>
+      )}
+      {pitch && <Block title="Pitch section">{pitch}</Block>}
+      {objections.length > 0 && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
+        >
+          <div
+            className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            Objection handlers
+          </div>
+          <div
+            className="divide-y p-1"
+            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
+          >
+            {objections.map((obj, i) => {
+              const item = typeof obj === "object" && obj ? (obj as Record<string, unknown>) : {};
+              return (
+                <div key={i} className="px-3 py-2.5">
+                  <div className="text-[12px] font-semibold" style={{ color: "var(--warning)" }}>
+                    {str(item.objection)}
+                  </div>
+                  <div
+                    className="mt-1 text-[13px] leading-relaxed"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {str(item.response)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {close && (
+        <Block title="Close" accent="success">
+          {close}
+        </Block>
+      )}
+      {followUp && <Block title="Follow-up">{followUp}</Block>}
+    </div>
+  );
+}
+
+function AdCreativeOut({ o }: { o: Record<string, unknown> }) {
+  const platform = str(o.platform);
+  const variants = arr(o.variants);
+  const targeting = str(o.targeting_notes);
+  return (
+    <div className="space-y-3">
+      {platform && (
+        <div
+          className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em]"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            color: "var(--primary)",
+          }}
+        >
+          {platform}
+        </div>
+      )}
+      {variants.map((v, i) => {
+        const variant = typeof v === "object" && v ? (v as Record<string, unknown>) : {};
+        const headline = str(variant.headline);
+        const primaryText = str(variant.primary_text ?? variant.body);
+        const description = str(variant.description);
+        const cta = str(variant.cta);
+        const angle = str(variant.angle);
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-4 py-2.5"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              }}
+            >
+              <div
+                className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Variant {i + 1}
+              </div>
+              {angle && (
+                <span className="text-[11px] italic" style={{ color: "var(--muted-foreground)" }}>
+                  {angle}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2 p-4">
+              {headline && (
+                <div
+                  className="text-[14px] font-bold leading-tight"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {headline}
+                </div>
+              )}
+              {primaryText && (
+                <div
+                  className="whitespace-pre-wrap text-[13px] leading-relaxed"
+                  style={{ color: "color-mix(in oklab, var(--foreground) 85%, transparent)" }}
+                >
+                  {primaryText}
+                </div>
+              )}
+              {description && (
+                <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+                  {description}
+                </div>
+              )}
+              {cta && (
+                <div
+                  className="inline-flex items-center rounded-lg px-3 py-1 text-[12px] font-semibold"
+                  style={{
+                    background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+                    color: "var(--primary)",
+                  }}
+                >
+                  {cta}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {targeting && <Block title="Targeting notes">{targeting}</Block>}
+    </div>
+  );
+}
+
+function VslOut({ o }: { o: Record<string, unknown> }) {
+  const hook = str(o.hook);
+  const problem = str(o.problem_agitation);
+  const solution = str(o.solution_reveal);
+  const proof = str(o.proof_section);
+  const offerStack = str(o.offer_stack);
+  const guarantee = str(o.guarantee);
+  const close = str(o.close_and_cta);
+  const fullScript = str(o.full_script);
+  const minutes = o.estimated_minutes ? num(o.estimated_minutes, 0) : 0;
+  type VslSection = {
+    title: string;
+    content: string;
+    accent?: "primary" | "warning" | "success" | "destructive" | "accent";
+  };
+  const sections: VslSection[] = (
+    [
+      { title: "Hook", content: hook, accent: "primary" },
+      { title: "Problem agitation", content: problem, accent: "warning" },
+      { title: "Solution reveal", content: solution, accent: "success" },
+      { title: "Proof section", content: proof },
+      { title: "Offer stack", content: offerStack, accent: "accent" },
+      { title: "Guarantee", content: guarantee },
+      { title: "Close & CTA", content: close, accent: "primary" },
+    ] as VslSection[]
+  ).filter((s) => s.content);
+  return (
+    <div className="space-y-3">
+      {minutes > 0 && (
+        <div
+          className="rounded-xl p-3 text-center text-[13px] font-medium"
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            color: "var(--muted-foreground)",
+          }}
+        >
+          Estimated length:{" "}
+          <span style={{ color: "var(--foreground)", fontWeight: 600 }}>{minutes} minutes</span>
+        </div>
+      )}
+      {sections.map((s) => (
+        <Block key={s.title} title={s.title} accent={s.accent}>
+          <div className="whitespace-pre-wrap">{s.content}</div>
+        </Block>
+      ))}
+      {fullScript && (
+        <Block title="Full script">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullScript}</div>
+        </Block>
+      )}
+    </div>
+  );
+}
+
+function ColdEmailOut({ o }: { o: Record<string, unknown> }) {
+  const subjects = arr(o.subject_lines);
+  const emails = arr(o.emails);
+  const followUp = str(o.follow_up_template);
+  return (
+    <div className="space-y-3">
+      {subjects.length > 0 && (
+        <Block title="Subject lines" accent="primary">
+          <BulletList items={subjects} accent="primary" />
+        </Block>
+      )}
+      {emails.map((e, i) => {
+        const email = typeof e === "object" && e ? (e as Record<string, unknown>) : {};
+        const angle = str(email.angle);
+        const subject = str(email.subject);
+        const body = str(email.body ?? email.content);
+        const ps = str(email.ps_line ?? email.ps);
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="flex items-center justify-between px-4 py-2.5"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              }}
+            >
+              <div
+                className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Variant {i + 1}
+              </div>
+              {angle && (
+                <span className="text-[11px] italic" style={{ color: "var(--muted-foreground)" }}>
+                  {angle}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2 p-4">
+              {subject && (
+                <div className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
+                  Subject: {subject}
+                </div>
+              )}
+              {body && (
+                <div
+                  className="whitespace-pre-wrap text-[13px] leading-relaxed"
+                  style={{ color: "color-mix(in oklab, var(--foreground) 85%, transparent)" }}
+                >
+                  {body}
+                </div>
+              )}
+              {ps && (
+                <div className="text-[12px] italic" style={{ color: "var(--muted-foreground)" }}>
+                  P.S. {ps}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {followUp && <Block title="Follow-up template">{followUp}</Block>}
+    </div>
+  );
+}
+
+function NicheValidatorOut({ o }: { o: Record<string, unknown> }) {
+  const verdict = str(o.verdict);
+  const demandScore = num(o.demand_score ?? o.demand, 0);
+  const competitionScore = num(o.competition_score ?? o.competition, 0);
+  const monetisationScore = num(o.monetisation_score ?? o.monetisation, 0);
+  const overallScore = num(o.overall_score ?? o.score, 0);
+  const strengths = arr(o.strengths);
+  const risks = arr(o.risks);
+  const subNiches = arr(o.sub_niches);
+  const entry = str(o.recommended_entry);
+  const verdictColor =
+    verdict === "strong"
+      ? "var(--success)"
+      : verdict === "viable"
+        ? "var(--primary)"
+        : verdict === "risky"
+          ? "var(--warning)"
+          : "var(--destructive)";
+  return (
+    <div className="space-y-3">
+      {(overallScore > 0 || verdict) && (
+        <ScoreGauge
+          value={overallScore}
+          label={verdict ? `Verdict: ${verdict.toUpperCase()}` : "Overall score"}
+        />
+      )}
+      {(demandScore > 0 || competitionScore > 0 || monetisationScore > 0) && (
+        <div
+          className="grid grid-cols-3 gap-2 rounded-xl p-3"
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
+        >
+          {[
+            { label: "Demand", val: demandScore },
+            { label: "Competition", val: competitionScore },
+            { label: "Monetisation", val: monetisationScore },
+          ].map((s) => (
+            <div key={s.label} className="text-center">
+              <div
+                className="font-display text-[1.4rem] font-semibold tabular-nums"
+                style={{ color: verdictColor }}
+              >
+                {s.val}
+              </div>
+              <div
+                className="text-[10px] font-medium uppercase tracking-[0.08em]"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {strengths.length > 0 && (
+        <Block title="Strengths" accent="success">
+          <BulletList items={strengths} accent="success" />
+        </Block>
+      )}
+      {risks.length > 0 && (
+        <Block title="Risks" accent="warning">
+          <BulletList items={risks} accent="warning" />
+        </Block>
+      )}
+      {subNiches.length > 0 && (
+        <Block title="Sub-niches to explore" accent="primary">
+          <BulletList items={subNiches} accent="primary" />
+        </Block>
+      )}
+      {entry && <Block title="Recommended entry">{entry}</Block>}
+    </div>
+  );
+}
+
+function IcpOut({ o }: { o: Record<string, unknown> }) {
+  const primary = str(o.primary_icp);
+  const demographics =
+    typeof o.demographics === "object" && o.demographics
+      ? (o.demographics as Record<string, unknown>)
+      : null;
+  const psychographics =
+    typeof o.psychographics === "object" && o.psychographics
+      ? (o.psychographics as Record<string, unknown>)
+      : null;
+  const painPoints = arr(o.pain_points);
+  const goals = arr(o.goals);
+  const triggers = arr(o.buying_triggers);
+  const objections = arr(o.objections);
+  const whereToFind = arr(o.where_to_find_them);
+  const message = str(o.message_that_resonates);
+  return (
+    <div className="space-y-3">
+      {primary && (
+        <div
+          className="overflow-hidden rounded-xl p-5"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
+            style={{ color: "var(--primary)" }}
+          >
+            Primary ICP
+          </div>
+          <div
+            className="text-[14px] font-semibold leading-snug"
+            style={{ color: "var(--foreground)" }}
+          >
+            {primary}
+          </div>
+        </div>
+      )}
+      {demographics && (
+        <Block title="Demographics">
+          <div className="space-y-1">
+            {Object.entries(demographics).map(([k, v]) => (
+              <div key={k} className="flex gap-2">
+                <span
+                  className="w-28 shrink-0 text-[11px] font-medium capitalize"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {k.replace(/_/g, " ")}
+                </span>
+                <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
+                  {str(v)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Block>
+      )}
+      {psychographics && (
+        <Block title="Psychographics">
+          <div className="space-y-1">
+            {Object.entries(psychographics).map(([k, v]) => (
+              <div key={k} className="flex gap-2">
+                <span
+                  className="w-28 shrink-0 text-[11px] font-medium capitalize"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {k.replace(/_/g, " ")}
+                </span>
+                <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
+                  {str(v)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Block>
+      )}
+      {painPoints.length > 0 && (
+        <Block title="Pain points" accent="destructive">
+          <BulletList items={painPoints} accent="destructive" />
+        </Block>
+      )}
+      {goals.length > 0 && (
+        <Block title="Goals" accent="success">
+          <BulletList items={goals} accent="success" />
+        </Block>
+      )}
+      {triggers.length > 0 && (
+        <Block title="Buying triggers" accent="primary">
+          <BulletList items={triggers} accent="primary" />
+        </Block>
+      )}
+      {objections.length > 0 && (
+        <Block title="Objections" accent="warning">
+          <BulletList items={objections} accent="warning" />
+        </Block>
+      )}
+      {whereToFind.length > 0 && (
+        <Block title="Where to find them">
+          <BulletList items={whereToFind} accent="primary" />
+        </Block>
+      )}
+      {message && (
+        <Block title="Message that resonates" accent="accent">
+          {message}
+        </Block>
+      )}
+    </div>
+  );
+}
+
+function PitchDeckOut({ o }: { o: Record<string, unknown> }) {
+  const slides = arr(o.slides);
+  const elevatorPitch = str(o.elevator_pitch);
+  const oneLiner = str(o.one_line_summary ?? o.one_liner);
+  return (
+    <div className="space-y-3">
+      {oneLiner && (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1.5"
+            style={{ color: "var(--primary)" }}
+          >
+            One-liner
+          </div>
+          <div className="text-[14px] font-semibold" style={{ color: "var(--foreground)" }}>
+            {oneLiner}
+          </div>
+        </div>
+      )}
+      {elevatorPitch && <Block title="Elevator pitch">{elevatorPitch}</Block>}
+      {slides.map((s, i) => {
+        const slide = typeof s === "object" && s ? (s as Record<string, unknown>) : {};
+        const title = str(slide.title);
+        const points = arr(slide.key_points);
+        const notes = str(slide.speaker_notes);
+        const num2 = slide.slide_number != null ? String(slide.slide_number) : String(i + 1);
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="flex items-center gap-3 px-4 py-2.5"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              }}
+            >
+              <span
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                style={{
+                  background: "color-mix(in oklab, var(--primary) 15%, transparent)",
+                  color: "var(--primary)",
+                }}
+              >
+                {num2}
+              </span>
+              <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+                {title}
+              </div>
+            </div>
+            <div className="p-4 space-y-2">
+              {points.length > 0 && <BulletList items={points} accent="primary" />}
+              {notes && (
+                <div className="text-[11.5px] italic" style={{ color: "var(--muted-foreground)" }}>
+                  {notes}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LeadMagnetOut({ o }: { o: Record<string, unknown> }) {
+  const title = str(o.title);
+  const subtitle = str(o.subtitle);
+  const format = str(o.format);
+  const sections = arr(o.sections);
+  const optInHeadline = str(o.opt_in_headline);
+  const optInSubtext = str(o.opt_in_subtext);
+  const deliverySequence = arr(o.delivery_sequence);
+  return (
+    <div className="space-y-3">
+      {(title || subtitle) && (
+        <div
+          className="rounded-xl p-5"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          {format && (
+            <div
+              className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
+              style={{ color: "var(--primary)" }}
+            >
+              {format}
+            </div>
+          )}
+          {title && (
+            <div
+              className="text-[15px] font-bold leading-snug"
+              style={{ color: "var(--foreground)" }}
+            >
+              {title}
+            </div>
+          )}
+          {subtitle && (
+            <div className="mt-1 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+              {subtitle}
+            </div>
+          )}
+        </div>
+      )}
+      {sections.map((s, i) => {
+        const sec = typeof s === "object" && s ? (s as Record<string, unknown>) : {};
+        const heading = str(sec.heading);
+        const content = str(sec.content);
+        return (
+          <Block key={i} title={heading || `Section ${i + 1}`}>
+            <div className="whitespace-pre-wrap">{content}</div>
+          </Block>
+        );
+      })}
+      {(optInHeadline || optInSubtext) && (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            background: "color-mix(in oklab, var(--success) 6%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--success) 22%, transparent)",
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-2"
+            style={{ color: "var(--success)" }}
+          >
+            Opt-in copy
+          </div>
+          {optInHeadline && (
+            <div className="text-[14px] font-bold" style={{ color: "var(--foreground)" }}>
+              {optInHeadline}
+            </div>
+          )}
+          {optInSubtext && (
+            <div className="mt-1 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+              {optInSubtext}
+            </div>
+          )}
+        </div>
+      )}
+      {deliverySequence.length > 0 && (
+        <Block title="Delivery sequence" accent="primary">
+          <BulletList items={deliverySequence} accent="primary" />
+        </Block>
+      )}
+    </div>
+  );
+}
+
+function AutomationOut({ o }: { o: Record<string, unknown> }) {
+  const name = str(o.workflow_name ?? o.name);
+  const trigger = str(o.trigger);
+  const steps = arr(o.steps);
+  const integrations = arr(o.integrations_needed ?? o.integrations);
+  const timeSaved = str(o.time_saved_per_week);
+  const effort = str(o.implementation_effort);
+  const effortColor =
+    effort === "low"
+      ? "var(--success)"
+      : effort === "medium"
+        ? "var(--warning)"
+        : "var(--destructive)";
+  return (
+    <div className="space-y-3">
+      {name && (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1"
+            style={{ color: "var(--primary)" }}
+          >
+            Workflow
+          </div>
+          <div className="text-[14px] font-semibold" style={{ color: "var(--foreground)" }}>
+            {name}
+          </div>
+        </div>
+      )}
+      {(timeSaved || effort) && (
+        <div className="grid grid-cols-2 gap-2">
+          {timeSaved && (
+            <div
+              className="rounded-xl p-3 text-center"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+              }}
+            >
+              <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Time saved/week
+              </div>
+              <div className="text-[14px] font-bold" style={{ color: "var(--success)" }}>
+                {timeSaved}
+              </div>
+            </div>
+          )}
+          {effort && (
+            <div
+              className="rounded-xl p-3 text-center"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+              }}
+            >
+              <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Effort
+              </div>
+              <div className="text-[14px] font-bold capitalize" style={{ color: effortColor }}>
+                {effort}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {trigger && <Block title="Trigger">{trigger}</Block>}
+      {steps.length > 0 && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
+        >
+          <div
+            className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            Steps
+          </div>
+          <div
+            className="divide-y"
+            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
+          >
+            {steps.map((s, i) => {
+              const step = typeof s === "object" && s ? (s as Record<string, unknown>) : {};
+              const action = str(step.action ?? step.step ?? s);
+              const tool2 = str(step.tool);
+              const notes = str(step.notes);
+              return (
+                <div key={i} className="flex gap-3 px-4 py-2.5">
+                  <span
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                    style={{
+                      background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-[13px]" style={{ color: "var(--foreground)" }}>
+                      {action}
+                    </div>
+                    {tool2 && (
+                      <div className="text-[11px] font-medium" style={{ color: "var(--primary)" }}>
+                        {tool2}
+                      </div>
+                    )}
+                    {notes && (
+                      <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                        {notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {integrations.length > 0 && (
+        <Block title="Integrations needed">
+          <div className="flex flex-wrap gap-1.5">
+            {integrations.map((int, i) => (
+              <span
+                key={i}
+                className="rounded-full px-2.5 py-0.5 text-[11.5px] font-medium"
+                style={{
+                  background: "color-mix(in oklab, var(--primary) 10%, transparent)",
+                  border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+                  color: "var(--primary)",
+                }}
+              >
+                {typeof int === "string" ? int : str(int)}
+              </span>
+            ))}
+          </div>
+        </Block>
+      )}
+    </div>
+  );
+}
+
+function ClientReportOut({ o }: { o: Record<string, unknown> }) {
+  const title = str(o.report_title ?? o.title);
+  const period = str(o.period);
+  const summary = str(o.executive_summary ?? o.summary);
+  const metrics = arr(o.key_metrics ?? o.metrics);
+  const wins = arr(o.wins);
+  const improvements = arr(o.improvements);
+  const nextSteps = arr(o.next_steps);
+  return (
+    <div className="space-y-3">
+      {(title || period) && (
+        <div
+          className="rounded-xl p-5"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+            borderLeft: "3px solid var(--primary)",
+          }}
+        >
+          {period && (
+            <div
+              className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1"
+              style={{ color: "var(--primary)" }}
+            >
+              {period}
+            </div>
+          )}
+          {title && (
+            <div className="text-[15px] font-bold" style={{ color: "var(--foreground)" }}>
+              {title}
+            </div>
+          )}
+        </div>
+      )}
+      {summary && <Block title="Executive summary">{summary}</Block>}
+      {metrics.length > 0 && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
+        >
+          <div
+            className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            Key metrics
+          </div>
+          <div
+            className="divide-y p-1"
+            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
+          >
+            {metrics.map((m, i) => {
+              const metric = typeof m === "object" && m ? (m as Record<string, unknown>) : {};
+              const name = str(metric.name ?? metric.metric ?? m);
+              const value = str(metric.value ?? metric.result);
+              const change = str(metric.change ?? metric.delta);
+              return (
+                <div key={i} className="flex items-center justify-between px-3 py-2">
+                  <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
+                    {name}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {value && (
+                      <span
+                        className="font-mono text-[13px] font-semibold"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        {value}
+                      </span>
+                    )}
+                    {change && (
+                      <span
+                        className="text-[11px]"
+                        style={{
+                          color: change.startsWith("-") ? "var(--destructive)" : "var(--success)",
+                        }}
+                      >
+                        {change}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {wins.length > 0 && (
+        <Block title="Wins this period" accent="success">
+          <BulletList items={wins} accent="success" />
+        </Block>
+      )}
+      {improvements.length > 0 && (
+        <Block title="Areas for improvement" accent="warning">
+          <BulletList items={improvements} accent="warning" />
+        </Block>
+      )}
+      {nextSteps.length > 0 && (
+        <Block title="Next steps" accent="primary">
+          <BulletList items={nextSteps} accent="primary" />
+        </Block>
       )}
     </div>
   );

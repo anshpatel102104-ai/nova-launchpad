@@ -30,6 +30,749 @@ import { PaywallModal } from "@/components/app/PaywallModal";
 import { runTool } from "@/lib/runTool";
 import { useOwnerMode } from "@/lib/ownerMode";
 
+/* ─── Per-tool field config ──────────────────────────────────────────────── */
+type FieldType = "text" | "textarea" | "select" | "number";
+type FieldDef = {
+  key: string;
+  label: string;
+  hint?: string;
+  placeholder?: string;
+  type: FieldType;
+  options?: string[];
+  required?: boolean;
+};
+
+const TOOL_FIELDS: Record<string, FieldDef[]> = {
+  "idea-validator": [
+    {
+      key: "idea",
+      label: "Business idea",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe your idea, who it's for, and the core problem it solves.",
+    },
+    {
+      key: "targetMarket",
+      label: "Target market",
+      type: "text",
+      placeholder: "e.g. B2B SaaS founders, SMB operators, US market",
+    },
+    {
+      key: "problem",
+      label: "Problem being solved",
+      type: "textarea",
+      placeholder: "What specific pain does this address? What's broken today?",
+    },
+  ],
+  "pitch-generator": [
+    {
+      key: "startupName",
+      label: "Startup / product name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+    {
+      key: "idea",
+      label: "What you do",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe your product, who it's for, and the core value prop.",
+    },
+    {
+      key: "targetMarket",
+      label: "Target market",
+      type: "text",
+      placeholder: "e.g. SaaS founders, healthcare executives",
+    },
+    {
+      key: "traction",
+      label: "Traction",
+      type: "text",
+      placeholder: "e.g. $10k MRR, 200 waitlist signups, or pre-launch",
+    },
+  ],
+  "gtm-strategy": [
+    {
+      key: "product",
+      label: "Product / offer",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe what you're selling and the transformation it delivers.",
+    },
+    {
+      key: "targetCustomer",
+      label: "Target customer",
+      type: "text",
+      required: true,
+      placeholder: "e.g. B2B SaaS companies with 10-100 employees",
+    },
+    {
+      key: "budget",
+      label: "Launch budget",
+      type: "text",
+      placeholder: "e.g. $5k/month, bootstrap, or pre-revenue",
+    },
+    {
+      key: "timeline",
+      label: "Timeline",
+      type: "text",
+      placeholder: "e.g. 90 days, 6 months",
+    },
+  ],
+  offer: [
+    {
+      key: "product",
+      label: "Product / service",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe the transformation you deliver to customers.",
+    },
+    {
+      key: "targetCustomer",
+      label: "Target customer",
+      type: "text",
+      required: true,
+      placeholder: "e.g. E-commerce founders doing $1M+/year",
+    },
+    {
+      key: "pricePoint",
+      label: "Price point",
+      type: "text",
+      placeholder: "e.g. $2,500/month, $10k one-time, or unknown",
+    },
+  ],
+  "ops-plan": [
+    {
+      key: "business",
+      label: "Business description",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe your business model, team size, and current operations.",
+    },
+    { key: "team_size", label: "Team size", type: "text", placeholder: "e.g. solo, 3, 12" },
+    {
+      key: "pains",
+      label: "Operational bottlenecks",
+      type: "textarea",
+      placeholder: "Where are you losing time, money, or clients today?",
+    },
+  ],
+  followup: [
+    {
+      key: "context",
+      label: "Lead context",
+      type: "textarea",
+      required: true,
+      placeholder: "Who is the lead? What did they express interest in? Last interaction?",
+    },
+    {
+      key: "goal",
+      label: "Goal",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Book a discovery call, close the deal, re-engage",
+    },
+    {
+      key: "channels",
+      label: "Channels",
+      type: "text",
+      placeholder: "e.g. email, LinkedIn, phone",
+    },
+  ],
+  "website-audit": [
+    {
+      key: "url",
+      label: "Website URL",
+      type: "text",
+      required: true,
+      placeholder: "https://yourwebsite.com",
+      hint: "Must be a live public URL — we'll fetch and analyze it.",
+    },
+  ],
+  "kill-my-idea": [
+    {
+      key: "idea",
+      label: "Startup idea",
+      type: "textarea",
+      required: true,
+      placeholder:
+        "Describe your idea — what it does, who it's for, the model, and why you think it'll work.",
+    },
+    {
+      key: "assumptions",
+      label: "Key assumptions",
+      type: "textarea",
+      placeholder: "What are you assuming about customers, market size, or competition?",
+    },
+  ],
+  "funding-score": [
+    {
+      key: "startupName",
+      label: "Startup name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+    {
+      key: "stage",
+      label: "Stage",
+      type: "select",
+      options: ["Pre-idea", "Pre-launch", "Pre-seed", "Seed", "Series A", "Series B+"],
+      required: true,
+    },
+    {
+      key: "traction",
+      label: "Traction & metrics",
+      type: "textarea",
+      placeholder: "MRR, users, growth rate, notable wins",
+    },
+    {
+      key: "team",
+      label: "Team description",
+      type: "text",
+      placeholder: "e.g. Solo technical founder, 2 ex-Google engineers",
+    },
+    {
+      key: "revenue",
+      label: "Current revenue",
+      type: "text",
+      placeholder: "e.g. $0, $8k MRR, $250k ARR",
+    },
+  ],
+  "first-10-customers": [
+    {
+      key: "product",
+      label: "Product / service",
+      type: "textarea",
+      required: true,
+      placeholder: "What are you selling? What transformation does it deliver?",
+    },
+    {
+      key: "targetCustomer",
+      label: "Target customer",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Freelance designers, DTC brand founders",
+    },
+    {
+      key: "price",
+      label: "Price",
+      type: "text",
+      placeholder: "e.g. $500/month, $2,500 one-time",
+    },
+    {
+      key: "channels",
+      label: "Available channels",
+      type: "text",
+      placeholder: "e.g. LinkedIn, cold email, personal network, Twitter",
+    },
+  ],
+  "business-plan": [
+    {
+      key: "startupName",
+      label: "Business name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+    {
+      key: "idea",
+      label: "Business description",
+      type: "textarea",
+      required: true,
+      placeholder: "What does the business do, who does it serve, and what is the model?",
+    },
+    {
+      key: "revenueModel",
+      label: "Revenue model",
+      type: "text",
+      required: true,
+      placeholder: "e.g. SaaS subscription, consulting retainer, transaction fees",
+    },
+    {
+      key: "targetMarket",
+      label: "Target market",
+      type: "text",
+      required: true,
+      placeholder: "e.g. SMBs in the US, enterprise software teams",
+    },
+  ],
+  "investor-emails": [
+    {
+      key: "startupName",
+      label: "Startup name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+    {
+      key: "pitch",
+      label: "Pitch summary",
+      type: "textarea",
+      required: true,
+      placeholder: "What does your company do? What's the traction? Why now?",
+    },
+    {
+      key: "traction",
+      label: "Traction",
+      type: "text",
+      placeholder: "e.g. $25k MRR, 1,200 users, pilot with Fortune 500",
+    },
+    {
+      key: "ask",
+      label: "Ask",
+      type: "text",
+      placeholder: "e.g. $750k pre-seed, SAFE at $5M cap",
+    },
+  ],
+  "idea-vs-idea": [
+    {
+      key: "ideaA",
+      label: "Idea A",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe the first idea — what it does, the market, the model.",
+    },
+    {
+      key: "ideaB",
+      label: "Idea B",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe the second idea — what it does, the market, the model.",
+    },
+    {
+      key: "founderContext",
+      label: "Your background",
+      type: "text",
+      placeholder: "e.g. Ex-SaaS operator, no-code background, 2 years in sales",
+    },
+  ],
+  "landing-page": [
+    {
+      key: "product",
+      label: "Product / offer",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe what you're selling and the transformation it delivers.",
+    },
+    {
+      key: "targetCustomer",
+      label: "Target customer",
+      type: "text",
+      required: true,
+      placeholder: "e.g. B2B founders, solo consultants, DTC brands",
+    },
+    {
+      key: "mainBenefit",
+      label: "Core benefit",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Cut churn by 30% without a single sales call",
+    },
+    {
+      key: "tone",
+      label: "Tone",
+      type: "select",
+      options: ["Professional", "Conversational", "Bold / Hype", "Minimalist", "Educational"],
+    },
+  ],
+  competitor: [
+    {
+      key: "product",
+      label: "Your product",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe what you offer and who it's for.",
+    },
+    {
+      key: "competitors",
+      label: "Competitors",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Notion, Asana, Monday.com — comma-separated",
+    },
+    {
+      key: "differentiator",
+      label: "Your differentiation",
+      type: "text",
+      placeholder: "What do you do that no one else does?",
+    },
+  ],
+  pricing: [
+    {
+      key: "product",
+      label: "Product / service",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe your offer and the value delivered.",
+    },
+    {
+      key: "targetCustomer",
+      label: "Target customer",
+      type: "text",
+      required: true,
+      placeholder: "e.g. SMB operators, enterprise teams",
+    },
+    {
+      key: "currentPricing",
+      label: "Current pricing",
+      type: "text",
+      placeholder: "e.g. $99/month, $5k project fee, or none yet",
+    },
+    {
+      key: "revenueGoal",
+      label: "Revenue goal",
+      type: "text",
+      placeholder: "e.g. $10k MRR in 90 days, $500k ARR",
+    },
+  ],
+  "revenue-projector": [
+    {
+      key: "product",
+      label: "Product / service",
+      type: "text",
+      required: true,
+      placeholder: "What are you selling?",
+    },
+    {
+      key: "currentMrr",
+      label: "Current MRR",
+      type: "text",
+      placeholder: "e.g. $0, $5,000, $25,000",
+    },
+    {
+      key: "avgDealSize",
+      label: "Avg deal / contract size",
+      type: "text",
+      placeholder: "e.g. $500/month, $10k one-time",
+    },
+    {
+      key: "growthLever",
+      label: "Primary growth lever",
+      type: "text",
+      required: true,
+      placeholder: "e.g. cold outbound, paid ads, content + SEO",
+    },
+  ],
+  blog: [
+    {
+      key: "topic",
+      label: "Topic",
+      type: "textarea",
+      required: true,
+      placeholder: "What is the blog post about? Be specific about the angle.",
+    },
+    {
+      key: "primary_keyword",
+      label: "Primary SEO keyword",
+      type: "text",
+      placeholder: "e.g. 'founder operating system' or 'how to find first customers'",
+    },
+    {
+      key: "audience",
+      label: "Target audience",
+      type: "text",
+      placeholder: "e.g. early-stage founders, SaaS growth teams",
+    },
+  ],
+  social: [
+    {
+      key: "platform",
+      label: "Platform",
+      type: "select",
+      options: ["LinkedIn", "Twitter/X", "Instagram", "TikTok"],
+      required: true,
+    },
+    {
+      key: "topic",
+      label: "Content topic",
+      type: "textarea",
+      required: true,
+      placeholder: "What do you want to post about? Include context, angle, or hook ideas.",
+    },
+    {
+      key: "cta",
+      label: "Call to action",
+      type: "text",
+      placeholder: "e.g. Comment below, DM me, link in bio",
+    },
+    {
+      key: "tone",
+      label: "Tone",
+      type: "select",
+      options: ["Professional", "Casual", "Bold", "Educational", "Storytelling"],
+    },
+  ],
+  "email-sequence": [
+    {
+      key: "sequence_type",
+      label: "Sequence type",
+      type: "select",
+      options: ["Nurture", "Onboarding", "Re-engagement", "Promotional", "Cold outreach"],
+      required: true,
+    },
+    {
+      key: "topic",
+      label: "Topic / product",
+      type: "textarea",
+      required: true,
+      placeholder: "What is the sequence about? What transformation does it lead to?",
+    },
+    {
+      key: "email_count",
+      label: "Number of emails",
+      type: "number",
+      placeholder: "5",
+    },
+    {
+      key: "audience",
+      label: "Audience",
+      type: "text",
+      placeholder: "e.g. trial users, cold prospects, churned customers",
+    },
+  ],
+  "sales-script": [
+    {
+      key: "script_type",
+      label: "Script type",
+      type: "select",
+      options: ["Discovery call", "Demo", "Close", "Objection handling", "Follow-up call"],
+      required: true,
+    },
+    {
+      key: "scenario_notes",
+      label: "Scenario notes",
+      type: "textarea",
+      required: true,
+      placeholder:
+        "Describe the product, the deal size, typical objections, and your unique value prop.",
+    },
+  ],
+  "ad-creative": [
+    {
+      key: "offer",
+      label: "Offer description",
+      type: "textarea",
+      required: true,
+      placeholder: "What are you promoting? What's the CTA and the core value prop?",
+    },
+    {
+      key: "audience_pain",
+      label: "Audience pain point",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Spending 10 hours a week on manual reporting",
+    },
+    {
+      key: "platform",
+      label: "Platform",
+      type: "select",
+      options: ["Meta (Facebook/Instagram)", "Google", "LinkedIn", "TikTok"],
+      required: true,
+    },
+  ],
+  vsl: [
+    {
+      key: "product_summary",
+      label: "Product summary",
+      type: "textarea",
+      required: true,
+      placeholder: "What does your product do? Who is it for? What's the transformation?",
+    },
+    {
+      key: "length_minutes",
+      label: "Target length (minutes)",
+      type: "number",
+      placeholder: "10",
+    },
+  ],
+  "cold-email": [
+    {
+      key: "icp",
+      label: "ICP description",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe who you're emailing — industry, role, company size, pain points.",
+    },
+    {
+      key: "offer",
+      label: "Offer / value prop",
+      type: "text",
+      required: true,
+      placeholder: "What are you offering and what outcome do they get?",
+    },
+    {
+      key: "sender_name",
+      label: "Your name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Alex Chen",
+    },
+    {
+      key: "sender_company",
+      label: "Your company",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+  ],
+  "niche-validator": [
+    {
+      key: "niche_idea",
+      label: "Niche idea",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe the niche — what it is, who's in it, how it monetizes.",
+    },
+    {
+      key: "geography",
+      label: "Geography",
+      type: "text",
+      placeholder: "e.g. US, EU, global, Southeast Asia",
+    },
+  ],
+  icp: [
+    {
+      key: "niche",
+      label: "Niche / market",
+      type: "text",
+      required: true,
+      placeholder: "e.g. B2B SaaS, DTC e-commerce, professional services",
+    },
+    {
+      key: "offer",
+      label: "Offer description",
+      type: "textarea",
+      required: true,
+      placeholder: "What do you sell and what transformation does it deliver?",
+    },
+    {
+      key: "current_customer_examples",
+      label: "Current customer examples",
+      type: "text",
+      placeholder: "e.g. 3 e-commerce brands doing $500k+ annual revenue",
+    },
+  ],
+  "pitch-deck": [
+    {
+      key: "company_name",
+      label: "Company name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Northwind Labs",
+    },
+    {
+      key: "problem",
+      label: "Problem",
+      type: "textarea",
+      required: true,
+      placeholder: "What critical problem are you solving? Why does it matter?",
+    },
+    {
+      key: "solution",
+      label: "Solution",
+      type: "textarea",
+      required: true,
+      placeholder: "How do you solve it? What's the unique insight behind your approach?",
+    },
+    {
+      key: "traction",
+      label: "Traction",
+      type: "text",
+      placeholder: "e.g. $50k ARR, 500 users, 3 enterprise pilots",
+    },
+    {
+      key: "ask_amount",
+      label: "Ask amount",
+      type: "text",
+      placeholder: "e.g. $1.5M seed, $500k pre-seed SAFE",
+    },
+    {
+      key: "deck_type",
+      label: "Deck type",
+      type: "select",
+      options: ["Seed", "Series A", "Client pitch", "Demo day"],
+    },
+  ],
+  "lead-magnet": [
+    {
+      key: "niche",
+      label: "Niche",
+      type: "text",
+      required: true,
+      placeholder: "e.g. SaaS founders, freelance designers",
+    },
+    {
+      key: "icp_pain_point",
+      label: "ICP pain point",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Can't convert trial users to paid",
+    },
+    {
+      key: "format",
+      label: "Format",
+      type: "select",
+      options: ["PDF guide", "Checklist", "Email course", "Template", "Webinar", "Video series"],
+    },
+  ],
+  automation: [
+    {
+      key: "process_description",
+      label: "Process to automate",
+      type: "textarea",
+      required: true,
+      placeholder: "Describe the manual workflow — the steps, triggers, and what it produces.",
+    },
+    {
+      key: "integrations",
+      label: "Tools / integrations",
+      type: "text",
+      placeholder: "e.g. HubSpot, Notion, Slack, Gmail, Zapier",
+    },
+  ],
+  "client-report": [
+    {
+      key: "client_id",
+      label: "Client name",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Acme Corp, Johnson & Associates",
+    },
+    {
+      key: "period_label",
+      label: "Reporting period",
+      type: "text",
+      placeholder: "e.g. May 2026, Q2 2026",
+    },
+  ],
+};
+
+/* Build the backend payload from per-tool fields */
+function buildPayload(fields: Record<string, string>, title: string): Record<string, unknown> {
+  // All field keys map directly to backend field names
+  const payload: Record<string, unknown> = { ...fields, title };
+  // Legacy aliases so the edge function fallbacks always find something
+  const primaryText =
+    fields.idea ||
+    fields.product ||
+    fields.topic ||
+    fields.context ||
+    fields.niche_idea ||
+    fields.process_description ||
+    fields.product_summary ||
+    "";
+  if (!payload.idea) payload.idea = primaryText;
+  if (!payload.context) payload.context = primaryText;
+  if (!payload.business) payload.business = title || primaryText;
+  if (!payload.url && fields.url) payload.url = fields.url;
+  if (!payload.offer && fields.offer) payload.offer = fields.offer;
+  if (!payload.goal) payload.goal = fields.goal || "";
+  if (!payload.target) payload.target = fields.targetCustomer || title || "";
+  return payload;
+}
+
 type Search = { context?: string; title?: string };
 
 export const Route = createFileRoute("/app/launchpad/$tool")({
@@ -67,7 +810,7 @@ function ToolPage() {
   const [runId, setRunId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [title, setTitle] = useState("");
-  const [context, setContext] = useState("");
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [draftRestored, setDraftRestored] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
 
@@ -79,7 +822,6 @@ function ToolPage() {
   const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
   const isToolLocked = !isOwner && !!currentEnt && !currentEnt.allowed_tools.includes(tool.toolKey);
 
-  // Find the lowest plan that grants access to this tool
   const requiredPlan = isToolLocked
     ? (["launch", "operate", "scale"] as const).find((p) =>
         plansQ.data?.find((e) => e.plan === p)?.allowed_tools.includes(tool.toolKey),
@@ -89,6 +831,12 @@ function ToolPage() {
   const effectiveWired = isOwner ? true : tool.wired;
   const effectiveToolKey = tool.toolKey || (isOwner ? tool.key : "");
 
+  const toolFieldDefs = TOOL_FIELDS[tool.key];
+
+  // Derive a primary context string for legacy compat / char count
+  const primaryFieldValue =
+    fields[toolFieldDefs?.[0]?.key ?? ""] || fields.idea || fields.context || "";
+
   useEffect(() => {
     setOutput(null);
     setRunId(null);
@@ -96,24 +844,33 @@ function ToolPage() {
     setDraftRestored(false);
     if (search?.context || search?.title) {
       setTitle(search.title ?? "");
-      setContext(search.context ?? "");
+      // Pre-fill the primary field with the URL context param
+      const primary = toolFieldDefs?.[0]?.key ?? "context";
+      setFields(search.context ? { [primary]: search.context } : {});
       return;
     }
     const draft = loadDraft(currentOrgId, tool.key);
     if (draft) {
       setTitle(draft.title ?? "");
-      setContext(draft.context ?? "");
-      if ((draft.title?.length ?? 0) + (draft.context?.length ?? 0) > 0) {
+      if (draft.fields && Object.keys(draft.fields).length > 0) {
+        setFields(draft.fields);
         setDraftRestored(true);
+      } else if (draft.context) {
+        // Backward compat: put old context into primary field
+        const primary = toolFieldDefs?.[0]?.key ?? "context";
+        setFields({ [primary]: draft.context });
+        setDraftRestored(true);
+      } else {
+        setFields({});
       }
     } else {
       setTitle("");
-      setContext("");
+      setFields({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tool.key, currentOrgId]);
 
-  const savedAt = useDraftAutosave(currentOrgId, tool.key, { title, context });
+  const savedAt = useDraftAutosave(currentOrgId, tool.key, { title, fields });
   const savedLabel = draftRestored ? "Draft restored" : formatSavedAgo(savedAt);
 
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 50), enabled: !!currentOrgId });
@@ -136,6 +893,13 @@ function ToolPage() {
     !isOwner && isFreeStarter && isIdeaValidator && ideaValidatorRuns >= 3;
   const isPastDue = !isOwner && subQ.data?.status === "past_due";
 
+  // Determine whether required fields are filled
+  const formValid = toolFieldDefs
+    ? toolFieldDefs.filter((f) => f.required).every((f) => (fields[f.key] ?? "").trim().length > 0)
+    : primaryFieldValue.trim().length > 0;
+
+  const setField = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
+
   const handleGenerate = async () => {
     if (blockIfGuest("Sign up to run AI tools and unlock real outputs.")) return;
     if (!effectiveWired) {
@@ -146,8 +910,8 @@ function ToolPage() {
       toast.error("Payment failed — update your card in Billing to keep using AI tools.");
       return;
     }
-    if (!context.trim()) {
-      toast.error("Add some context first.");
+    if (!formValid) {
+      toast.error("Fill in the required fields first.");
       return;
     }
     if (ideaValidatorBlocked || isToolLocked) {
@@ -160,16 +924,7 @@ function ToolPage() {
     setRunId(null);
     setFeedback(null);
     try {
-      const payload: Record<string, unknown> = {
-        idea: context,
-        business: title || context,
-        target: title,
-        context,
-        goal: context,
-        offer: context,
-        url: context,
-        title,
-      };
+      const payload = buildPayload(fields, title);
       const result = await runTool(
         effectiveToolKey,
         payload,
@@ -215,7 +970,6 @@ function ToolPage() {
     setFeedback(v);
     if (!runId) return;
     try {
-      // Update only the dedicated feedback columns — never overwrite the output JSONB
       await supabase
         .from("tool_runs")
         .update({ feedback: v, feedback_at: new Date().toISOString() })
@@ -348,27 +1102,28 @@ function ToolPage() {
       {/* 60/40 workspace */}
       <div className="grid gap-5 lg:grid-cols-5">
         {/* LEFT — inputs */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="space-y-4 lg:col-span-3">
           <div
             className="overflow-hidden rounded-2xl"
             style={{
               background: "var(--surface)",
-              border: "1px solid rgba(59,130,246,0.15)",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.05)",
+              border: "1px solid color-mix(in oklab, var(--primary) 18%, transparent)",
+              boxShadow:
+                "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px color-mix(in oklab, var(--primary) 6%, transparent)",
             }}
           >
             <div
               className="h-px"
               style={{
                 background:
-                  "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.3), transparent)",
+                  "linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 55%, transparent), color-mix(in oklab, var(--accent) 30%, transparent), transparent)",
               }}
             />
             <div
               className="flex items-center justify-between px-5 py-3"
               style={{
-                borderBottom: "1px solid rgba(59,130,246,0.1)",
-                background: "rgba(59,130,246,0.03)",
+                borderBottom: "1px solid color-mix(in oklab, var(--primary) 10%, transparent)",
+                background: "color-mix(in oklab, var(--primary) 3%, transparent)",
               }}
             >
               <div
@@ -385,9 +1140,10 @@ function ToolPage() {
             </div>
 
             <div className="space-y-5 px-5 py-5">
+              {/* Run identity */}
               <Section
-                label="Identity"
-                hint="Give this run a memorable name. Used as the asset title."
+                label="Run name"
+                hint="Give this run a memorable name — used as the asset title."
               >
                 <Input
                   placeholder="e.g. Northwind Labs — initial launch"
@@ -401,49 +1157,131 @@ function ToolPage() {
                 />
               </Section>
 
-              <Section
-                label="Context"
-                hint="Be specific about your idea, audience, and the outcome you want."
-              >
-                <Textarea
-                  rows={9}
-                  placeholder={placeholderFor(tool.key)}
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  className="rounded-xl resize-none"
-                  style={{
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                  }}
-                />
-                <div
-                  className="mt-1.5 flex items-center justify-between text-[11px]"
-                  style={{ color: "var(--muted-foreground)" }}
+              {/* Per-tool fields */}
+              {toolFieldDefs ? (
+                toolFieldDefs.map((f) => (
+                  <Section
+                    key={f.key}
+                    label={f.label + (f.required ? "" : " (optional)")}
+                    hint={f.hint}
+                  >
+                    {f.type === "textarea" ? (
+                      <>
+                        <Textarea
+                          rows={f.key === "ideaA" || f.key === "ideaB" ? 5 : 7}
+                          placeholder={f.placeholder}
+                          value={fields[f.key] ?? ""}
+                          onChange={(e) => setField(f.key, e.target.value)}
+                          className="resize-none rounded-xl"
+                          style={{
+                            background: "var(--surface-2)",
+                            border: "1px solid var(--border)",
+                          }}
+                        />
+                        <div
+                          className="mt-1 text-right text-[10.5px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          {(fields[f.key] ?? "").length} chars
+                        </div>
+                      </>
+                    ) : f.type === "select" ? (
+                      <select
+                        value={fields[f.key] ?? ""}
+                        onChange={(e) => setField(f.key, e.target.value)}
+                        className="w-full rounded-xl px-3 py-2 text-[13.5px] outline-none transition"
+                        style={{
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                          color: fields[f.key] ? "var(--foreground)" : "var(--muted-foreground)",
+                        }}
+                      >
+                        <option value="">Select {f.label.toLowerCase()}…</option>
+                        {f.options?.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    ) : f.type === "number" ? (
+                      <Input
+                        type="number"
+                        placeholder={f.placeholder}
+                        value={fields[f.key] ?? ""}
+                        onChange={(e) => setField(f.key, e.target.value)}
+                        min={1}
+                        max={100}
+                        className="rounded-xl"
+                        style={{
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                        }}
+                      />
+                    ) : (
+                      <Input
+                        placeholder={f.placeholder}
+                        value={fields[f.key] ?? ""}
+                        onChange={(e) => setField(f.key, e.target.value)}
+                        className="rounded-xl"
+                        style={{
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                        }}
+                      />
+                    )}
+                  </Section>
+                ))
+              ) : (
+                /* Fallback generic context field for any tool without a config */
+                <Section
+                  label="Context"
+                  hint="Be specific about your idea, audience, and the outcome you want."
                 >
-                  <span>{context.length} characters</span>
-                  {context && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setContext("");
-                        setTitle("");
-                        clearDraft(currentOrgId, tool.key);
-                      }}
-                      className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
-                    >
-                      <RotateCcw className="h-3 w-3" /> Clear
-                    </button>
-                  )}
+                  <Textarea
+                    rows={9}
+                    placeholder="Describe your business, audience, and goal. The more specific, the better the output."
+                    value={fields.context ?? ""}
+                    onChange={(e) => setField("context", e.target.value)}
+                    className="resize-none rounded-xl"
+                    style={{
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                  <div
+                    className="mt-1.5 flex items-center justify-between text-[11px]"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    <span>{(fields.context ?? "").length} characters</span>
+                  </div>
+                </Section>
+              )}
+
+              {/* Clear + char count row */}
+              {primaryFieldValue && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFields({});
+                      setTitle("");
+                      clearDraft(currentOrgId, tool.key);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11.5px] transition-colors hover:text-foreground"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    <RotateCcw className="h-3 w-3" /> Clear all
+                  </button>
                 </div>
-              </Section>
+              )}
 
               <button
                 onClick={handleGenerate}
-                disabled={generating || !context || !effectiveWired}
+                disabled={generating || !formValid || !effectiveWired}
                 className={cn(
-                  "relative w-full h-11 rounded-xl text-[13.5px] font-semibold transition-all duration-200",
+                  "relative h-11 w-full rounded-xl text-[13.5px] font-semibold transition-all duration-200",
                   "flex items-center justify-center gap-2 overflow-hidden",
-                  (generating || !context || !effectiveWired) && "opacity-50 cursor-not-allowed",
+                  (generating || !formValid || !effectiveWired) && "cursor-not-allowed opacity-50",
                 )}
                 style={{
                   background: "linear-gradient(135deg, var(--primary), var(--accent))",
@@ -452,7 +1290,7 @@ function ToolPage() {
                     "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
                 }}
                 onMouseEnter={(e: React.MouseEvent) => {
-                  if (!generating && context && effectiveWired) {
+                  if (!generating && formValid && effectiveWired) {
                     (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
                     (e.currentTarget as HTMLElement).style.boxShadow =
                       "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
@@ -524,7 +1362,7 @@ function ToolPage() {
               className="overflow-hidden rounded-2xl"
               style={{
                 background: "var(--surface)",
-                border: "1px solid rgba(59,130,246,0.12)",
+                border: "1px solid color-mix(in oklab, var(--border) 80%, transparent)",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
               }}
             >
@@ -553,11 +1391,11 @@ function ToolPage() {
                 <div className="space-y-px px-5 py-3">
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="flex items-center justify-between py-2.5">
-                      <div className="space-y-1.5 min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 space-y-1.5">
                         <Skeleton className="h-3 w-3/5 rounded" />
                         <Skeleton className="h-2.5 w-2/5 rounded" />
                       </div>
-                      <Skeleton className="h-3 w-3 rounded shrink-0 ml-4" />
+                      <Skeleton className="ml-4 h-3 w-3 shrink-0 rounded" />
                     </div>
                   ))}
                 </div>
@@ -580,7 +1418,6 @@ function ToolPage() {
                         const out = (r.output ?? null) as Record<string, unknown> | null;
                         setOutput(out);
                         setRunId(r.id);
-                        // Read feedback from dedicated columns added by migration
                         const fb = (r as Record<string, unknown>).feedback as string | undefined;
                         setFeedback(fb === "up" ? "up" : fb === "down" ? "down" : null);
                       }}
@@ -625,22 +1462,23 @@ function ToolPage() {
             style={{
               top: "72px",
               background: "var(--surface)",
-              border: "1px solid rgba(139,92,246,0.15)",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.05)",
+              border: "1px solid color-mix(in oklab, var(--accent) 18%, transparent)",
+              boxShadow:
+                "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px color-mix(in oklab, var(--accent) 6%, transparent)",
             }}
           >
             <div
               className="h-px"
               style={{
                 background:
-                  "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(59,130,246,0.3), transparent)",
+                  "linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 55%, transparent), color-mix(in oklab, var(--primary) 30%, transparent), transparent)",
               }}
             />
             <div
               className="px-5 py-4"
               style={{
-                borderBottom: "1px solid rgba(139,92,246,0.1)",
-                background: "rgba(139,92,246,0.03)",
+                borderBottom: "1px solid color-mix(in oklab, var(--accent) 10%, transparent)",
+                background: "color-mix(in oklab, var(--accent) 3%, transparent)",
               }}
             >
               <OutputHeader
@@ -662,7 +1500,7 @@ function ToolPage() {
                     isToolLocked
                       ? `Upgrade to ${requiredPlan ?? "a higher plan"} to run this tool.`
                       : effectiveWired
-                        ? "Add context on the left, then generate to see your structured output here."
+                        ? "Fill in the fields on the left, then generate to see your structured output here."
                         : "This tool is launching soon. Your inputs are auto-saved as a draft."
                   }
                   className="py-10"
@@ -698,7 +1536,10 @@ function ToolPage() {
                       to={h.to}
                       search={
                         h.to.startsWith("/app/launchpad/")
-                          ? ({ context, title } as never)
+                          ? ({
+                              context: primaryFieldValue,
+                              title,
+                            } as never)
                           : undefined
                       }
                       className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-medium transition"
@@ -760,47 +1601,4 @@ function Section({
       {children}
     </div>
   );
-}
-
-function placeholderFor(key: string): string {
-  switch (key) {
-    case "idea-validator":
-      return "Describe your idea, who it's for, and why now. Be specific — better context = sharper output.";
-    case "pitch-generator":
-      return "What does your business do? Who is it for? What's the wedge that makes it special?";
-    case "gtm-strategy":
-      return "Describe your offer, ICP, and what 'launched' looks like in 90 days.";
-    case "offer":
-      return "Describe the transformation you sell, the customer, and any current pricing.";
-    case "ops-plan":
-      return "What's your business model? Where are the operational bottlenecks today?";
-    case "followup":
-      return "Who is the lead? What did they show interest in? What outcome do you want?";
-    case "website-audit":
-      return "Paste your live URL and any context about who visits and what you want them to do.";
-    case "kill-my-idea":
-      return "Describe your startup idea in detail — what it does, who it's for, the business model, and why you think it'll work.";
-    case "funding-score":
-      return "Describe your startup: what you do, your traction, team, and target raise amount.";
-    case "first-10-customers":
-      return "Describe your product/service, target customer, and current distribution channels.";
-    case "business-plan":
-      return "Describe your business, target market, revenue model, and current stage.";
-    case "investor-emails":
-      return "Describe your startup, the raise you're running, and the type of investor you're targeting.";
-    case "idea-vs-idea":
-      return "Describe both startup ideas clearly — what each does, target customer, and business model.";
-    case "landing-page":
-      return "Describe your product/service, who it's for, the core transformation, and your CTA.";
-    case "competitor":
-      return "Name your top 3-5 competitors and describe your positioning and differentiation.";
-    case "pricing":
-      return "Describe your product, value delivered, target customer segments, and current pricing (if any).";
-    case "revenue-projector":
-      return "Describe your business model, current MRR (if any), CAC estimate, and growth targets.";
-    case "blog":
-      return "Enter the topic or primary keyword. Add your target audience and any specific angle you want to cover.";
-    default:
-      return "Describe your business, audience, and goal. The more specific, the better the output.";
-  }
 }
