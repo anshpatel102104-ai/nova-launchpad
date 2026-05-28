@@ -212,7 +212,7 @@ export function AppSidebar() {
       )}
       style={{
         background: "var(--sidebar)",
-        borderRight: "1px solid rgba(59,130,246,0.08)",
+        borderRight: "1px solid var(--sidebar-border)",
       }}
     >
       {/* Digital rain canvas — sits behind everything */}
@@ -222,7 +222,7 @@ export function AppSidebar() {
       <div
         className="absolute top-0 left-0 right-0 h-px z-10"
         style={{
-          background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.30), transparent)",
         }}
       />
 
@@ -232,13 +232,13 @@ export function AppSidebar() {
           "relative z-10 flex h-14 items-center gap-2.5 px-3",
           collapsed && "justify-center px-0",
         )}
-        style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+        style={{ borderBottom: "1px solid var(--sidebar-border)" }}
       >
         <div
           className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white text-[11px] font-bold tracking-tight"
           style={{
-            background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-            boxShadow: "0 0 16px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+            background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
+            boxShadow: "0 0 14px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
           }}
         >
           LN
@@ -253,7 +253,7 @@ export function AppSidebar() {
             </div>
             <div
               className="text-[9.5px] font-medium truncate"
-              style={{ color: "rgba(59,130,246,0.7)", letterSpacing: "0.06em" }}
+              style={{ color: "rgba(249,115,22,0.60)", letterSpacing: "0.06em" }}
             >
               AI BUSINESS OS
             </div>
@@ -278,19 +278,19 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="mt-5 mb-1 px-2">
               <div className="flex items-center gap-2">
-                <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
+                <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
                 <span
                   className="text-[8.5px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: "rgba(59,130,246,0.4)" }}
+                  style={{ color: "var(--muted-foreground)", opacity: 0.6 }}
                 >
                   Ops
                 </span>
-                <div className="h-px flex-1" style={{ background: "rgba(59,130,246,0.12)" }} />
+                <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
               </div>
             </div>
           )}
           {collapsed && (
-            <div className="my-3 mx-2 h-px" style={{ background: "rgba(59,130,246,0.12)" }} />
+            <div className="my-3 mx-2 h-px" style={{ background: "var(--sidebar-border)" }} />
           )}
 
           {NAV.slice(3).map((item) => (
@@ -307,7 +307,7 @@ export function AppSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="relative z-10 p-2" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
+      <div className="relative z-10 p-2" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
         {isGuest && (
           <button
             onClick={exitDemo}
@@ -316,8 +316,8 @@ export function AppSidebar() {
               collapsed && "justify-center px-0",
             )}
             style={{
-              background: "rgba(59,130,246,0.08)",
-              border: "1px solid rgba(59,130,246,0.2)",
+              background: "rgba(249,115,22,0.08)",
+              border: "1px solid rgba(249,115,22,0.22)",
               color: "var(--primary)",
             }}
             title={collapsed ? "Exit demo" : undefined}
@@ -349,22 +349,22 @@ export function AppSidebar() {
           )}
           style={{
             background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(59,130,246,0.1)",
+            border: "1px solid var(--sidebar-border)",
           }}
           onMouseEnter={(e: MouseEvent) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.3)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.28)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.06)";
           }}
           onMouseLeave={(e: MouseEvent) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.1)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--sidebar-border)";
             (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
           }}
         >
           <span
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
             style={{
-              background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-              boxShadow: "0 0 10px rgba(59,130,246,0.4)",
+              background: "linear-gradient(135deg, #F97316, #EA580C)",
+              boxShadow: "0 0 10px rgba(249,115,22,0.40)",
             }}
           >
             {initials}
@@ -388,9 +388,9 @@ export function AppSidebar() {
               <span
                 className="rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide"
                 style={{
-                  background: "rgba(59,130,246,0.15)",
+                  background: "rgba(249,115,22,0.10)",
                   color: "var(--primary)",
-                  border: "1px solid rgba(59,130,246,0.2)",
+                  border: "1px solid rgba(249,115,22,0.22)",
                 }}
               >
                 {plan}
@@ -406,13 +406,13 @@ export function AppSidebar() {
             "mt-1.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] transition-all duration-200",
             collapsed && "justify-center",
           )}
-          style={{ color: "rgba(255,255,255,0.2)" }}
+          style={{ color: "rgba(237,232,223,0.22)" }}
           onMouseEnter={(e: MouseEvent) => {
-            (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
+            (e.currentTarget as HTMLElement).style.color = "rgba(249,115,22,0.65)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.06)";
           }}
           onMouseLeave={(e: MouseEvent) => {
-            (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
+            (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.22)";
             (e.currentTarget as HTMLElement).style.background = "transparent";
           }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -449,10 +449,10 @@ function NavRow({
   const hasChildren = !!item.children?.length && !collapsed;
   const isNova = item.workspace === "nova";
 
-  const activeColor = isNova ? "#8b5cf6" : "#3b82f6";
+  const activeColor = isNova ? "#FBBF24" : "#F97316";
   const activeGrad = isNova
-    ? "linear-gradient(135deg, #8b5cf6, #f97316)"
-    : "linear-gradient(135deg, #3b82f6, #8b5cf6)";
+    ? "linear-gradient(135deg, #FBBF24, #F97316)"
+    : "linear-gradient(135deg, #F97316, #FB923C)";
 
   return (
     <div>
@@ -478,23 +478,23 @@ function NavRow({
           style={
             active
               ? {
-                  background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
+                  background: `rgba(${isNova ? "251,191,36" : "249,115,22"},0.09)`,
                   color: "var(--foreground)",
                 }
               : {
-                  color: "rgba(240,244,255,0.4)",
+                  color: "rgba(237,232,223,0.42)",
                 }
           }
           onMouseEnter={(e: MouseEvent) => {
             if (!active) {
-              (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.75)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.06)";
+              (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.78)";
             }
           }}
           onMouseLeave={(e: MouseEvent) => {
             if (!active) {
               (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.4)";
+              (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.42)";
             }
           }}
           title={collapsed ? item.label : undefined}
@@ -528,13 +528,13 @@ function NavRow({
               onToggle();
             }}
             className="mr-1 flex h-5 w-5 items-center justify-center rounded transition-all"
-            style={{ color: "rgba(255,255,255,0.2)" }}
+            style={{ color: "rgba(237,232,223,0.22)" }}
             onMouseEnter={(e: MouseEvent) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(59,130,246,0.6)";
-              (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.08)";
+              (e.currentTarget as HTMLElement).style.color = "rgba(249,115,22,0.65)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.07)";
             }}
             onMouseLeave={(e: MouseEvent) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.2)";
+              (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.22)";
               (e.currentTarget as HTMLElement).style.background = "transparent";
             }}
             aria-label={open ? "Collapse" : "Expand"}
@@ -550,11 +550,11 @@ function NavRow({
       {hasChildren && open && (
         <ul
           className="mt-0.5 ml-3 space-y-0.5 border-l pl-2"
-          style={{ borderColor: "rgba(59,130,246,0.12)" }}
+          style={{ borderColor: "var(--sidebar-border)" }}
         >
           {item.children!.map((c, i) => {
             const cActive = path === c.to;
-            const cColor = isNova ? "#8b5cf6" : "#3b82f6";
+            const cColor = isNova ? "#FBBF24" : "#F97316";
             return (
               <li
                 key={c.to}
@@ -567,21 +567,21 @@ function NavRow({
                   style={
                     cActive
                       ? {
-                          background: `rgba(${isNova ? "139,92,246" : "59,130,246"},0.1)`,
+                          background: `rgba(${isNova ? "251,191,36" : "249,115,22"},0.09)`,
                           color: cColor,
                         }
-                      : { color: "rgba(240,244,255,0.35)" }
+                      : { color: "rgba(237,232,223,0.36)" }
                   }
                   onMouseEnter={(e: MouseEvent) => {
                     if (!cActive) {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.06)";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.7)";
+                      (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.06)";
+                      (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.72)";
                     }
                   }}
                   onMouseLeave={(e: MouseEvent) => {
                     if (!cActive) {
                       (e.currentTarget as HTMLElement).style.background = "transparent";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.35)";
+                      (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.36)";
                     }
                   }}
                 >
@@ -642,7 +642,7 @@ function DigitalRain() {
       const W = canvas.width;
 
       // Fade trail
-      ctx.fillStyle = "rgba(6,6,15,0.05)";
+      ctx.fillStyle = "rgba(7,8,13,0.05)";
       ctx.fillRect(0, 0, W, H);
 
       ctx.font = "10px 'JetBrains Mono', monospace";
@@ -655,15 +655,15 @@ function DigitalRain() {
         }
 
         // Leading char — bright
-        ctx.fillStyle = "rgba(59,130,246,0.7)";
+        ctx.fillStyle = "rgba(249,115,22,0.55)";
         ctx.shadowBlur = 4;
-        ctx.shadowColor = "#3b82f6";
+        ctx.shadowColor = "#F97316";
         const char = CHARS[Math.floor(Math.random() * CHARS.length)];
         ctx.fillText(char, i * 14, y);
 
         // Trail char
         if (drops[i] > 3) {
-          ctx.fillStyle = "rgba(99,102,241,0.2)";
+          ctx.fillStyle = "rgba(251,191,36,0.16)";
           ctx.shadowBlur = 0;
           const trailChar = CHARS[Math.floor(Math.random() * CHARS.length)];
           ctx.fillText(trailChar, i * 14, y - 14);
