@@ -34,7 +34,6 @@ import {
   Target,
   Lightbulb,
   Megaphone,
-  Settings2,
   Globe,
   Mail,
   TrendingUp,
@@ -52,9 +51,13 @@ import {
   LineChart,
   ArrowUpRight,
   LayoutDashboard,
+  Brain,
+  Command,
+  ChevronRight,
+  Radio,
+  Circle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { cn } from "@/lib/utils";
 import { getLastAppPath, clearLastAppPath } from "@/lib/session-restore";
 
@@ -128,15 +131,54 @@ const NOVA_SYSTEMS = [
 ] as const;
 
 const QUICK_ACTIONS = [
-  { label: "Validate Idea", to: "/app/launchpad/idea-validator" },
-  { label: "Generate Pitch", to: "/app/launchpad/pitch-generator" },
-  { label: "Build GTM", to: "/app/launchpad/gtm-strategy" },
-  { label: "Kill My Idea", to: "/app/launchpad/kill-my-idea" },
-  { label: "First 10 Customers", to: "/app/launchpad/first-10-customers" },
-  { label: "Funding Score", to: "/app/launchpad/funding-score" },
-  { label: "Capture Leads", to: "/app/nova/leads" },
-  { label: "Revenue Projector", to: "/app/launchpad/revenue-projector" },
+  { label: "Validate Idea", to: "/app/launchpad/idea-validator", icon: Lightbulb },
+  { label: "Generate Pitch", to: "/app/launchpad/pitch-generator", icon: Megaphone },
+  { label: "Build GTM", to: "/app/launchpad/gtm-strategy", icon: Target },
+  { label: "Kill My Idea", to: "/app/launchpad/kill-my-idea", icon: Skull },
+  { label: "First 10 Customers", to: "/app/launchpad/first-10-customers", icon: UserPlus },
+  { label: "Funding Score", to: "/app/launchpad/funding-score", icon: Trophy },
+  { label: "Capture Leads", to: "/app/nova/leads", icon: Inbox },
+  { label: "Revenue Projector", to: "/app/launchpad/revenue-projector", icon: LineChart },
 ];
+
+/* ── Cinematic grid background ── */
+function GridBackground() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px)
+        `,
+        backgroundSize: "40px 40px",
+        maskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black 40%, transparent 100%)",
+      }}
+    />
+  );
+}
+
+/* ── Orbital dot canvas ── */
+function OrbitalHero() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        className="absolute -right-20 -top-20 h-80 w-80 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 65%)",
+          filter: "blur(40px)",
+        }}
+      />
+      <div
+        className="absolute -bottom-16 -left-16 h-60 w-60 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(234,88,12,0.08) 0%, transparent 65%)",
+          filter: "blur(30px)",
+        }}
+      />
+    </div>
+  );
+}
 
 function Dashboard() {
   const { currentOrgId, profile, user } = useAuth();
@@ -181,7 +223,7 @@ function Dashboard() {
         <div
           className="rounded-2xl"
           style={{
-            minHeight: 200,
+            minHeight: 220,
             background: "var(--surface)",
             border: "1px solid var(--border)",
           }}
@@ -213,8 +255,8 @@ function Dashboard() {
         <div
           className="flex h-16 w-16 items-center justify-center rounded-2xl text-white"
           style={{
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-            boxShadow: "0 0 40px rgba(59,130,246,0.4)",
+            background: "linear-gradient(135deg, #F97316, #EA580C)",
+            boxShadow: "0 0 40px rgba(249,115,22,0.4)",
           }}
         >
           <Sparkles className="h-8 w-8" />
@@ -265,7 +307,6 @@ function Dashboard() {
     return "inactive";
   };
   const novaActive = NOVA_SYSTEMS.filter((s) => novaStatus(s.key) === "active").length;
-
   const wonLeads = leads.filter((l) => l.stage === "Won").length;
   const qualifiedPipe = leads.filter((l) =>
     ["Qualified", "Proposal"].includes(l.stage as string),
@@ -375,7 +416,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
-      {/* ── RESUME BANNER (session restore) ── */}
+      {/* ── RESUME BANNER ── */}
       {resumePath && (
         <div
           style={{
@@ -384,17 +425,15 @@ function Dashboard() {
             gap: 10,
             padding: "8px 14px",
             borderRadius: 10,
-            border: "1px solid rgba(59,130,246,0.2)",
-            background: "rgba(59,130,246,0.06)",
+            border: "1px solid rgba(249,115,22,0.2)",
+            background: "rgba(249,115,22,0.06)",
             fontSize: 12.5,
           }}
         >
           <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
           <span style={{ color: "var(--muted-foreground)", flex: 1 }}>
-            Resume where you left off:
-            <span style={{ color: "var(--foreground)", fontWeight: 600, marginLeft: 4 }}>
-              {resumeLabel}
-            </span>
+            Resume where you left off:{" "}
+            <span style={{ color: "var(--foreground)", fontWeight: 600 }}>{resumeLabel}</span>
           </span>
           <Link
             to={resumePath}
@@ -422,121 +461,259 @@ function Dashboard() {
               lineHeight: 1,
               padding: 0,
             }}
-            aria-label="Dismiss"
           >
             ×
           </button>
         </div>
       )}
 
-      {/* ── HERO SECTION with NeuralCanvas ── */}
+      {/* ── HERO: FOUNDER MISSION CONTROL ── */}
       <div
         className="rise-in relative overflow-hidden rounded-2xl"
         style={{
           ["--i" as string]: 0,
-          minHeight: "200px",
+          minHeight: "220px",
           background: "var(--surface)",
-          border: "1px solid rgba(59,130,246,0.15)",
+          border: "1px solid rgba(249,115,22,0.18)",
           boxShadow:
-            "0 0 0 1px rgba(59,130,246,0.08), 0 1px 3px rgba(0,0,0,0.6), 0 8px 40px rgba(0,0,0,0.4)",
+            "0 0 0 1px rgba(249,115,22,0.06), 0 2px 4px rgba(0,0,0,0.5), 0 16px 60px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Neural canvas background */}
-        <div className="absolute inset-0 z-0">
-          <NeuralCanvas className="w-full h-full" />
-        </div>
+        <OrbitalHero />
+        <GridBackground />
 
-        {/* Gradient overlay */}
-        <div
-          className="absolute inset-0 z-[1]"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(8,8,16,0.85) 0%, rgba(13,13,30,0.7) 50%, rgba(8,8,16,0.8) 100%)",
-          }}
-        />
-
-        {/* Top neon bar */}
+        {/* Top glow bar */}
         <div
           className="absolute top-0 left-0 right-0 h-px z-[2]"
           style={{
             background:
-              "linear-gradient(90deg, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.4), transparent)",
+              "linear-gradient(90deg, transparent, rgba(249,115,22,0.7), rgba(251,191,36,0.4), transparent)",
+          }}
+        />
+        {/* Corner accent brackets */}
+        <div
+          className="absolute top-0 left-0 w-6 h-6 z-[2]"
+          style={{
+            borderTop: "1.5px solid rgba(249,115,22,0.5)",
+            borderLeft: "1.5px solid rgba(249,115,22,0.5)",
+            borderRadius: "2px 0 0 0",
+          }}
+        />
+        <div
+          className="absolute top-0 right-0 w-6 h-6 z-[2]"
+          style={{
+            borderTop: "1.5px solid rgba(249,115,22,0.3)",
+            borderRight: "1.5px solid rgba(249,115,22,0.3)",
+            borderRadius: "0 2px 0 0",
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-6 h-6 z-[2]"
+          style={{
+            borderBottom: "1.5px solid rgba(249,115,22,0.3)",
+            borderLeft: "1.5px solid rgba(249,115,22,0.3)",
+            borderRadius: "0 0 0 2px",
           }}
         />
 
         {/* Content */}
         <div className="relative z-[3] flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between md:p-8">
           <div>
-            <div
-              className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3"
-              style={{ color: "rgba(59,130,246,0.7)" }}
-            >
-              {planLabel} plan · {orgStage} stage
+            <div className="flex items-center gap-2.5 mb-3">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em]"
+                style={{
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.25)",
+                  color: "var(--primary)",
+                }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                Founder Mission Control
+              </span>
+              <span
+                className="text-[9.5px] font-mono font-semibold uppercase tracking-[0.14em]"
+                style={{ color: "rgba(249,115,22,0.55)" }}
+              >
+                {planLabel} Plan · {orgStage} Stage
+              </span>
             </div>
+
             <h1
               className="font-display font-black tracking-tight leading-none"
               style={{
-                fontSize: "clamp(1.8rem, 3vw + 1rem, 3rem)",
+                fontSize: "clamp(1.8rem, 3vw + 0.8rem, 2.8rem)",
                 background:
-                  "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.85) 50%, #60a5fa 100%)",
+                  "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.85) 45%, rgba(249,115,22,0.9) 100%)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
                 letterSpacing: "-0.04em",
               }}
             >
-              {greetingFor()}, {firstName}
+              {greetingFor()},{" "}
+              <span style={{ WebkitBackgroundClip: "text", backgroundClip: "text" }}>
+                {firstName}
+              </span>
             </h1>
             <p
               className="mt-2 text-[13.5px] leading-relaxed"
-              style={{ color: "rgba(240,244,255,0.55)" }}
+              style={{ color: "rgba(240,235,228,0.55)" }}
             >
-              {org?.name ? `${org.name} · ` : ""}Your command center across the entire business
+              {org?.name ? `${org.name} · ` : ""}Your AI command center across the entire business
               journey.
             </p>
+
+            {/* Stage progress bar */}
+            <div className="mt-4 flex items-center gap-2">
+              {STAGES.map((s, i) => (
+                <React.Fragment key={s}>
+                  <div className="flex flex-col items-center gap-1">
+                    <div
+                      className="h-1.5 w-8 rounded-full transition-all duration-500"
+                      style={{
+                        background:
+                          i <= stageIdx
+                            ? "linear-gradient(90deg, #F97316, #FBBF24)"
+                            : "rgba(255,255,255,0.1)",
+                        boxShadow: i <= stageIdx ? "0 0 6px rgba(249,115,22,0.5)" : "none",
+                      }}
+                    />
+                    <span
+                      className="text-[8px] font-mono uppercase tracking-wide"
+                      style={{
+                        color: i <= stageIdx ? "rgba(249,115,22,0.8)" : "rgba(255,255,255,0.2)",
+                      }}
+                    >
+                      {s}
+                    </span>
+                  </div>
+                  {i < STAGES.length - 1 && (
+                    <div
+                      className="h-px w-3 mb-3"
+                      style={{
+                        background:
+                          i < stageIdx ? "rgba(249,115,22,0.4)" : "rgba(255,255,255,0.08)",
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
 
           <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="flex items-center gap-3">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold"
-                style={{
-                  background: "rgba(16,185,129,0.1)",
-                  border: "1px solid rgba(16,185,129,0.25)",
-                  color: "var(--success)",
-                }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
-                {planLabel} · Active
-              </span>
+            {/* System status */}
+            <div className="flex gap-2 flex-wrap justify-end">
+              {[
+                {
+                  label: "Tools",
+                  value: `${launchpadComplete}/${LAUNCHPAD_TILES.length}`,
+                  color: "#F97316",
+                },
+                {
+                  label: "Systems",
+                  value: `${novaActive}/${NOVA_SYSTEMS.length}`,
+                  color: "#FBBF24",
+                },
+                { label: "Leads", value: `${leads.length}`, color: "#10b981" },
+              ].map(({ label, value, color }) => (
+                <div
+                  key={label}
+                  className="rounded-xl px-3 py-2 text-center"
+                  style={{ background: `${color}08`, border: `1px solid ${color}20`, minWidth: 68 }}
+                >
+                  <div
+                    className="font-mono"
+                    style={{ fontSize: "8px", color: `${color}99`, letterSpacing: "0.1em" }}
+                  >
+                    {label}
+                  </div>
+                  <div
+                    className="font-mono font-black tabular-nums mt-0.5"
+                    style={{ fontSize: "18px", color, letterSpacing: "-0.02em" }}
+                  >
+                    {value}
+                  </div>
+                </div>
+              ))}
             </div>
+
             <Link to={nextAction.to}>
               <button
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold text-white transition-all duration-200"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition-all duration-200"
                 style={{
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                  background: "linear-gradient(135deg, #F97316, #EA580C)",
                   boxShadow:
-                    "0 4px 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.2)",
+                    "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)",
                 }}
                 onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 8px 30px rgba(59,130,246,0.55), 0 0 60px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.2)";
+                    "0 8px 30px rgba(249,115,22,0.55), 0 0 60px rgba(249,115,22,0.18), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 4px 20px rgba(59,130,246,0.4), 0 0 40px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.2)";
+                    "0 4px 20px rgba(249,115,22,0.4), 0 0 40px rgba(249,115,22,0.12), inset 0 1px 0 rgba(255,255,255,0.2)";
                 }}
               >
-                {nextAction.cta} <ArrowRight className="h-4 w-4" />
+                <nextAction.icon className="h-4 w-4" />
+                {nextAction.cta}
+                <ArrowRight className="h-4 w-4" />
               </button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* ── MISSION + OPERATOR ROW (Sprint 2 Critical) ── */}
+      {/* ── NOVA AI RECOMMENDATION STRIP ── */}
+      <div
+        className="rise-in relative overflow-hidden rounded-xl px-5 py-3.5 flex items-center gap-4"
+        style={{
+          ["--i" as string]: 0,
+          background: "linear-gradient(135deg, rgba(249,115,22,0.06), rgba(251,191,36,0.04))",
+          border: "1px solid rgba(249,115,22,0.15)",
+        }}
+      >
+        <div
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+          style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}
+        >
+          <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span
+            className="text-[11px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: "rgba(249,115,22,0.7)" }}
+          >
+            Nova AI ·{" "}
+          </span>
+          <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
+            {nextAction.desc}
+          </span>
+        </div>
+        <Link to={nextAction.to}>
+          <button
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all"
+            style={{
+              background: "rgba(249,115,22,0.1)",
+              border: "1px solid rgba(249,115,22,0.22)",
+              color: "var(--primary)",
+            }}
+            onMouseEnter={(e: React.MouseEvent) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.18)";
+            }}
+            onMouseLeave={(e: React.MouseEvent) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.1)";
+            }}
+          >
+            {nextAction.cta} <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </Link>
+      </div>
+
+      {/* ── MISSION + OPERATOR ROW ── */}
       {profile?.onboarding_complete && user?.id && (
         <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 1 }}>
           <div className="lg:col-span-7">
@@ -548,26 +725,26 @@ function Dashboard() {
         </section>
       )}
 
-      {/* Onboarding checklist */}
+      {/* ── ONBOARDING CHECKLIST ── */}
       {!checklistComplete && (
         <section
           className="rise-in overflow-hidden rounded-2xl"
           style={{
             ["--i" as string]: 1,
             background: "var(--surface)",
-            border: "1px solid rgba(59,130,246,0.12)",
+            border: "1px solid rgba(249,115,22,0.12)",
           }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+            style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
                 style={{
-                  background: "rgba(59,130,246,0.1)",
-                  border: "1px solid rgba(59,130,246,0.2)",
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.2)",
                 }}
               >
                 <ListChecks className="h-4 w-4" style={{ color: "var(--primary)" }} />
@@ -593,8 +770,8 @@ function Dashboard() {
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${(checklistDone / checklist.length) * 100}%`,
-                    background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                    boxShadow: "0 0 8px rgba(59,130,246,0.5)",
+                    background: "linear-gradient(90deg, #F97316, #FBBF24)",
+                    boxShadow: "0 0 8px rgba(249,115,22,0.5)",
                   }}
                 />
               </div>
@@ -608,7 +785,7 @@ function Dashboard() {
           </div>
           <ul
             className="grid gap-px sm:grid-cols-2 lg:grid-cols-3"
-            style={{ background: "rgba(59,130,246,0.05)" }}
+            style={{ background: "rgba(249,115,22,0.04)" }}
           >
             {checklist.map((c) => (
               <li key={c.id} style={{ background: "var(--surface)" }}>
@@ -616,7 +793,7 @@ function Dashboard() {
                   to={c.to}
                   className="flex items-center gap-3 px-5 py-3 transition-all"
                   onMouseEnter={(e: React.MouseEvent) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.04)";
                   }}
                   onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -633,7 +810,7 @@ function Dashboard() {
                           }
                         : {
                             background: "var(--surface-2)",
-                            border: "1px solid rgba(59,130,246,0.15)",
+                            border: "1px solid rgba(249,115,22,0.15)",
                             color: "var(--muted-foreground)",
                           }
                     }
@@ -664,7 +841,7 @@ function Dashboard() {
         </section>
       )}
 
-      {/* ── YOUR PATH + WHAT NEXT ROW (Sprint 2 High) ── */}
+      {/* ── YOUR PATH + WHAT NEXT ── */}
       {currentOrgId && (
         <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 2 }}>
           <YourPathCard lane={classifyLane(orgStage, "")} stage={orgStage} />
@@ -681,17 +858,17 @@ function Dashboard() {
         </section>
       )}
 
-      {/* Stat row */}
+      {/* ── STAT ROW ── */}
       <section
         className="rise-in grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
         style={{ ["--i" as string]: 3 }}
       >
-        <GlowStatCard
+        <MissionStatCard
           label="Business Stage"
           value={orgStage}
           sub={`Step ${stageIdx + 1} of 5`}
           icon={Target}
-          color="#3b82f6"
+          color="#F97316"
           rightSlot={
             <div className="mt-4 flex items-center gap-1">
               {STAGES.map((s, i) => (
@@ -701,33 +878,33 @@ function Dashboard() {
                   style={{
                     background:
                       i <= stageIdx
-                        ? "linear-gradient(90deg, #3b82f6, #8b5cf6)"
+                        ? "linear-gradient(90deg, #F97316, #FBBF24)"
                         : "rgba(255,255,255,0.08)",
-                    boxShadow: i <= stageIdx ? "0 0 4px rgba(59,130,246,0.4)" : "none",
+                    boxShadow: i <= stageIdx ? "0 0 4px rgba(249,115,22,0.4)" : "none",
                   }}
                 />
               ))}
             </div>
           }
         />
-        <GlowStatCard
-          label="Launchpad"
+        <MissionStatCard
+          label="Launchpad Tools"
           value={`${launchpadComplete}/${LAUNCHPAD_TILES.length}`}
           sub={launchpadComplete === 0 ? "Run your first tool" : "tools completed"}
           icon={Rocket}
-          color="#6366f1"
+          color="#EA580C"
           rightSlot={
-            <NeonProgressRing
+            <OrangeProgressRing
               percent={Math.round((launchpadComplete / LAUNCHPAD_TILES.length) * 100)}
             />
           }
         />
-        <GlowStatCard
+        <MissionStatCard
           label="Nova Systems"
           value={`${novaActive}/${NOVA_SYSTEMS.length}`}
           sub={novaActive === 0 ? "Set up your first system" : "systems live"}
           icon={Zap}
-          color="#8b5cf6"
+          color="#FBBF24"
           rightSlot={
             <div className="mt-4 flex items-center gap-1.5">
               {NOVA_SYSTEMS.map((s) => {
@@ -751,17 +928,17 @@ function Dashboard() {
             </div>
           }
         />
-        <GlowStatCard
+        <MissionStatCard
           label="Leads Captured"
           value={leads.length}
           sub={`${qualifiedPipe} qualified · ${wonLeads} won`}
           icon={Inbox}
-          color="#06b6d4"
+          color="#10b981"
           trend={leads.length > 0}
         />
       </section>
 
-      {/* ── YOUR OUTPUTS ROW (Sprint 3 Critical) ── */}
+      {/* ── OUTPUTS ROW ── */}
       {currentOrgId && (
         <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 4 }}>
           <div className="lg:col-span-4">
@@ -776,24 +953,21 @@ function Dashboard() {
         </section>
       )}
 
-      {/* Activity + Next Action */}
+      {/* ── ACTIVITY + NEXT ACTION ── */}
       <section className="rise-in grid gap-4 lg:grid-cols-12" style={{ ["--i" as string]: 5 }}>
         {/* Activity feed */}
         <div
           className="lg:col-span-8 overflow-hidden rounded-2xl"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid rgba(59,130,246,0.1)",
-          }}
+          style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+            style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
           >
             <div>
               <div
                 className="text-[9.5px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: "rgba(59,130,246,0.6)" }}
+                style={{ color: "rgba(249,115,22,0.6)" }}
               >
                 Live Activity
               </div>
@@ -809,7 +983,7 @@ function Dashboard() {
               className="inline-flex items-center gap-1 text-[12px] transition-colors"
               style={{ color: "var(--primary)" }}
               onMouseEnter={(e: React.MouseEvent) => {
-                (e.currentTarget as HTMLElement).style.textShadow = "0 0 8px rgba(59,130,246,0.6)";
+                (e.currentTarget as HTMLElement).style.textShadow = "0 0 8px rgba(249,115,22,0.6)";
               }}
               onMouseLeave={(e: React.MouseEvent) => {
                 (e.currentTarget as HTMLElement).style.textShadow = "none";
@@ -823,8 +997,8 @@ function Dashboard() {
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-2xl"
                 style={{
-                  background: "rgba(59,130,246,0.08)",
-                  border: "1px solid rgba(59,130,246,0.15)",
+                  background: "rgba(249,115,22,0.08)",
+                  border: "1px solid rgba(249,115,22,0.15)",
                 }}
               >
                 <Activity className="h-5 w-5" style={{ color: "var(--primary)", opacity: 0.5 }} />
@@ -839,8 +1013,8 @@ function Dashboard() {
                 <button
                   className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-semibold text-white"
                   style={{
-                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                    boxShadow: "0 4px 15px rgba(59,130,246,0.3)",
+                    background: "linear-gradient(135deg, #F97316, #EA580C)",
+                    boxShadow: "0 4px 15px rgba(249,115,22,0.3)",
                   }}
                 >
                   Run a tool
@@ -848,7 +1022,7 @@ function Dashboard() {
               </Link>
             </div>
           ) : (
-            <ul className="divide-y" style={{ borderColor: "rgba(59,130,246,0.06)" }}>
+            <ul className="divide-y" style={{ borderColor: "rgba(249,115,22,0.06)" }}>
               {recentRuns.slice(0, 6).map((r) => {
                 const Icon =
                   r.status === "succeeded"
@@ -867,7 +1041,7 @@ function Dashboard() {
                     key={r.id}
                     className="flex items-center gap-3.5 px-5 py-3 transition-all"
                     onMouseEnter={(e: React.MouseEvent) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
+                      (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)";
                     }}
                     onMouseLeave={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -919,7 +1093,7 @@ function Dashboard() {
                   key={l.id}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
                   onMouseEnter={(e: React.MouseEvent) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.04)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.03)";
                   }}
                   onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -928,11 +1102,11 @@ function Dashboard() {
                   <span
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{
-                      background: "rgba(139,92,246,0.1)",
-                      border: "1px solid rgba(139,92,246,0.2)",
+                      background: "rgba(249,115,22,0.1)",
+                      border: "1px solid rgba(249,115,22,0.2)",
                     }}
                   >
-                    <UserCheck className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+                    <UserCheck className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div
@@ -948,9 +1122,9 @@ function Dashboard() {
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-medium capitalize"
                     style={{
-                      background: "rgba(139,92,246,0.1)",
-                      color: "var(--accent)",
-                      border: "1px solid rgba(139,92,246,0.2)",
+                      background: "rgba(249,115,22,0.1)",
+                      color: "var(--primary)",
+                      border: "1px solid rgba(249,115,22,0.2)",
                     }}
                   >
                     {l.stage}
@@ -966,46 +1140,43 @@ function Dashboard() {
           className="lg:col-span-4 relative overflow-hidden rounded-2xl"
           style={{
             background: "var(--surface)",
-            border: "1px solid rgba(139,92,246,0.2)",
-            boxShadow: "0 0 40px rgba(139,92,246,0.06)",
+            border: "1px solid rgba(249,115,22,0.2)",
+            boxShadow: "0 0 40px rgba(249,115,22,0.06)",
           }}
         >
-          {/* Background orbs */}
           <div
-            className="orb-float pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full"
+            className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(139,92,246,0.15), transparent 70%)",
+              background: "radial-gradient(circle, rgba(249,115,22,0.15), transparent 70%)",
               filter: "blur(20px)",
             }}
           />
           <div
-            className="orb-float-2 pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full"
+            className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(249,115,22,0.1), transparent 70%)",
+              background: "radial-gradient(circle, rgba(251,191,36,0.08), transparent 70%)",
               filter: "blur(15px)",
             }}
           />
-
-          {/* Top bar */}
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
-              background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.6), transparent)",
+              background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.6), transparent)",
             }}
           />
 
           <div className="relative p-5">
             <div
               className="text-[9px] font-bold uppercase tracking-[0.22em]"
-              style={{ color: "rgba(139,92,246,0.7)" }}
+              style={{ color: "rgba(249,115,22,0.7)" }}
             >
               Next Action
             </div>
             <div
               className="mt-4 flex h-12 w-12 items-center justify-center rounded-xl text-white"
               style={{
-                background: "linear-gradient(135deg, #8b5cf6, #f97316)",
-                boxShadow: "0 4px 20px rgba(139,92,246,0.4)",
+                background: "linear-gradient(135deg, #F97316, #EA580C)",
+                boxShadow: "0 4px 20px rgba(249,115,22,0.4)",
               }}
             >
               <nextAction.icon className="h-6 w-6" />
@@ -1026,18 +1197,18 @@ function Dashboard() {
               <button
                 className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all"
                 style={{
-                  background: "linear-gradient(135deg, #8b5cf6, #f97316)",
-                  boxShadow: "0 4px 15px rgba(139,92,246,0.3)",
+                  background: "linear-gradient(135deg, #F97316, #EA580C)",
+                  boxShadow: "0 4px 15px rgba(249,115,22,0.3)",
                 }}
                 onMouseEnter={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 8px 25px rgba(139,92,246,0.5)";
+                    "0 8px 25px rgba(249,115,22,0.5)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 4px 15px rgba(139,92,246,0.3)";
+                    "0 4px 15px rgba(249,115,22,0.3)";
                 }}
               >
                 {nextAction.cta} <ArrowRight className="h-3.5 w-3.5" />
@@ -1062,8 +1233,8 @@ function Dashboard() {
                     className="h-full rounded-full transition-all duration-700"
                     style={{
                       width: `${Math.min(100, (totalUsed / limit) * 100)}%`,
-                      background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                      boxShadow: "0 0 8px rgba(59,130,246,0.5)",
+                      background: "linear-gradient(90deg, #F97316, #FBBF24)",
+                      boxShadow: "0 0 8px rgba(249,115,22,0.5)",
                     }}
                   />
                 </div>
@@ -1073,24 +1244,24 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Quick actions */}
+      {/* ── QUICK ACTIONS ── */}
       <section
         className="rise-in overflow-hidden rounded-2xl"
         style={{
           ["--i" as string]: 6,
           background: "var(--surface)",
-          border: "1px solid rgba(59,130,246,0.1)",
+          border: "1px solid rgba(249,115,22,0.1)",
         }}
       >
         <div
           className="flex items-center justify-between px-5 py-3"
-          style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+          style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
         >
           <div
             className="text-[9.5px] font-bold uppercase tracking-[0.18em]"
-            style={{ color: "rgba(59,130,246,0.5)" }}
+            style={{ color: "rgba(249,115,22,0.5)" }}
           >
-            Quick Actions
+            Quick Launch
           </div>
           <span
             className="hidden sm:inline text-[11px]"
@@ -1100,8 +1271,8 @@ function Dashboard() {
             <kbd
               className="font-mono text-[10px] rounded px-1.5 py-0.5"
               style={{
-                background: "rgba(59,130,246,0.08)",
-                border: "1px solid rgba(59,130,246,0.2)",
+                background: "rgba(249,115,22,0.08)",
+                border: "1px solid rgba(249,115,22,0.2)",
                 color: "var(--primary)",
               }}
             >
@@ -1117,24 +1288,24 @@ function Dashboard() {
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
                 style={{
                   background: "var(--surface-2)",
-                  border: "1px solid rgba(59,130,246,0.12)",
+                  border: "1px solid rgba(249,115,22,0.12)",
                   color: "var(--foreground)",
                 }}
                 onMouseEnter={(e: React.MouseEvent) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.35)";
-                  (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.35)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.08)";
                   (e.currentTarget as HTMLElement).style.color = "var(--primary)";
                   (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 0 12px rgba(59,130,246,0.15)";
+                    "0 0 12px rgba(249,115,22,0.15)";
                 }}
                 onMouseLeave={(e: React.MouseEvent) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.12)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.12)";
                   (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                   (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                   (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               >
-                <Plus className="h-3 w-3" style={{ color: "var(--primary)" }} />
+                <a.icon className="h-3 w-3" style={{ color: "var(--primary)" }} />
                 {a.label}
               </button>
             </Link>
@@ -1142,26 +1313,114 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Launchpad + Nova grid */}
+      {/* ── AI OPERATORS PREVIEW ── */}
+      <section
+        className="rise-in overflow-hidden rounded-2xl"
+        style={{
+          ["--i" as string]: 6,
+          background: "var(--surface)",
+          border: "1px solid rgba(249,115,22,0.1)",
+        }}
+      >
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-xl"
+              style={{
+                background: "rgba(249,115,22,0.1)",
+                border: "1px solid rgba(249,115,22,0.2)",
+              }}
+            >
+              <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            </div>
+            <div>
+              <div
+                className="font-display text-[13px] font-bold"
+                style={{ color: "var(--foreground)" }}
+              >
+                AI Operators
+              </div>
+              <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Your virtual executive team
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/app/mentor"
+            className="inline-flex items-center gap-1 text-[12px] transition-colors"
+            style={{ color: "var(--primary)" }}
+          >
+            Open Control <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 p-3 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            { role: "Growth Commander", codename: "GC-01", color: "#3b82f6", icon: TrendingUp },
+            { role: "Offer Architect", codename: "OA-02", color: "#8b5cf6", icon: Sparkles },
+            { role: "Sales Operator", codename: "SO-03", color: "#10b981", icon: Target },
+            { role: "Content Strategist", codename: "CS-04", color: "#F97316", icon: FileText },
+            { role: "Automation Engineer", codename: "AE-05", color: "#06b6d4", icon: Zap },
+            { role: "Finance Navigator", codename: "FN-06", color: "#FBBF24", icon: LineChart },
+          ].map((op) => (
+            <Link key={op.codename} to="/app/mentor" className="group">
+              <div
+                className="flex flex-col items-center gap-2 rounded-xl p-3 transition-all text-center"
+                style={{ border: `1px solid ${op.color}18`, background: "transparent" }}
+                onMouseEnter={(e: React.MouseEvent) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = `${op.color}40`;
+                  (e.currentTarget as HTMLElement).style.background = `${op.color}06`;
+                }}
+                onMouseLeave={(e: React.MouseEvent) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = `${op.color}18`;
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
+              >
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-lg"
+                  style={{ background: `${op.color}14`, border: `1px solid ${op.color}28` }}
+                >
+                  <op.icon className="h-4 w-4" style={{ color: op.color }} />
+                </div>
+                <div>
+                  <div
+                    className="text-[10px] font-semibold leading-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {op.role}
+                  </div>
+                  <div
+                    className="text-[8.5px] font-mono mt-0.5"
+                    style={{ color: op.color, opacity: 0.7 }}
+                  >
+                    {op.codename}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── LAUNCHPAD + NOVA GRID ── */}
       <section className="rise-in grid gap-4 lg:grid-cols-2" style={{ ["--i" as string]: 7 }}>
         {/* Launchpad modules */}
         <div
           className="overflow-hidden rounded-2xl"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid rgba(59,130,246,0.1)",
-          }}
+          style={{ background: "var(--surface)", border: "1px solid rgba(249,115,22,0.1)" }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+            style={{ borderBottom: "1px solid rgba(249,115,22,0.08)" }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
                 style={{
-                  background: "rgba(59,130,246,0.1)",
-                  border: "1px solid rgba(59,130,246,0.2)",
+                  background: "rgba(249,115,22,0.1)",
+                  border: "1px solid rgba(249,115,22,0.2)",
                 }}
               >
                 <Rocket className="h-4 w-4" style={{ color: "var(--primary)" }} />
@@ -1200,16 +1459,13 @@ function Dashboard() {
                   to="/app/launchpad/$tool"
                   params={{ tool: toolSlug }}
                   className="group flex items-center gap-2.5 rounded-xl p-2.5 transition-all"
-                  style={{
-                    border: "1px solid rgba(59,130,246,0.08)",
-                    background: "transparent",
-                  }}
+                  style={{ border: "1px solid rgba(249,115,22,0.08)", background: "transparent" }}
                   onMouseEnter={(e: React.MouseEvent) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.25)";
-                    (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.05)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.25)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
                   }}
                   onMouseLeave={(e: React.MouseEvent) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.08)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.08)";
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
@@ -1224,14 +1480,11 @@ function Dashboard() {
                           }
                         : st === "in-progress"
                           ? {
-                              background: "rgba(59,130,246,0.12)",
+                              background: "rgba(249,115,22,0.12)",
                               color: "var(--primary)",
-                              border: "1px solid rgba(59,130,246,0.2)",
+                              border: "1px solid rgba(249,115,22,0.2)",
                             }
-                          : {
-                              background: "var(--surface-2)",
-                              color: "var(--muted-foreground)",
-                            }
+                          : { background: "var(--surface-2)", color: "var(--muted-foreground)" }
                     }
                   >
                     {st === "complete" ? (
@@ -1265,24 +1518,21 @@ function Dashboard() {
         {/* Nova systems */}
         <div
           className="overflow-hidden rounded-2xl"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid rgba(139,92,246,0.1)",
-          }}
+          style={{ background: "var(--surface)", border: "1px solid rgba(251,191,36,0.12)" }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(139,92,246,0.08)" }}
+            style={{ borderBottom: "1px solid rgba(251,191,36,0.08)" }}
           >
             <div className="flex items-center gap-3">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl"
                 style={{
-                  background: "rgba(139,92,246,0.1)",
-                  border: "1px solid rgba(139,92,246,0.2)",
+                  background: "rgba(251,191,36,0.1)",
+                  border: "1px solid rgba(251,191,36,0.2)",
                 }}
               >
-                <Zap className="h-4 w-4" style={{ color: "var(--accent)" }} />
+                <Zap className="h-4 w-4" style={{ color: "#FBBF24" }} />
               </div>
               <div>
                 <div
@@ -1299,12 +1549,12 @@ function Dashboard() {
             <Link
               to="/app/nova"
               className="inline-flex items-center gap-1 text-[12px] transition-colors"
-              style={{ color: "var(--accent)" }}
+              style={{ color: "#FBBF24" }}
             >
               Open <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="divide-y" style={{ borderColor: "rgba(139,92,246,0.06)" }}>
+          <ul className="divide-y" style={{ borderColor: "rgba(251,191,36,0.06)" }}>
             {NOVA_SYSTEMS.map((s) => {
               const st = novaStatus(s.key);
               return (
@@ -1312,7 +1562,7 @@ function Dashboard() {
                   key={s.key}
                   className="flex items-center gap-3.5 px-5 py-3 transition-all"
                   onMouseEnter={(e: React.MouseEvent) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.03)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(251,191,36,0.03)";
                   }}
                   onMouseLeave={(e: React.MouseEvent) => {
                     (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -1360,7 +1610,7 @@ function Dashboard() {
                     className="text-[11.5px] transition-colors inline-flex items-center gap-1"
                     style={{ color: "var(--muted-foreground)" }}
                     onMouseEnter={(e: React.MouseEvent) => {
-                      (e.currentTarget as HTMLElement).style.color = "var(--accent)";
+                      (e.currentTarget as HTMLElement).style.color = "#FBBF24";
                     }}
                     onMouseLeave={(e: React.MouseEvent) => {
                       (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
@@ -1378,8 +1628,8 @@ function Dashboard() {
   );
 }
 
-/* ── Glowing stat card ── */
-function GlowStatCard({
+/* ── Mission stat card ── */
+function MissionStatCard({
   label,
   value,
   sub,
@@ -1398,14 +1648,13 @@ function GlowStatCard({
 }) {
   return (
     <div
-      className="card-lift rounded-2xl p-5"
+      className="card-lift relative rounded-2xl p-5"
       style={{
         background: "var(--surface)",
         border: `1px solid ${color}20`,
         boxShadow: `0 0 0 1px ${color}0a, 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3)`,
       }}
     >
-      {/* Top neon line */}
       <div
         className="absolute top-0 left-0 right-0 h-px rounded-t-2xl"
         style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
@@ -1420,11 +1669,7 @@ function GlowStatCard({
           </div>
           <div
             className="mt-2 font-display font-black leading-none tabular-nums flex items-baseline gap-1.5"
-            style={{
-              fontSize: "2rem",
-              color: "var(--foreground)",
-              letterSpacing: "-0.04em",
-            }}
+            style={{ fontSize: "2rem", color: "var(--foreground)", letterSpacing: "-0.04em" }}
           >
             {value}
             {trend && <TrendingUp className="h-4 w-4 inline" style={{ color: "var(--success)" }} />}
@@ -1448,19 +1693,19 @@ function GlowStatCard({
   );
 }
 
-function NeonProgressRing({ percent }: { percent: number }) {
+function OrangeProgressRing({ percent }: { percent: number }) {
   const r = 15,
     c = 2 * Math.PI * r;
   return (
     <div className="mt-3">
       <svg width="40" height="40" viewBox="0 0 40 40">
-        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(59,130,246,0.1)" strokeWidth="3" />
+        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(249,115,22,0.1)" strokeWidth="3" />
         <circle
           cx="20"
           cy="20"
           r={r}
           fill="none"
-          stroke="url(#neonProg)"
+          stroke="url(#orangeProg)"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -1468,20 +1713,20 @@ function NeonProgressRing({ percent }: { percent: number }) {
           transform="rotate(-90 20 20)"
           style={{
             transition: "stroke-dashoffset 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
-            filter: "drop-shadow(0 0 4px #3b82f6)",
+            filter: "drop-shadow(0 0 4px #F97316)",
           }}
         />
         <defs>
-          <linearGradient id="neonProg" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#8b5cf6" />
+          <linearGradient id="orangeProg" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F97316" />
+            <stop offset="100%" stopColor="#FBBF24" />
           </linearGradient>
         </defs>
         <text
           x="20"
           y="23"
           textAnchor="middle"
-          fill="#60a5fa"
+          fill="#F97316"
           style={{ fontSize: 8, fontWeight: 800, fontFamily: "JetBrains Mono, monospace" }}
         >
           {percent}%

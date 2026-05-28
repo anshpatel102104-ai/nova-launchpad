@@ -69,5 +69,61 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
   ],
   blog: [
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
+    { to: "/app/launchpad/social", toolKey: "social", label: "Create social posts" },
   ],
+  social: [
+    { to: "/app/launchpad/blog", toolKey: "blog", label: "Write full blog post" },
+    { to: "/app/launchpad/ad-creative", toolKey: "ad-creative", label: "Create ad creative" },
+  ],
+  "email-sequence": [
+    { to: "/app/launchpad/sales-script", toolKey: "sales-script", label: "Generate sales script" },
+  ],
+  "sales-script": [
+    {
+      to: "/app/launchpad/email-sequence",
+      toolKey: "email-sequence",
+      label: "Build email sequence",
+    },
+  ],
+  "ad-creative": [
+    { to: "/app/launchpad/vsl", toolKey: "vsl", label: "Write VSL script" },
+    { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
+  ],
+  vsl: [
+    {
+      to: "/app/launchpad/ad-creative",
+      toolKey: "ad-creative",
+      label: "Write ad creative",
+    },
+  ],
+  "cold-email": [
+    { to: "/app/launchpad/icp", toolKey: "icp", label: "Refine ICP" },
+    { to: "/app/launchpad/sales-script", toolKey: "sales-script", label: "Write sales script" },
+  ],
+  "niche-validator": [
+    { to: "/app/launchpad/icp", toolKey: "icp", label: "Build ICP" },
+    {
+      to: "/app/launchpad/idea-validator",
+      toolKey: "idea-validator",
+      label: "Validate business idea",
+    },
+  ],
+  icp: [
+    { to: "/app/launchpad/cold-email", toolKey: "cold-email", label: "Write cold emails" },
+    { to: "/app/launchpad/gtm-strategy", toolKey: "gtm-strategy", label: "Build GTM" },
+  ],
+  "pitch-deck": [
+    {
+      to: "/app/launchpad/investor-emails",
+      toolKey: "investor-emails",
+      label: "Draft investor emails",
+    },
+    { to: "/app/launchpad/funding-score", toolKey: "funding-score", label: "Score funding" },
+  ],
+  "lead-magnet": [
+    { to: "/app/launchpad/email-sequence", toolKey: "email-sequence", label: "Build email funnel" },
+    { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
+  ],
+  automation: [{ to: "/app/nova/workflows", toolKey: "workflows", label: "Configure in Nova" }],
+  "client-report": [{ to: "/app/nova/clients", toolKey: "clients", label: "View client list" }],
 };

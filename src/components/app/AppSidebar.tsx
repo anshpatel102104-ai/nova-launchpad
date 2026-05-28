@@ -34,6 +34,14 @@ import {
   PenLine,
   BookOpen,
   Crosshair,
+  Brain,
+  TrendingUp,
+  DollarSign,
+  Cpu,
+  Layers,
+  Radio,
+  Command,
+  Navigation,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -49,7 +57,8 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   match?: (p: string) => boolean;
   children?: SubItem[];
-  workspace?: "launchpad" | "nova";
+  workspace?: "launchpad" | "nova" | "operators";
+  badge?: string;
 };
 
 const LAUNCHPAD_TOOLS: SubItem[] = [
@@ -77,7 +86,17 @@ const NOVA_MODULES: SubItem[] = [
   { to: "/app/nova/reports", label: "Reporting", icon: LineChart },
 ];
 
-const NAV: NavItem[] = [
+const AI_OPERATORS: SubItem[] = [
+  { to: "/app/mentor", label: "Growth Commander", icon: TrendingUp },
+  { to: "/app/mentor", label: "Offer Architect", icon: Layers },
+  { to: "/app/mentor", label: "Sales Operator", icon: Target },
+  { to: "/app/mentor", label: "Content Strategist", icon: PenLine },
+  { to: "/app/mentor", label: "Automation Engineer", icon: Zap },
+  { to: "/app/mentor", label: "Finance Navigator", icon: DollarSign },
+];
+
+/* ── Primary navigation sections ── */
+const CORE_NAV: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
     to: "/app/mentor",
@@ -91,6 +110,9 @@ const NAV: NavItem[] = [
     icon: Sparkles,
     match: (p) => p === "/app/ai-dashboard",
   },
+];
+
+const EXECUTION_NAV: NavItem[] = [
   {
     to: "/app/launchpad",
     label: "Launchpad",
@@ -108,11 +130,18 @@ const NAV: NavItem[] = [
     children: NOVA_MODULES,
   },
   {
-    to: "/app/blog",
-    label: "Blog Posts",
-    icon: BookOpen,
-    match: (p) => p.startsWith("/app/blog"),
+    to: "/app/mentor",
+    label: "AI Operators",
+    icon: Brain,
+    workspace: "operators",
+    match: (p) => p === "/app/mentor",
+    children: AI_OPERATORS,
+    badge: "6 ACTIVE",
   },
+];
+
+const CONTENT_NAV: NavItem[] = [
+  { to: "/app/blog", label: "Blog Posts", icon: BookOpen, match: (p) => p.startsWith("/app/blog") },
   { to: "/app/leads", label: "Leads", icon: Users, match: (p) => p.startsWith("/app/leads") },
   {
     to: "/app/nova/workflows",
@@ -151,6 +180,7 @@ export function AppSidebar() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     "/app/launchpad": path.startsWith("/app/launchpad"),
     "/app/nova": path.startsWith("/app/nova"),
+    "/app/mentor": false,
   });
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -203,6 +233,21 @@ export function AppSidebar() {
     .join("")
     .toUpperCase();
 
+  const renderSection = (items: NavItem[], sectionKey: string) => (
+    <div className="space-y-0.5">
+      {items.map((item) => (
+        <NavRow
+          key={item.to + item.label}
+          item={item}
+          path={path}
+          collapsed={collapsed}
+          open={!!openGroups[item.to]}
+          onToggle={() => setOpenGroups((g) => ({ ...g, [item.to]: !g[item.to] }))}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <aside
       className={cn(
@@ -215,14 +260,13 @@ export function AppSidebar() {
         borderRight: "1px solid var(--sidebar-border)",
       }}
     >
-      {/* Digital rain canvas — sits behind everything */}
       <DigitalRain />
 
-      {/* Top neon edge line */}
+      {/* Top neon edge */}
       <div
         className="absolute top-0 left-0 right-0 h-px z-10"
         style={{
-          background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.30), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.35), transparent)",
         }}
       />
 
@@ -263,47 +307,18 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="relative z-10 flex-1 overflow-y-auto px-2 py-3">
-        <div className="space-y-0.5">
-          {NAV.slice(0, 3).map((item) => (
-            <NavRow
-              key={item.to}
-              item={item}
-              path={path}
-              collapsed={collapsed}
-              open={!!openGroups[item.to]}
-              onToggle={() => setOpenGroups((g) => ({ ...g, [item.to]: !g[item.to] }))}
-            />
-          ))}
+        {/* Core navigation */}
+        {renderSection(CORE_NAV, "core")}
 
-          {!collapsed && (
-            <div className="mt-5 mb-1 px-2">
-              <div className="flex items-center gap-2">
-                <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
-                <span
-                  className="text-[8.5px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: "var(--muted-foreground)", opacity: 0.6 }}
-                >
-                  Ops
-                </span>
-                <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
-              </div>
-            </div>
-          )}
-          {collapsed && (
-            <div className="my-3 mx-2 h-px" style={{ background: "var(--sidebar-border)" }} />
-          )}
+        <SectionDivider collapsed={collapsed} label="Build" />
 
-          {NAV.slice(3).map((item) => (
-            <NavRow
-              key={item.to + item.label}
-              item={item}
-              path={path}
-              collapsed={collapsed}
-              open={false}
-              onToggle={() => {}}
-            />
-          ))}
-        </div>
+        {/* Execution tools */}
+        {renderSection(EXECUTION_NAV, "execution")}
+
+        <SectionDivider collapsed={collapsed} label="Ops" />
+
+        {/* Content & operations */}
+        {renderSection(CONTENT_NAV, "content")}
       </nav>
 
       {/* Footer */}
@@ -431,6 +446,27 @@ export function AppSidebar() {
   );
 }
 
+/* ── Section Divider ── */
+function SectionDivider({ collapsed, label }: { collapsed: boolean; label: string }) {
+  if (collapsed) {
+    return <div className="my-3 mx-2 h-px" style={{ background: "var(--sidebar-border)" }} />;
+  }
+  return (
+    <div className="mt-5 mb-1 px-2">
+      <div className="flex items-center gap-2">
+        <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
+        <span
+          className="text-[8.5px] font-bold uppercase tracking-[0.2em]"
+          style={{ color: "var(--muted-foreground)", opacity: 0.6 }}
+        >
+          {label}
+        </span>
+        <div className="h-px flex-1" style={{ background: "var(--sidebar-border)" }} />
+      </div>
+    </div>
+  );
+}
+
 function NavRow({
   item,
   path,
@@ -448,11 +484,14 @@ function NavRow({
   const exactActive = path === item.to;
   const hasChildren = !!item.children?.length && !collapsed;
   const isNova = item.workspace === "nova";
+  const isOperators = item.workspace === "operators";
 
-  const activeColor = isNova ? "#FBBF24" : "#F97316";
+  const activeColor = isNova ? "#FBBF24" : isOperators ? "#A78BFA" : "#F97316";
   const activeGrad = isNova
     ? "linear-gradient(135deg, #FBBF24, #F97316)"
-    : "linear-gradient(135deg, #F97316, #FB923C)";
+    : isOperators
+      ? "linear-gradient(135deg, #A78BFA, #8B5CF6)"
+      : "linear-gradient(135deg, #F97316, #FB923C)";
 
   return (
     <div>
@@ -462,10 +501,7 @@ function NavRow({
           <span
             key={item.to + "-rail"}
             className="rail-in absolute left-0 top-1 bottom-1 w-[2px] rounded-r-full"
-            style={{
-              background: activeGrad,
-              boxShadow: `0 0 8px ${activeColor}80`,
-            }}
+            style={{ background: activeGrad, boxShadow: `0 0 8px ${activeColor}80` }}
           />
         )}
 
@@ -478,12 +514,10 @@ function NavRow({
           style={
             active
               ? {
-                  background: `rgba(${isNova ? "251,191,36" : "249,115,22"},0.09)`,
+                  background: `rgba(${isNova ? "251,191,36" : isOperators ? "167,139,250" : "249,115,22"},0.09)`,
                   color: "var(--foreground)",
                 }
-              : {
-                  color: "rgba(237,232,223,0.42)",
-                }
+              : { color: "rgba(237,232,223,0.42)" }
           }
           onMouseEnter={(e: MouseEvent) => {
             if (!active) {
@@ -502,10 +536,7 @@ function NavRow({
           <span
             style={
               exactActive
-                ? {
-                    color: activeColor,
-                    filter: `drop-shadow(0 0 4px ${activeColor}80)`,
-                  }
+                ? { color: activeColor, filter: `drop-shadow(0 0 4px ${activeColor}80)` }
                 : undefined
             }
           >
@@ -513,10 +544,22 @@ function NavRow({
           </span>
           {!collapsed && (
             <span
-              className="truncate text-[12.5px] font-medium"
+              className="truncate text-[12.5px] font-medium flex-1"
               style={active ? { color: "var(--foreground)" } : undefined}
             >
               {item.label}
+            </span>
+          )}
+          {!collapsed && item.badge && (
+            <span
+              className="shrink-0 rounded-full px-1.5 py-0.5 text-[7.5px] font-bold uppercase tracking-wide"
+              style={{
+                background: `rgba(${isOperators ? "167,139,250" : "249,115,22"},0.12)`,
+                color: activeColor,
+                border: `1px solid ${activeColor}25`,
+              }}
+            >
+              {item.badge}
             </span>
           )}
         </Link>
@@ -554,10 +597,10 @@ function NavRow({
         >
           {item.children!.map((c, i) => {
             const cActive = path === c.to;
-            const cColor = isNova ? "#FBBF24" : "#F97316";
+            const cColor = isNova ? "#FBBF24" : isOperators ? "#A78BFA" : "#F97316";
             return (
               <li
-                key={c.to}
+                key={c.to + c.label}
                 className="slide-in-left"
                 style={{ ["--i" as string]: i } as React.CSSProperties}
               >
@@ -567,7 +610,7 @@ function NavRow({
                   style={
                     cActive
                       ? {
-                          background: `rgba(${isNova ? "251,191,36" : "249,115,22"},0.09)`,
+                          background: `rgba(${isNova ? "251,191,36" : isOperators ? "167,139,250" : "249,115,22"},0.09)`,
                           color: cColor,
                         }
                       : { color: "rgba(237,232,223,0.36)" }
@@ -641,7 +684,6 @@ function DigitalRain() {
       const H = canvas.height;
       const W = canvas.width;
 
-      // Fade trail
       ctx.fillStyle = "rgba(7,8,13,0.05)";
       ctx.fillRect(0, 0, W, H);
 
@@ -654,14 +696,12 @@ function DigitalRain() {
           continue;
         }
 
-        // Leading char — bright
         ctx.fillStyle = "rgba(249,115,22,0.55)";
         ctx.shadowBlur = 4;
         ctx.shadowColor = "#F97316";
         const char = CHARS[Math.floor(Math.random() * CHARS.length)];
         ctx.fillText(char, i * 14, y);
 
-        // Trail char
         if (drops[i] > 3) {
           ctx.fillStyle = "rgba(251,191,36,0.16)";
           ctx.shadowBlur = 0;
@@ -671,7 +711,6 @@ function DigitalRain() {
 
         drops[i] += speeds[i];
 
-        // Reset
         if (y > H && Math.random() > 0.97) {
           drops[i] = -Math.random() * 20;
         }

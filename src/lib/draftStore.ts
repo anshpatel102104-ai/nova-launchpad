@@ -2,7 +2,12 @@
 // (orgId, toolKey). No backend changes — purely a UX improvement.
 import { useEffect, useRef, useState } from "react";
 
-type Draft = { title?: string; context?: string; updatedAt: number };
+type Draft = {
+  title?: string;
+  context?: string;
+  fields?: Record<string, string>;
+  updatedAt: number;
+};
 
 const KEY = (orgId: string, toolKey: string) => `lpn-draft:${orgId}:${toolKey}`;
 
@@ -38,23 +43,30 @@ export function clearDraft(orgId: string | null, toolKey: string) {
 export function useDraftAutosave(
   orgId: string | null,
   toolKey: string,
-  value: { title: string; context: string },
+  value: { title: string; fields?: Record<string, string>; context?: string },
 ) {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const t = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fieldsJson = value.fields ? JSON.stringify(value.fields) : "";
 
   useEffect(() => {
     if (!orgId) return;
-    if (!value.title && !value.context) return;
+    const hasContent = value.title || fieldsJson || value.context;
+    if (!hasContent) return;
     if (t.current) clearTimeout(t.current);
     t.current = setTimeout(() => {
-      saveDraft(orgId, toolKey, value);
+      saveDraft(orgId, toolKey, {
+        title: value.title,
+        fields: value.fields,
+        context: value.context,
+      });
       setSavedAt(Date.now());
     }, 700);
     return () => {
       if (t.current) clearTimeout(t.current);
     };
-  }, [orgId, toolKey, value.title, value.context]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, toolKey, value.title, fieldsJson, value.context]);
 
   return savedAt;
 }
