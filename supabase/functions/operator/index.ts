@@ -88,21 +88,68 @@ Deno.serve(async (req) => {
   // ── Mentor agent fast-path ─────────────────────────────────────────
   if (agent_id) {
     const persona = MENTOR_PERSONAS[agent_id] ?? MENTOR_PERSONAS.growth;
-    const mentorSystem = `${persona}\n\nBusiness context:\n${business_context || "Not provided"}\n\nBe concise, specific, and always end with one clear next action.`;
+    const mentorSystem = `${persona}
+
+Business context: ${business_context || "Not provided"}
+
+IMPORTANT rules:
+- Be concise, specific, and action-oriented
+- Address the founder by their stage and context
+- When recommending a tool, name it explicitly
+- End every response with one clear, immediate next action
+- Use bullet points for 3+ items, otherwise prose`;
+
+    const mentorSessionId = session_id ?? crypto.randomUUID();
+
+    // Load prior conversation turns for multi-turn context
+    const mentorHistory: { role: "user" | "assistant"; content: string }[] = [];
+    if (session_id) {
+      const { data: priorRuns } = await admin
+        .from("agent_runs")
+        .select("input, output, created_at")
+        .eq("session_id", session_id)
+        .eq("agent_type", `mentor_${agent_id}`)
+        .order("created_at", { ascending: true })
+        .limit(12);
+
+      for (const run of priorRuns ?? []) {
+        const inp = run.input as { message?: string } | null;
+        const out = run.output as { reply?: string } | null;
+        if (inp?.message) mentorHistory.push({ role: "user", content: inp.message });
+        if (out?.reply) mentorHistory.push({ role: "assistant", content: out.reply });
+      }
+    }
+    mentorHistory.push({ role: "user", content: message });
+
     const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
+    const t0Mentor = Date.now();
     try {
       const resp = await anthropic.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 600,
+        max_tokens: 800,
         system: mentorSystem,
-        messages: [{ role: "user", content: message }],
+        messages: mentorHistory,
       });
       const reply = resp.content[0].type === "text" ? resp.content[0].text : "";
+
+      // Persist for future multi-turn context
+      await admin.from("agent_runs").insert({
+        user_id: userId,
+        agent_type: `mentor_${agent_id}`,
+        session_id: mentorSessionId,
+        input: { message },
+        output: { reply },
+        status: "succeeded",
+        model: "claude-sonnet-4-6",
+        tokens_used: resp.usage.input_tokens + resp.usage.output_tokens,
+        duration_ms: Date.now() - t0Mentor,
+      });
+
       return json({
         success: true,
         response: reply,
         agent_id,
-        session_id: session_id ?? crypto.randomUUID(),
+        session_id: mentorSessionId,
       });
     } catch (e) {
       return json({ success: false, error: e instanceof Error ? e.message : "AI error" }, 500);

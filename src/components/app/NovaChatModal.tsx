@@ -1,13 +1,13 @@
-// Nova AI Chat — conversational assistant for the platform.
-// Opens via cmd+shift+K or the search bar. Streams responses from the nova-chat edge function.
+// Nova AI Chat — JARVIS-style full-screen overlay for Nova Launchpad.
+// Streams responses from the nova-chat edge function with action chip support.
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
-import { Sparkles, Send, X, RotateCcw, ArrowUpRight } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Sparkles, Send, X, RotateCcw, ArrowUpRight, Zap, Activity } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 type Message = {
   id: string;
@@ -18,63 +18,121 @@ type Message = {
 
 const QUICK_PROMPTS = [
   "What should I work on next?",
-  "How do I validate my idea?",
-  "Show me the AI tools",
-  "How do I get my first customers?",
-  "What's my current mission?",
+  "Analyse my startup progress",
+  "What's my highest-leverage move?",
+  "How do I get my first 10 customers?",
+  "Show me the AI tool suite",
 ];
 
-// Parse **[Label](/path)** style links from assistant markdown
-function renderContent(text: string) {
-  const parts = text.split(/(\*\*\[.+?\]\(.+?\)\*\*)/g);
-  return parts.map((part, i) => {
-    const linkMatch = part.match(/\*\*\[(.+?)\]\((.+?)\)\*\*/);
-    if (linkMatch) {
-      return (
-        <Link
-          key={i}
-          to={linkMatch[2] as never}
-          className="inline-flex items-center gap-1 font-semibold"
-          style={{ color: "var(--primary)" }}
-        >
-          {linkMatch[1]}
-          <ArrowUpRight style={{ width: 11, height: 11, display: "inline" }} />
-        </Link>
-      );
-    }
-    // Render basic markdown: bold, bullet lines
+const BOOT_LINES = [
+  "NOVA CORE INITIALIZING...",
+  "SCANNING WORKSPACE DATA...",
+  "LOADING AI MODULES...",
+  "ALL SYSTEMS ONLINE",
+];
+
+function renderText(text: string): React.ReactNode {
+  return text.split("\n").map((line, j, arr) => {
+    const isBullet = line.startsWith("- ") || line.startsWith("• ");
+    const content = isBullet ? line.slice(2) : line;
+    const boldParts = content.split(/(\*\*[^*]+\*\*)/g);
+    const rendered = boldParts.map((bp, k) => {
+      const bold = bp.match(/\*\*([^*]+)\*\*/);
+      return bold ? <strong key={k}>{bold[1]}</strong> : <span key={k}>{bp}</span>;
+    });
     return (
-      <span key={i}>
-        {part.split("\n").map((line, j) => {
-          const isBullet = line.startsWith("- ") || line.startsWith("• ");
-          const content = isBullet ? line.slice(2) : line;
-          const boldParts = content.split(/(\*\*[^*]+\*\*)/g);
-          const rendered = boldParts.map((bp, k) => {
-            const bold = bp.match(/\*\*([^*]+)\*\*/);
-            return bold ? <strong key={k}>{bold[1]}</strong> : <span key={k}>{bp}</span>;
-          });
-          return (
-            <span key={j}>
-              {isBullet && (
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: 14,
-                    color: "var(--primary)",
-                    opacity: 0.7,
-                  }}
-                >
-                  ›
-                </span>
-              )}
-              {rendered}
-              {j < part.split("\n").length - 1 && <br />}
-            </span>
-          );
-        })}
+      <span key={j}>
+        {isBullet && (
+          <span
+            style={{ display: "inline-block", width: 14, color: "var(--primary)", opacity: 0.8 }}
+          >
+            ›
+          </span>
+        )}
+        {rendered}
+        {j < arr.length - 1 && <br />}
       </span>
     );
   });
+}
+
+function renderContent(text: string, onNavigate: (path: string) => void): React.ReactNode[] {
+  const ALL_RE = /(\[→\s*TOOL:\s*([^|]+)\|\s*([^\]]+)\])|(\*\*\[(.+?)\]\((.+?)\)\*\*)/g;
+  const segments: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = ALL_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push(
+        <span key={`t-${match.index}`}>{renderText(text.slice(lastIndex, match.index))}</span>,
+      );
+    }
+    if (match[1]) {
+      const toolKey = match[2].trim();
+      const label = match[3].trim();
+      segments.push(
+        <button
+          key={`chip-${match.index}`}
+          onClick={() => onNavigate(`/app/launchpad/${toolKey}`)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "4px 10px",
+            borderRadius: 20,
+            border: "1px solid rgba(249,115,22,0.5)",
+            background: "rgba(249,115,22,0.1)",
+            color: "#F97316",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            margin: "2px 3px",
+            transition: "all 0.12s",
+            verticalAlign: "middle",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.2)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.8)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.1)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.5)";
+          }}
+        >
+          <Zap style={{ width: 10, height: 10 }} />
+          {label}
+        </button>,
+      );
+    } else if (match[4]) {
+      const label = match[5];
+      const path = match[6];
+      segments.push(
+        <Link
+          key={`link-${match.index}`}
+          to={path as never}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 3,
+            fontWeight: 600,
+            color: "#F97316",
+            textDecoration: "none",
+            verticalAlign: "middle",
+          }}
+        >
+          {label}
+          <ArrowUpRight style={{ width: 11, height: 11 }} />
+        </Link>,
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    segments.push(<span key={`tail`}>{renderText(text.slice(lastIndex))}</span>);
+  }
+  return segments;
 }
 
 interface Props {
@@ -85,27 +143,49 @@ interface Props {
 
 export function NovaChatModal({ open, onClose, initialQuery }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
+  const [bootPhase, setBootPhase] = useState(0);
+  const hasBooted = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Fetch user context once on open
+  // Fetch workspace context once on open
   useEffect(() => {
     if (!open || !user?.id) return;
     buildAgentContext(user.id).then((ctx) => setContext(ctx as unknown as Record<string, unknown>));
   }, [open, user?.id]);
 
-  // Auto-focus input when opened
+  // Boot sequence animation
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    if (hasBooted.current) {
+      setBootPhase(4);
+      return;
+    }
+    setBootPhase(0);
+    const timers = [
+      setTimeout(() => setBootPhase(1), 480),
+      setTimeout(() => setBootPhase(2), 960),
+      setTimeout(() => setBootPhase(3), 1440),
+      setTimeout(() => {
+        setBootPhase(4);
+        hasBooted.current = true;
+        setTimeout(() => inputRef.current?.focus(), 80);
+      }, 1900),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [open]);
+
+  // Auto-focus + handle initialQuery
+  useEffect(() => {
+    if (open && hasBooted.current) {
       setTimeout(() => inputRef.current?.focus(), 80);
-      if (initialQuery && messages.length === 0) {
-        setInput(initialQuery);
-      }
+      if (initialQuery && messages.length === 0) setInput(initialQuery);
     }
   }, [open]);
 
@@ -113,6 +193,16 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Escape key handler
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
 
   const handleClose = () => {
     abortRef.current?.abort();
@@ -183,14 +273,12 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
-
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6).trim();
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            // Anthropic SSE: content_block_delta with type=text_delta
             if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
               accumulated += parsed.delta.text;
               setMessages((prev) =>
@@ -205,15 +293,10 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
         }
       }
 
-      // Finalize
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantMsg.id
-            ? {
-                ...m,
-                content: accumulated || "Sorry, I couldn't generate a response.",
-                pending: false,
-              }
+            ? { ...m, content: accumulated || "No response generated.", pending: false }
             : m,
         ),
       );
@@ -221,7 +304,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
       const errMsg =
         err instanceof Error && err.name === "AbortError"
           ? null
-          : `Something went wrong. ${err instanceof Error ? err.message : ""}`.trim();
+          : `Error: ${err instanceof Error ? err.message : "Unknown"}`.trim();
 
       setMessages((prev) =>
         prev
@@ -242,317 +325,715 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent
+  // Extract telemetry from workspace context
+  const ctxAny = context as Record<string, unknown> & {
+    name?: string;
+    plan?: string;
+    idea?: string;
+    mission?: string;
+    recentToolRuns?: Array<{ toolKey?: string; tool?: string }>;
+    toolRunCount?: number;
+  };
+  const displayName = ctxAny.name || user?.email?.split("@")[0] || "Founder";
+  const planTier = (ctxAny.plan as string) || "starter";
+  const currentIdea = (ctxAny.idea as string) || null;
+  const currentMission = (ctxAny.mission as string) || null;
+  const recentRuns = (ctxAny.recentToolRuns as Array<{ toolKey?: string; tool?: string }>) || [];
+  const toolRunCount = (ctxAny.toolRunCount as number) || 0;
+
+  if (typeof window === "undefined") return null;
+
+  const content = open ? (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* Backdrop */}
+      <div
+        onClick={handleClose}
         style={{
-          maxWidth: 680,
-          width: "95vw",
-          padding: 0,
-          overflow: "hidden",
-          borderRadius: 18,
-          border: "1px solid rgba(99,102,241,0.25)",
-          background: "var(--surface)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0,0,0,0.88)",
+          backdropFilter: "blur(6px)",
+        }}
+      />
+
+      {/* Panel */}
+      <div
+        style={{
+          position: "relative",
+          width: "min(94vw, 1080px)",
+          height: "min(92vh, 780px)",
+          borderRadius: 20,
+          border: "1px solid rgba(249,115,22,0.2)",
+          background: "#0d0d0f",
+          boxShadow: "0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(249,115,22,0.06) inset",
           display: "flex",
-          flexDirection: "column",
-          maxHeight: "80vh",
+          overflow: "hidden",
+          backgroundImage:
+            "linear-gradient(rgba(249,115,22,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.025) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
         }}
       >
-        {/* Header */}
+        {/* ── Left Sidebar ── */}
         <div
           style={{
+            width: 248,
+            borderRight: "1px solid rgba(249,115,22,0.1)",
             display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "14px 18px",
-            borderBottom: "1px solid rgba(99,102,241,0.12)",
+            flexDirection: "column",
+            padding: "20px 16px",
+            gap: 20,
             flexShrink: 0,
+            overflow: "hidden",
           }}
+          className="nova-sidebar"
         >
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Sparkles style={{ width: 14, height: 14, color: "#fff" }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>
-              Ask Nova
-            </div>
-            <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>
-              AI assistant · platform guide · startup advisor
-            </div>
-          </div>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
-            {messages.length > 0 && (
-              <button
-                onClick={resetChat}
-                title="New conversation"
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 7,
-                  border: "1px solid var(--border)",
-                  background: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                <RotateCcw style={{ width: 13, height: 13 }} />
-              </button>
-            )}
-            <button
-              onClick={handleClose}
+          {/* Nova Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 7,
-                border: "1px solid var(--border)",
-                background: "none",
-                cursor: "pointer",
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #F97316, #ea580c)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "var(--muted-foreground)",
+                boxShadow: streaming
+                  ? "0 0 0 3px rgba(249,115,22,0.25), 0 0 14px rgba(249,115,22,0.3)"
+                  : "0 0 10px rgba(249,115,22,0.2)",
+                transition: "box-shadow 0.4s",
               }}
             >
-              <X style={{ width: 13, height: 13 }} />
-            </button>
+              <Sparkles style={{ width: 15, height: 15, color: "#fff" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: 0.5 }}>
+                NOVA
+              </div>
+              <div style={{ fontSize: 10, color: "#F97316", letterSpacing: 1.5, opacity: 0.8 }}>
+                AI INTELLIGENCE
+              </div>
+            </div>
+          </div>
+
+          {/* System status */}
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(249,115,22,0.12)",
+              background: "rgba(249,115,22,0.04)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: "rgba(249,115,22,0.6)",
+                letterSpacing: 1.5,
+                marginBottom: 8,
+              }}
+            >
+              SYSTEM STATUS
+            </div>
+            {[
+              { label: "AI Core", ok: true },
+              { label: "Workspace", ok: Object.keys(context).length > 0 },
+              { label: "Streaming", ok: true },
+            ].map(({ label, ok }) => (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 5,
+                }}
+              >
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: ok ? "#22c55e" : "#ef4444",
+                    letterSpacing: 1,
+                  }}
+                >
+                  {ok ? "ONLINE" : "OFFLINE"}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Founder telemetry */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 9, color: "rgba(249,115,22,0.6)", letterSpacing: 1.5 }}>
+              WORKSPACE INTEL
+            </div>
+            <TelemetryRow label="Operator" value={displayName} />
+            <TelemetryRow label="Plan" value={planTier.toUpperCase()} accent />
+            {currentIdea && <TelemetryRow label="Idea" value={currentIdea} truncate />}
+            {currentMission && <TelemetryRow label="Mission" value={currentMission} truncate />}
+            <TelemetryRow label="Tool Runs" value={String(toolRunCount || recentRuns.length)} />
+          </div>
+
+          {/* Recent tool runs */}
+          {recentRuns.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 9, color: "rgba(249,115,22,0.6)", letterSpacing: 1.5 }}>
+                RECENT ACTIVITY
+              </div>
+              {recentRuns.slice(0, 4).map((run, i) => {
+                const key = run.toolKey || run.tool || "tool";
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "5px 8px",
+                      borderRadius: 7,
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      background: "rgba(255,255,255,0.02)",
+                    }}
+                  >
+                    <Activity style={{ width: 10, height: 10, color: "rgba(249,115,22,0.5)" }} />
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "rgba(255,255,255,0.55)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {key.replace(/-/g, " ")}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Quick nav */}
+          <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 5 }}>
+            {[
+              { label: "Tool Suite", path: "/app/launchpad" },
+              { label: "Mentors", path: "/app/mentor" },
+              { label: "Dashboard", path: "/app/dashboard" },
+            ].map(({ label, path }) => (
+              <Link
+                key={path}
+                to={path as never}
+                onClick={handleClose}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.02)",
+                  color: "rgba(255,255,255,0.5)",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  transition: "all 0.12s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "#F97316";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.2)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)";
+                }}
+              >
+                {label}
+                <ArrowUpRight style={{ width: 10, height: 10 }} />
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Messages */}
+        {/* ── Main Chat Area ── */}
         <div
           style={{
             flex: 1,
-            overflowY: "auto",
-            padding: "16px 18px",
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            minWidth: 0,
+            overflow: "hidden",
           }}
         >
-          {messages.length === 0 && (
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "14px 20px",
+              borderBottom: "1px solid rgba(249,115,22,0.1)",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                Ask Nova
+                {streaming && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 600,
+                      letterSpacing: 1.5,
+                      color: "#F97316",
+                      animation: "nova-pulse 1.5s ease-in-out infinite",
+                    }}
+                  >
+                    THINKING...
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.3)" }}>
+                Chief of Staff · 30-tool suite · startup strategy
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {messages.length > 0 && (
+                <HeaderBtn onClick={resetChat} title="New conversation">
+                  <RotateCcw style={{ width: 12, height: 12 }} />
+                </HeaderBtn>
+              )}
+              <HeaderBtn onClick={handleClose} title="Close (Esc)">
+                <X style={{ width: 13, height: 13 }} />
+              </HeaderBtn>
+            </div>
+          </div>
+
+          {/* Boot screen OR messages */}
+          {bootPhase < 4 ? (
             <div
               style={{
+                flex: 1,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 180,
-                gap: 20,
+                gap: 16,
+                padding: 40,
               }}
             >
-              <div style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: "var(--foreground)",
-                    marginBottom: 6,
-                  }}
-                >
-                  What can I help you with?
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--muted-foreground)" }}>
-                  Ask me anything about your startup, the platform, or what to do next.
-                </div>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #F97316, #ea580c)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 0 40px rgba(249,115,22,0.3)",
+                  animation: "nova-pulse 1.5s ease-in-out infinite",
+                }}
+              >
+                <Sparkles style={{ width: 28, height: 28, color: "#fff" }} />
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
-                {QUICK_PROMPTS.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => sendMessage(p)}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}
+              >
+                {BOOT_LINES.slice(0, bootPhase + 1).map((line, i) => (
+                  <div
+                    key={i}
                     style={{
-                      padding: "6px 12px",
-                      borderRadius: 20,
-                      border: "1px solid rgba(99,102,241,0.25)",
-                      background: "rgba(99,102,241,0.06)",
-                      color: "var(--foreground)",
-                      fontSize: 12,
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      transition: "all 0.12s",
-                    }}
-                    onMouseEnter={(e: React.MouseEvent) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(99,102,241,0.14)";
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(99,102,241,0.5)";
-                    }}
-                    onMouseLeave={(e: React.MouseEvent) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(99,102,241,0.06)";
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(99,102,241,0.25)";
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: 2,
+                      color: i === bootPhase ? "#F97316" : "rgba(249,115,22,0.35)",
+                      fontFamily: "monospace",
+                      transition: "color 0.3s",
                     }}
                   >
-                    {p}
-                  </button>
+                    {i < bootPhase ? "✓ " : ""}
+                    {line}
+                  </div>
                 ))}
               </div>
             </div>
-          )}
-
-          {messages.map((msg) => (
+          ) : (
             <div
-              key={msg.id}
-              style={{
-                display: "flex",
-                flexDirection: msg.role === "user" ? "row-reverse" : "row",
-                gap: 10,
-                alignItems: "flex-start",
-              }}
-            >
-              {msg.role === "assistant" && (
-                <div
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 7,
-                    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    marginTop: 2,
-                  }}
-                >
-                  <Sparkles style={{ width: 12, height: 12, color: "#fff" }} />
-                </div>
-              )}
-              <div
-                style={{
-                  maxWidth: "80%",
-                  padding: "10px 14px",
-                  borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                  background:
-                    msg.role === "user"
-                      ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                      : "var(--surface-2)",
-                  border: msg.role === "assistant" ? "1px solid rgba(99,102,241,0.12)" : "none",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  color: msg.role === "user" ? "#fff" : "var(--foreground)",
-                }}
-              >
-                {msg.pending && !msg.content ? (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      gap: 4,
-                      alignItems: "center",
-                      color: "var(--muted-foreground)",
-                    }}
-                  >
-                    <span style={{ animation: "pulse 1.4s ease-in-out infinite" }}>●</span>
-                    <span style={{ animation: "pulse 1.4s ease-in-out 0.2s infinite" }}>●</span>
-                    <span style={{ animation: "pulse 1.4s ease-in-out 0.4s infinite" }}>●</span>
-                  </span>
-                ) : msg.role === "assistant" ? (
-                  renderContent(msg.content)
-                ) : (
-                  msg.content
-                )}
-              </div>
-            </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Input */}
-        <div
-          style={{
-            padding: "12px 18px 14px",
-            borderTop: "1px solid rgba(99,102,241,0.12)",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              gap: 8,
-              padding: "10px 14px",
-              borderRadius: 12,
-              border: "1px solid rgba(99,102,241,0.25)",
-              background: "var(--surface-2)",
-              transition: "border-color 0.15s",
-            }}
-            onFocus={() => {}}
-          >
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything… (Enter to send, Shift+Enter for newline)"
-              rows={1}
-              disabled={streaming}
               style={{
                 flex: 1,
-                background: "none",
-                border: "none",
-                outline: "none",
-                resize: "none",
-                fontSize: 13,
-                color: "var(--foreground)",
-                fontFamily: "inherit",
-                lineHeight: 1.5,
-                maxHeight: 120,
                 overflowY: "auto",
-              }}
-              onInput={(e) => {
-                const el = e.currentTarget;
-                el.style.height = "auto";
-                el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-              }}
-            />
-            <button
-              onClick={() => sendMessage(input)}
-              disabled={!input.trim() || streaming}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                border: "none",
-                background:
-                  input.trim() && !streaming
-                    ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
-                    : "var(--surface-offset)",
-                color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
-                cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
+                padding: "18px 20px",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                transition: "all 0.15s",
+                flexDirection: "column",
+                gap: 14,
               }}
             >
-              <Send style={{ width: 13, height: 13 }} />
-            </button>
-          </div>
+              {messages.length === 0 && (
+                <EmptyState displayName={displayName} onSend={sendMessage} />
+              )}
+
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  style={{
+                    display: "flex",
+                    flexDirection: msg.role === "user" ? "row-reverse" : "row",
+                    gap: 10,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  {msg.role === "assistant" && (
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #F97316, #ea580c)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 2,
+                        boxShadow: streaming ? "0 0 12px rgba(249,115,22,0.5)" : "none",
+                        transition: "box-shadow 0.3s",
+                      }}
+                    >
+                      <Sparkles style={{ width: 12, height: 12, color: "#fff" }} />
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      maxWidth: "78%",
+                      padding: "10px 14px",
+                      borderRadius:
+                        msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                      background:
+                        msg.role === "user"
+                          ? "linear-gradient(135deg, #F97316, #ea580c)"
+                          : "rgba(255,255,255,0.04)",
+                      border: msg.role === "assistant" ? "1px solid rgba(249,115,22,0.1)" : "none",
+                      fontSize: 13,
+                      lineHeight: 1.65,
+                      color: msg.role === "user" ? "#fff" : "rgba(255,255,255,0.85)",
+                    }}
+                  >
+                    {msg.pending && !msg.content ? (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          gap: 4,
+                          alignItems: "center",
+                          color: "#F97316",
+                        }}
+                      >
+                        <span style={{ animation: "nova-pulse 1.4s ease-in-out infinite" }}>●</span>
+                        <span style={{ animation: "nova-pulse 1.4s ease-in-out 0.2s infinite" }}>
+                          ●
+                        </span>
+                        <span style={{ animation: "nova-pulse 1.4s ease-in-out 0.4s infinite" }}>
+                          ●
+                        </span>
+                      </span>
+                    ) : msg.role === "assistant" ? (
+                      renderContent(msg.content, (path) => {
+                        navigate({ to: path as never });
+                        handleClose();
+                      })
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+          )}
+
+          {/* Input */}
           <div
             style={{
-              fontSize: 10.5,
-              color: "var(--muted-foreground)",
-              opacity: 0.5,
-              marginTop: 6,
-              textAlign: "center",
+              padding: "12px 20px 16px",
+              borderTop: "1px solid rgba(249,115,22,0.1)",
+              flexShrink: 0,
             }}
           >
-            Nova AI · answers are AI-generated and may not be perfect
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 8,
+                padding: "10px 14px",
+                borderRadius: 12,
+                border: "1px solid rgba(249,115,22,0.2)",
+                background: "rgba(255,255,255,0.03)",
+                transition: "border-color 0.15s",
+              }}
+              onFocusCapture={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.45)";
+              }}
+              onBlurCapture={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.2)";
+              }}
+            >
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask NOVA anything… Enter to send, Shift+Enter for newline"
+                rows={1}
+                disabled={streaming || bootPhase < 4}
+                style={{
+                  flex: 1,
+                  background: "none",
+                  border: "none",
+                  outline: "none",
+                  resize: "none",
+                  fontSize: 13,
+                  color: "#fff",
+                  fontFamily: "inherit",
+                  lineHeight: 1.5,
+                  maxHeight: 120,
+                  overflowY: "auto",
+                  caretColor: "#F97316",
+                }}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = "auto";
+                  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+                }}
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={!input.trim() || streaming || bootPhase < 4}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 9,
+                  border: "none",
+                  background:
+                    input.trim() && !streaming
+                      ? "linear-gradient(135deg, #F97316, #ea580c)"
+                      : "rgba(255,255,255,0.06)",
+                  color: input.trim() && !streaming ? "#fff" : "rgba(255,255,255,0.25)",
+                  cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  transition: "all 0.15s",
+                  boxShadow: input.trim() && !streaming ? "0 0 10px rgba(249,115,22,0.3)" : "none",
+                }}
+              >
+                <Send style={{ width: 13, height: 13 }} />
+              </button>
+            </div>
+            <div
+              style={{
+                fontSize: 10,
+                color: "rgba(255,255,255,0.2)",
+                marginTop: 6,
+                textAlign: "center",
+                letterSpacing: 0.5,
+              }}
+            >
+              NOVA AI · responses are AI-generated · always verify critical decisions
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      <style>{`
+        @keyframes nova-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.35; }
+        }
+        @media (max-width: 680px) {
+          .nova-sidebar { display: none !important; }
+        }
+      `}</style>
+    </div>
+  ) : null;
+
+  return createPortal(content, document.body);
+}
+
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+function HeaderBtn({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "rgba(255,255,255,0.4)",
+        transition: "all 0.12s",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "#fff";
+        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)";
+        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+        (e.currentTarget as HTMLElement).style.background = "none";
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function TelemetryRow({
+  label,
+  value,
+  accent,
+  truncate,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  truncate?: boolean;
+}) {
+  return (
+    <div
+      style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}
+    >
+      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", flexShrink: 0 }}>{label}</span>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: accent ? "#F97316" : "rgba(255,255,255,0.7)",
+          overflow: truncate ? "hidden" : undefined,
+          textOverflow: truncate ? "ellipsis" : undefined,
+          whiteSpace: truncate ? "nowrap" : undefined,
+          textAlign: "right",
+          maxWidth: truncate ? 120 : undefined,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function EmptyState({
+  displayName,
+  onSend,
+}: {
+  displayName: string;
+  onSend: (text: string) => void;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 240,
+        gap: 24,
+        padding: "0 20px",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#fff",
+            marginBottom: 8,
+          }}
+        >
+          Good to see you, {displayName}.
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+          I have full visibility into your workspace.
+          <br />
+          What's the mission today?
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 7,
+          justifyContent: "center",
+          maxWidth: 480,
+        }}
+      >
+        {QUICK_PROMPTS.map((p) => (
+          <button
+            key={p}
+            onClick={() => onSend(p)}
+            style={{
+              padding: "7px 14px",
+              borderRadius: 20,
+              border: "1px solid rgba(249,115,22,0.2)",
+              background: "rgba(249,115,22,0.05)",
+              color: "rgba(255,255,255,0.65)",
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              transition: "all 0.12s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.12)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.45)";
+              (e.currentTarget as HTMLElement).style.color = "#F97316";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.2)";
+              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.65)";
+            }}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
