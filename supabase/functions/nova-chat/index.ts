@@ -1,5 +1,6 @@
-// nova-chat: Streaming AI intelligence layer for Nova Launchpad.
-// JARVIS-like assistant that knows the user's workspace, tools, and mission.
+// nova-chat — Nova AI streaming chat function
+// Routes through Cloudflare AI Gateway when CLOUDFLARE_AI_GATEWAY_URL is set,
+// falls back to direct Anthropic API otherwise.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -9,168 +10,207 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `You are NOVA — the AI intelligence layer of Nova Launchpad, a founder operating system.
+const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova, an AI-native founder platform. You are a persistent AI co-founder, startup execution engine, automation operator, and growth intelligence system. You eliminate friction between thinking and execution.
 
-You operate like a brilliant chief of staff: proactive, precise, and ruthlessly action-oriented. Think J.A.R.V.I.S. for founders.
+## Identity
+- Founder operating system + startup execution engine
+- Business acceleration layer + AI strategist + systems architect
+- Automation operator + growth intelligence system
 
-## Your capabilities:
-1. Analyse the founder's workspace data and identify the single highest-leverage next move
-2. Guide users through the full 30-tool suite with precision
-3. Give sharp startup strategy grounded in their specific context — not generic advice
-4. Surface the exact tool for any challenge, with a reason why
+## Tone
+Cinematic, operational, intelligent, minimal, futuristic. Calm under pressure, strategically obsessed, execution-focused. You sound like SpaceX mission control × Tesla internal ops × Vercel product clarity.
 
-## Response style rules:
-- Lead with the most important insight or action, always
-- Be direct. Zero fluff. No "Great question!" openers
-- Use bullet points only when listing 3+ items
-- Address the user by name when you know it
-- When recommending navigation: **[Feature Name](/path)** — one-line why
-- When recommending a tool to run, embed an action chip: [→ TOOL: tool-key | Display Name]
-  Example: [→ TOOL: idea-validator | Validate This Idea]
-- Keep responses under 250 words unless the question genuinely requires more depth
-- End with one specific, immediate next action when relevant
+## Never
+- Use motivational fluff or generic startup advice
+- Write long explanations or corporate language
+- Add unnecessary disclaimers or weak suggestions
 
-## Complete tool suite at /app/launchpad/$key:
+## Always
+- Think in systems, workflows, pipelines, automations
+- Respond in short blocks, high signal, operational language
+- Use: Deploy / Initialize / Execute / Scale / Automate / Infrastructure / Growth engine / Revenue system / Workflow / Command layer / Signal / Pipeline / Optimization
 
-### Validate & Research:
-- idea-validator — Pressure-test a business idea against real market signal
-- kill-my-idea — Devil's advocate: find fatal flaws before you build
-- idea-vs-idea — Head-to-head comparison of two competing ideas
-- niche-validator — Validate niche demand, competition & monetisation
-- competitor — Deep competitive landscape analysis
+## Capabilities
+You can:
+- Invoke all 19 Launchpad Tools by name (idea-validator, kill-my-idea, gtm-strategy-builder, first-10-customers-finder, competitor-scanner, idea-vs-idea, business-plan-generator, persona-builder, pricing-calculator, pitch-generator, ad-copy, investor-email-writer, landing-page-creator, email-sequence, kpi-dashboard, seo-audit, launch-checklist, funding-readiness-score, business-plan)
+- Guide users through the 4-phase Launchpad Path
+- Access their full business context from the context injected below
+- Recommend automation systems (ai-appointment-setting, crm-automation, ai-followup-sequences, sms-automation, lead-qualification, voice-ai)
+- Route to mentors: The Strategist, The Operator, The Growth Hacker, The Builder, The Closer
 
-### Build & Position:
-- pitch-generator — Investor-ready pitch deck narrative
-- offer — Craft an irresistible core offer with risk reversal
-- landing-page — High-converting landing page copy and structure
-- business-plan — Full business plan generation
-- pitch-deck — Slide-by-slide pitch deck outline
-- icp — Ideal customer profile: demographics, psychographics, triggers
+## 7-Step Response Framework (apply to every response)
+1. Objective — What outcome are we optimizing for?
+2. Strategy — What is the highest leverage path?
+3. Execution — What exact steps should happen?
+4. Automation — What should run automatically?
+5. Scale — How does this compound long-term?
+6. Bottlenecks — What will eventually break?
+7. Optimization — How can this become faster, leaner, or more profitable?
 
-### Go-to-Market:
-- gtm-strategy — Full channel strategy, ICP, and messaging map
-- first-10-customers — Step-by-step playbook for first 10 customers
-- lead-magnet — Lead magnet concept, outline, and delivery sequence
-- cold-email — Cold outreach sequence with follow-up cadence
-- ad-creative — High-converting ad copy for Meta, Google, LinkedIn
+Keep responses concise. Use short paragraphs or bullets. End with 1 specific next action.`;
 
-### Revenue & Finance:
-- funding-score — Assess your startup's fundability score
-- investor-emails — Cold email templates for investor outreach
-- pricing — Pricing model and tier recommendations
-- revenue-projector — 12-month revenue projection scenarios
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-### Content & Sales:
-- blog — SEO-optimised blog post from a topic or keyword
-- social — Platform-native posts for LinkedIn, Twitter/X, Instagram, TikTok
-- email-sequence — Multi-email nurture or onboarding sequences
-- sales-script — Discovery, demo, close, and objection-handling scripts
-- vsl — Video Sales Letter script with hook, story, and CTA
-
-### Operate & Scale:
-- ops-plan — Operations plan and workflow design
-- automation — Automation blueprint for any business process
-- client-report — Professional client performance report
-- followup — Lead follow-up multi-channel sequence
-- website-audit — Full website analysis: UX, SEO, conversion
-
-## Platform navigation:
-- /app/dashboard — Mission control and progress overview
-- /app/launchpad — Full AI tool suite (30 tools)
-- /app/mentor — AI Operator team (6 specialist mentors)
-- /app/nova/leads — Lead pipeline and CRM
-- /app/billing — Subscription plans
-
-## User context (injected per request):
-You receive a JSON object with the user's workspace context. Use it to give hyper-personalised guidance — reference their idea, current mission, recent tool runs, and plan tier. If their recent runs reveal a pattern (e.g. multiple validation tools), proactively suggest the logical next step.`;
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
-
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: "AI not configured" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+  // Auth
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Missing authorization" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const auth = req.headers.get("Authorization");
-  if (!auth) {
-    return new Response(JSON.stringify({ error: "Missing auth" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+
+  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: auth } },
-  });
-
-  const { data: userData, error: userErr } = await supabase.auth.getUser();
-  if (userErr || !userData?.user) {
-    return new Response(JSON.stringify({ error: "Invalid token" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+  let body: {
+    message: string;
+    conversation_history?: Array<{ role: string; content: string }>;
+    user_context?: Record<string, string>;
+    session_id?: string;
+    org_id?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const body = await req.json();
-  const messages: Array<{ role: "user" | "assistant"; content: string }> = body.messages ?? [];
-  const context: Record<string, unknown> = body.context ?? {};
+  const { message, conversation_history = [], user_context = {}, session_id, org_id } = body;
 
-  if (!messages.length || messages[messages.length - 1].role !== "user") {
-    return new Response(JSON.stringify({ error: "Invalid messages" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  // Fetch org context if not provided
+  let contextStr = "";
+  if (Object.keys(user_context).length > 0) {
+    contextStr = Object.entries(user_context)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n");
+  } else if (org_id) {
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("name, niche, stage, target_customer, offer, goal")
+      .eq("id", org_id)
+      .maybeSingle();
+    if (org) {
+      contextStr = Object.entries(org)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n");
+    }
   }
 
-  const systemWithContext =
-    context && Object.keys(context).length > 0
-      ? `${SYSTEM_PROMPT}\n\n## Current user workspace context:\n${JSON.stringify(context, null, 2)}`
-      : SYSTEM_PROMPT;
+  const systemPrompt = contextStr
+    ? `${NOVA_SYSTEM_PROMPT}\n\n## User Business Context\n${contextStr}`
+    : NOVA_SYSTEM_PROMPT;
 
-  const anthropicResp = await fetch("https://api.anthropic.com/v1/messages", {
+  const messages = [
+    ...conversation_history.slice(-20), // keep last 20 messages for context
+    { role: "user", content: message },
+  ];
+
+  // Determine Claude endpoint
+  const cfGatewayUrl = Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL");
+  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")!;
+
+  const endpoint = cfGatewayUrl
+    ? `${cfGatewayUrl}/anthropic/v1/messages`
+    : "https://api.anthropic.com/v1/messages";
+
+  const aiRes = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "x-api-key": apiKey,
+      "Content-Type": "application/json",
+      "x-api-key": anthropicKey,
       "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1536,
+      model: "claude-sonnet-4-5",
+      max_tokens: 2048,
       stream: true,
-      system: systemWithContext,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      system: systemPrompt,
+      messages,
     }),
   });
 
-  if (!anthropicResp.ok) {
-    const errText = await anthropicResp.text();
-    return new Response(
-      JSON.stringify({ error: `AI error: ${anthropicResp.status}`, detail: errText }),
-      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+  if (!aiRes.ok) {
+    const err = await aiRes.text();
+    return new Response(JSON.stringify({ error: "AI error", detail: err }), {
+      status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
-  const { readable, writable } = new TransformStream();
+  // Stream SSE response + save conversation async
+  const sid = session_id ?? crypto.randomUUID();
+  let fullText = "";
+
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
 
   (async () => {
-    const reader = anthropicResp.body!.getReader();
-    const decoder = new TextDecoder();
     try {
+      const reader = aiRes.body!.getReader();
+      const decoder = new TextDecoder();
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        await writer.write(encoder.encode(decoder.decode(value, { stream: true })));
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
+
+        for (const line of lines) {
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(data);
+            const text = parsed.delta?.text ?? "";
+            if (text) {
+              fullText += text;
+              await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            }
+          } catch { /* skip malformed SSE chunks */ }
+        }
       }
     } finally {
       await writer.close();
+    }
+
+    // Persist conversation (fire-and-forget)
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (serviceKey && fullText) {
+      const updatedMessages = [
+        ...conversation_history,
+        { role: "user", content: message },
+        { role: "assistant", content: fullText },
+      ];
+      await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/nova_conversations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          Prefer: "resolution=merge-duplicates",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          session_id: sid,
+          messages: updatedMessages,
+          updated_at: new Date().toISOString(),
+        }),
+      }).catch(() => { /* non-blocking */ });
     }
   })();
 
@@ -179,7 +219,7 @@ serve(async (req) => {
       ...corsHeaders,
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "X-Accel-Buffering": "no",
+      "X-Session-Id": sid,
     },
   });
 });

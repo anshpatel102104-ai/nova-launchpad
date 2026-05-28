@@ -42,6 +42,8 @@ import {
   Radio,
   Command,
   Navigation,
+  Map,
+  Bot,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -160,6 +162,34 @@ const CONTENT_NAV: NavItem[] = [
     label: "Reports",
     icon: BarChart2,
     match: (p) => p === "/app/nova/reports",
+  },
+];
+
+const TOOLS_NAV: NavItem[] = [
+  {
+    to: "/app/automations",
+    label: "Automations",
+    icon: Workflow,
+    match: (p) => p.startsWith("/app/automations"),
+  },
+  {
+    to: "/app/contacts",
+    label: "Contacts",
+    icon: Users,
+    match: (p) => p.startsWith("/app/contacts"),
+  },
+  {
+    to: "/app/launchpad-path",
+    label: "Launchpad Path",
+    icon: Map,
+    match: (p) => p.startsWith("/app/launchpad-path"),
+  },
+  {
+    to: "/app/nova-full",
+    label: "Nova AI",
+    icon: Bot,
+    match: (p) => p.startsWith("/app/nova-full"),
+    badge: "AI",
   },
 ];
 
@@ -319,6 +349,11 @@ export function AppSidebar() {
 
         {/* Content & operations */}
         {renderSection(CONTENT_NAV, "content")}
+
+        <SectionDivider collapsed={collapsed} label="Tools" />
+
+        {/* New tools nav */}
+        {renderSection(TOOLS_NAV, "tools")}
       </nav>
 
       {/* Footer */}
