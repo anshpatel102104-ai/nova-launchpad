@@ -1943,6 +1943,7 @@ async function callDirectAPI(
       "anthropic-dangerous-direct-browser-access": "true",
       "content-type": "application/json",
     },
+    signal: AbortSignal.timeout(60000), // 60s timeout
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 8192,
@@ -1978,6 +1979,7 @@ async function callStreamingAPI(
       "anthropic-dangerous-direct-browser-access": "true",
       "content-type": "application/json",
     },
+    signal: AbortSignal.timeout(60000), // 60s timeout
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 8192,

@@ -1067,12 +1067,12 @@ function Dashboard() {
                         {r.tool_key.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </div>
                       <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                        {new Date(r.created_at).toLocaleString(undefined, {
+                        {r.created_at ? new Date(r.created_at).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
                           hour: "numeric",
                           minute: "2-digit",
-                        })}
+                        }) : '—'}
                       </div>
                     </div>
                     <span
@@ -1116,7 +1116,7 @@ function Dashboard() {
                       Lead added · {l.name}
                     </div>
                     <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                      {l.source ?? "Manual"} · {new Date(l.created_at).toLocaleDateString()}
+                      {l.source ?? "Manual"} · {l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}
                     </div>
                   </div>
                   <span

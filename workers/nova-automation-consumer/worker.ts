@@ -11,6 +11,8 @@ export interface Env {
   SENDGRID_API_KEY: string;
   TWILIO_ACCOUNT_SID: string;
   TWILIO_AUTH_TOKEN: string;
+  TWILIO_FROM_NUMBER?: string;
+  AUTOMATION_QUEUE?: Queue<AutomationJob>;
 }
 
 interface AutomationJob {
@@ -127,7 +129,7 @@ async function sendEmail(
 async function sendSMS(to: string, body: string, env: Env): Promise<boolean> {
   const accountSid = env.TWILIO_ACCOUNT_SID;
   const authToken = env.TWILIO_AUTH_TOKEN;
-  const twilioNumber = '+18334509482'; // Should be env var in production
+  const twilioNumber = env.TWILIO_FROM_NUMBER ?? '+18334509482';
 
   const formBody = new URLSearchParams({
     To: to,
@@ -450,7 +452,7 @@ Notes: ${contactData.notes ?? ''}`;
   // Route based on score
   if (scoreData.score >= 70) {
     // High quality lead → appointment setting
-    await job_enqueue_placeholder('ai-appointment-setting', { contact_id: contact.id, channel: 'email' }, user_id);
+    await job_enqueue_placeholder('ai-appointment-setting', { contact_id: contact.id, channel: 'email' }, user_id, env);
   } else if (scoreData.score >= 40) {
     // Nurture lead
     await postToSupabase(
@@ -459,7 +461,7 @@ Notes: ${contactData.notes ?? ''}`;
       env,
       'PATCH'
     );
-    await job_enqueue_placeholder('ai-followup-sequences', { contact_id: contact.id }, user_id);
+    await job_enqueue_placeholder('ai-followup-sequences', { contact_id: contact.id }, user_id, env);
   } else {
     // Low priority
     await postToSupabase(
@@ -718,17 +720,21 @@ async function handleVoiceAi(
 }
 
 // ---------------------------------------------------------------------------
-// Placeholder for queue re-enqueue (in production, use env.AUTOMATION_QUEUE.send())
-// This function exists so handlers can trigger sub-jobs.
-// In a real deployment, the consumer would need access to the queue binding.
+// Queue re-enqueue helper — uses AUTOMATION_QUEUE binding if available.
+// Falls back to a log-only placeholder when the binding is not present.
+// TODO: ensure AUTOMATION_QUEUE is bound in wrangler.toml for production.
 // ---------------------------------------------------------------------------
 async function job_enqueue_placeholder(
   automation_slug: string,
   payload: Record<string, unknown>,
-  user_id: string
+  user_id: string,
+  env?: Env
 ): Promise<void> {
-  // In production: await env.AUTOMATION_QUEUE.send({ automation_slug, payload, user_id, triggered_at: new Date().toISOString() });
-  console.log(`[Nova] Would enqueue: ${automation_slug} for user ${user_id}`, payload);
+  if (env?.AUTOMATION_QUEUE) {
+    await env.AUTOMATION_QUEUE.send({ automation_slug, payload, user_id });
+  } else {
+    console.log(`[Nova] AUTOMATION_QUEUE not bound — would enqueue: ${automation_slug}`, { user_id, payload });
+  }
 }
 
 // ---------------------------------------------------------------------------

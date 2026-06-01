@@ -62,9 +62,15 @@ serve(async (req: Request) => {
     });
   }
 
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return new Response(JSON.stringify({ error: "Server misconfigured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
   const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     { global: { headers: { Authorization: authHeader } } },
   );
 
