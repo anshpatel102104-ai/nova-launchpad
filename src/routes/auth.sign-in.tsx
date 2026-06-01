@@ -5,10 +5,16 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/auth/sign-in")({ component: SignIn });
+export const Route = createFileRoute("/auth/sign-in")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+  }),
+  component: SignIn,
+});
 
 function SignIn() {
   const navigate = useNavigate();
+  const { redirect: redirectTo } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +28,12 @@ function SignIn() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/app/dashboard" });
+    // Use redirect param if it's a safe internal path, else go to dashboard
+    const dest =
+      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+        ? redirectTo
+        : "/app/dashboard";
+    navigate({ to: dest as never });
   };
 
   return (

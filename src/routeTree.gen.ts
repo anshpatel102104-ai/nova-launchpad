@@ -46,6 +46,10 @@ import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
+import { Route as AppAutomationsRouteImport } from './routes/app.automations'
+import { Route as AppContactsRouteImport } from './routes/app.contacts'
+import { Route as AppLaunchpadPathRouteImport } from './routes/app.launchpad-path'
+import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -232,6 +236,26 @@ const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => AppBillingRoute,
 } as any)
+const AppAutomationsRoute = AppAutomationsRouteImport.update({
+  id: '/automations',
+  path: '/automations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContactsRoute = AppContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadPathRoute = AppLaunchpadPathRouteImport.update({
+  id: '/launchpad-path',
+  path: '/launchpad-path',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaFullRoute = AppNovaFullRouteImport.update({
+  id: '/nova-full',
+  path: '/nova-full',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -271,6 +295,10 @@ export interface FileRoutesByFullPath {
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/automations': typeof AppAutomationsRoute
+  '/app/contacts': typeof AppContactsRoute
+  '/app/launchpad-path': typeof AppLaunchpadPathRoute
+  '/app/nova-full': typeof AppNovaFullRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -309,6 +337,10 @@ export interface FileRoutesByTo {
   '/app/blog': typeof AppBlogIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
+  '/app/automations': typeof AppAutomationsRoute
+  '/app/contacts': typeof AppContactsRoute
+  '/app/launchpad-path': typeof AppLaunchpadPathRoute
+  '/app/nova-full': typeof AppNovaFullRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -349,6 +381,10 @@ export interface FileRoutesById {
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/automations': typeof AppAutomationsRoute
+  '/app/contacts': typeof AppContactsRoute
+  '/app/launchpad-path': typeof AppLaunchpadPathRoute
+  '/app/nova-full': typeof AppNovaFullRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -390,6 +426,10 @@ export interface FileRouteTypes {
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/automations'
+    | '/app/contacts'
+    | '/app/launchpad-path'
+    | '/app/nova-full'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -428,6 +468,10 @@ export interface FileRouteTypes {
     | '/app/blog'
     | '/app/launchpad'
     | '/app/nova'
+    | '/app/automations'
+    | '/app/contacts'
+    | '/app/launchpad-path'
+    | '/app/nova-full'
   id:
     | '__root__'
     | '/'
@@ -467,6 +511,10 @@ export interface FileRouteTypes {
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/automations'
+    | '/app/contacts'
+    | '/app/launchpad-path'
+    | '/app/nova-full'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -745,6 +793,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingReturnRouteImport
       parentRoute: typeof AppBillingRoute
     }
+    '/app/automations': {
+      id: '/app/automations'
+      path: '/automations'
+      fullPath: '/app/automations'
+      preLoaderRoute: typeof AppAutomationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/contacts': {
+      id: '/app/contacts'
+      path: '/contacts'
+      fullPath: '/app/contacts'
+      preLoaderRoute: typeof AppContactsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad-path': {
+      id: '/app/launchpad-path'
+      path: '/launchpad-path'
+      fullPath: '/app/launchpad-path'
+      preLoaderRoute: typeof AppLaunchpadPathRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova-full': {
+      id: '/app/nova-full'
+      path: '/nova-full'
+      fullPath: '/app/nova-full'
+      preLoaderRoute: typeof AppNovaFullRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -796,6 +872,10 @@ interface AppRouteChildren {
   AppBlogIndexRoute: typeof AppBlogIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
+  AppAutomationsRoute: typeof AppAutomationsRoute
+  AppContactsRoute: typeof AppContactsRoute
+  AppLaunchpadPathRoute: typeof AppLaunchpadPathRoute
+  AppNovaFullRoute: typeof AppNovaFullRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -822,6 +902,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppBlogIndexRoute: AppBlogIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,
+  AppAutomationsRoute: AppAutomationsRoute,
+  AppContactsRoute: AppContactsRoute,
+  AppLaunchpadPathRoute: AppLaunchpadPathRoute,
+  AppNovaFullRoute: AppNovaFullRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

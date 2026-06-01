@@ -157,7 +157,7 @@ function NovaFullPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(token && token.length > 0 ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
             message: text,
@@ -460,8 +460,8 @@ function NovaFullPage() {
             </div>
           )}
 
-          {messages.map((msg, idx) => (
-            <ChatBubble key={idx} message={msg} />
+          {messages.map((msg) => (
+            <ChatBubble key={`${msg.timestamp}-${msg.role}`} message={msg} />
           ))}
 
           {/* Streaming bubble */}
@@ -669,11 +669,12 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
             name: (data.name as string) ?? "",
             stage: (data.stage as string) ?? "",
             industry: (data.industry as string) ?? "",
-            ...((data.context_data as Record<string, string>) ?? {}),
+            ...((data.context_data && typeof data.context_data === "object" ? data.context_data : {}) as Record<string, string>),
           });
         }
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [orgId]);
 
   const handleSave = async () => {
