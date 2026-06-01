@@ -107,6 +107,18 @@
   --shadow-soft:    0 1px 2px rgba(0,0,0,0.22);
   --shadow-elevated: var(--shadow-card);
   --shadow-glow:    var(--shadow-glow-primary);
+
+  /* Extended color tokens */
+  --color-surface-elevated: var(--surface-elevated);
+  --color-signal:   var(--signal);
+  --color-ignition: var(--ignition);
+  --color-plasma:   var(--plasma);
+  --color-aurora:   var(--aurora);
+  --color-solar:    var(--solar);
+  --color-cosmic:   var(--cosmic);
+  --color-nebula:   var(--nebula);
+  --color-meridian: var(--meridian);
+  --color-horizon:  var(--horizon);
 }
 
 /* ─────────────────────────── Dark theme: Orbital Command ─────────────────────────── */
@@ -1096,19 +1108,6 @@
   --nebula:   oklch(0.55 0.19 42);
   --meridian: oklch(0.46 0.14 222);
   --horizon:  oklch(0.48 0.12 196);
-}
-
-@theme inline {
-  --color-surface-elevated: var(--surface-elevated);
-  --color-signal:   var(--signal);
-  --color-ignition: var(--ignition);
-  --color-plasma:   var(--plasma);
-  --color-aurora:   var(--aurora);
-  --color-solar:    var(--solar);
-  --color-cosmic:   var(--cosmic);
-  --color-nebula:   var(--nebula);
-  --color-meridian: var(--meridian);
-  --color-horizon:  var(--horizon);
 }
 
 @layer utilities {

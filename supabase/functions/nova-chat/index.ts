@@ -123,7 +123,10 @@ serve(async (req: Request) => {
 
   // Determine Claude endpoint
   const cfGatewayUrl = Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL");
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")!;
+  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!anthropicKey) {
+    return new Response(JSON.stringify({ error: "Server misconfigured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  };
 
   const endpoint = cfGatewayUrl
     ? `${cfGatewayUrl}/anthropic/v1/messages`

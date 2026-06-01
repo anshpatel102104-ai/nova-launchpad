@@ -58,13 +58,15 @@ function corsHeaders(origin: string) {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const origin = request.headers.get('Origin') ?? '';
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
     if (request.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        status: 405, headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+      });
     }
 
     // Auth
@@ -129,7 +131,7 @@ export default {
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
 
-    (async () => {
+    ctx.waitUntil((async () => {
       const reader = aiRes.body!.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -174,7 +176,7 @@ export default {
           updated_at: new Date().toISOString(),
         }),
       });
-    })();
+    })());
 
     return new Response(readable, {
       headers: {

@@ -83,7 +83,7 @@ async function handleList(request: Request, env: Env, user: { sub: string }): Pr
   );
 
   if (!contactsRes.ok) {
-    return jsonResponse({ error: 'Failed to fetch contacts' }, 502);
+    return jsonResponse({ error: 'Failed to fetch contacts' }, 502, corsHeaders(origin));
   }
 
   const contacts = await contactsRes.json();
@@ -124,8 +124,8 @@ async function handleCreate(request: Request, env: Env, user: { sub: string }): 
   });
 
   if (!res.ok) {
-    const err = await res.text();
-    return jsonResponse({ error: 'Failed to create contact', detail: err }, 502);
+    await res.text(); // drain body
+    return jsonResponse({ error: 'Failed to create contact', detail: 'Database operation failed' }, 502);
   }
 
   const created = await res.json() as unknown[];
@@ -169,8 +169,8 @@ async function handleUpdate(
   );
 
   if (!res.ok) {
-    const err = await res.text();
-    return jsonResponse({ error: 'Failed to update contact', detail: err }, 502);
+    await res.text(); // drain body
+    return jsonResponse({ error: 'Failed to update contact', detail: 'Database operation failed' }, 502);
   }
 
   const updated = await res.json() as unknown[];
@@ -196,8 +196,8 @@ async function handleDelete(
   );
 
   if (!res.ok) {
-    const err = await res.text();
-    return jsonResponse({ error: 'Failed to archive contact', detail: err }, 502);
+    await res.text(); // drain body
+    return jsonResponse({ error: 'Failed to archive contact', detail: 'Database operation failed' }, 502);
   }
 
   const result = await res.json() as unknown[];

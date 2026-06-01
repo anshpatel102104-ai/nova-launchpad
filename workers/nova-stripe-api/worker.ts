@@ -20,8 +20,8 @@ const CANCEL_URL = 'https://app.launchpad.nova-ops.space/app/billing';
 // Plan slug mapping (price_id → plan slug, for webhook)
 const PLAN_SLUG_BY_PRICE_KEY: Record<string, string> = {
   STRIPE_PRICE_49: 'launch',
-  STRIPE_PRICE_149: 'scale',
-  STRIPE_PRICE_299: 'enterprise',
+  STRIPE_PRICE_149: 'operate',
+  STRIPE_PRICE_299: 'scale',
 };
 
 // ---------------------------------------------------------------------------
@@ -156,8 +156,8 @@ function sbHeaders(env: Env): Record<string, string> {
 // Map Stripe price ID back to plan slug
 function getPlanSlugFromPriceId(priceId: string, env: Env): string {
   if (priceId === env.STRIPE_PRICE_49) return 'launch';
-  if (priceId === env.STRIPE_PRICE_149) return 'scale';
-  if (priceId === env.STRIPE_PRICE_299) return 'enterprise';
+  if (priceId === env.STRIPE_PRICE_149) return 'operate';
+  if (priceId === env.STRIPE_PRICE_299) return 'scale';
   return 'starter';
 }
 
@@ -326,19 +326,20 @@ async function handleCreateCheckout(request: Request, env: Env, origin: string):
 }
 
 async function handleWebhook(request: Request, env: Env): Promise<Response> {
+  const origin = request.headers.get('Origin') ?? '';
   const payload = await request.text();
   const sigHeader = request.headers.get('Stripe-Signature') ?? '';
 
   const valid = await verifyStripeSignature(payload, sigHeader, env.STRIPE_WEBHOOK_SECRET);
   if (!valid) {
-    return jsonResponse({ error: 'Invalid signature' }, 400);
+    return jsonResponse({ error: 'Invalid signature' }, 400, corsHeaders(origin));
   }
 
   let event: StripeEvent;
   try {
     event = JSON.parse(payload) as StripeEvent;
   } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400);
+    return jsonResponse({ error: 'Invalid JSON' }, 400, corsHeaders(origin));
   }
 
   switch (event.type) {
