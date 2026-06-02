@@ -10,6 +10,7 @@
 create index if not exists idx_tool_runs_user on public.tool_runs(user_id);
 create index if not exists idx_generated_assets_user on public.generated_assets(user_id);
 create index if not exists idx_generated_assets_tool_run on public.generated_assets(tool_run_id);
-create index if not exists idx_leads_user on public.leads(user_id);
-create index if not exists idx_website_analyses_user on public.website_analyses(user_id);
+-- leads and website_analyses are org-scoped (no user_id column); index the org FK instead.
+create index if not exists idx_leads_organization on public.leads(organization_id);
+create index if not exists idx_website_analyses_organization on public.website_analyses(organization_id);
 create index if not exists idx_asset_versions_created_by on public.asset_versions(created_by);
