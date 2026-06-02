@@ -125,7 +125,9 @@ IMPORTANT rules:
     }
     mentorHistory.push({ role: "user", content: message });
 
-    const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
+    const mentorApiKey = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!mentorApiKey) return json({ error: "AI provider not configured" }, 503);
+    const anthropic = new Anthropic({ apiKey: mentorApiKey });
     const t0Mentor = Date.now();
     try {
       const resp = await anthropic.messages.create({
