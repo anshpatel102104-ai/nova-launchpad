@@ -49,9 +49,9 @@ function validateValue(integrationKey: string, value: string): string | null {
         return "Must be a valid https:// URL";
       }
       if (url.protocol !== "https:") return "URL must use https://";
-      if (integrationKey === "zapier" && !url.hostname.includes("zapier.com"))
+      if (integrationKey === "zapier" && !url.hostname.endsWith("hooks.zapier.com"))
         return "Must be a hooks.zapier.com URL";
-      if (integrationKey === "slack" && !url.hostname.includes("slack.com"))
+      if (integrationKey === "slack" && !url.hostname.endsWith("hooks.slack.com"))
         return "Must be a hooks.slack.com URL";
       return null;
     }

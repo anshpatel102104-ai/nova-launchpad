@@ -49,7 +49,7 @@ const NEXT_MISSIONS: Record<
             "(3) what to say to get their attention, and (4) a week-by-week schedule for the next 90 days. " +
             "After reading the plan, highlight the ONE channel you will focus on for the first 30 days. " +
             "Write it on a sticky note and put it somewhere you see every day.",
-          tool_key: "gtm-strategy",
+          tool_key: "gtm-strategy-builder",
         },
         {
           title: "Step 2 — Create a Pitch That Gets People Excited",
@@ -94,18 +94,18 @@ const NEXT_MISSIONS: Record<
             "After reading the output, DO THIS: make a list of 20 specific people or businesses who fit your target customer. " +
             "Not categories — actual names or company names. Real people. This list is your 'hit list.' " +
             "Your goal is to reach out to all 20 within the next 7 days.",
-          tool_key: "first-10-customers",
+          tool_key: "first-10-customers-finder",
         },
         {
           title: "Step 2 — Set Up Your Follow-Up Email Sequence",
           description:
             "Most people say no the first time — not because they don't want your product, but because they're busy. " +
-            "The key is following up without being annoying. Open the Follow-Up Sequence tool. " +
+            "The key is following up without being annoying. Open the Email Sequence tool. " +
             "Tell Nova your business type and target customer. Nova will write 5 emails spread over 14 days. " +
             "Each email has one job: Email 1 introduces you. Email 2 gives free value. Email 3 handles the most common objection. " +
             "Email 4 shares a story or testimonial. Email 5 makes a clear, direct ask for the sale. " +
             "Set these up as templates in your email tool right now. Every prospect on your hit list gets this sequence after your first message.",
-          tool_key: "followup",
+          tool_key: "email-sequence",
         },
         {
           title: "Step 3 — Send Your First Invoice and Get Paid",
@@ -139,18 +139,18 @@ const NEXT_MISSIONS: Record<
             "After getting the output, take each major step in the strategy and write: " +
             "'Who does this? How long does it take? What does success look like?' " +
             "This becomes your Sales & Marketing Playbook. Store it in a shared Google Doc your whole team can access.",
-          tool_key: "gtm-strategy",
+          tool_key: "gtm-strategy-builder",
         },
         {
           title: "Step 2 — Build Your Operations Plan",
           description:
             "An operations plan answers the question: 'How does this business actually work every day?' " +
-            "Open the Operations Plan tool. Describe your current business in detail — " +
+            "Open the KPI Dashboard tool. Describe your current business in detail — " +
             "how you deliver your product or service, how customers interact with you, how you get paid, and any recurring tasks. " +
             "Nova will output a plan that shows your key processes, tools to use, team roles, and automation opportunities. " +
             "After reading the plan, identify the 3 tasks that take the most time in your week. " +
             "Those are the first things to automate or delegate. If you can free up even 5 hours per week, you can use that time to get more customers.",
-          tool_key: "generate-ops-plan",
+          tool_key: "kpi-dashboard",
         },
         {
           title: "Step 3 — Design Your Referral System",
@@ -186,7 +186,7 @@ const NEXT_MISSIONS: Record<
             "Nova will create a content plan that includes: what topics to cover, what formats to use " +
             "(short videos, long articles, social posts), how often to post, and how to repurpose one piece of content across multiple platforms. " +
             "Pick ONE platform to start. Post consistently for 30 days before adding a second platform.",
-          tool_key: "gtm-strategy",
+          tool_key: "gtm-strategy-builder",
         },
         {
           title: "Step 2 — Build a Partnership Pitch to Accelerate Your Reach",

@@ -271,6 +271,7 @@ IMPORTANT rules:
   let reply = "";
   let tokensIn = 0;
   let tokensOut = 0;
+  let usedModel = CLAUDE_MODEL;
 
   // TASK-088/089: Retry with exponential backoff + model fallback
   const MODELS = [CLAUDE_MODEL, CLAUDE_HAIKU_MODEL] as const;
@@ -290,6 +291,7 @@ IMPORTANT rules:
         reply = response.content[0].type === "text" ? response.content[0].text : "";
         tokensIn = response.usage.input_tokens;
         tokensOut = response.usage.output_tokens;
+        usedModel = model;
         lastError = null;
         break;
       } catch (e) {
@@ -312,10 +314,11 @@ IMPORTANT rules:
       workspace_id: workspace_id ?? null,
       user_id: userId,
       agent_type: "operator",
-      input: { message, session_id: sessionId },
+      session_id: sessionId,
+      input: { message },
       output: { reply },
       status: "succeeded",
-      model: CLAUDE_MODEL,
+      model: usedModel,
       tokens_used: tokensIn + tokensOut,
       duration_ms: durationMs,
     })

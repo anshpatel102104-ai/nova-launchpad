@@ -96,16 +96,16 @@ function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
           `This mission will build your offer${ideaContext} from scratch, step by step.`,
         steps: [
           {
-            title: "Step 1 — Design Your Offer with the Offer Builder",
+            title: "Step 1 — Design Your Offer with the Pitch Generator",
             description:
-              `Click "Run Tool" to open the Offer Builder. Fill in these details about your business${ideaContext}: ` +
+              `Click "Run Tool" to open the Pitch Generator. Fill in these details about your business${ideaContext}: ` +
               `(1) Who is your perfect customer? Be specific — "small business owners in the US with 1-10 employees" is better than "businesses." ` +
               `(2) What exact result do you deliver? Example: "a 5-page website live within 7 days." ` +
               `(3) How much will you charge? ` +
               `(4) What do they get for that price? List every deliverable. ` +
               `Nova will take all of this and write a professional offer description you can put on your website and send to prospects. ` +
               `Copy the output into a Google Doc titled "My Core Offer" — you'll update this as you learn more from real customers.`,
-            tool_key: "offer",
+            tool_key: "pitch-generator",
           },
           {
             title: "Step 2 — Map Your Go-To-Market Strategy",
@@ -118,7 +118,7 @@ function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `(3) WHAT to say to get their attention (your "messaging"), ` +
               `(4) A week-by-week action calendar for the first 12 weeks. ` +
               `Print this plan or save it somewhere you'll see every day. Pick ONE channel and stick to it for at least 30 days before trying another.`,
-            tool_key: "gtm-strategy",
+            tool_key: "gtm-strategy-builder",
           },
           {
             title: "Step 3 — Write Your Positioning Sentence",
@@ -153,19 +153,19 @@ function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `IMPORTANT: After reading the output, pick the TOP 2 strategies that feel most realistic for you right now. ` +
               `Write them down. Your only job this week is to execute on those 2 strategies. ` +
               `Ignore the rest until you've landed at least 3 customers from your top 2.`,
-            tool_key: "first-10-customers",
+            tool_key: "first-10-customers-finder",
           },
           {
             title: "Step 2 — Build a 5-Step Follow-Up Email Sequence",
             description:
               `Most sales don't happen on the first contact. Studies show it takes 5-8 touchpoints before someone buys. ` +
-              `Open the Follow-Up Sequence tool. Enter your business${ideaContext} and your target customer type. ` +
+              `Open the Email Sequence tool. Enter your business${ideaContext} and your target customer type. ` +
               `Nova will write 5 ready-to-send emails that follow up with a prospect over 2 weeks. ` +
               `Each email has a different job: introduce, provide value, handle objection, share proof, and ask for the sale. ` +
               `Copy these emails into your email tool (Gmail, Outlook, etc.) as TEMPLATES. ` +
               `Every time you reach out to a prospect, start the sequence. ` +
               `Never send a one-off email and wait — always have the next email scheduled within 3 days.`,
-            tool_key: "followup",
+            tool_key: "email-sequence",
           },
           {
             title: "Step 3 — Send Your First Real Outreach Message TODAY",
@@ -202,18 +202,18 @@ function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `AFTER you get the output, do this: for each step in the plan, write the name of WHO on your team (or a future hire) is responsible. ` +
               `If every step says "Me," that means you need to hire or delegate before you can scale. ` +
               `This document becomes the marketing playbook for your business.`,
-            tool_key: "gtm-strategy",
+            tool_key: "gtm-strategy-builder",
           },
           {
             title: "Step 2 — Design Your Operations Plan",
             description:
               `An operations plan is like the instruction manual for your business. ` +
-              `Open the Operations Plan tool and describe how your business currently works${ideaContext}. ` +
+              `Open the KPI Dashboard tool and describe how your business currently works${ideaContext}. ` +
               `Include: how you get customers, how you deliver your product or service, how you get paid, and how you handle problems. ` +
               `Nova will output a structured operations plan covering your team roles, key processes, tools to use, and automation opportunities. ` +
               `Focus especially on the "automation opportunities" section — these are tasks that can be done by software so you don't have to do them manually. ` +
               `Circle the top 3 tasks you personally do every week that take the most time. Those are your first automation targets.`,
-            tool_key: "generate-ops-plan",
+            tool_key: "kpi-dashboard",
           },
           {
             title: "Step 3 — Pick One Task to Automate This Week",
