@@ -17,13 +17,6 @@ const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
 const SUCCESS_URL = "https://app.launchpad.nova-ops.space/app/billing?success=true";
 const CANCEL_URL = "https://app.launchpad.nova-ops.space/app/billing";
 
-// Plan slug mapping (price_id → plan slug, for webhook)
-const PLAN_SLUG_BY_PRICE_KEY: Record<string, string> = {
-  STRIPE_PRICE_49: "launch",
-  STRIPE_PRICE_149: "scale",
-  STRIPE_PRICE_299: "enterprise",
-};
-
 // ---------------------------------------------------------------------------
 // CORS
 // ---------------------------------------------------------------------------
@@ -283,10 +276,120 @@ interface StripeSubscription {
   items: { data: Array<{ price: { id: string } }> };
 }
 
+interface StripeInvoice {
+  id: string;
+  object: "invoice";
+  customer: string;
+  subscription: string | null;
+  status: string;
+  amount_paid: number;
+  currency: string;
+}
+
+interface StripeCharge {
+  id: string;
+  object: "charge";
+  customer: string | null;
+  amount_refunded: number;
+  refunded: boolean;
+  metadata: Record<string, string>;
+}
+
 interface StripeEvent {
   id: string;
   type: string;
   data: { object: Record<string, unknown> };
+}
+
+// ---------------------------------------------------------------------------
+// Additional webhook handlers
+// ---------------------------------------------------------------------------
+
+async function handleSubscriptionUpdated(
+  subscription: StripeSubscription,
+  env: Env,
+): Promise<void> {
+  const stripeSubId = subscription.id;
+  const priceId = subscription.items?.data?.[0]?.price?.id ?? null;
+  if (!priceId) return;
+
+  const planTier = getPlanSlugFromPriceId(priceId, env);
+  const planSlug = planTier;
+
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/subscriptions?stripe_subscription_id=eq.${stripeSubId}`,
+    {
+      method: "PATCH",
+      headers: sbHeaders(env),
+      body: JSON.stringify({
+        plan_tier: planTier,
+        plan_slug: planSlug,
+        status: subscription.status === "active" ? "active" : subscription.status,
+        updated_at: new Date().toISOString(),
+      }),
+    },
+  );
+
+  // Sync plan tier to organization
+  const subRes = await fetch(
+    `${env.SUPABASE_URL}/rest/v1/subscriptions?stripe_subscription_id=eq.${stripeSubId}&select=organization_id`,
+    { headers: sbHeaders(env) },
+  );
+  const subs = (await subRes.json()) as Array<{ organization_id: string }>;
+  if (subs[0]) {
+    await fetch(`${env.SUPABASE_URL}/rest/v1/organizations?id=eq.${subs[0].organization_id}`, {
+      method: "PATCH",
+      headers: sbHeaders(env),
+      body: JSON.stringify({ plan_tier: planTier, updated_at: new Date().toISOString() }),
+    });
+  }
+}
+
+async function handlePaymentFailed(invoice: StripeInvoice, env: Env): Promise<void> {
+  if (!invoice.subscription) return;
+
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/subscriptions?stripe_subscription_id=eq.${invoice.subscription}`,
+    {
+      method: "PATCH",
+      headers: sbHeaders(env),
+      body: JSON.stringify({ status: "past_due", updated_at: new Date().toISOString() }),
+    },
+  );
+}
+
+async function handlePaymentSucceeded(invoice: StripeInvoice, env: Env): Promise<void> {
+  if (!invoice.subscription) return;
+
+  // Clear past_due status when payment succeeds
+  const subRes = await fetch(
+    `${env.SUPABASE_URL}/rest/v1/subscriptions?stripe_subscription_id=eq.${invoice.subscription}&select=organization_id,plan_tier,status`,
+    { headers: sbHeaders(env) },
+  );
+  const subs = (await subRes.json()) as Array<{
+    organization_id: string;
+    plan_tier: string;
+    status: string;
+  }>;
+  if (!subs[0]) return;
+
+  const { organization_id: orgId, status } = subs[0];
+  if (status !== "past_due") return;
+
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/subscriptions?stripe_subscription_id=eq.${invoice.subscription}`,
+    {
+      method: "PATCH",
+      headers: sbHeaders(env),
+      body: JSON.stringify({ status: "active", updated_at: new Date().toISOString() }),
+    },
+  );
+
+  await fetch(`${env.SUPABASE_URL}/rest/v1/organizations?id=eq.${orgId}`, {
+    method: "PATCH",
+    headers: sbHeaders(env),
+    body: JSON.stringify({ updated_at: new Date().toISOString() }),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -351,6 +454,21 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
     case "customer.subscription.deleted": {
       const subscription = event.data.object as unknown as StripeSubscription;
       await handleSubscriptionDeleted(subscription, env);
+      break;
+    }
+    case "customer.subscription.updated": {
+      const subscription = event.data.object as unknown as StripeSubscription;
+      await handleSubscriptionUpdated(subscription, env);
+      break;
+    }
+    case "invoice.payment_failed": {
+      const invoice = event.data.object as unknown as StripeInvoice;
+      await handlePaymentFailed(invoice, env);
+      break;
+    }
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object as unknown as StripeInvoice;
+      await handlePaymentSucceeded(invoice, env);
       break;
     }
     default:

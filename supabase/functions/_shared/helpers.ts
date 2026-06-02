@@ -168,6 +168,61 @@ export async function callClaude(
   return toolUse.input;
 }
 
+async function tryAdvanceMissionStep(ctx: AuthCtx, toolKey: string): Promise<void> {
+  // Find the user's workspace
+  const { data: ws } = await ctx.supabase
+    .from("workspaces")
+    .select("id, current_mission_id")
+    .eq("organization_id", ctx.organizationId)
+    .maybeSingle();
+  if (!ws?.id || !ws.current_mission_id) return;
+
+  // Find a pending step in the current mission matching this tool_key
+  const { data: step } = await ctx.supabase
+    .from("mission_steps")
+    .select("id")
+    .eq("mission_id", ws.current_mission_id)
+    .eq("tool_key", toolKey)
+    .eq("status", "pending")
+    .order("sort_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!step?.id) return;
+
+  await ctx.supabase
+    .from("mission_steps")
+    .update({ status: "completed", completed_at: new Date().toISOString() })
+    .eq("id", step.id);
+
+  await ctx.supabase.from("activation_events").insert({
+    user_id: ctx.userId,
+    workspace_id: ws.id,
+    event_name: "mission_step_completed",
+    properties: { step_id: step.id, mission_id: ws.current_mission_id, tool_key: toolKey },
+  });
+
+  // Check if all steps done → auto-complete the mission
+  const { data: allSteps } = await ctx.supabase
+    .from("mission_steps")
+    .select("status")
+    .eq("mission_id", ws.current_mission_id);
+
+  const allDone = allSteps?.every((s) => s.status === "completed" || s.status === "skipped");
+  if (!allDone) return;
+
+  await ctx.supabase
+    .from("missions")
+    .update({ status: "completed", completed_at: new Date().toISOString() })
+    .eq("id", ws.current_mission_id);
+
+  await ctx.supabase.from("activation_events").insert({
+    user_id: ctx.userId,
+    workspace_id: ws.id,
+    event_name: "first_mission_completed",
+    properties: { mission_id: ws.current_mission_id },
+  });
+}
+
 export async function runTool(opts: {
   req: Request;
   toolKey: string;
@@ -233,6 +288,9 @@ export async function runTool(opts: {
     });
 
     await incrementUsage(ctx, opts.toolKey);
+
+    // Fire-and-forget: advance any matching pending mission step
+    tryAdvanceMissionStep(ctx, opts.toolKey).catch(() => {});
 
     return jsonResponse({ run_id: run.id, output });
   } catch (e) {

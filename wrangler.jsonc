@@ -37,6 +37,7 @@
   //   SENDGRID_API_KEY            → SendGrid → Settings → API Keys
   //   TWILIO_ACCOUNT_SID          → Twilio Console
   //   TWILIO_AUTH_TOKEN           → Twilio Console
+  //   TWILIO_FROM_NUMBER          → Twilio Console → Phone Numbers (e.g. +18334509482)
 
   // ── Cloudflare Queue (replaces N8N for automation workflows) ──────────────
   "queues": {
