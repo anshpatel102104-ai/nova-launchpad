@@ -414,6 +414,44 @@ function Dashboard() {
         .replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Last session")
     : null;
 
+  const failedRunCount = allRuns.filter(
+    (r) =>
+      r.status === "failed" &&
+      new Date(r.created_at as string) > new Date(Date.now() - 24 * 60 * 60 * 1000),
+  ).length;
+
+  const goNoGoStatus: "GO" | "CAUTION" | "NO-GO" = (() => {
+    if (failedRunCount > 0) return "NO-GO";
+    if (leads.length > 0 && (automations.length > 0 || launchpadComplete >= 3)) return "GO";
+    return "CAUTION";
+  })();
+
+  const blockers = (
+    [
+      failedRunCount > 0
+        ? {
+            msg: `${failedRunCount} tool run${failedRunCount > 1 ? "s" : ""} failed in the last 24h`,
+            to: "/app/launchpad/history",
+            cta: "Review",
+          }
+        : null,
+      leads.length > 3 && automations.length === 0
+        ? {
+            msg: `${leads.length} leads captured with no follow-up automation active`,
+            to: "/app/nova/workflows",
+            cta: "Fix now",
+          }
+        : null,
+      limit !== null && totalUsed >= Math.floor(limit * 0.9)
+        ? {
+            msg: `AI quota at ${Math.round((totalUsed / limit) * 100)}% — upgrade before generation stops`,
+            to: "/app/billing",
+            cta: "Upgrade",
+          }
+        : null,
+    ] as Array<{ msg: string; to: string; cta: string } | null>
+  ).filter((b): b is { msg: string; to: string; cta: string } => b !== null);
+
   return (
     <div className="space-y-5">
       {/* ── RESUME BANNER ── */}
@@ -536,6 +574,26 @@ function Dashboard() {
                 style={{ color: "rgba(249,115,22,0.55)" }}
               >
                 {planLabel} Plan · {orgStage} Stage
+              </span>
+              <span
+                className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em]"
+                style={{
+                  background:
+                    goNoGoStatus === "GO"
+                      ? "rgba(16,185,129,0.12)"
+                      : goNoGoStatus === "CAUTION"
+                        ? "rgba(251,191,36,0.12)"
+                        : "rgba(239,68,68,0.12)",
+                  border: `1px solid ${goNoGoStatus === "GO" ? "rgba(16,185,129,0.3)" : goNoGoStatus === "CAUTION" ? "rgba(251,191,36,0.3)" : "rgba(239,68,68,0.3)"}`,
+                  color:
+                    goNoGoStatus === "GO"
+                      ? "#10b981"
+                      : goNoGoStatus === "CAUTION"
+                        ? "#FBBF24"
+                        : "#ef4444",
+                }}
+              >
+                {goNoGoStatus}
               </span>
             </div>
 
@@ -712,6 +770,48 @@ function Dashboard() {
           </button>
         </Link>
       </div>
+
+      {/* ── BLOCKERS / ATTENTION NEEDED ── */}
+      {blockers.length > 0 && (
+        <section className="rise-in space-y-2" style={{ ["--i" as string]: 0 }}>
+          {blockers.map((b, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-xl px-4 py-3"
+              style={{
+                background: "rgba(239,68,68,0.06)",
+                border: "1px solid rgba(239,68,68,0.2)",
+              }}
+            >
+              <XCircle className="h-4 w-4 shrink-0" style={{ color: "#ef4444" }} />
+              <span className="flex-1 text-[12.5px]" style={{ color: "var(--foreground)" }}>
+                <span className="font-semibold" style={{ color: "#ef4444" }}>
+                  Attention ·{" "}
+                </span>
+                {b.msg}
+              </span>
+              <Link to={b.to}>
+                <button
+                  className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all"
+                  style={{
+                    background: "rgba(239,68,68,0.12)",
+                    border: "1px solid rgba(239,68,68,0.3)",
+                    color: "#ef4444",
+                  }}
+                  onMouseEnter={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.2)";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.12)";
+                  }}
+                >
+                  {b.cta}
+                </button>
+              </Link>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* ── MISSION + OPERATOR ROW ── */}
       {profile?.onboarding_complete && user?.id && (
@@ -936,6 +1036,112 @@ function Dashboard() {
           color="#10b981"
           trend={leads.length > 0}
         />
+      </section>
+
+      {/* ── PIPELINE FLOW ── */}
+      <section
+        className="rise-in overflow-hidden rounded-xl"
+        style={{
+          ["--i" as string]: 4,
+          background: "var(--surface)",
+          border: "1px solid rgba(249,115,22,0.1)",
+        }}
+      >
+        <div
+          className="flex items-center px-4 py-2"
+          style={{ borderBottom: "1px solid rgba(249,115,22,0.06)" }}
+        >
+          <span
+            className="text-[9px] font-bold uppercase tracking-[0.2em]"
+            style={{ color: "rgba(249,115,22,0.5)" }}
+          >
+            Founder Pipeline
+          </span>
+        </div>
+        <div className="flex items-stretch overflow-x-auto">
+          {[
+            {
+              label: "Idea Validated",
+              done: succeeded("validate-idea"),
+              count: null as number | null,
+              to: "/app/launchpad/idea-validator",
+            },
+            {
+              label: "GTM Ready",
+              done: succeeded("generate-gtm-strategy"),
+              count: null as number | null,
+              to: "/app/launchpad/gtm-strategy",
+            },
+            {
+              label: "Leads Captured",
+              done: leads.length > 0,
+              count: leads.length,
+              to: "/app/nova/leads",
+            },
+            {
+              label: "In Pipeline",
+              done: qualifiedPipe > 0,
+              count: qualifiedPipe,
+              to: "/app/nova/crm",
+            },
+            {
+              label: "Deals Won",
+              done: wonLeads > 0,
+              count: wonLeads,
+              to: "/app/nova/crm",
+            },
+          ].map((step, i, arr) => (
+            <React.Fragment key={step.label}>
+              <Link
+                to={step.to}
+                className="flex flex-col items-center gap-1.5 px-5 py-3 shrink-0 transition-all"
+                style={{
+                  minWidth: 112,
+                  background: step.done ? "rgba(16,185,129,0.04)" : "transparent",
+                }}
+                onMouseEnter={(e: React.MouseEvent) => {
+                  (e.currentTarget as HTMLElement).style.background = step.done
+                    ? "rgba(16,185,129,0.08)"
+                    : "rgba(249,115,22,0.04)";
+                }}
+                onMouseLeave={(e: React.MouseEvent) => {
+                  (e.currentTarget as HTMLElement).style.background = step.done
+                    ? "rgba(16,185,129,0.04)"
+                    : "transparent";
+                }}
+              >
+                <div
+                  className="h-2 w-2 rounded-full transition-all"
+                  style={{
+                    background: step.done ? "var(--success)" : "rgba(255,255,255,0.12)",
+                    boxShadow: step.done ? "0 0 8px rgba(16,185,129,0.6)" : "none",
+                  }}
+                />
+                <div
+                  className="text-[11px] font-semibold text-center leading-tight"
+                  style={{
+                    color: step.done ? "var(--foreground)" : "var(--muted-foreground)",
+                  }}
+                >
+                  {step.label}
+                </div>
+                {step.count !== null && (
+                  <div
+                    className="font-mono text-[13px] font-black tabular-nums"
+                    style={{ color: step.done ? "#10b981" : "var(--muted-foreground)" }}
+                  >
+                    {step.count}
+                  </div>
+                )}
+              </Link>
+              {i < arr.length - 1 && (
+                <div className="flex items-center" style={{ color: "rgba(249,115,22,0.22)" }}>
+                  <ChevronRight className="h-4 w-4 shrink-0" />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
       </section>
 
       {/* ── OUTPUTS ROW ── */}
