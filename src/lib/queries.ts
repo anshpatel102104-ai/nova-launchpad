@@ -502,7 +502,7 @@ export const mentorKPIsQuery = (orgId: string) =>
           .eq("organization_id", orgId)
           .order("created_at", { ascending: false })
           .limit(200),
-        supabase.from("automation_settings").select("id,status").eq("organization_id", orgId),
+        supabase.from("automation_settings").select("id,enabled").eq("organization_id", orgId),
       ]);
 
       const leads = leadsRes.data ?? [];
@@ -517,7 +517,7 @@ export const mentorKPIsQuery = (orgId: string) =>
       );
       const completedRuns = runs.filter((r) => r.status === "succeeded").length;
       const activeAutomations = autos.filter(
-        (a) => (a as { status?: string }).status === "active",
+        (a) => (a as { enabled?: boolean }).enabled === true,
       ).length;
 
       // Execution index: weighted score from activity signals

@@ -3,6 +3,7 @@
 // falls back to direct Anthropic API otherwise.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { CLAUDE_MODEL } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,7 +138,7 @@ serve(async (req: Request) => {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-5",
+      model: CLAUDE_MODEL,
       max_tokens: 2048,
       stream: true,
       system: systemPrompt,

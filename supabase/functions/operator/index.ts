@@ -3,6 +3,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.27.0";
+import { CLAUDE_MODEL, CLAUDE_HAIKU_MODEL } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,7 +126,7 @@ IMPORTANT rules:
     const t0Mentor = Date.now();
     try {
       const resp = await anthropic.messages.create({
-        model: "claude-sonnet-4-6",
+        model: CLAUDE_MODEL,
         max_tokens: 800,
         system: mentorSystem,
         messages: mentorHistory,
@@ -140,7 +141,7 @@ IMPORTANT rules:
         input: { message },
         output: { reply },
         status: "succeeded",
-        model: "claude-sonnet-4-6",
+        model: CLAUDE_MODEL,
         tokens_used: resp.usage.input_tokens + resp.usage.output_tokens,
         duration_ms: Date.now() - t0Mentor,
       });
@@ -272,7 +273,7 @@ IMPORTANT rules:
   let tokensOut = 0;
 
   // TASK-088/089: Retry with exponential backoff + model fallback
-  const MODELS = ["claude-sonnet-4-6", "claude-haiku-4-5-20251001"] as const;
+  const MODELS = [CLAUDE_MODEL, CLAUDE_HAIKU_MODEL] as const;
   let lastError: Error | null = null;
 
   for (let modelIdx = 0; modelIdx < MODELS.length; modelIdx++) {
@@ -314,7 +315,7 @@ IMPORTANT rules:
       input: { message, session_id: sessionId },
       output: { reply },
       status: "succeeded",
-      model: "claude-sonnet-4-6",
+      model: CLAUDE_MODEL,
       tokens_used: tokensIn + tokensOut,
       duration_ms: durationMs,
     })
@@ -332,7 +333,7 @@ IMPORTANT rules:
       credits_used: 1,
       tokens_in: tokensIn,
       tokens_out: tokensOut,
-      model: "claude-sonnet-4-6",
+      model: CLAUDE_MODEL,
       duration_ms: durationMs,
       status: "succeeded",
     });

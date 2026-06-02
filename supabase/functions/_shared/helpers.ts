@@ -1,5 +1,6 @@
 // Shared helpers for AI edge functions
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { CLAUDE_MODEL } from "./config.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,7 +138,7 @@ export async function callClaude(
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: CLAUDE_MODEL,
       max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
@@ -202,7 +203,9 @@ export async function runTool(opts: {
     .insert({
       organization_id: ctx.organizationId,
       user_id: ctx.userId,
+      surface: (opts as { surface?: string }).surface ?? "launchpad",
       tool_key: opts.toolKey,
+      title: opts.assetTitle ? opts.assetTitle(input, {}) : null,
       status: "running",
       input,
     })
@@ -215,7 +218,10 @@ export async function runTool(opts: {
   try {
     const output = await callClaude(opts.systemPrompt, opts.buildUserPrompt(input), opts.schema);
 
-    await ctx.supabase.from("tool_runs").update({ status: "succeeded", output }).eq("id", run.id);
+    await ctx.supabase
+      .from("tool_runs")
+      .update({ status: "succeeded", output, completed_at: new Date().toISOString() })
+      .eq("id", run.id);
 
     await ctx.supabase.from("generated_assets").insert({
       organization_id: ctx.organizationId,
@@ -232,7 +238,10 @@ export async function runTool(opts: {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[tool-run-error:${opts.toolKey}]`, msg);
-    await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run.id);
+    await ctx.supabase
+      .from("tool_runs")
+      .update({ status: "failed", error: msg, completed_at: new Date().toISOString() })
+      .eq("id", run.id);
     if (msg === "RATE_LIMIT")
       return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
     if (msg === "PAYMENT_REQUIRED")

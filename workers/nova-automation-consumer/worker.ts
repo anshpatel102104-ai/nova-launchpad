@@ -21,6 +21,8 @@ interface AutomationJob {
   log_id?: string;
 }
 
+const CLAUDE_MODEL = 'claude-sonnet-4-5';
+
 // ---------------------------------------------------------------------------
 // Supabase helpers
 // ---------------------------------------------------------------------------
@@ -74,7 +76,7 @@ async function callClaude(
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: CLAUDE_MODEL,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],

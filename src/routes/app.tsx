@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { guestStore } from "@/lib/guest";
 import { saveLastAppPath } from "@/lib/session-restore";
 
+// Once a user is confirmed onboarded, cache it per session so beforeLoad does not
+// re-query profiles.onboarding_complete on every in-app navigation.
+const onboardedUsers = new Set<string>();
+
 export const Route = createFileRoute("/app")({
   beforeLoad: async ({ location }) => {
     // Guest mode bypasses auth — purely client-side demo.
@@ -18,6 +22,7 @@ export const Route = createFileRoute("/app")({
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
     }
+    if (onboardedUsers.has(session.user.id)) return;
     // Redirect to onboarding if not yet complete
     const { data: profile } = await supabase
       .from("profiles")
@@ -27,6 +32,7 @@ export const Route = createFileRoute("/app")({
     if (!profile?.onboarding_complete) {
       throw redirect({ to: "/onboarding" });
     }
+    onboardedUsers.add(session.user.id);
   },
   component: AppLayout,
 });
