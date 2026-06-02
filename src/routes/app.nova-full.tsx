@@ -24,8 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/app/nova-full" as any)({ component: NovaFullPage });
+export const Route = createFileRoute("/app/nova-full")({ component: NovaFullPage });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;

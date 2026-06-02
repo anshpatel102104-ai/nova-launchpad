@@ -27,8 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/app/automations" as any)({ component: AutomationsPage });
+export const Route = createFileRoute("/app/automations")({ component: AutomationsPage });
 
 /* ─── Types ─── */
 interface AutomationConfig {

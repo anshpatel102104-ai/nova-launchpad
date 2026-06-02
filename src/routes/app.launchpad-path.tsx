@@ -20,8 +20,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/app/launchpad-path" as any)({
+export const Route = createFileRoute("/app/launchpad-path")({
   component: LaunchpadPathPage,
 });
 

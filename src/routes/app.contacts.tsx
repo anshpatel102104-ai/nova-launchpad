@@ -26,8 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Route = createFileRoute("/app/contacts" as any)({ component: ContactsPage });
+export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
