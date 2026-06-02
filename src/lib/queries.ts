@@ -475,6 +475,309 @@ export async function markInsightsRead(orgId: string): Promise<void> {
   if (error) throw error;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Workspace & Mission Queries
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Workspace = {
+  id: string;
+  organization_id: string;
+  owner_id: string;
+  name: string;
+  lane: string;
+  stage: string;
+  current_mission_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Mission = {
+  id: string;
+  workspace_id: string;
+  title: string;
+  description: string | null;
+  lane: string;
+  status: "active" | "completed" | "skipped";
+  sort_order: number;
+  assigned_at: string;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MissionStep = {
+  id: string;
+  mission_id: string;
+  title: string;
+  description: string | null;
+  tool_key: string | null;
+  status: "pending" | "completed" | "skipped";
+  sort_order: number;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WorkspaceIntake = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  full_name: string | null;
+  idea: string | null;
+  stage: string | null;
+  challenge: string | null;
+  lane: string | null;
+  raw_answers: Record<string, unknown>;
+  completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const workspaceQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["workspace", userId],
+    queryFn: async (): Promise<Workspace | null> => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("workspaces")
+        .select("*")
+        .eq("owner_id", userId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as Workspace | null;
+    },
+    staleTime: 60_000,
+  });
+
+export const missionsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["missions", workspaceId],
+    queryFn: async (): Promise<Mission[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("missions")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as Mission[];
+    },
+  });
+
+export const missionStepsQuery = (missionId: string) =>
+  queryOptions({
+    queryKey: ["mission_steps", missionId],
+    queryFn: async (): Promise<MissionStep[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("mission_steps")
+        .select("*")
+        .eq("mission_id", missionId)
+        .order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as MissionStep[];
+    },
+  });
+
+export type CurrentMissionData = {
+  workspace: Workspace;
+  mission: Mission;
+  steps: MissionStep[];
+} | null;
+
+/** Composite query used by CurrentMissionCard — workspace + active mission + steps in one call. */
+export const currentMissionQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["current-mission", userId],
+    queryFn: async (): Promise<CurrentMissionData> => {
+      if (isGuest()) return null;
+      const { data: ws } = await supabase
+        .from("workspaces")
+        .select("id, name, lane, stage, current_mission_id, organization_id, owner_id, created_at, updated_at")
+        .eq("owner_id", userId)
+        .maybeSingle();
+      if (!ws) return null;
+
+      const { data: mission } = await supabase
+        .from("missions")
+        .select("*")
+        .eq("workspace_id", ws.id)
+        .eq("status", "active")
+        .order("sort_order")
+        .limit(1)
+        .maybeSingle();
+      if (!mission) return null;
+
+      const { data: steps } = await supabase
+        .from("mission_steps")
+        .select("*")
+        .eq("mission_id", mission.id)
+        .order("sort_order");
+
+      return {
+        workspace: ws as Workspace,
+        mission: mission as Mission,
+        steps: (steps ?? []) as MissionStep[],
+      };
+    },
+    staleTime: 30_000,
+    retry: 4,
+    retryDelay: 5_000,
+  });
+
+export const workspaceIntakeQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspace_intake", workspaceId],
+    queryFn: async (): Promise<WorkspaceIntake | null> => {
+      if (isGuest()) return null;
+      const { data, error } = await supabase
+        .from("workspace_intake")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as WorkspaceIntake | null;
+    },
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Agent Runs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AgentRun = {
+  id: string;
+  workspace_id: string | null;
+  user_id: string;
+  mission_id: string | null;
+  agent_type: string;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  status: "running" | "succeeded" | "failed";
+  model: string | null;
+  tokens_used: number | null;
+  error: string | null;
+  duration_ms: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const agentRunsQuery = (workspaceId: string, limit = 20) =>
+  queryOptions({
+    queryKey: ["agent_runs", workspaceId, limit],
+    queryFn: async (): Promise<AgentRun[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("agent_runs")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as AgentRun[];
+    },
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Workflow Runs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type WorkflowRun = {
+  id: string;
+  workspace_id: string | null;
+  user_id: string;
+  workflow_name: string;
+  trigger_event: string | null;
+  status: "running" | "succeeded" | "failed" | "partial";
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  error: string | null;
+  duration_ms: number | null;
+  n8n_execution_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const workflowRunsQuery = (userId: string, limit = 20) =>
+  queryOptions({
+    queryKey: ["workflow_runs", userId, limit],
+    queryFn: async (): Promise<WorkflowRun[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("workflow_runs")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as WorkflowRun[];
+    },
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Activation Events (funnel analytics)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ActivationEvent = {
+  id: string;
+  user_id: string;
+  workspace_id: string | null;
+  event_name: string;
+  properties: Record<string, unknown>;
+  created_at: string;
+};
+
+export const activationEventsQuery = (userId: string, limit = 50, eventNames?: string[]) =>
+  queryOptions({
+    queryKey: ["activation_events", userId, limit, eventNames ?? "all"],
+    queryFn: async (): Promise<ActivationEvent[]> => {
+      if (isGuest()) return [];
+      let q = supabase
+        .from("activation_events")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (eventNames && eventNames.length > 0) {
+        q = q.in("event_name", eventNames);
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as ActivationEvent[];
+    },
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Automation Connections
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AutomationConnection = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  integration_key: string;
+  status: "connected" | "disconnected" | "error";
+  config: Record<string, unknown>;
+  last_triggered_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const automationConnectionsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["automation_connections", workspaceId],
+    queryFn: async (): Promise<AutomationConnection[]> => {
+      if (isGuest()) return [];
+      const { data, error } = await supabase
+        .from("automation_connections")
+        .select("*")
+        .eq("workspace_id", workspaceId)
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as AutomationConnection[];
+    },
+  });
+
 /** Derive live KPI metrics from existing tables (no new DB tables needed). */
 export const mentorKPIsQuery = (orgId: string) =>
   queryOptions({

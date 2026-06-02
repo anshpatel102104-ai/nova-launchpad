@@ -4,9 +4,9 @@
 
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { currentMissionQuery } from "@/lib/queries";
 import { MissionChecklist } from "./MissionChecklist";
-import { Loader2, Target, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { LANE_META } from "@/lib/lane-classifier";
 import type { Lane } from "@/lib/lane-classifier";
@@ -15,48 +15,9 @@ interface Props {
   userId: string;
 }
 
-async function fetchCurrentMission(userId: string) {
-  // Get workspace
-  const { data: ws } = await supabase
-    .from("workspaces")
-    .select("id, name, lane, stage, current_mission_id")
-    .eq("owner_id", userId)
-    .maybeSingle();
-
-  if (!ws) return null;
-
-  // Get active mission
-  const { data: mission } = await supabase
-    .from("missions")
-    .select("id, title, description, lane, status")
-    .eq("workspace_id", ws.id)
-    .eq("status", "active")
-    .order("sort_order")
-    .limit(1)
-    .maybeSingle();
-
-  if (!mission) return null;
-
-  // Get steps
-  const { data: steps } = await supabase
-    .from("mission_steps")
-    .select("id, title, description, tool_key, status, sort_order")
-    .eq("mission_id", mission.id)
-    .order("sort_order");
-
-  return { workspace: ws, mission, steps: steps ?? [] };
-}
-
 export function CurrentMissionCard({ userId }: Props) {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["current-mission", userId],
-    queryFn: () => fetchCurrentMission(userId),
-    staleTime: 30_000,
-    // Retry for up to 20 seconds after onboarding — workspace provisioning may still be in flight.
-    retry: 4,
-    retryDelay: 5_000,
-  });
+  const { data, isLoading } = useQuery(currentMissionQuery(userId));
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["current-mission", userId] });
 
