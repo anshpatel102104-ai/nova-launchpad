@@ -59,20 +59,23 @@ serve(async (req: Request) => {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Missing authorization" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } },
-  );
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authHeader } },
+  });
 
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authErr,
+  } = await supabase.auth.getUser();
   if (authErr || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -87,7 +90,8 @@ serve(async (req: Request) => {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -149,7 +153,8 @@ serve(async (req: Request) => {
   if (!aiRes.ok) {
     const err = await aiRes.text();
     return new Response(JSON.stringify({ error: "AI error", detail: err }), {
-      status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 502,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -182,7 +187,9 @@ serve(async (req: Request) => {
               fullText += text;
               await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
-          } catch { /* skip malformed SSE chunks */ }
+          } catch {
+            /* skip malformed SSE chunks */
+          }
         }
       }
     } finally {
@@ -211,7 +218,9 @@ serve(async (req: Request) => {
           messages: updatedMessages,
           updated_at: new Date().toISOString(),
         }),
-      }).catch(() => { /* non-blocking */ });
+      }).catch(() => {
+        /* non-blocking */
+      });
     }
   })();
 

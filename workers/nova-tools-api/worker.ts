@@ -10,17 +10,17 @@ export interface Env {
   ANTHROPIC_API_KEY: string;
 }
 
-const ALLOWED_ORIGIN = 'https://app.launchpad.nova-ops.space';
-const MODEL = 'claude-sonnet-4-5';
+const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
+const MODEL = "claude-sonnet-4-5";
 
 // ---------------------------------------------------------------------------
 // CORS
 // ---------------------------------------------------------------------------
 function corsHeaders(origin: string): Record<string, string> {
   return {
-    'Access-Control-Allow-Origin': origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : '',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 }
 
@@ -33,9 +33,11 @@ async function validateJWT(token: string, env: Env): Promise<{ sub: string } | n
       headers: { Authorization: `Bearer ${token}`, apikey: env.SUPABASE_ANON_KEY },
     });
     if (!res.ok) return null;
-    const user = await res.json() as { id: string };
+    const user = (await res.json()) as { id: string };
     return { sub: user.id };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -50,13 +52,13 @@ async function getUserPlan(userId: string, env: Env): Promise<string> {
         apikey: env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-    }
+    },
   );
-  if (!orgRes.ok) return 'starter';
-  const orgs = await orgRes.json() as Array<{ organization_id: string }>;
-  if (!orgs.length) return 'starter';
+  if (!orgRes.ok) return "starter";
+  const orgs = (await orgRes.json()) as Array<{ organization_id: string }>;
+  if (!orgs.length) return "starter";
 
-  const orgIds = orgs.map(o => o.organization_id).join(',');
+  const orgIds = orgs.map((o) => o.organization_id).join(",");
   const subRes = await fetch(
     `${env.SUPABASE_URL}/rest/v1/subscriptions?organization_id=in.(${orgIds})&select=plan_tier&order=created_at.desc&limit=1`,
     {
@@ -64,11 +66,11 @@ async function getUserPlan(userId: string, env: Env): Promise<string> {
         apikey: env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-    }
+    },
   );
-  if (!subRes.ok) return 'starter';
-  const subs = await subRes.json() as Array<{ plan_tier: string }>;
-  return subs[0]?.plan_tier ?? 'starter';
+  if (!subRes.ok) return "starter";
+  const subs = (await subRes.json()) as Array<{ plan_tier: string }>;
+  return subs[0]?.plan_tier ?? "starter";
 }
 
 async function isToolEntitled(toolSlug: string, planTier: string, env: Env): Promise<boolean> {
@@ -79,10 +81,10 @@ async function isToolEntitled(toolSlug: string, planTier: string, env: Env): Pro
         apikey: env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-    }
+    },
   );
   if (!res.ok) return false;
-  const rows = await res.json() as Array<{ tool_slugs_allowed: string[] }>;
+  const rows = (await res.json()) as Array<{ tool_slugs_allowed: string[] }>;
   if (!rows.length) return false;
   return rows[0].tool_slugs_allowed?.includes(toolSlug) ?? false;
 }
@@ -91,7 +93,7 @@ async function isToolEntitled(toolSlug: string, planTier: string, env: Env): Pro
 // Tool system prompts (all 19)
 // ---------------------------------------------------------------------------
 const TOOL_SYSTEM_PROMPTS: Record<string, string> = {
-  'idea-validator': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: execute high-signal startup idea validation with precision and zero fluff.
+  "idea-validator": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: execute high-signal startup idea validation with precision and zero fluff.
 
 INPUT VARIABLES:
 - {idea_name}: Name of the startup idea
@@ -162,7 +164,7 @@ What keeps competitors from copying this in 18 months? Network effects, data moa
 
 **Next Step:** Run the GTM Strategy Builder to map your first acquisition channel if GO verdict, or use Kill My Idea for deeper devil's advocate analysis if ITERATE.`,
 
-  'kill-my-idea': `You are Nova — the AI operating system powering Launchpad Nova. Your role here is Devil's Advocate. You are the most skeptical, battle-hardened startup critic in the room. Your job is to kill ideas before the market does.
+  "kill-my-idea": `You are Nova — the AI operating system powering Launchpad Nova. Your role here is Devil's Advocate. You are the most skeptical, battle-hardened startup critic in the room. Your job is to kill ideas before the market does.
 
 INPUT VARIABLES:
 - {idea_name}: Name of the startup idea
@@ -238,7 +240,7 @@ Why this version survives: [The mechanism that makes it more defensible]
 
 **Next Step:** If you're still committed, run the Idea Validator for a balanced scorecard, or use the Competitor Scanner to map the graveyard more precisely.`,
 
-  'competitor-scanner': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: map the competitive battlefield with intelligence precision. Every founder needs to know exactly who they're fighting, where the gaps are, and how to win.
+  "competitor-scanner": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: map the competitive battlefield with intelligence precision. Every founder needs to know exactly who they're fighting, where the gaps are, and how to win.
 
 INPUT VARIABLES:
 - {idea_name}: Your startup name or concept
@@ -319,7 +321,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the GTM Strategy Builder to operationalize your winning angle into a 90-day acquisition plan.`,
 
-  'idea-vs-idea': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: run a high-resolution comparison between two startup ideas and declare a winner with conviction. No diplomatic hedging. Founders need decisions, not balance.
+  "idea-vs-idea": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: run a high-resolution comparison between two startup ideas and declare a winner with conviction. No diplomatic hedging. Founders need decisions, not balance.
 
 INPUT VARIABLES:
 - {idea_1_name}: First startup idea name
@@ -398,7 +400,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Run the GTM Strategy Builder for the winning idea to map the full acquisition system.`,
 
-  'business-plan-generator': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate a production-ready 1-page business plan that could open doors with investors, partners, and enterprise customers. Dense, precise, no filler.
+  "business-plan-generator": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate a production-ready 1-page business plan that could open doors with investors, partners, and enterprise customers. Dense, precise, no filler.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -500,7 +502,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the Pitch Generator to build your investor narrative and deck structure, or the GTM Strategy Builder to operationalize your go-to-market.`,
 
-  'gtm-strategy-builder': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a complete, executable go-to-market strategy. Not theory. Not frameworks. A specific, deployable plan that generates the first $100K in revenue.
+  "gtm-strategy-builder": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a complete, executable go-to-market strategy. Not theory. Not frameworks. A specific, deployable plan that generates the first $100K in revenue.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -623,7 +625,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the Persona Builder to create detailed ICP profiles for your top channel, or the First 10 Customers Finder for immediate outreach playbooks.`,
 
-  'persona-builder': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build operationally precise customer personas — not marketing fiction. These personas drive messaging, targeting, outreach scripts, and product decisions.
+  "persona-builder": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build operationally precise customer personas — not marketing fiction. These personas drive messaging, targeting, outreach scripts, and product decisions.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -717,7 +719,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the First 10 Customers Finder to build outreach sequences for Persona 1, or the Ad Copy Generator to create persona-specific ads.`,
 
-  'pricing-calculator': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: engineer the pricing architecture that maximizes revenue capture while minimizing conversion friction. Pricing is product strategy — not a number you pick arbitrarily.
+  "pricing-calculator": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: engineer the pricing architecture that maximizes revenue capture while minimizing conversion friction. Pricing is product strategy — not a number you pick arbitrarily.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -819,7 +821,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the GTM Strategy Builder to design the acquisition system that fills these pricing tiers, or the Landing Page Creator to build the pricing page that converts.`,
 
-  'first-10-customers-finder': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build the exact playbook for landing the first 10 paying customers. No theory. No "build and they will come." Specific actions, specific scripts, specific conversion targets.
+  "first-10-customers-finder": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build the exact playbook for landing the first 10 paying customers. No theory. No "build and they will come." Specific actions, specific scripts, specific conversion targets.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -922,7 +924,7 @@ Expected conversion to call: [X]%
 
 **Next Step:** Use the Email Sequence Builder to build automated follow-up for non-responders, or the Ad Copy Generator to scale the winning message via paid channels.`,
 
-  'pitch-generator': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a pitch that moves investors to write checks and partners to say yes. Cinematic, tight, investor-grade. Every word earns its place.
+  "pitch-generator": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a pitch that moves investors to write checks and partners to say yes. Cinematic, tight, investor-grade. Every word earns its place.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1069,7 +1071,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the Investor Email Writer to build cold outreach to target investors, or the Funding Readiness Score to identify gaps before pitching.`,
 
-  'ad-copy': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate conversion-optimized ad copy that stops the scroll, communicates value instantly, and drives clicks. Every word is load-bearing.
+  "ad-copy": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate conversion-optimized ad copy that stops the scroll, communicates value instantly, and drives clicks. Every word is load-bearing.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1234,7 +1236,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the Landing Page Creator to ensure the page matches your top ad's angle, or the Email Sequence Builder to nurture clicks that don't convert immediately.`,
 
-  'investor-email-writer': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: write investor outreach that gets read, gets replies, and gets meetings. Most cold investor emails fail because they're too long, too generic, or lead with the wrong thing. These won't.
+  "investor-email-writer": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: write investor outreach that gets read, gets replies, and gets meetings. Most cold investor emails fail because they're too long, too generic, or lead with the wrong thing. These won't.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1405,7 +1407,7 @@ Still would value your perspective on {business_name} if there's mutual fit.
 
 **Next Step:** Use the Pitch Generator to build the deck that backs up these emails, or the Funding Readiness Score to identify any gaps before you start the raise.`,
 
-  'landing-page-creator': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: write complete landing page copy that converts cold traffic into leads and trials. Every section has a job. Every word earns its place.
+  "landing-page-creator": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: write complete landing page copy that converts cold traffic into leads and trials. Every section has a job. Every word earns its place.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1582,7 +1584,7 @@ A: [Answer — honest positioning, not disparagement]
 
 **Next Step:** Use the Ad Copy Generator to drive traffic to this landing page, or the Email Sequence Builder to nurture leads who don't convert on first visit.`,
 
-  'email-sequence': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a complete email sequence system that converts leads into customers and customers into advocates. Every email has a specific job in a specific position in the sequence.
+  "email-sequence": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build a complete email sequence system that converts leads into customers and customers into advocates. Every email has a specific job in a specific position in the sequence.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1788,7 +1790,7 @@ This is the last email I'll send about [specific topic].
 
 **Next Step:** Use the Ad Copy Generator to attract new leads into this sequence, or the Landing Page Creator to optimize the page that feeds the welcome sequence.`,
 
-  'kpi-dashboard': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: define the exact metrics that determine whether this business is winning or dying. Most founders track vanity metrics. You will track the metrics that predict outcomes before they happen.
+  "kpi-dashboard": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: define the exact metrics that determine whether this business is winning or dying. Most founders track vanity metrics. You will track the metrics that predict outcomes before they happen.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -1900,7 +1902,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the SEO Audit to identify growth opportunities in organic acquisition, or the Funding Readiness Score to assess whether your metrics support a raise.`,
 
-  'seo-audit': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: deliver an actionable SEO intelligence report. Not a generic checklist — a prioritized, executable plan to drive organic traffic that converts.
+  "seo-audit": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: deliver an actionable SEO intelligence report. Not a generic checklist — a prioritized, executable plan to drive organic traffic that converts.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -2029,7 +2031,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the KPI Dashboard to set organic traffic and conversion KPIs, or the Landing Page Creator to optimize the pages your organic traffic will land on.`,
 
-  'launch-checklist': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build the complete pre-launch execution checklist. Every item is actionable. Every item has an owner, a priority, and a time estimate. Nothing ships without this being done.
+  "launch-checklist": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: build the complete pre-launch execution checklist. Every item is actionable. Every item has an owner, a priority, and a time estimate. Nothing ships without this being done.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -2231,7 +2233,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the KPI Dashboard to set up ongoing tracking post-launch, or the First 10 Customers Finder to activate sales immediately after launch.`,
 
-  'funding-readiness-score': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: give founders a rigorous, honest assessment of investor-readiness. Most founders pitch before they're ready and waste relationships. This report tells you exactly where you stand and exactly how to close the gap.
+  "funding-readiness-score": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: give founders a rigorous, honest assessment of investor-readiness. Most founders pitch before they're ready and waste relationships. This report tells you exactly where you stand and exactly how to close the gap.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -2394,7 +2396,7 @@ OUTPUT FORMAT:
 
 **Next Step:** Use the Pitch Generator to rebuild your investor narrative, or the Investor Email Writer to start outreach once you hit 75+.`,
 
-  'business-plan': `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate an investor-grade business plan — the document that opens due diligence conversations, wins grant applications, and gets taken seriously in conference rooms. Precise. Dense. Professional.
+  "business-plan": `You are Nova — the AI operating system powering Launchpad Nova. Your mission: generate an investor-grade business plan — the document that opens due diligence conversations, wins grant applications, and gets taken seriously in conference rooms. Precise. Dense. Professional.
 
 INPUT VARIABLES:
 - {business_name}: Company name
@@ -2717,25 +2719,25 @@ This round takes {business_name} from [current state] to [specific milestone] by
 // Tool names (for display)
 // ---------------------------------------------------------------------------
 const TOOL_NAMES: Record<string, string> = {
-  'idea-validator': 'Idea Validator',
-  'kill-my-idea': 'Kill My Idea',
-  'competitor-scanner': 'Competitor Scanner',
-  'idea-vs-idea': 'Idea vs. Idea',
-  'business-plan-generator': 'Business Plan Generator',
-  'gtm-strategy-builder': 'GTM Strategy Builder',
-  'persona-builder': 'Persona Builder',
-  'pricing-calculator': 'Pricing Calculator',
-  'first-10-customers-finder': 'First 10 Customers Finder',
-  'pitch-generator': 'Pitch Generator',
-  'ad-copy': 'Ad Copy Generator',
-  'investor-email-writer': 'Investor Email Writer',
-  'landing-page-creator': 'Landing Page Creator',
-  'email-sequence': 'Email Sequence Builder',
-  'kpi-dashboard': 'KPI Dashboard',
-  'seo-audit': 'SEO Audit',
-  'launch-checklist': 'Launch Checklist',
-  'funding-readiness-score': 'Funding Readiness Score',
-  'business-plan': 'Business Plan',
+  "idea-validator": "Idea Validator",
+  "kill-my-idea": "Kill My Idea",
+  "competitor-scanner": "Competitor Scanner",
+  "idea-vs-idea": "Idea vs. Idea",
+  "business-plan-generator": "Business Plan Generator",
+  "gtm-strategy-builder": "GTM Strategy Builder",
+  "persona-builder": "Persona Builder",
+  "pricing-calculator": "Pricing Calculator",
+  "first-10-customers-finder": "First 10 Customers Finder",
+  "pitch-generator": "Pitch Generator",
+  "ad-copy": "Ad Copy Generator",
+  "investor-email-writer": "Investor Email Writer",
+  "landing-page-creator": "Landing Page Creator",
+  "email-sequence": "Email Sequence Builder",
+  "kpi-dashboard": "KPI Dashboard",
+  "seo-audit": "SEO Audit",
+  "launch-checklist": "Launch Checklist",
+  "funding-readiness-score": "Funding Readiness Score",
+  "business-plan": "Business Plan",
 };
 
 // ---------------------------------------------------------------------------
@@ -2743,36 +2745,36 @@ const TOOL_NAMES: Record<string, string> = {
 // ---------------------------------------------------------------------------
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const origin = request.headers.get('Origin') ?? '';
+    const origin = request.headers.get("Origin") ?? "";
 
-    if (request.method === 'OPTIONS') {
+    if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
-    if (request.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+    if (request.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
     }
 
     // Extract tool_slug from URL
     const url = new URL(request.url);
-    const pathParts = url.pathname.split('/');
+    const pathParts = url.pathname.split("/");
     const toolSlug = pathParts[pathParts.length - 1];
 
     if (!toolSlug || !TOOL_SYSTEM_PROMPTS[toolSlug]) {
-      return new Response(JSON.stringify({ error: 'Tool not found', tool_slug: toolSlug }), {
+      return new Response(JSON.stringify({ error: "Tool not found", tool_slug: toolSlug }), {
         status: 404,
-        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
     // Auth
-    const authHeader = request.headers.get('Authorization') ?? '';
-    const token = authHeader.replace('Bearer ', '');
+    const authHeader = request.headers.get("Authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
     const user = await validateJWT(token, env);
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
@@ -2780,17 +2782,14 @@ export default {
     const planTier = await getUserPlan(user.sub, env);
     const entitled = await isToolEntitled(toolSlug, planTier, env);
     if (!entitled) {
-      return new Response(
-        JSON.stringify({ error: 'upgrade_required', upgrade_to: 'launch' }),
-        {
-          status: 403,
-          headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
-        }
-      );
+      return new Response(JSON.stringify({ error: "upgrade_required", upgrade_to: "launch" }), {
+        status: 403,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+      });
     }
 
     // Parse body
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       input: Record<string, string>;
       conversation_history?: Array<{ role: string; content: string }>;
     };
@@ -2799,28 +2798,30 @@ export default {
     // Build prompt — inject user input into system prompt placeholders
     let systemPrompt = TOOL_SYSTEM_PROMPTS[toolSlug];
     for (const [key, value] of Object.entries(input)) {
-      systemPrompt = systemPrompt.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+      systemPrompt = systemPrompt.replace(new RegExp(`\\{${key}\\}`, "g"), value);
     }
 
     // Build user message from input
-    const userMessage = Object.keys(input).length > 0
-      ? `Generate the ${TOOL_NAMES[toolSlug] ?? toolSlug} output based on the following inputs:\n\n${Object.entries(input).map(([k, v]) => `**${k}:** ${v}`).join('\n')}`
-      : `Generate the ${TOOL_NAMES[toolSlug] ?? toolSlug} output.`;
+    const userMessage =
+      Object.keys(input).length > 0
+        ? `Generate the ${TOOL_NAMES[toolSlug] ?? toolSlug} output based on the following inputs:\n\n${Object.entries(
+            input,
+          )
+            .map(([k, v]) => `**${k}:** ${v}`)
+            .join("\n")}`
+        : `Generate the ${TOOL_NAMES[toolSlug] ?? toolSlug} output.`;
 
-    const messages = [
-      ...conversation_history,
-      { role: 'user', content: userMessage },
-    ];
+    const messages = [...conversation_history, { role: "user", content: userMessage }];
 
     // Call Claude via Cloudflare AI Gateway
     const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/anthropic/v1/messages`;
 
     const aiRes = await fetch(gatewayUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model: MODEL,
@@ -2833,14 +2834,14 @@ export default {
 
     if (!aiRes.ok) {
       const err = await aiRes.text();
-      return new Response(JSON.stringify({ error: 'AI error', detail: err }), {
+      return new Response(JSON.stringify({ error: "AI error", detail: err }), {
         status: 502,
-        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
     // Stream + collect full text
-    let fullText = '';
+    let fullText = "";
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
@@ -2852,18 +2853,20 @@ export default {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+        const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
         for (const line of lines) {
           const data = line.slice(6);
-          if (data === '[DONE]') continue;
+          if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            const text = parsed.delta?.text ?? '';
+            const text = parsed.delta?.text ?? "";
             if (text) {
               fullText += text;
               await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
-          } catch {}
+          } catch {
+            // ignore malformed SSE chunks
+          }
         }
       }
       await writer.close();
@@ -2871,9 +2874,9 @@ export default {
       // Save to tool_outputs
       const wordCount = fullText.split(/\s+/).filter(Boolean).length;
       await fetch(`${env.SUPABASE_URL}/rest/v1/tool_outputs`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           apikey: env.SUPABASE_SERVICE_ROLE_KEY,
           Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
         },
@@ -2892,8 +2895,8 @@ export default {
     return new Response(readable, {
       headers: {
         ...corsHeaders(origin),
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
       },
     });
   },

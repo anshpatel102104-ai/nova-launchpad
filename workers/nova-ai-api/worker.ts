@@ -11,8 +11,8 @@ export interface Env {
   ANTHROPIC_API_KEY: string;
 }
 
-const ALLOWED_ORIGIN = 'https://app.launchpad.nova-ops.space';
-const MODEL = 'claude-sonnet-4-5';
+const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
+const MODEL = "claude-sonnet-4-5";
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova.
 
@@ -44,40 +44,43 @@ async function validateJWT(token: string, env: Env): Promise<{ sub: string } | n
       headers: { Authorization: `Bearer ${token}`, apikey: env.SUPABASE_ANON_KEY },
     });
     if (!res.ok) return null;
-    const user = await res.json() as { id: string };
+    const user = (await res.json()) as { id: string };
     return { sub: user.id };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function corsHeaders(origin: string) {
   return {
-    'Access-Control-Allow-Origin': origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : '',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const origin = request.headers.get('Origin') ?? '';
-    if (request.method === 'OPTIONS') {
+    const origin = request.headers.get("Origin") ?? "";
+    if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
-    if (request.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+    if (request.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
     }
 
     // Auth
-    const authHeader = request.headers.get('Authorization') ?? '';
-    const token = authHeader.replace('Bearer ', '');
+    const authHeader = request.headers.get("Authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
     const user = await validateJWT(token, env);
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       message: string;
       conversation_history?: Array<{ role: string; content: string }>;
       user_context?: Record<string, string>;
@@ -89,23 +92,22 @@ export default {
     // Build system prompt with injected context
     let systemPrompt = NOVA_SYSTEM_PROMPT;
     if (Object.keys(user_context).length > 0) {
-      systemPrompt += `\n\nUser business context:\n${Object.entries(user_context).map(([k, v]) => `${k}: ${v}`).join('\n')}`;
+      systemPrompt += `\n\nUser business context:\n${Object.entries(user_context)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n")}`;
     }
 
-    const messages = [
-      ...conversation_history,
-      { role: 'user', content: message },
-    ];
+    const messages = [...conversation_history, { role: "user", content: message }];
 
     // Stream from Cloudflare AI Gateway → Anthropic
     const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/anthropic/v1/messages`;
 
     const aiRes = await fetch(gatewayUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
         model: MODEL,
@@ -118,13 +120,14 @@ export default {
 
     if (!aiRes.ok) {
       const err = await aiRes.text();
-      return new Response(JSON.stringify({ error: 'AI error', detail: err }), {
-        status: 502, headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: "AI error", detail: err }), {
+        status: 502,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
     // Collect full text while streaming
-    let fullText = '';
+    let fullText = "";
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
@@ -136,18 +139,20 @@ export default {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+        const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
         for (const line of lines) {
           const data = line.slice(6);
-          if (data === '[DONE]') continue;
+          if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            const text = parsed.delta?.text ?? '';
+            const text = parsed.delta?.text ?? "";
             if (text) {
               fullText += text;
               await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
-          } catch {}
+          } catch {
+            // ignore malformed SSE chunks
+          }
         }
       }
       await writer.close();
@@ -156,16 +161,16 @@ export default {
       const sid = session_id ?? crypto.randomUUID();
       const updatedMessages = [
         ...conversation_history,
-        { role: 'user', content: message },
-        { role: 'assistant', content: fullText },
+        { role: "user", content: message },
+        { role: "assistant", content: fullText },
       ];
       await fetch(`${env.SUPABASE_URL}/rest/v1/nova_conversations`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           apikey: env.SUPABASE_SERVICE_ROLE_KEY,
           Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-          Prefer: 'resolution=merge-duplicates',
+          Prefer: "resolution=merge-duplicates",
         },
         body: JSON.stringify({
           user_id: user.sub,
@@ -179,9 +184,9 @@ export default {
     return new Response(readable, {
       headers: {
         ...corsHeaders(origin),
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'X-Session-Id': session_id ?? '',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "X-Session-Id": session_id ?? "",
       },
     });
   },

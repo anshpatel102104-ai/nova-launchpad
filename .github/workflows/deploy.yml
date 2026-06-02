@@ -26,51 +26,29 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Reconcile migration history
-        # Pre-squash migrations exist in the remote DB but not as local files.
-        # Revert them from remote tracking so db push only sees the squash + new files.
-        # Then mark the squash and all post-squash migrations as applied.
+        # The remote DB has applied migration versions that have no corresponding
+        # local file (applied out-of-band via the connector). `supabase db push`
+        # aborts when remote history references versions it can't find locally.
+        # Dynamically mark every remote-applied version that lacks a local file as
+        # `reverted`, so db push only considers the local migration files.
         run: |
-          # Remove old incremental migrations from remote tracking (no local files)
-          for v in \
-            20260422075843 20260422075900 20260422185038 \
-            20260423055721 20260423055740 20260423173016 \
-            20260423174303 20260423174336 20260423175609 \
-            20260423195043 20260425063354 \
-            20260428174811 20260428174824 \
-            20260429203640 20260429203712 \
-            20260429220000 20260429220500 20260429225621 \
-            20260429225635 20260429225652 20260429225758 \
-            20260429225851 20260429230000 20260429230301 \
-            20260430052516 20260430052547 20260430052713 \
-            20260504224413 \
-            20260505162951 20260505165803 20260505170109 \
-            20260505170156 20260505194546 \
-            20260506000000 20260506000001 20260506000002 \
-            20260506000003 20260506000004 20260506000005 \
-            20260506000006 20260508000001 \
-            20260508183635 \
-            20260511000001 20260511000002 \
-            20260512000001 20260512000002 \
-            20260512152647 20260512152651 \
-            20260512152937 20260512152942 \
-            20260513000001 20260513180806 \
-            20260513180830 20260513194544 \
-            20260521153617 20260521160701 \
-            20260521160907 20260521160937 \
-            20260521161020 20260521161700 \
-            20260527135748 20260527135830 20260527135900 \
-            20260527143022 20260527143424 \
-            20260527181328 20260527185300 \
-            20260527195731 20260527195858; do
-            supabase migration repair --status reverted "$v" || true
-          done
-          # Mark squash + all post-squash migrations as applied (they ran via MCP and have local files)
-          for v in \
-            20260516000000 \
-            20260525000001 20260525000002 \
-            20260527000001 20260527000002 20260527000003 \
-            20260527202035 20260527202052 20260527202122 20260527202150 20260527202205; do
-            supabase migration repair --status applied "$v" || true
+          set -euo pipefail
+          # Version prefixes of local migration files (14-digit timestamps).
+          local_versions=$(ls supabase/migrations/*.sql 2>/dev/null \
+            | xargs -n1 basename \
+            | grep -oE '^[0-9]{14}' \
+            | sort -u)
+          # Remote-applied versions (robust against table-format changes: just
+          # pull every 14-digit timestamp out of the listing).
+          remote_versions=$(supabase migration list --linked 2>/dev/null \
+            | grep -oE '[0-9]{14}' \
+            | sort -u)
+          # Any remote version with no local file -> revert it from remote tracking.
+          for v in $remote_versions; do
+            if ! echo "$local_versions" | grep -qx "$v"; then
+              echo "Reverting orphan remote migration: $v"
+              supabase migration repair --status reverted "$v" || true
+            fi
           done
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

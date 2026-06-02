@@ -293,7 +293,8 @@ Best quality leads: [Step X]
       },
     },
     assetCategory: "growth",
-    assetTitle: (i) => `First 10 Customers: ${String(i.business_description || i.business).slice(0, 60)}`,
+    assetTitle: (i) =>
+      `First 10 Customers: ${String(i.business_description || i.business).slice(0, 60)}`,
   },
 
   // ─── LAUNCH TIER ($49) ──────────────────────────────────────────────────────
@@ -354,7 +355,8 @@ Your angle: [How to own this gap]
       },
     },
     assetCategory: "strategy",
-    assetTitle: (i) => `Competitor Scan: ${String(i.business_description || i.business).slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Competitor Scan: ${String(i.business_description || i.business).slice(0, 60)}`,
   },
 
   "idea-vs-idea": {
@@ -421,7 +423,8 @@ Month 3: [3 specific milestones]
       },
     },
     assetCategory: "strategy",
-    assetTitle: (i) => `Idea vs Idea: ${String(i.idea_one).slice(0, 30)} vs ${String(i.idea_two).slice(0, 30)}`,
+    assetTitle: (i) =>
+      `Idea vs Idea: ${String(i.idea_one).slice(0, 30)} vs ${String(i.idea_two).slice(0, 30)}`,
   },
 
   "business-plan-generator": {
@@ -639,7 +642,8 @@ Scale: [Name] — $[X]/mo — [Features]
       },
     },
     assetCategory: "planning",
-    assetTitle: (i) => `Pricing Strategy: ${String(i.product_description || i.product).slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Pricing Strategy: ${String(i.product_description || i.product).slice(0, 60)}`,
   },
 
   "pitch-generator": {
@@ -780,7 +784,8 @@ Psychological angle: [Pain-point / Desire / Social proof / Urgency / Curiosity]
       },
     },
     assetCategory: "marketing",
-    assetTitle: (i) => `Ad Copy: ${String(i.product_description || i.product).slice(0, 60)} [${i.platform}]`,
+    assetTitle: (i) =>
+      `Ad Copy: ${String(i.product_description || i.product).slice(0, 60)} [${i.platform}]`,
   },
 
   "investor-email-writer": {
@@ -992,7 +997,8 @@ If doesn't open Email 1: [Subject line test or removal]
       },
     },
     assetCategory: "marketing",
-    assetTitle: (i) => `Email Sequence: ${String(i.sequence_type || "nurture")} — ${String(i.business_name || i.business)}`,
+    assetTitle: (i) =>
+      `Email Sequence: ${String(i.sequence_type || "nurture")} — ${String(i.business_name || i.business)}`,
   },
 
   "kpi-dashboard": {
@@ -1262,7 +1268,8 @@ Based on current stage/traction, best fit:
       },
     },
     assetCategory: "fundraising",
-    assetTitle: (i) => `Funding Readiness: ${String(i.business_description || i.business).slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Funding Readiness: ${String(i.business_description || i.business).slice(0, 60)}`,
   },
 
   "business-plan": {

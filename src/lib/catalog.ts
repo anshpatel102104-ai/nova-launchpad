@@ -18,6 +18,12 @@ import {
   CheckSquare,
   TrendingUp,
   BookOpen,
+  Calendar,
+  Workflow,
+  MessageSquare,
+  ListChecks,
+  Phone,
+  type LucideIcon,
 } from "lucide-react";
 
 export type PlanTier = "0" | "49" | "149" | "299";
@@ -57,9 +63,26 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 8,
     emoji: "💡",
     inputFields: [
-      { key: "idea_description", label: "Describe your business idea", type: "textarea", placeholder: "What are you building? What problem does it solve?", required: true },
-      { key: "target_market", label: "Target market", type: "text", placeholder: "e.g. SaaS founders, home improvement contractors", required: true },
-      { key: "problem_being_solved", label: "Problem being solved", type: "textarea", placeholder: "The specific pain point your idea addresses" },
+      {
+        key: "idea_description",
+        label: "Describe your business idea",
+        type: "textarea",
+        placeholder: "What are you building? What problem does it solve?",
+        required: true,
+      },
+      {
+        key: "target_market",
+        label: "Target market",
+        type: "text",
+        placeholder: "e.g. SaaS founders, home improvement contractors",
+        required: true,
+      },
+      {
+        key: "problem_being_solved",
+        label: "Problem being solved",
+        type: "textarea",
+        placeholder: "The specific pain point your idea addresses",
+      },
     ],
   },
   {
@@ -74,7 +97,13 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 6,
     emoji: "💀",
     inputFields: [
-      { key: "idea_description", label: "Your business idea", type: "textarea", placeholder: "Describe the idea you want stress-tested", required: true },
+      {
+        key: "idea_description",
+        label: "Your business idea",
+        type: "textarea",
+        placeholder: "Describe the idea you want stress-tested",
+        required: true,
+      },
       { key: "months_building", label: "Months spent on this", type: "text", placeholder: "0" },
       { key: "money_invested", label: "Money invested", type: "text", placeholder: "$0" },
     ],
@@ -91,9 +120,26 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 7,
     emoji: "🔍",
     inputFields: [
-      { key: "business_description", label: "Your business", type: "textarea", placeholder: "What you're building and how it works", required: true },
-      { key: "target_market", label: "Target market", type: "text", placeholder: "Who your customers are", required: true },
-      { key: "geography", label: "Geography", type: "text", placeholder: "US, Global, Europe, etc." },
+      {
+        key: "business_description",
+        label: "Your business",
+        type: "textarea",
+        placeholder: "What you're building and how it works",
+        required: true,
+      },
+      {
+        key: "target_market",
+        label: "Target market",
+        type: "text",
+        placeholder: "Who your customers are",
+        required: true,
+      },
+      {
+        key: "geography",
+        label: "Geography",
+        type: "text",
+        placeholder: "US, Global, Europe, etc.",
+      },
     ],
   },
   {
@@ -108,10 +154,32 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 10,
     emoji: "🗺️",
     inputFields: [
-      { key: "product_description", label: "Product/service", type: "textarea", placeholder: "What you're selling and how it works", required: true },
-      { key: "target_customer", label: "Target customer", type: "text", placeholder: "Be specific — job title, company type, situation", required: true },
-      { key: "price_point", label: "Price point", type: "text", placeholder: "$X/month or $X one-time" },
-      { key: "stage", label: "Stage", type: "select", options: ["Idea", "Validating", "Launched", "Growing"] },
+      {
+        key: "product_description",
+        label: "Product/service",
+        type: "textarea",
+        placeholder: "What you're selling and how it works",
+        required: true,
+      },
+      {
+        key: "target_customer",
+        label: "Target customer",
+        type: "text",
+        placeholder: "Be specific — job title, company type, situation",
+        required: true,
+      },
+      {
+        key: "price_point",
+        label: "Price point",
+        type: "text",
+        placeholder: "$X/month or $X one-time",
+      },
+      {
+        key: "stage",
+        label: "Stage",
+        type: "select",
+        options: ["Idea", "Validating", "Launched", "Growing"],
+      },
     ],
   },
 
@@ -128,11 +196,33 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 12,
     emoji: "📋",
     inputFields: [
-      { key: "business_name", label: "Business name", type: "text", placeholder: "Your company name", required: true },
-      { key: "description", label: "What you do", type: "textarea", placeholder: "Product/service description", required: true },
+      {
+        key: "business_name",
+        label: "Business name",
+        type: "text",
+        placeholder: "Your company name",
+        required: true,
+      },
+      {
+        key: "description",
+        label: "What you do",
+        type: "textarea",
+        placeholder: "Product/service description",
+        required: true,
+      },
       { key: "target_market", label: "Target market", type: "text", required: true },
-      { key: "revenue_model", label: "Revenue model", type: "text", placeholder: "Subscription, one-time, marketplace fee, etc." },
-      { key: "stage", label: "Stage", type: "select", options: ["Idea", "Validating", "Launched", "Growing"] },
+      {
+        key: "revenue_model",
+        label: "Revenue model",
+        type: "text",
+        placeholder: "Subscription, one-time, marketplace fee, etc.",
+      },
+      {
+        key: "stage",
+        label: "Stage",
+        type: "select",
+        options: ["Idea", "Validating", "Launched", "Growing"],
+      },
     ],
   },
   {
@@ -155,7 +245,8 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
   {
     slug: "pricing-calculator",
     name: "Pricing Calculator",
-    description: "3 pricing strategies with exact numbers + revenue projections at 10/50/100 customers.",
+    description:
+      "3 pricing strategies with exact numbers + revenue projections at 10/50/100 customers.",
     icon: Calculator,
     category: "plan",
     plan: "49",
@@ -164,10 +255,30 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 6,
     emoji: "🧮",
     inputFields: [
-      { key: "product_description", label: "What you're pricing", type: "textarea", required: true },
-      { key: "cost_to_deliver", label: "Cost to deliver (per unit/month)", type: "text", placeholder: "$X" },
-      { key: "competitor_prices", label: "Competitor prices", type: "text", placeholder: "$X – $Y/month" },
-      { key: "target_margin_percent", label: "Target gross margin %", type: "text", placeholder: "60" },
+      {
+        key: "product_description",
+        label: "What you're pricing",
+        type: "textarea",
+        required: true,
+      },
+      {
+        key: "cost_to_deliver",
+        label: "Cost to deliver (per unit/month)",
+        type: "text",
+        placeholder: "$X",
+      },
+      {
+        key: "competitor_prices",
+        label: "Competitor prices",
+        type: "text",
+        placeholder: "$X – $Y/month",
+      },
+      {
+        key: "target_margin_percent",
+        label: "Target gross margin %",
+        type: "text",
+        placeholder: "60",
+      },
     ],
   },
   {
@@ -184,7 +295,12 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     inputFields: [
       { key: "business_description", label: "Your business", type: "textarea", required: true },
       { key: "target_customer", label: "Target customer", type: "text", required: true },
-      { key: "location_or_online", label: "Location or online", type: "text", placeholder: "Tampa FL, or Online" },
+      {
+        key: "location_or_online",
+        label: "Location or online",
+        type: "text",
+        placeholder: "Tampa FL, or Online",
+      },
     ],
   },
   {
@@ -200,8 +316,18 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     emoji: "🎙️",
     inputFields: [
       { key: "business_name", label: "Business name", type: "text", required: true },
-      { key: "one_sentence_description", label: "One-sentence description", type: "text", required: true },
-      { key: "traction", label: "Traction/metrics", type: "text", placeholder: "Revenue, users, growth rate, or pre-launch" },
+      {
+        key: "one_sentence_description",
+        label: "One-sentence description",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "traction",
+        label: "Traction/metrics",
+        type: "text",
+        placeholder: "Revenue, users, growth rate, or pre-launch",
+      },
       { key: "ask_type", label: "Pitch type", type: "select", options: ["funding", "sales"] },
     ],
   },
@@ -221,7 +347,12 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
       { key: "target_customer", label: "Target customer", type: "text", required: true },
       { key: "primary_benefit", label: "Primary benefit/outcome", type: "text", required: true },
       { key: "price", label: "Price", type: "text", placeholder: "$X/month" },
-      { key: "social_proof", label: "Social proof (testimonials, stats)", type: "textarea", placeholder: "Any reviews, case studies, or results" },
+      {
+        key: "social_proof",
+        label: "Social proof (testimonials, stats)",
+        type: "textarea",
+        placeholder: "Any reviews, case studies, or results",
+      },
     ],
   },
 
@@ -240,7 +371,12 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     inputFields: [
       { key: "business_name", label: "Business name", type: "text", required: true },
       { key: "product", label: "Product/service", type: "text", required: true },
-      { key: "sequence_type", label: "Sequence type", type: "select", options: ["welcome", "nurture", "re-engagement", "post-sale"] },
+      {
+        key: "sequence_type",
+        label: "Sequence type",
+        type: "select",
+        options: ["welcome", "nurture", "re-engagement", "post-sale"],
+      },
     ],
   },
   {
@@ -255,15 +391,26 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 10,
     emoji: "📊",
     inputFields: [
-      { key: "business_model", label: "Business model", type: "select", options: ["SaaS", "agency", "ecommerce", "service", "marketplace"] },
-      { key: "stage", label: "Stage", type: "select", options: ["Idea", "Launch", "Operate", "Scale"] },
+      {
+        key: "business_model",
+        label: "Business model",
+        type: "select",
+        options: ["SaaS", "agency", "ecommerce", "service", "marketplace"],
+      },
+      {
+        key: "stage",
+        label: "Stage",
+        type: "select",
+        options: ["Idea", "Launch", "Operate", "Scale"],
+      },
       { key: "team_size", label: "Team size", type: "text", placeholder: "Solo, 2-5, 6-20, 20+" },
     ],
   },
   {
     slug: "seo-audit",
     name: "SEO Audit Tool",
-    description: "Technical checklist, 10 target keywords, 5 content opportunities, 90-day roadmap.",
+    description:
+      "Technical checklist, 10 target keywords, 5 content opportunities, 90-day roadmap.",
     icon: Search,
     category: "launch",
     plan: "149",
@@ -272,7 +419,13 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 8,
     emoji: "🔎",
     inputFields: [
-      { key: "website_url", label: "Website URL", type: "text", placeholder: "https://yoursite.com", required: true },
+      {
+        key: "website_url",
+        label: "Website URL",
+        type: "text",
+        placeholder: "https://yoursite.com",
+        required: true,
+      },
       { key: "primary_keyword", label: "Primary keyword", type: "text", required: true },
       { key: "industry", label: "Industry", type: "text", required: true },
     ],
@@ -280,7 +433,8 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
   {
     slug: "launch-checklist",
     name: "Launch Checklist",
-    description: "30/14/7/1-day countdown checklist across 6 categories with priorities and estimates.",
+    description:
+      "30/14/7/1-day countdown checklist across 6 categories with priorities and estimates.",
     icon: CheckSquare,
     category: "launch",
     plan: "149",
@@ -289,10 +443,21 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 6,
     emoji: "✅",
     inputFields: [
-      { key: "business_type", label: "Business type", type: "text", placeholder: "SaaS, agency, physical product, service", required: true },
+      {
+        key: "business_type",
+        label: "Business type",
+        type: "text",
+        placeholder: "SaaS, agency, physical product, service",
+        required: true,
+      },
       { key: "launch_date", label: "Launch date", type: "text", placeholder: "Target launch date" },
       { key: "target_audience", label: "Target audience", type: "text", required: true },
-      { key: "distribution_channels", label: "Distribution channels", type: "text", placeholder: "Email, social, paid ads, partnerships" },
+      {
+        key: "distribution_channels",
+        label: "Distribution channels",
+        type: "text",
+        placeholder: "Email, social, paid ads, partnerships",
+      },
     ],
   },
 
@@ -311,8 +476,18 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     inputFields: [
       { key: "product_description", label: "Product/service", type: "textarea", required: true },
       { key: "target_audience", label: "Target audience", type: "text", required: true },
-      { key: "platform", label: "Platform", type: "select", options: ["Facebook", "Google", "TikTok", "LinkedIn", "Instagram"] },
-      { key: "goal", label: "Campaign goal", type: "select", options: ["awareness", "leads", "sales"] },
+      {
+        key: "platform",
+        label: "Platform",
+        type: "select",
+        options: ["Facebook", "Google", "TikTok", "LinkedIn", "Instagram"],
+      },
+      {
+        key: "goal",
+        label: "Campaign goal",
+        type: "select",
+        options: ["awareness", "leads", "sales"],
+      },
     ],
   },
   {
@@ -329,9 +504,19 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     inputFields: [
       { key: "company_name", label: "Company name", type: "text", required: true },
       { key: "one_liner", label: "One-liner", type: "text", required: true },
-      { key: "traction_metrics", label: "Traction metrics", type: "text", placeholder: "$X ARR, X% MoM growth, X customers" },
+      {
+        key: "traction_metrics",
+        label: "Traction metrics",
+        type: "text",
+        placeholder: "$X ARR, X% MoM growth, X customers",
+      },
       { key: "funding_ask", label: "Funding ask", type: "text", placeholder: "$500K at $3M cap" },
-      { key: "investor_type", label: "Investor type", type: "select", options: ["angel", "pre-seed VC", "seed VC", "strategic"] },
+      {
+        key: "investor_type",
+        label: "Investor type",
+        type: "select",
+        options: ["angel", "pre-seed VC", "seed VC", "strategic"],
+      },
     ],
   },
   {
@@ -346,17 +531,28 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
     estimatedMinutes: 10,
     emoji: "📈",
     inputFields: [
-      { key: "business_description", label: "Business description", type: "textarea", required: true },
+      {
+        key: "business_description",
+        label: "Business description",
+        type: "textarea",
+        required: true,
+      },
       { key: "monthly_revenue", label: "Monthly revenue", type: "text", placeholder: "$X MRR" },
       { key: "growth_rate", label: "Growth rate", type: "text", placeholder: "X% MoM" },
       { key: "team_size", label: "Team size", type: "text" },
-      { key: "funding_target", label: "Funding target", type: "text", placeholder: "$X at $Y valuation" },
+      {
+        key: "funding_target",
+        label: "Funding target",
+        type: "text",
+        placeholder: "$X at $Y valuation",
+      },
     ],
   },
   {
     slug: "business-plan",
     name: "Killer Business Plan",
-    description: "Investor-grade business plan: full P&L, competitive analysis, funding ask, exit strategy.",
+    description:
+      "Investor-grade business plan: full P&L, competitive analysis, funding ask, exit strategy.",
     icon: BookOpen,
     category: "funding",
     plan: "299",
@@ -369,7 +565,12 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
       { key: "description", label: "What you do", type: "textarea", required: true },
       { key: "market", label: "Market", type: "text", required: true },
       { key: "traction", label: "Traction", type: "text", placeholder: "Revenue, users, growth" },
-      { key: "team", label: "Team", type: "textarea", placeholder: "Founder credentials and key team" },
+      {
+        key: "team",
+        label: "Team",
+        type: "textarea",
+        placeholder: "Founder credentials and key team",
+      },
       { key: "ask", label: "Funding ask", type: "text", placeholder: "$X at $Y valuation" },
     ],
   },
@@ -377,7 +578,8 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
   {
     slug: "idea-vs-idea",
     name: "Idea vs. Idea",
-    description: "Head-to-head comparison across 8 axes. Clear winner declared with 90-day fast path.",
+    description:
+      "Head-to-head comparison across 8 axes. Clear winner declared with 90-day fast path.",
     icon: GitCompare,
     category: "validate",
     plan: "49",
@@ -389,7 +591,12 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
       { key: "idea_one", label: "Idea A", type: "textarea", required: true },
       { key: "idea_two", label: "Idea B", type: "textarea", required: true },
       { key: "founder_background", label: "Your background", type: "text" },
-      { key: "available_capital", label: "Available capital", type: "text", placeholder: "$X or Bootstrap" },
+      {
+        key: "available_capital",
+        label: "Available capital",
+        type: "text",
+        placeholder: "$X or Bootstrap",
+      },
     ],
   },
 ];
@@ -417,22 +624,39 @@ export const AUTOMATION_SYSTEMS: AutomationSystem[] = [
   {
     slug: "ai-appointment-setting",
     name: "AI Appointment Setting",
-    description: "Automatically reaches out to new contacts via email or SMS and books calls — 24/7.",
+    description:
+      "Automatically reaches out to new contacts via email or SMS and books calls — 24/7.",
     plan: "49",
     trigger: "New contact added",
     action: "Generate personalized outreach → send → follow up",
     output: "Booked appointments",
     configFields: [
       { key: "business_name", label: "Business name", type: "text" },
-      { key: "cta_link", label: "Booking link (Calendly, etc.)", type: "text", placeholder: "https://calendly.com/you" },
-      { key: "tone", label: "Outreach tone", type: "select", options: ["professional", "casual", "direct"] },
-      { key: "channel", label: "Preferred channel", type: "select", options: ["email", "sms", "both"] },
+      {
+        key: "cta_link",
+        label: "Booking link (Calendly, etc.)",
+        type: "text",
+        placeholder: "https://calendly.com/you",
+      },
+      {
+        key: "tone",
+        label: "Outreach tone",
+        type: "select",
+        options: ["professional", "casual", "direct"],
+      },
+      {
+        key: "channel",
+        label: "Preferred channel",
+        type: "select",
+        options: ["email", "sms", "both"],
+      },
     ],
   },
   {
     slug: "crm-automation",
     name: "CRM Automation",
-    description: "Automatically scores leads, tags them, and routes to the right follow-up sequence.",
+    description:
+      "Automatically scores leads, tags them, and routes to the right follow-up sequence.",
     plan: "49",
     trigger: "Form submission or manual import",
     action: "Score lead → tag → route to sequence",
@@ -440,7 +664,12 @@ export const AUTOMATION_SYSTEMS: AutomationSystem[] = [
     configFields: [
       { key: "icp_description", label: "ICP description (for AI scoring)", type: "textarea" },
       { key: "notification_email", label: "Notification email", type: "text" },
-      { key: "pipeline_stages", label: "Pipeline stage names", type: "text", placeholder: "New, Contacted, Qualified, Closed" },
+      {
+        key: "pipeline_stages",
+        label: "Pipeline stage names",
+        type: "text",
+        placeholder: "New, Contacted, Qualified, Closed",
+      },
     ],
   },
   {
@@ -452,8 +681,18 @@ export const AUTOMATION_SYSTEMS: AutomationSystem[] = [
     action: "Generate 5-touch sequence → execute → stop on reply",
     output: "Replied or completed sequence",
     configFields: [
-      { key: "sequence_type", label: "Default sequence type", type: "select", options: ["cold outreach", "warm follow-up", "re-engagement", "post-demo"] },
-      { key: "urgency_level", label: "Urgency level", type: "select", options: ["low", "medium", "high"] },
+      {
+        key: "sequence_type",
+        label: "Default sequence type",
+        type: "select",
+        options: ["cold outreach", "warm follow-up", "re-engagement", "post-demo"],
+      },
+      {
+        key: "urgency_level",
+        label: "Urgency level",
+        type: "select",
+        options: ["low", "medium", "high"],
+      },
     ],
   },
   {
@@ -466,53 +705,151 @@ export const AUTOMATION_SYSTEMS: AutomationSystem[] = [
     output: "Engaged contact or opt-out logged",
     configFields: [
       { key: "twilio_account_sid", label: "Twilio Account SID", type: "text" },
-      { key: "twilio_phone", label: "Twilio phone number", type: "text", placeholder: "+1XXXXXXXXXX" },
+      {
+        key: "twilio_phone",
+        label: "Twilio phone number",
+        type: "text",
+        placeholder: "+1XXXXXXXXXX",
+      },
       { key: "opt_out_keyword", label: "Opt-out keyword", type: "text", placeholder: "STOP" },
-      { key: "sending_hours", label: "Business sending hours", type: "text", placeholder: "9am-6pm EST" },
+      {
+        key: "sending_hours",
+        label: "Business sending hours",
+        type: "text",
+        placeholder: "9am-6pm EST",
+      },
     ],
   },
   {
     slug: "lead-qualification",
     name: "Lead Qualification AI",
-    description: "Sends BANT qualification questions, scores responses, routes to appointment or nurture.",
+    description:
+      "Sends BANT qualification questions, scores responses, routes to appointment or nurture.",
     plan: "149",
     trigger: "New contact or manual trigger",
     action: "Send BANT questions → parse responses → score → route",
     output: "Qualified or nurture lead",
     configFields: [
-      { key: "budget_minimum", label: "Budget minimum threshold", type: "text", placeholder: "$1,000/mo" },
-      { key: "decision_maker_required", label: "Decision maker required?", type: "select", options: ["yes", "no"] },
-      { key: "disqualification_rules", label: "Disqualification rules", type: "textarea", placeholder: "Disqualify if budget < $X, or not decision maker" },
+      {
+        key: "budget_minimum",
+        label: "Budget minimum threshold",
+        type: "text",
+        placeholder: "$1,000/mo",
+      },
+      {
+        key: "decision_maker_required",
+        label: "Decision maker required?",
+        type: "select",
+        options: ["yes", "no"],
+      },
+      {
+        key: "disqualification_rules",
+        label: "Disqualification rules",
+        type: "textarea",
+        placeholder: "Disqualify if budget < $X, or not decision maker",
+      },
     ],
   },
   {
     slug: "voice-ai",
     name: "Voice AI Receptionist",
-    description: "Answers inbound calls 24/7, books appointments, answers FAQs, escalates to human when needed.",
+    description:
+      "Answers inbound calls 24/7, books appointments, answers FAQs, escalates to human when needed.",
     plan: "299",
     trigger: "Inbound phone call",
     action: "Greet → understand intent → book / answer / escalate",
     output: "Booked call, answered question, or escalation alert",
     configFields: [
-      { key: "greeting_script", label: "Greeting script", type: "textarea", placeholder: "Hello! You've reached [business name]..." },
+      {
+        key: "greeting_script",
+        label: "Greeting script",
+        type: "textarea",
+        placeholder: "Hello! You've reached [business name]...",
+      },
       { key: "booking_link", label: "Booking link or calendar ID", type: "text" },
       { key: "escalation_phone", label: "Escalation phone number", type: "text" },
-      { key: "business_hours", label: "Business hours", type: "text", placeholder: "Mon-Fri 9am-6pm EST" },
+      {
+        key: "business_hours",
+        label: "Business hours",
+        type: "text",
+        placeholder: "Mon-Fri 9am-6pm EST",
+      },
     ],
   },
 ];
 
+// ─── Nova OS systems (automation systems with display icons) ────────────────
+
+export interface NovaSystem {
+  slug: string;
+  name: string;
+  description: string;
+  trigger: string;
+  action: string;
+  output: string;
+  icon: LucideIcon;
+}
+
+const NOVA_SYSTEM_ICONS: Record<string, LucideIcon> = {
+  "ai-appointment-setting": Calendar,
+  "crm-automation": Workflow,
+  "ai-followup-sequences": Mail,
+  "sms-automation": MessageSquare,
+  "lead-qualification": ListChecks,
+  "voice-ai": Phone,
+};
+
+export const NOVA_SYSTEMS: NovaSystem[] = AUTOMATION_SYSTEMS.map((sys) => ({
+  slug: sys.slug,
+  name: sys.name,
+  description: sys.description,
+  trigger: sys.trigger,
+  action: sys.action,
+  output: sys.output,
+  icon: NOVA_SYSTEM_ICONS[sys.slug] ?? Workflow,
+}));
+
 // ─── Mentor specs ──────────────────────────────────────────────────────────
 
 export const MENTORS = [
-  { id: "strategist", name: "The Strategist", specialty: "Market positioning, competitive moats, fundraising strategy", plan: "149" as PlanTier, emoji: "♟️" },
-  { id: "operator", name: "The Operator", specialty: "Systems, SOPs, hiring playbooks, operational leverage", plan: "149" as PlanTier, emoji: "⚙️" },
-  { id: "growth-hacker", name: "The Growth Hacker", specialty: "Acquisition channels, virality, retention loops, CAC reduction", plan: "149" as PlanTier, emoji: "📈" },
-  { id: "builder", name: "The Builder", specialty: "Product strategy, MVP scoping, technical architecture, AI integration", plan: "149" as PlanTier, emoji: "🔨" },
-  { id: "closer", name: "The Closer", specialty: "Sales strategy, NEPQ, objection handling, pricing psychology", plan: "149" as PlanTier, emoji: "🤝" },
+  {
+    id: "strategist",
+    name: "The Strategist",
+    specialty: "Market positioning, competitive moats, fundraising strategy",
+    plan: "149" as PlanTier,
+    emoji: "♟️",
+  },
+  {
+    id: "operator",
+    name: "The Operator",
+    specialty: "Systems, SOPs, hiring playbooks, operational leverage",
+    plan: "149" as PlanTier,
+    emoji: "⚙️",
+  },
+  {
+    id: "growth-hacker",
+    name: "The Growth Hacker",
+    specialty: "Acquisition channels, virality, retention loops, CAC reduction",
+    plan: "149" as PlanTier,
+    emoji: "📈",
+  },
+  {
+    id: "builder",
+    name: "The Builder",
+    specialty: "Product strategy, MVP scoping, technical architecture, AI integration",
+    plan: "149" as PlanTier,
+    emoji: "🔨",
+  },
+  {
+    id: "closer",
+    name: "The Closer",
+    specialty: "Sales strategy, NEPQ, objection handling, pricing psychology",
+    plan: "149" as PlanTier,
+    emoji: "🤝",
+  },
 ] as const;
 
-export type MentorId = typeof MENTORS[number]["id"];
+export type MentorId = (typeof MENTORS)[number]["id"];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -521,7 +858,9 @@ export function getToolBySlug(slug: string): LaunchPadTool | undefined {
 }
 
 export function getToolsByPhase(phase: 1 | 2 | 3 | 4): LaunchPadTool[] {
-  return LAUNCHPAD_TOOLS.filter((t) => t.phase === phase && t.step > 0).sort((a, b) => a.step - b.step);
+  return LAUNCHPAD_TOOLS.filter((t) => t.phase === phase && t.step > 0).sort(
+    (a, b) => a.step - b.step,
+  );
 }
 
 export function getToolsByCategory(category: LaunchPadTool["category"]): LaunchPadTool[] {

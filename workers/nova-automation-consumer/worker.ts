@@ -21,14 +21,14 @@ interface AutomationJob {
   log_id?: string;
 }
 
-const CLAUDE_MODEL = 'claude-sonnet-4-5';
+const CLAUDE_MODEL = "claude-sonnet-4-5";
 
 // ---------------------------------------------------------------------------
 // Supabase helpers
 // ---------------------------------------------------------------------------
 function sbHeaders(env: Env): Record<string, string> {
   return {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     apikey: env.SUPABASE_SERVICE_ROLE_KEY,
     Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
   };
@@ -46,8 +46,8 @@ async function postToSupabase(
   path: string,
   body: Record<string, unknown>,
   env: Env,
-  method: 'POST' | 'PATCH' = 'POST',
-  extraHeaders: Record<string, string> = {}
+  method: "POST" | "PATCH" = "POST",
+  extraHeaders: Record<string, string> = {},
 ): Promise<boolean> {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, {
     method,
@@ -64,22 +64,22 @@ async function callClaude(
   userPrompt: string,
   systemPrompt: string,
   env: Env,
-  maxTokens = 1024
+  maxTokens = 1024,
 ): Promise<string> {
   const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/anthropic/v1/messages`;
 
   const res = await fetch(gatewayUrl, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model: CLAUDE_MODEL,
       max_tokens: maxTokens,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [{ role: "user", content: userPrompt }],
     }),
   });
 
@@ -88,10 +88,10 @@ async function callClaude(
     throw new Error(`Claude API error: ${err}`);
   }
 
-  const data = await res.json() as {
+  const data = (await res.json()) as {
     content: Array<{ type: string; text: string }>;
   };
-  return data.content?.[0]?.text ?? '';
+  return data.content?.[0]?.text ?? "";
 }
 
 // ---------------------------------------------------------------------------
@@ -102,21 +102,21 @@ async function sendEmail(
   subject: string,
   text: string,
   env: Env,
-  html?: string
+  html?: string,
 ): Promise<boolean> {
-  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
+  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${env.SENDGRID_API_KEY}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       personalizations: [{ to: [{ email: to }] }],
-      from: { email: 'nova@launchpad.nova-ops.space', name: 'Nova' },
+      from: { email: "nova@launchpad.nova-ops.space", name: "Nova" },
       subject,
       content: [
-        { type: 'text/plain', value: text },
-        ...(html ? [{ type: 'text/html', value: html }] : []),
+        { type: "text/plain", value: text },
+        ...(html ? [{ type: "text/html", value: html }] : []),
       ],
     }),
   });
@@ -129,7 +129,7 @@ async function sendEmail(
 async function sendSMS(to: string, body: string, env: Env): Promise<boolean> {
   const accountSid = env.TWILIO_ACCOUNT_SID;
   const authToken = env.TWILIO_AUTH_TOKEN;
-  const twilioNumber = '+18334509482'; // Should be env var in production
+  const twilioNumber = "+18334509482"; // Should be env var in production
 
   const formBody = new URLSearchParams({
     To: to,
@@ -140,13 +140,13 @@ async function sendSMS(to: string, body: string, env: Env): Promise<boolean> {
   const res = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Basic ${btoa(`${accountSid}:${authToken}`)}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: formBody.toString(),
-    }
+    },
   );
   return res.ok;
 }
@@ -156,10 +156,10 @@ async function sendSMS(to: string, body: string, env: Env): Promise<boolean> {
 // ---------------------------------------------------------------------------
 async function updateLog(
   logId: string | undefined,
-  status: 'success' | 'failed',
+  status: "success" | "failed",
   durationMs: number,
   error: string | null,
-  env: Env
+  env: Env,
 ): Promise<void> {
   if (!logId) return;
   await postToSupabase(
@@ -171,7 +171,7 @@ async function updateLog(
       completed_at: new Date().toISOString(),
     },
     env,
-    'PATCH'
+    "PATCH",
   );
 }
 
@@ -200,17 +200,14 @@ interface UserContext {
 }
 
 // 1. ai-appointment-setting
-async function handleAiAppointmentSetting(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleAiAppointmentSetting(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
   const contactId = payload.contact_id as string;
 
   // Fetch contact
   const contacts = await fetchFromSupabase<Contact>(
     `contacts?id=eq.${contactId}&user_id=eq.${user_id}`,
-    env
+    env,
   );
   const contact = contacts[0];
   if (!contact) throw new Error(`Contact ${contactId} not found`);
@@ -218,17 +215,17 @@ async function handleAiAppointmentSetting(
   // Fetch user context
   const ctxRows = await fetchFromSupabase<UserContext>(
     `user_contexts?user_id=eq.${user_id}&limit=1`,
-    env
+    env,
   );
   const userContext = ctxRows[0] ?? {};
 
-  const systemPrompt = `You are Nova — an AI appointment-setting assistant for ${userContext.business_name ?? 'this business'}.
+  const systemPrompt = `You are Nova — an AI appointment-setting assistant for ${userContext.business_name ?? "this business"}.
 
 Your role: write a highly personalized, Hormozi-style outreach message that gets a reply. Use the Value Equation: Dream Outcome × Perceived Likelihood of Achievement / Time Delay × Effort and Sacrifice.
 
-Business: ${userContext.business_name ?? 'Unknown'}
-Product: ${userContext.product_description ?? 'Unknown'}
-Target customer: ${userContext.target_customer ?? 'Unknown'}
+Business: ${userContext.business_name ?? "Unknown"}
+Product: ${userContext.product_description ?? "Unknown"}
+Target customer: ${userContext.target_customer ?? "Unknown"}
 
 Rules:
 - Under 150 words
@@ -239,22 +236,22 @@ Rules:
 - TCPA compliant if SMS`;
 
   const prompt = `Write a personalized outreach message to:
-Name: ${contact.first_name ?? ''} ${contact.last_name ?? ''}
-Company: ${contact.company ?? ''}
-Channel: ${(payload.channel as string) ?? 'email'}
+Name: ${contact.first_name ?? ""} ${contact.last_name ?? ""}
+Company: ${contact.company ?? ""}
+Channel: ${(payload.channel as string) ?? "email"}
 
 Goal: Book an appointment / discovery call.`;
 
   const message = await callClaude(prompt, systemPrompt, env);
 
   // Send via preferred channel
-  const channel = (payload.channel as string) ?? 'email';
+  const channel = (payload.channel as string) ?? "email";
   let sent = false;
 
-  if (channel === 'sms' && contact.phone) {
+  if (channel === "sms" && contact.phone) {
     sent = await sendSMS(contact.phone, message, env);
   } else if (contact.email) {
-    const subject = `Quick question about ${contact.company ?? 'your business'}`;
+    const subject = `Quick question about ${contact.company ?? "your business"}`;
     sent = await sendEmail(contact.email, subject, message, env);
   }
 
@@ -263,52 +260,53 @@ Goal: Book an appointment / discovery call.`;
     await postToSupabase(
       `contacts?id=eq.${contactId}`,
       {
-        status: 'contacted',
+        status: "contacted",
         last_contacted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       env,
-      'PATCH'
+      "PATCH",
     );
   }
 
   // Log result
-  await postToSupabase('automation_results', {
-    user_id,
-    automation_slug: job.automation_slug,
-    contact_id: contactId,
-    channel,
-    message_sent: message,
-    sent,
-    created_at: new Date().toISOString(),
-  }, env);
+  await postToSupabase(
+    "automation_results",
+    {
+      user_id,
+      automation_slug: job.automation_slug,
+      contact_id: contactId,
+      channel,
+      message_sent: message,
+      sent,
+      created_at: new Date().toISOString(),
+    },
+    env,
+  );
 }
 
 // 2. ai-followup-sequences
-async function handleAiFollowupSequences(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleAiFollowupSequences(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
   const contactId = payload.contact_id as string;
 
   const contacts = await fetchFromSupabase<Contact>(
     `contacts?id=eq.${contactId}&user_id=eq.${user_id}`,
-    env
+    env,
   );
   const contact = contacts[0];
   if (!contact) throw new Error(`Contact ${contactId} not found`);
 
   const ctxRows = await fetchFromSupabase<UserContext>(
     `user_contexts?user_id=eq.${user_id}&limit=1`,
-    env
+    env,
   );
   const userContext = ctxRows[0] ?? {};
 
   const systemPrompt = `You are Nova — designing a 5-touch follow-up sequence using NEPQ (Neuro-Emotional Persuasion Questioning) principles.
 
-Business: ${userContext.business_name ?? 'Unknown'}
-Product: ${userContext.product_description ?? 'Unknown'}
+Business: ${userContext.business_name ?? "Unknown"}
+Product: ${userContext.product_description ?? "Unknown"}
 
 Design a 5-touch sequence (mix of email and SMS) that:
 1. Connects emotionally with the prospect's situation
@@ -320,26 +318,40 @@ Design a 5-touch sequence (mix of email and SMS) that:
 Output: JSON array of 5 objects with: { touch: number, channel: "email"|"sms", delay_hours: number, subject: string, body: string }`;
 
   const prompt = `Create a 5-touch follow-up sequence for:
-Name: ${contact.first_name ?? ''} ${contact.last_name ?? ''}
-Company: ${contact.company ?? ''}
-Previous interaction: ${(payload.previous_interaction as string) ?? 'Initial outreach sent'}`;
+Name: ${contact.first_name ?? ""} ${contact.last_name ?? ""}
+Company: ${contact.company ?? ""}
+Previous interaction: ${(payload.previous_interaction as string) ?? "Initial outreach sent"}`;
 
   const sequenceText = await callClaude(prompt, systemPrompt, env, 2048);
 
   // Parse sequence
-  let sequence: Array<{ touch: number; channel: string; delay_hours: number; subject: string; body: string }> = [];
+  let sequence: Array<{
+    touch: number;
+    channel: string;
+    delay_hours: number;
+    subject: string;
+    body: string;
+  }> = [];
   try {
     const jsonMatch = sequenceText.match(/\[[\s\S]*\]/);
     if (jsonMatch) sequence = JSON.parse(jsonMatch[0]);
   } catch {
     // Fallback: create a simple sequence
-    sequence = [{ touch: 1, channel: 'email', delay_hours: 0, subject: 'Following up', body: sequenceText.slice(0, 500) }];
+    sequence = [
+      {
+        touch: 1,
+        channel: "email",
+        delay_hours: 0,
+        subject: "Following up",
+        body: sequenceText.slice(0, 500),
+      },
+    ];
   }
 
   // Execute touch 1 immediately
   const touch1 = sequence[0];
   if (touch1) {
-    if (touch1.channel === 'sms' && contact.phone) {
+    if (touch1.channel === "sms" && contact.phone) {
       await sendSMS(contact.phone, touch1.body, env);
     } else if (contact.email) {
       await sendEmail(contact.email, touch1.subject, touch1.body, env);
@@ -347,71 +359,74 @@ Previous interaction: ${(payload.previous_interaction as string) ?? 'Initial out
   }
 
   // Store sequence in automation_configs for future touches
-  await postToSupabase('automation_configs', {
-    user_id,
-    automation_slug: 'ai-followup-sequences',
-    contact_id: contactId,
-    config: { sequence, current_touch: 1, completed: false },
-    next_run_at: touch1
-      ? new Date(Date.now() + (sequence[1]?.delay_hours ?? 24) * 3600 * 1000).toISOString()
-      : null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }, env, 'POST', { Prefer: 'resolution=merge-duplicates' });
+  await postToSupabase(
+    "automation_configs",
+    {
+      user_id,
+      automation_slug: "ai-followup-sequences",
+      contact_id: contactId,
+      config: { sequence, current_touch: 1, completed: false },
+      next_run_at: touch1
+        ? new Date(Date.now() + (sequence[1]?.delay_hours ?? 24) * 3600 * 1000).toISOString()
+        : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    env,
+    "POST",
+    { Prefer: "resolution=merge-duplicates" },
+  );
 
   // Update contact status if all touches done with no reply → cold
-  if (contact.status === 'no_reply') {
+  if (contact.status === "no_reply") {
     await postToSupabase(
       `contacts?id=eq.${contactId}`,
-      { status: 'cold', updated_at: new Date().toISOString() },
+      { status: "cold", updated_at: new Date().toISOString() },
       env,
-      'PATCH'
+      "PATCH",
     );
   }
 }
 
 // 3. crm-automation
-async function handleCrmAutomation(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleCrmAutomation(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
   const contactData = payload.contact as Record<string, string>;
 
   const ctxRows = await fetchFromSupabase<UserContext>(
     `user_contexts?user_id=eq.${user_id}&limit=1`,
-    env
+    env,
   );
   const userContext = ctxRows[0] ?? {};
 
   // Normalize and create/update contact
   const normalizedContact = {
     user_id,
-    first_name: contactData.first_name ?? '',
-    last_name: contactData.last_name ?? '',
-    email: contactData.email ?? '',
-    phone: contactData.phone ?? '',
-    company: contactData.company ?? '',
-    source: contactData.source ?? 'crm-automation',
-    status: 'new',
+    first_name: contactData.first_name ?? "",
+    last_name: contactData.last_name ?? "",
+    email: contactData.email ?? "",
+    phone: contactData.phone ?? "",
+    company: contactData.company ?? "",
+    source: contactData.source ?? "crm-automation",
+    status: "new",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 
   const insertRes = await fetch(`${env.SUPABASE_URL}/rest/v1/contacts`, {
-    method: 'POST',
-    headers: { ...sbHeaders(env), Prefer: 'return=representation,resolution=merge-duplicates' },
+    method: "POST",
+    headers: { ...sbHeaders(env), Prefer: "return=representation,resolution=merge-duplicates" },
     body: JSON.stringify(normalizedContact),
   });
-  const inserted = await insertRes.json() as Contact[];
+  const inserted = (await insertRes.json()) as Contact[];
   const contact = inserted[0];
-  if (!contact) throw new Error('Failed to create contact');
+  if (!contact) throw new Error("Failed to create contact");
 
   // Score lead with Claude
   const systemPrompt = `You are Nova — a lead scoring AI. Score this lead 1-100 based on ICP match.
 
-ICP: ${userContext.target_customer ?? 'Unknown'}
-Product: ${userContext.product_description ?? 'Unknown'}
+ICP: ${userContext.target_customer ?? "Unknown"}
+Product: ${userContext.product_description ?? "Unknown"}
 
 Scoring criteria:
 - Company size fit (20pts)
@@ -426,15 +441,21 @@ Output ONLY a JSON object: { "score": number, "reasoning": string, "tags": strin
 Name: ${contact.first_name} ${contact.last_name}
 Company: ${contact.company}
 Email: ${contact.email}
-Source: ${contactData.source ?? 'unknown'}
-Notes: ${contactData.notes ?? ''}`;
+Source: ${contactData.source ?? "unknown"}
+Notes: ${contactData.notes ?? ""}`;
 
   const scoreText = await callClaude(prompt, systemPrompt, env);
-  let scoreData: { score: number; reasoning: string; tags: string[] } = { score: 50, reasoning: '', tags: [] };
+  let scoreData: { score: number; reasoning: string; tags: string[] } = {
+    score: 50,
+    reasoning: "",
+    tags: [],
+  };
   try {
     const jsonMatch = scoreText.match(/\{[\s\S]*\}/);
     if (jsonMatch) scoreData = JSON.parse(jsonMatch[0]);
-  } catch { /* use defaults */ }
+  } catch {
+    /* use defaults */
+  }
 
   // Update contact with score and tags
   await postToSupabase(
@@ -446,73 +467,74 @@ Notes: ${contactData.notes ?? ''}`;
       updated_at: new Date().toISOString(),
     },
     env,
-    'PATCH'
+    "PATCH",
   );
 
   // Route based on score
   if (scoreData.score >= 70) {
     // High quality lead → appointment setting
-    await job_enqueue_placeholder('ai-appointment-setting', { contact_id: contact.id, channel: 'email' }, user_id);
+    await job_enqueue_placeholder(
+      "ai-appointment-setting",
+      { contact_id: contact.id, channel: "email" },
+      user_id,
+    );
   } else if (scoreData.score >= 40) {
     // Nurture lead
     await postToSupabase(
       `contacts?id=eq.${contact.id}`,
-      { tags: [...(scoreData.tags ?? []), 'nurture'], updated_at: new Date().toISOString() },
+      { tags: [...(scoreData.tags ?? []), "nurture"], updated_at: new Date().toISOString() },
       env,
-      'PATCH'
+      "PATCH",
     );
-    await job_enqueue_placeholder('ai-followup-sequences', { contact_id: contact.id }, user_id);
+    await job_enqueue_placeholder("ai-followup-sequences", { contact_id: contact.id }, user_id);
   } else {
     // Low priority
     await postToSupabase(
       `contacts?id=eq.${contact.id}`,
-      { tags: [...(scoreData.tags ?? []), 'low-priority'], updated_at: new Date().toISOString() },
+      { tags: [...(scoreData.tags ?? []), "low-priority"], updated_at: new Date().toISOString() },
       env,
-      'PATCH'
+      "PATCH",
     );
   }
 
   // Notify founder
   const founderRows = await fetchFromSupabase<{ email: string }>(
     `users?id=eq.${user_id}&select=email`,
-    env
+    env,
   );
   const founderEmail = founderRows[0]?.email;
   if (founderEmail) {
     await sendEmail(
       founderEmail,
       `New lead scored: ${contact.first_name} ${contact.last_name} — ${scoreData.score}/100`,
-      `A new lead has been processed by Nova CRM Automation.\n\nContact: ${contact.first_name} ${contact.last_name}\nCompany: ${contact.company}\nScore: ${scoreData.score}/100\nAction: ${scoreData.score >= 70 ? 'Appointment setting initiated' : scoreData.score >= 40 ? 'Nurture sequence started' : 'Tagged as low priority'}\n\nReasoning: ${scoreData.reasoning}`,
-      env
+      `A new lead has been processed by Nova CRM Automation.\n\nContact: ${contact.first_name} ${contact.last_name}\nCompany: ${contact.company}\nScore: ${scoreData.score}/100\nAction: ${scoreData.score >= 70 ? "Appointment setting initiated" : scoreData.score >= 40 ? "Nurture sequence started" : "Tagged as low priority"}\n\nReasoning: ${scoreData.reasoning}`,
+      env,
     );
   }
 }
 
 // 4. lead-qualification
-async function handleLeadQualification(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleLeadQualification(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
   const contactId = payload.contact_id as string;
 
   const contacts = await fetchFromSupabase<Contact>(
     `contacts?id=eq.${contactId}&user_id=eq.${user_id}`,
-    env
+    env,
   );
   const contact = contacts[0];
   if (!contact) throw new Error(`Contact ${contactId} not found`);
 
   const ctxRows = await fetchFromSupabase<UserContext>(
     `user_contexts?user_id=eq.${user_id}&limit=1`,
-    env
+    env,
   );
   const userContext = ctxRows[0] ?? {};
 
   const systemPrompt = `You are Nova — generating BANT qualification questions tailored to a specific business.
 
-Business: ${userContext.business_name ?? 'Unknown'}
-Product: ${userContext.product_description ?? 'Unknown'}
+Business: ${userContext.business_name ?? "Unknown"}
+Product: ${userContext.product_description ?? "Unknown"}
 
 BANT Framework:
 - Budget: Do they have the financial capacity?
@@ -524,72 +546,75 @@ Create 4 BANT questions (one per dimension) that feel natural and conversational
 Output as a numbered list.`;
 
   const prompt = `Generate qualification questions for:
-Name: ${contact.first_name ?? ''} ${contact.last_name ?? ''}
-Company: ${contact.company ?? ''}`;
+Name: ${contact.first_name ?? ""} ${contact.last_name ?? ""}
+Company: ${contact.company ?? ""}`;
 
   const questions = await callClaude(prompt, systemPrompt, env);
 
   // Send qualifying questions via email or SMS
-  const channel = (payload.channel as string) ?? 'email';
-  if (channel === 'sms' && contact.phone) {
+  const channel = (payload.channel as string) ?? "email";
+  if (channel === "sms" && contact.phone) {
     await sendSMS(
       contact.phone,
-      `Hi ${contact.first_name ?? 'there'}, I'd love to learn more about your situation. Could you answer a quick question? ${questions.split('\n')[0] ?? ''}`,
-      env
+      `Hi ${contact.first_name ?? "there"}, I'd love to learn more about your situation. Could you answer a quick question? ${questions.split("\n")[0] ?? ""}`,
+      env,
     );
   } else if (contact.email) {
     await sendEmail(
       contact.email,
-      `Quick question — ${contact.first_name ?? 'there'}`,
-      `Hi ${contact.first_name ?? 'there'},\n\nBefore we connect, I wanted to ask a few quick questions to make sure we're a good fit:\n\n${questions}\n\nFeel free to reply directly to this email.\n\nNova`,
-      env
+      `Quick question — ${contact.first_name ?? "there"}`,
+      `Hi ${contact.first_name ?? "there"},\n\nBefore we connect, I wanted to ask a few quick questions to make sure we're a good fit:\n\n${questions}\n\nFeel free to reply directly to this email.\n\nNova`,
+      env,
     );
   }
 
   // Store qualification state
-  await postToSupabase('automation_configs', {
-    user_id,
-    automation_slug: 'lead-qualification',
-    contact_id: contactId,
-    config: { questions, status: 'awaiting_response', channel },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }, env, 'POST', { Prefer: 'resolution=merge-duplicates' });
+  await postToSupabase(
+    "automation_configs",
+    {
+      user_id,
+      automation_slug: "lead-qualification",
+      contact_id: contactId,
+      config: { questions, status: "awaiting_response", channel },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    env,
+    "POST",
+    { Prefer: "resolution=merge-duplicates" },
+  );
 
   // Update contact status
   await postToSupabase(
     `contacts?id=eq.${contactId}`,
-    { status: 'qualifying', updated_at: new Date().toISOString() },
+    { status: "qualifying", updated_at: new Date().toISOString() },
     env,
-    'PATCH'
+    "PATCH",
   );
 }
 
 // 5. sms-automation
-async function handleSmsAutomation(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleSmsAutomation(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
   const contactId = payload.contact_id as string;
 
   const contacts = await fetchFromSupabase<Contact>(
     `contacts?id=eq.${contactId}&user_id=eq.${user_id}`,
-    env
+    env,
   );
   const contact = contacts[0];
   if (!contact?.phone) throw new Error(`Contact ${contactId} not found or has no phone`);
 
   const ctxRows = await fetchFromSupabase<UserContext>(
     `user_contexts?user_id=eq.${user_id}&limit=1`,
-    env
+    env,
   );
   const userContext = ctxRows[0] ?? {};
 
   const systemPrompt = `You are Nova — writing a TCPA-compliant SMS message (max 160 characters).
 
-Business: ${userContext.business_name ?? 'Unknown'}
-Purpose: ${(payload.purpose as string) ?? 'Follow-up'}
+Business: ${userContext.business_name ?? "Unknown"}
+Purpose: ${(payload.purpose as string) ?? "Follow-up"}
 
 TCPA rules:
 - Include opt-out: "Reply STOP to unsubscribe"
@@ -600,9 +625,9 @@ TCPA rules:
 Write ONLY the SMS text. Count characters carefully.`;
 
   const prompt = `Write an SMS to:
-Name: ${contact.first_name ?? ''}
-Company: ${contact.company ?? ''}
-Message goal: ${(payload.goal as string) ?? 'Re-engage and book a call'}`;
+Name: ${contact.first_name ?? ""}
+Company: ${contact.company ?? ""}
+Message goal: ${(payload.goal as string) ?? "Re-engage and book a call"}`;
 
   const smsText = await callClaude(prompt, systemPrompt, env);
   const finalSms = smsText.slice(0, 160);
@@ -610,31 +635,32 @@ Message goal: ${(payload.goal as string) ?? 'Re-engage and book a call'}`;
   const sent = await sendSMS(contact.phone, finalSms, env);
 
   // Log result
-  await postToSupabase('automation_results', {
-    user_id,
-    automation_slug: job.automation_slug,
-    contact_id: contactId,
-    channel: 'sms',
-    message_sent: finalSms,
-    sent,
-    created_at: new Date().toISOString(),
-  }, env);
+  await postToSupabase(
+    "automation_results",
+    {
+      user_id,
+      automation_slug: job.automation_slug,
+      contact_id: contactId,
+      channel: "sms",
+      message_sent: finalSms,
+      sent,
+      created_at: new Date().toISOString(),
+    },
+    env,
+  );
 
   if (sent) {
     await postToSupabase(
       `contacts?id=eq.${contactId}`,
       { last_contacted_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       env,
-      'PATCH'
+      "PATCH",
     );
   }
 }
 
 // 6. voice-ai
-async function handleVoiceAi(
-  job: AutomationJob,
-  env: Env
-): Promise<void> {
+async function handleVoiceAi(job: AutomationJob, env: Env): Promise<void> {
   const { payload, user_id } = job;
 
   // Fetch voice config
@@ -646,24 +672,21 @@ async function handleVoiceAi(
       business_name?: string;
       faq?: Record<string, string>;
     };
-  }>(
-    `automation_configs?user_id=eq.${user_id}&automation_slug=eq.voice-ai&limit=1`,
-    env
-  );
+  }>(`automation_configs?user_id=eq.${user_id}&automation_slug=eq.voice-ai&limit=1`, env);
   const voiceConfig = configs[0]?.config ?? {};
 
-  const callerIntent = (payload.intent as string) ?? 'info';
+  const callerIntent = (payload.intent as string) ?? "info";
   const callSid = payload.call_sid as string;
   const callerNumber = payload.from as string;
 
-  let twiml = '';
+  let twiml = "";
 
   switch (callerIntent) {
-    case 'book':
+    case "book":
       twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna">Great, I'll help you book an appointment. I'm sending a booking link to your phone now. You can also visit ${voiceConfig.book_url ?? 'our website'} to schedule directly.</Say>
-  <Sms to="${callerNumber}" from="${payload.to_number ?? ''}">${voiceConfig.book_url ?? 'Book here'}</Sms>
+  <Say voice="Polly.Joanna">Great, I'll help you book an appointment. I'm sending a booking link to your phone now. You can also visit ${voiceConfig.book_url ?? "our website"} to schedule directly.</Say>
+  <Sms to="${callerNumber}" from="${payload.to_number ?? ""}">${voiceConfig.book_url ?? "Book here"}</Sms>
   <Say voice="Polly.Joanna">Is there anything else I can help you with today?</Say>
   <Gather numDigits="1" action="/api/automations/trigger" method="POST">
     <Say voice="Polly.Joanna">Press 1 for more information, or press 2 to speak with a team member.</Say>
@@ -671,21 +694,23 @@ async function handleVoiceAi(
 </Response>`;
       break;
 
-    case 'human':
+    case "human":
       twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Joanna">Connecting you with a team member now. Please hold for just a moment.</Say>
   <Dial timeout="30">
-    <Number>${(voiceConfig as Record<string, string>).forward_number ?? ''}</Number>
+    <Number>${(voiceConfig as Record<string, string>).forward_number ?? ""}</Number>
   </Dial>
   <Say voice="Polly.Joanna">Sorry, no one is available right now. Leave a message after the tone and we'll call you back within one business day.</Say>
   <Record maxLength="60" />
 </Response>`;
       break;
 
-    case 'faq': {
-      const question = (payload.question as string) ?? '';
-      const answer = voiceConfig.faq?.[question] ?? 'I don\'t have that information available right now, but our team will be happy to help.';
+    case "faq": {
+      const question = (payload.question as string) ?? "";
+      const answer =
+        voiceConfig.faq?.[question] ??
+        "I don't have that information available right now, but our team will be happy to help.";
       twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Joanna">${answer}</Say>
@@ -699,7 +724,7 @@ async function handleVoiceAi(
     default: // info
       twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna">Thank you for calling ${voiceConfig.business_name ?? 'us'}. I'm Nova, an AI assistant. I can help you book an appointment, answer questions, or connect you with our team.</Say>
+  <Say voice="Polly.Joanna">Thank you for calling ${voiceConfig.business_name ?? "us"}. I'm Nova, an AI assistant. I can help you book an appointment, answer questions, or connect you with our team.</Say>
   <Gather numDigits="1" action="/api/automations/trigger" method="POST">
     <Say voice="Polly.Joanna">Press 1 to book an appointment. Press 2 for information about our services. Press 3 to speak with a team member.</Say>
   </Gather>
@@ -707,16 +732,20 @@ async function handleVoiceAi(
   }
 
   // Log call
-  await postToSupabase('automation_results', {
-    user_id,
-    automation_slug: 'voice-ai',
-    channel: 'voice',
-    call_sid: callSid,
-    caller_number: callerNumber,
-    intent: callerIntent,
-    twiml_response: twiml,
-    created_at: new Date().toISOString(),
-  }, env);
+  await postToSupabase(
+    "automation_results",
+    {
+      user_id,
+      automation_slug: "voice-ai",
+      channel: "voice",
+      call_sid: callSid,
+      caller_number: callerNumber,
+      intent: callerIntent,
+      twiml_response: twiml,
+      created_at: new Date().toISOString(),
+    },
+    env,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -727,7 +756,7 @@ async function handleVoiceAi(
 async function job_enqueue_placeholder(
   automation_slug: string,
   payload: Record<string, unknown>,
-  user_id: string
+  user_id: string,
 ): Promise<void> {
   // In production: await env.AUTOMATION_QUEUE.send({ automation_slug, payload, user_id, triggered_at: new Date().toISOString() });
   console.log(`[Nova] Would enqueue: ${automation_slug} for user ${user_id}`, payload);
@@ -738,17 +767,17 @@ async function job_enqueue_placeholder(
 // ---------------------------------------------------------------------------
 async function routeAutomation(job: AutomationJob, env: Env): Promise<void> {
   switch (job.automation_slug) {
-    case 'ai-appointment-setting':
+    case "ai-appointment-setting":
       return handleAiAppointmentSetting(job, env);
-    case 'ai-followup-sequences':
+    case "ai-followup-sequences":
       return handleAiFollowupSequences(job, env);
-    case 'crm-automation':
+    case "crm-automation":
       return handleCrmAutomation(job, env);
-    case 'lead-qualification':
+    case "lead-qualification":
       return handleLeadQualification(job, env);
-    case 'sms-automation':
+    case "sms-automation":
       return handleSmsAutomation(job, env);
-    case 'voice-ai':
+    case "voice-ai":
       return handleVoiceAi(job, env);
     default:
       throw new Error(`Unknown automation_slug: ${job.automation_slug}`);
@@ -765,12 +794,12 @@ export default {
       const start = Date.now();
       try {
         await routeAutomation(job, env);
-        await updateLog(job.log_id, 'success', Date.now() - start, null, env);
+        await updateLog(job.log_id, "success", Date.now() - start, null, env);
         msg.ack();
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(`[Nova] Automation failed [${job.automation_slug}]:`, errorMsg);
-        await updateLog(job.log_id, 'failed', Date.now() - start, errorMsg, env);
+        await updateLog(job.log_id, "failed", Date.now() - start, errorMsg, env);
         msg.retry();
       }
     }

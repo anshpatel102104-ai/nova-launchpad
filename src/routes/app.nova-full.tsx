@@ -58,7 +58,9 @@ async function fetchSessions(orgId: string): Promise<NovaSession[]> {
   return (data ?? []) as NovaSession[];
 }
 
-async function upsertSession(session: Partial<NovaSession> & { organization_id: string; session_id: string }): Promise<void> {
+async function upsertSession(
+  session: Partial<NovaSession> & { organization_id: string; session_id: string },
+): Promise<void> {
   await db
     .from("nova_conversations")
     .upsert({ ...session, updated_at: new Date().toISOString() }, { onConflict: "session_id" });
@@ -69,12 +71,18 @@ function renderMarkdown(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, '<code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:0.9em">$1</code>')
+    .replace(
+      /`(.+?)`/g,
+      '<code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:0.9em">$1</code>',
+    )
     .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;font-weight:700;margin:8px 0 4px">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 style="font-size:15px;font-weight:700;margin:10px 0 4px">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 style="font-size:16px;font-weight:700;margin:12px 0 4px">$1</h1>')
     .replace(/^- (.+)$/gm, '<li style="margin:2px 0;padding-left:4px">$1</li>')
-    .replace(/((?:<li.*<\/li>\n?)+)/g, '<ul style="list-style:disc;padding-left:20px;margin:6px 0">$1</ul>')
+    .replace(
+      /((?:<li.*<\/li>\n?)+)/g,
+      '<ul style="list-style:disc;padding-left:20px;margin:6px 0">$1</ul>',
+    )
     .replace(/\n\n/g, "</p><p style='margin:6px 0'>")
     .replace(/\n/g, "<br />");
 }
@@ -82,8 +90,16 @@ function renderMarkdown(text: string): string {
 /* ─── Quick action prompts ─── */
 const QUICK_ACTIONS = [
   { label: "Run a Tool", prompt: "What AI tool should I run next for my business?", icon: Zap },
-  { label: "Check My Progress", prompt: "Show me a summary of my progress on Launchpad Path", icon: TrendingUp },
-  { label: "Talk to a Mentor", prompt: "I need strategic advice. Can you act as my business mentor?", icon: GraduationCap },
+  {
+    label: "Check My Progress",
+    prompt: "Show me a summary of my progress on Launchpad Path",
+    icon: TrendingUp,
+  },
+  {
+    label: "Talk to a Mentor",
+    prompt: "I need strategic advice. Can you act as my business mentor?",
+    icon: GraduationCap,
+  },
 ];
 
 /* ─── Main Page ─── */
@@ -148,7 +164,9 @@ function NovaFullPage() {
       setStreamingText("");
 
       try {
-        const { data: { session: authSession } } = await supabase.auth.getSession();
+        const {
+          data: { session: authSession },
+        } = await supabase.auth.getSession();
         const token = authSession?.access_token;
 
         abortRef.current = new AbortController();
@@ -209,15 +227,18 @@ function NovaFullPage() {
           }
         }
 
-        const assistantMsg: ChatMessage = { role: "assistant", content: fullText, timestamp: Date.now() };
+        const assistantMsg: ChatMessage = {
+          role: "assistant",
+          content: fullText,
+          timestamp: Date.now(),
+        };
         const finalMessages = [...newMessages, assistantMsg];
         setMessages(finalMessages);
         setStreamingText("");
 
         // Save session to Supabase
         if (currentOrgId) {
-          const sessionTitle =
-            newMessages[0]?.content.slice(0, 60) || "Nova conversation";
+          const sessionTitle = newMessages[0]?.content.slice(0, 60) || "Nova conversation";
           await upsertSession({
             organization_id: currentOrgId,
             session_id: sessionId,
@@ -240,7 +261,7 @@ function NovaFullPage() {
         setStreamingText("");
       }
     },
-    [input, messages, streaming, sessionId, currentOrgId, user?.id, qc]
+    [input, messages, streaming, sessionId, currentOrgId, user?.id, qc],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -264,20 +285,30 @@ function NovaFullPage() {
       <div className="flex min-h-[70vh] flex-col items-center justify-center text-center px-4">
         <div
           className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl text-white"
-          style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)", boxShadow: "0 0 40px rgba(75,139,244,0.4)" }}
+          style={{
+            background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
+            boxShadow: "0 0 40px rgba(75,139,244,0.4)",
+          }}
         >
           <Lock className="h-10 w-10" />
         </div>
-        <h2 className="font-display text-2xl font-bold tracking-tight mb-2" style={{ color: "var(--foreground)" }}>
+        <h2
+          className="font-display text-2xl font-bold tracking-tight mb-2"
+          style={{ color: "var(--foreground)" }}
+        >
           Nova AI requires an upgrade
         </h2>
         <p className="text-[14px] max-w-md mb-6" style={{ color: "var(--muted-foreground)" }}>
-          Full Nova AI chat is available on the Launch plan and above. Upgrade to unlock unlimited AI conversations.
+          Full Nova AI chat is available on the Launch plan and above. Upgrade to unlock unlimited
+          AI conversations.
         </p>
         <button
-          onClick={() => window.location.href = "/app/billing"}
+          onClick={() => (window.location.href = "/app/billing")}
           className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-[14px] font-bold text-white"
-          style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)", boxShadow: "0 4px 20px rgba(75,139,244,0.4)" }}
+          style={{
+            background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
+            boxShadow: "0 4px 20px rgba(75,139,244,0.4)",
+          }}
         >
           <Sparkles className="h-4 w-4" />
           Upgrade to Launch
@@ -288,26 +319,42 @@ function NovaFullPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.08)", background: "var(--surface)" }}>
-
+    <div
+      className="flex h-[calc(100vh-64px)] overflow-hidden rounded-2xl"
+      style={{ border: "1px solid rgba(255,255,255,0.08)", background: "var(--surface)" }}
+    >
       {/* ── Left Sidebar: Past Sessions ── */}
       <div
         className={cn(
           "flex flex-col shrink-0 transition-all duration-200 overflow-hidden",
-          sidebarOpen ? "w-64" : "w-0"
+          sidebarOpen ? "w-64" : "w-0",
         )}
         style={{ borderRight: sidebarOpen ? "1px solid rgba(255,255,255,0.06)" : "none" }}
       >
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <span
+            className="text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Sessions
           </span>
           <button
             onClick={newSession}
             className="flex h-7 w-7 items-center justify-center rounded-lg transition-all"
-            style={{ color: "var(--muted-foreground)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "rgba(75,139,244,0.4)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)")}
+            style={{
+              color: "var(--muted-foreground)",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.borderColor = "rgba(75,139,244,0.4)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)")
+            }
             title="New session"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -317,12 +364,20 @@ function NovaFullPage() {
         <div className="flex-1 overflow-y-auto py-2">
           {sessionsQ.isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+              <Loader2
+                className="h-4 w-4 animate-spin"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </div>
           ) : sessions.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <MessageSquare className="h-6 w-6 mx-auto mb-2" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
-              <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>No sessions yet</p>
+              <MessageSquare
+                className="h-6 w-6 mx-auto mb-2"
+                style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+              />
+              <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                No sessions yet
+              </p>
             </div>
           ) : (
             sessions.map((sess) => {
@@ -338,16 +393,24 @@ function NovaFullPage() {
                       : { borderRight: "2px solid transparent" }
                   }
                   onMouseEnter={(e) => {
-                    if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
+                    if (!isActive)
+                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
                   }}
                   onMouseLeave={(e) => {
-                    if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent";
+                    if (!isActive)
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
-                  <div className="text-[12px] font-medium truncate" style={{ color: isActive ? "#4B8BF4" : "var(--foreground)" }}>
+                  <div
+                    className="text-[12px] font-medium truncate"
+                    style={{ color: isActive ? "#4B8BF4" : "var(--foreground)" }}
+                  >
                     {sess.title ?? "New conversation"}
                   </div>
-                  <div className="flex items-center gap-1 mt-0.5 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                  <div
+                    className="flex items-center gap-1 mt-0.5 text-[10px]"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     <Clock className="h-2.5 w-2.5" />
                     {new Date(sess.updated_at).toLocaleDateString()}
                   </div>
@@ -360,7 +423,6 @@ function NovaFullPage() {
 
       {/* ── Main Chat Area ── */}
       <div className="flex flex-1 flex-col min-w-0">
-
         {/* Chat header */}
         <div
           className="flex items-center gap-3 px-4 py-3"
@@ -370,10 +432,18 @@ function NovaFullPage() {
             onClick={() => setSidebarOpen((o) => !o)}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
           >
-            {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {sidebarOpen ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
           </button>
 
           <div className="flex items-center gap-2 flex-1">
@@ -384,7 +454,9 @@ function NovaFullPage() {
               ◈
             </div>
             <div>
-              <div className="font-semibold text-[13px]" style={{ color: "var(--foreground)" }}>Nova AI</div>
+              <div className="font-semibold text-[13px]" style={{ color: "var(--foreground)" }}>
+                Nova AI
+              </div>
               <div className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
                 {streaming ? "Thinking…" : "Ready"}
               </div>
@@ -422,15 +494,22 @@ function NovaFullPage() {
             <div className="flex flex-col items-center justify-center min-h-full text-center py-12">
               <div
                 className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-white text-[20px]"
-                style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)", boxShadow: "0 0 30px rgba(75,139,244,0.3)" }}
+                style={{
+                  background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
+                  boxShadow: "0 0 30px rgba(75,139,244,0.3)",
+                }}
               >
                 ◈
               </div>
-              <h2 className="font-display text-[20px] font-bold tracking-tight mb-2" style={{ color: "var(--foreground)" }}>
+              <h2
+                className="font-display text-[20px] font-bold tracking-tight mb-2"
+                style={{ color: "var(--foreground)" }}
+              >
                 Nova AI
               </h2>
               <p className="text-[13px] max-w-sm mb-8" style={{ color: "var(--muted-foreground)" }}>
-                Your AI business operator. Ask anything about your business, get strategic advice, or run tools.
+                Your AI business operator. Ask anything about your business, get strategic advice,
+                or run tools.
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {QUICK_ACTIONS.map((qa) => (
@@ -475,7 +554,10 @@ function NovaFullPage() {
               </div>
               <div
                 className="max-w-[75%] rounded-2xl rounded-tl-md px-4 py-3"
-                style={{ background: "rgba(75,139,244,0.08)", border: "1px solid rgba(75,139,244,0.15)" }}
+                style={{
+                  background: "rgba(75,139,244,0.08)",
+                  border: "1px solid rgba(75,139,244,0.15)",
+                }}
               >
                 <div
                   className="text-[13.5px] leading-relaxed"
@@ -501,7 +583,10 @@ function NovaFullPage() {
               </div>
               <div
                 className="flex items-center gap-1.5 rounded-2xl rounded-tl-md px-4 py-3"
-                style={{ background: "rgba(75,139,244,0.08)", border: "1px solid rgba(75,139,244,0.15)" }}
+                style={{
+                  background: "rgba(75,139,244,0.08)",
+                  border: "1px solid rgba(75,139,244,0.15)",
+                }}
               >
                 {[0, 1, 2].map((i) => (
                   <span
@@ -553,8 +638,13 @@ function NovaFullPage() {
 
           <div
             className="flex items-end gap-3 rounded-2xl px-4 py-3"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
-            onFocus={() => { /* highlight on focus via CSS would be added */ }}
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.10)",
+            }}
+            onFocus={() => {
+              /* highlight on focus via CSS would be added */
+            }}
           >
             <textarea
               ref={textareaRef}
@@ -572,9 +662,10 @@ function NovaFullPage() {
               disabled={!input.trim() || streaming}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white transition-all disabled:opacity-40"
               style={{
-                background: input.trim() && !streaming
-                  ? "linear-gradient(135deg, #4B8BF4, #8B5CF6)"
-                  : "rgba(255,255,255,0.08)",
+                background:
+                  input.trim() && !streaming
+                    ? "linear-gradient(135deg, #4B8BF4, #8B5CF6)"
+                    : "rgba(255,255,255,0.08)",
               }}
               onMouseEnter={(e) => {
                 if (input.trim() && !streaming)
@@ -584,10 +675,11 @@ function NovaFullPage() {
                 (e.currentTarget as HTMLElement).style.transform = "none";
               }}
             >
-              {streaming
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Send className="h-4 w-4" />
-              }
+              {streaming ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </button>
           </div>
           <p className="mt-2 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
@@ -624,7 +716,10 @@ function ChatBubble({ message }: { message: ChatMessage }) {
 
       {/* Bubble */}
       <div
-        className={cn("max-w-[75%] rounded-2xl px-4 py-3", isUser ? "rounded-tr-md" : "rounded-tl-md")}
+        className={cn(
+          "max-w-[75%] rounded-2xl px-4 py-3",
+          isUser ? "rounded-tr-md" : "rounded-tl-md",
+        )}
         style={
           isUser
             ? { background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.2)" }
@@ -643,7 +738,10 @@ function ChatBubble({ message }: { message: ChatMessage }) {
           />
         )}
         <div className="mt-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-          {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </div>
       </div>
     </div>
@@ -658,8 +756,7 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
 
   useEffect(() => {
     if (!orgId) return;
-    db
-      .from("organizations")
+    db.from("organizations")
       .select("context_data, name, stage, industry")
       .eq("id", orgId)
       .maybeSingle()
@@ -692,7 +789,9 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
         className="flex items-center justify-between px-4 py-3"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>Org Context</span>
+        <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
+          Org Context
+        </span>
         <button onClick={onClose} style={{ color: "var(--muted-foreground)" }}>
           <X className="h-4 w-4" />
         </button>
@@ -701,7 +800,10 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+            <Loader2
+              className="h-5 w-5 animate-spin"
+              style={{ color: "var(--muted-foreground)" }}
+            />
           </div>
         ) : (
           <>
@@ -714,7 +816,10 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
               { key: "main_challenge", label: "Main Challenge" },
             ].map((f) => (
               <div key={f.key}>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--muted-foreground)" }}>
+                <label
+                  className="block text-[11px] font-medium mb-1"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {f.label}
                 </label>
                 <input

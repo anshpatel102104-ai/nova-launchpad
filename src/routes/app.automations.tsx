@@ -60,9 +60,21 @@ const AUTOMATIONS = [
     metric: "calls booked",
     color: "#4B8BF4",
     configFields: [
-      { key: "calendar_url", label: "Calendar Link (Cal.com / Calendly)", placeholder: "https://cal.com/you" },
-      { key: "qualification_prompt", label: "Lead Qualification Criteria", placeholder: "Must be a business owner with..." },
-      { key: "sms_template", label: "SMS Booking Message", placeholder: "Hey {name}, ready to book your call?" },
+      {
+        key: "calendar_url",
+        label: "Calendar Link (Cal.com / Calendly)",
+        placeholder: "https://cal.com/you",
+      },
+      {
+        key: "qualification_prompt",
+        label: "Lead Qualification Criteria",
+        placeholder: "Must be a business owner with...",
+      },
+      {
+        key: "sms_template",
+        label: "SMS Booking Message",
+        placeholder: "Hey {name}, ready to book your call?",
+      },
     ],
     requiredFeature: "automations" as const,
   },
@@ -98,21 +110,31 @@ const AUTOMATIONS = [
   {
     slug: "lead-qualification",
     name: "Lead Qualification",
-    description: "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
+    description:
+      "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
     icon: UserCheck,
     metric: "leads qualified",
     color: "#22C55E",
     configFields: [
       { key: "score_threshold", label: "Minimum Qualification Score (0-100)", placeholder: "65" },
-      { key: "icp_description", label: "Ideal Customer Profile", placeholder: "B2B SaaS companies 10-200 employees..." },
-      { key: "disqualify_keywords", label: "Disqualify Keywords (comma-separated)", placeholder: "student, freelancer" },
+      {
+        key: "icp_description",
+        label: "Ideal Customer Profile",
+        placeholder: "B2B SaaS companies 10-200 employees...",
+      },
+      {
+        key: "disqualify_keywords",
+        label: "Disqualify Keywords (comma-separated)",
+        placeholder: "student, freelancer",
+      },
     ],
     requiredFeature: "lead_qualification" as const,
   },
   {
     slug: "sms-automation",
     name: "SMS Automation",
-    description: "Automated SMS sequences for lead nurture, appointment reminders, and re-engagement.",
+    description:
+      "Automated SMS sequences for lead nurture, appointment reminders, and re-engagement.",
     icon: MessageSquare,
     metric: "SMS sent",
     color: "#EC4899",
@@ -131,8 +153,16 @@ const AUTOMATIONS = [
     metric: "calls made",
     color: "#FBBF24",
     configFields: [
-      { key: "voice_agent_id", label: "Voice Agent ID", placeholder: "From your voice AI platform" },
-      { key: "script_context", label: "Call Script Context", placeholder: "You are calling on behalf of..." },
+      {
+        key: "voice_agent_id",
+        label: "Voice Agent ID",
+        placeholder: "From your voice AI platform",
+      },
+      {
+        key: "script_context",
+        label: "Call Script Context",
+        placeholder: "You are calling on behalf of...",
+      },
       { key: "call_hours_start", label: "Call Window Start (24h)", placeholder: "9" },
       { key: "call_hours_end", label: "Call Window End (24h)", placeholder: "18" },
     ],
@@ -145,10 +175,7 @@ const AUTOMATIONS = [
 const db = supabase as any;
 
 async function fetchAutomationConfigs(orgId: string): Promise<AutomationConfig[]> {
-  const { data } = await db
-    .from("automation_configs")
-    .select("*")
-    .eq("organization_id", orgId);
+  const { data } = await db.from("automation_configs").select("*").eq("organization_id", orgId);
   return (data ?? []) as AutomationConfig[];
 }
 
@@ -163,20 +190,28 @@ async function fetchAutomationLogs(orgId: string, slug: string): Promise<Automat
   return (data ?? []) as AutomationLog[];
 }
 
-async function upsertAutomationConfig(config: Omit<AutomationConfig, "id" | "created_at" | "updated_at">): Promise<void> {
-  await db.from("automation_configs").upsert(
-    { ...config, updated_at: new Date().toISOString() },
-    { onConflict: "organization_id,automation_slug" }
-  );
-}
-
-async function toggleAutomation(orgId: string, slug: string, isActive: boolean): Promise<void> {
+async function upsertAutomationConfig(
+  config: Omit<AutomationConfig, "id" | "created_at" | "updated_at">,
+): Promise<void> {
   await db
     .from("automation_configs")
     .upsert(
-      { organization_id: orgId, automation_slug: slug, is_active: isActive, config_data: {}, updated_at: new Date().toISOString() },
-      { onConflict: "organization_id,automation_slug" }
+      { ...config, updated_at: new Date().toISOString() },
+      { onConflict: "organization_id,automation_slug" },
     );
+}
+
+async function toggleAutomation(orgId: string, slug: string, isActive: boolean): Promise<void> {
+  await db.from("automation_configs").upsert(
+    {
+      organization_id: orgId,
+      automation_slug: slug,
+      is_active: isActive,
+      config_data: {},
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "organization_id,automation_slug" },
+  );
 }
 
 /* ─── Main Page ─── */
@@ -229,12 +264,18 @@ function AutomationsPage() {
         <div className="flex items-center gap-3 mb-1">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)", boxShadow: "0 0 20px rgba(75,139,244,0.3)" }}
+            style={{
+              background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
+              boxShadow: "0 0 20px rgba(75,139,244,0.3)",
+            }}
           >
             <Zap className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+            <h1
+              className="font-display text-2xl font-bold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
               Automation Systems
             </h1>
             <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
@@ -250,7 +291,8 @@ function AutomationsPage() {
           const active = isActive(automation.slug);
           const cfg = getConfig(automation.slug);
           const Icon = automation.icon;
-          const toggling = toggleMutation.isPending && toggleMutation.variables?.slug === automation.slug;
+          const toggling =
+            toggleMutation.isPending && toggleMutation.variables?.slug === automation.slug;
 
           /* Simple metric placeholder — real metrics would come from logs */
           const metricValue = active ? Math.floor(Math.random() * 50 + 5) : 0;
@@ -262,14 +304,18 @@ function AutomationsPage() {
               style={{
                 background: "var(--surface)",
                 border: `1px solid ${active ? automation.color + "30" : "rgba(255,255,255,0.08)"}`,
-                boxShadow: active ? `0 0 0 1px ${automation.color}10, 0 4px 20px rgba(0,0,0,0.3)` : "0 1px 3px rgba(0,0,0,0.3)",
+                boxShadow: active
+                  ? `0 0 0 1px ${automation.color}10, 0 4px 20px rgba(0,0,0,0.3)`
+                  : "0 1px 3px rgba(0,0,0,0.3)",
               }}
             >
               {/* Top accent */}
               {active && (
                 <div
                   className="absolute top-0 left-0 right-0 h-px"
-                  style={{ background: `linear-gradient(90deg, transparent, ${automation.color}70, transparent)` }}
+                  style={{
+                    background: `linear-gradient(90deg, transparent, ${automation.color}70, transparent)`,
+                  }}
                 />
               )}
 
@@ -280,14 +326,22 @@ function AutomationsPage() {
                     <div
                       className="flex h-10 w-10 items-center justify-center rounded-xl"
                       style={{
-                        background: active ? `${automation.color}18` : "var(--surface-elevated, #16161F)",
+                        background: active
+                          ? `${automation.color}18`
+                          : "var(--surface-elevated, #16161F)",
                         border: `1px solid ${active ? automation.color + "30" : "rgba(255,255,255,0.06)"}`,
                       }}
                     >
-                      <Icon className="h-5 w-5" style={{ color: active ? automation.color : "var(--muted-foreground)" }} />
+                      <Icon
+                        className="h-5 w-5"
+                        style={{ color: active ? automation.color : "var(--muted-foreground)" }}
+                      />
                     </div>
                     <div>
-                      <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
+                      <div
+                        className="font-semibold text-[14px]"
+                        style={{ color: "var(--foreground)" }}
+                      >
                         {automation.name}
                       </div>
                       {/* Status badge */}
@@ -295,13 +349,28 @@ function AutomationsPage() {
                         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium mt-0.5"
                         style={
                           active
-                            ? { background: `${automation.color}15`, color: automation.color, border: `1px solid ${automation.color}25` }
+                            ? {
+                                background: `${automation.color}15`,
+                                color: automation.color,
+                                border: `1px solid ${automation.color}25`,
+                              }
                             : cfg
-                            ? { background: "rgba(251,191,36,0.1)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.2)" }
-                            : { background: "rgba(255,255,255,0.06)", color: "var(--muted-foreground)", border: "1px solid rgba(255,255,255,0.08)" }
+                              ? {
+                                  background: "rgba(251,191,36,0.1)",
+                                  color: "#FBBF24",
+                                  border: "1px solid rgba(251,191,36,0.2)",
+                                }
+                              : {
+                                  background: "rgba(255,255,255,0.06)",
+                                  color: "var(--muted-foreground)",
+                                  border: "1px solid rgba(255,255,255,0.08)",
+                                }
                         }
                       >
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor" }} />
+                        <span
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ background: "currentColor" }}
+                        />
                         {active ? "Active" : cfg ? "Paused" : "Not Configured"}
                       </span>
                     </div>
@@ -309,7 +378,9 @@ function AutomationsPage() {
 
                   {/* Toggle */}
                   <button
-                    onClick={() => toggleMutation.mutate({ slug: automation.slug, active: !active })}
+                    onClick={() =>
+                      toggleMutation.mutate({ slug: automation.slug, active: !active })
+                    }
                     disabled={toggling}
                     className="shrink-0 transition-all"
                     style={{ color: active ? automation.color : "var(--muted-foreground)" }}
@@ -326,7 +397,10 @@ function AutomationsPage() {
                 </div>
 
                 {/* Description */}
-                <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "var(--muted-foreground)" }}>
+                <p
+                  className="text-[12.5px] leading-relaxed mb-4"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {automation.description}
                 </p>
 
@@ -334,9 +408,15 @@ function AutomationsPage() {
                 {active && (
                   <div
                     className="rounded-lg px-3 py-2 mb-4 flex items-center gap-2"
-                    style={{ background: `${automation.color}08`, border: `1px solid ${automation.color}15` }}
+                    style={{
+                      background: `${automation.color}08`,
+                      border: `1px solid ${automation.color}15`,
+                    }}
                   >
-                    <span className="font-mono font-bold text-[16px]" style={{ color: automation.color }}>
+                    <span
+                      className="font-mono font-bold text-[16px]"
+                      style={{ color: automation.color }}
+                    >
                       {metricValue}
                     </span>
                     <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
@@ -434,7 +514,9 @@ function ConfigPanel({
   onSaved: () => void;
 }) {
   const automation = AUTOMATIONS.find((a) => a.slug === slug)!;
-  const [formData, setFormData] = useState<Record<string, string>>(existingConfig?.config_data ?? {});
+  const [formData, setFormData] = useState<Record<string, string>>(
+    existingConfig?.config_data ?? {},
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -474,7 +556,10 @@ function ConfigPanel({
           <div className="flex items-center gap-3">
             <div
               className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ background: `${automation.color}15`, border: `1px solid ${automation.color}25` }}
+              style={{
+                background: `${automation.color}15`,
+                border: `1px solid ${automation.color}25`,
+              }}
             >
               <Settings className="h-4 w-4" style={{ color: automation.color }} />
             </div>
@@ -491,8 +576,12 @@ function ConfigPanel({
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
           >
             <X className="h-4 w-4" />
           </button>
@@ -502,11 +591,18 @@ function ConfigPanel({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {automation.configFields.map((field) => (
             <div key={field.key}>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
+              <label
+                className="block text-[12px] font-medium mb-1.5"
+                style={{ color: "var(--foreground)" }}
+              >
                 {field.label}
               </label>
               <input
-                type={field.key.includes("token") || field.key.includes("password") ? "password" : "text"}
+                type={
+                  field.key.includes("token") || field.key.includes("password")
+                    ? "password"
+                    : "text"
+                }
                 value={formData[field.key] ?? ""}
                 onChange={(e) => setFormData((f) => ({ ...f, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
@@ -518,7 +614,8 @@ function ConfigPanel({
                 }}
                 onFocus={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = `${automation.color}60`;
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 3px ${automation.color}12`;
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    `0 0 0 3px ${automation.color}12`;
                 }}
                 onBlur={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
@@ -531,7 +628,11 @@ function ConfigPanel({
           {error && (
             <div
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]"
-              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444" }}
+              style={{
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "#EF4444",
+              }}
             >
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
@@ -547,7 +648,11 @@ function ConfigPanel({
           <button
             onClick={onClose}
             className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--foreground)" }}
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "var(--foreground)",
+            }}
           >
             Cancel
           </button>
@@ -611,8 +716,12 @@ function LogsPanel({
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
           >
             <X className="h-4 w-4" />
           </button>
@@ -621,12 +730,20 @@ function LogsPanel({
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {logsQ.isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+              <Loader2
+                className="h-5 w-5 animate-spin"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </div>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <ScrollText className="h-8 w-8 mb-3" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
-              <p className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>No logs yet</p>
+              <ScrollText
+                className="h-8 w-8 mb-3"
+                style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+              />
+              <p className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
+                No logs yet
+              </p>
               <p className="text-[12px] mt-1" style={{ color: "var(--muted-foreground)" }}>
                 Logs appear here once the automation runs
               </p>
@@ -634,22 +751,44 @@ function LogsPanel({
           ) : (
             <div className="space-y-2">
               {logs.map((log) => {
-                const Icon = log.status === "success" ? CheckCircle2 : log.status === "error" ? XCircle : Clock;
-                const color = log.status === "success" ? "#22C55E" : log.status === "error" ? "#EF4444" : "#FBBF24";
+                const Icon =
+                  log.status === "success"
+                    ? CheckCircle2
+                    : log.status === "error"
+                      ? XCircle
+                      : Clock;
+                const color =
+                  log.status === "success"
+                    ? "#22C55E"
+                    : log.status === "error"
+                      ? "#EF4444"
+                      : "#FBBF24";
                 return (
                   <div
                     key={log.id}
                     className="flex items-start gap-3 rounded-lg px-3 py-2.5"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                    }}
                   >
                     <Icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color }} />
                     <div className="min-w-0 flex-1">
-                      <div className="text-[12.5px] font-medium" style={{ color: "var(--foreground)" }}>
+                      <div
+                        className="text-[12.5px] font-medium"
+                        style={{ color: "var(--foreground)" }}
+                      >
                         {log.message}
                       </div>
-                      <div className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                      <div
+                        className="text-[11px] mt-0.5"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
                         {new Date(log.created_at).toLocaleString(undefined, {
-                          month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
                         })}
                       </div>
                     </div>
