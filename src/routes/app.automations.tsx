@@ -32,12 +32,11 @@ export const Route = createFileRoute("/app/automations")({ component: Automation
 /* ─── Types ─── */
 interface AutomationConfig {
   id?: string;
-  organization_id: string;
+  user_id: string;
   automation_slug: string;
   is_active: boolean;
-  config_data: Record<string, string>;
+  config_json: Record<string, string>;
   created_at?: string;
-  updated_at?: string;
 }
 
 interface AutomationLog {
@@ -173,16 +172,16 @@ const AUTOMATIONS = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
-async function fetchAutomationConfigs(orgId: string): Promise<AutomationConfig[]> {
-  const { data } = await db.from("automation_configs").select("*").eq("organization_id", orgId);
+async function fetchAutomationConfigs(userId: string): Promise<AutomationConfig[]> {
+  const { data } = await db.from("automation_configs").select("*").eq("user_id", userId);
   return (data ?? []) as AutomationConfig[];
 }
 
-async function fetchAutomationLogs(orgId: string, slug: string): Promise<AutomationLog[]> {
+async function fetchAutomationLogs(userId: string, slug: string): Promise<AutomationLog[]> {
   const { data } = await db
     .from("automation_logs")
     .select("*")
-    .eq("organization_id", orgId)
+    .eq("user_id", userId)
     .eq("automation_slug", slug)
     .order("created_at", { ascending: false })
     .limit(5);
@@ -190,32 +189,29 @@ async function fetchAutomationLogs(orgId: string, slug: string): Promise<Automat
 }
 
 async function upsertAutomationConfig(
-  config: Omit<AutomationConfig, "id" | "created_at" | "updated_at">,
+  config: Omit<AutomationConfig, "id" | "created_at">,
 ): Promise<void> {
   await db
     .from("automation_configs")
-    .upsert(
-      { ...config, updated_at: new Date().toISOString() },
-      { onConflict: "organization_id,automation_slug" },
-    );
+    .upsert(config, { onConflict: "user_id,automation_slug" });
 }
 
-async function toggleAutomation(orgId: string, slug: string, isActive: boolean): Promise<void> {
+async function toggleAutomation(userId: string, slug: string, isActive: boolean): Promise<void> {
   await db.from("automation_configs").upsert(
     {
-      organization_id: orgId,
+      user_id: userId,
       automation_slug: slug,
       is_active: isActive,
-      config_data: {},
-      updated_at: new Date().toISOString(),
+      config_json: {},
     },
-    { onConflict: "organization_id,automation_slug" },
+    { onConflict: "user_id,automation_slug" },
   );
 }
 
 /* ─── Main Page ─── */
 function AutomationsPage() {
-  const { currentOrgId } = useAuth();
+  const { currentOrgId, user } = useAuth();
+  const userId = user?.id;
   const qc = useQueryClient();
   const [configSlug, setConfigSlug] = useState<string | null>(null);
   const [logsSlug, setLogsSlug] = useState<string | null>(null);
@@ -223,9 +219,9 @@ function AutomationsPage() {
   const automationGate = useEntitlement("automations" as never);
 
   const configsQ = useQuery({
-    queryKey: ["automation-configs", currentOrgId],
-    queryFn: () => fetchAutomationConfigs(currentOrgId!),
-    enabled: !!currentOrgId,
+    queryKey: ["automation-configs", userId],
+    queryFn: () => fetchAutomationConfigs(userId!),
+    enabled: !!userId,
   });
 
   const configs = configsQ.data ?? [];
@@ -235,8 +231,8 @@ function AutomationsPage() {
 
   const toggleMutation = useMutation({
     mutationFn: ({ slug, active }: { slug: string; active: boolean }) =>
-      toggleAutomation(currentOrgId!, slug, active),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["automation-configs", currentOrgId] }),
+      toggleAutomation(userId!, slug, active),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["automation-configs", userId] }),
   });
 
   if (!currentOrgId) {
@@ -475,11 +471,11 @@ function AutomationsPage() {
       {configSlug && (
         <ConfigPanel
           slug={configSlug}
-          orgId={currentOrgId}
+          userId={userId!}
           existingConfig={getConfig(configSlug)}
           onClose={() => setConfigSlug(null)}
           onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["automation-configs", currentOrgId] });
+            qc.invalidateQueries({ queryKey: ["automation-configs", userId] });
             setConfigSlug(null);
           }}
         />
@@ -489,7 +485,7 @@ function AutomationsPage() {
       {logsSlug && (
         <LogsPanel
           slug={logsSlug}
-          orgId={currentOrgId}
+          userId={userId!}
           automationName={AUTOMATIONS.find((a) => a.slug === logsSlug)?.name ?? logsSlug}
           onClose={() => setLogsSlug(null)}
         />
@@ -501,20 +497,20 @@ function AutomationsPage() {
 /* ─── Config Panel ─── */
 function ConfigPanel({
   slug,
-  orgId,
+  userId,
   existingConfig,
   onClose,
   onSaved,
 }: {
   slug: string;
-  orgId: string;
+  userId: string;
   existingConfig: AutomationConfig | undefined;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const automation = AUTOMATIONS.find((a) => a.slug === slug)!;
   const [formData, setFormData] = useState<Record<string, string>>(
-    existingConfig?.config_data ?? {},
+    existingConfig?.config_json ?? {},
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -524,10 +520,10 @@ function ConfigPanel({
     setError(null);
     try {
       await upsertAutomationConfig({
-        organization_id: orgId,
+        user_id: userId,
         automation_slug: slug,
         is_active: existingConfig?.is_active ?? false,
-        config_data: formData,
+        config_json: formData,
       });
       onSaved();
     } catch (e) {
@@ -676,18 +672,18 @@ function ConfigPanel({
 /* ─── Logs Panel ─── */
 function LogsPanel({
   slug,
-  orgId,
+  userId,
   automationName,
   onClose,
 }: {
   slug: string;
-  orgId: string;
+  userId: string;
   automationName: string;
   onClose: () => void;
 }) {
   const logsQ = useQuery({
-    queryKey: ["automation-logs", orgId, slug],
-    queryFn: () => fetchAutomationLogs(orgId, slug),
+    queryKey: ["automation-logs", userId, slug],
+    queryFn: () => fetchAutomationLogs(userId, slug),
   });
 
   const logs = logsQ.data ?? [];
