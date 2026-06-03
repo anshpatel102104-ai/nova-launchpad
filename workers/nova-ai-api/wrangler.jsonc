@@ -1,5 +1,6 @@
 {
-  // Secrets needed: ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AI_GATEWAY_ID
+  // Secrets needed: ANTHROPIC_API_KEY, OPENAI_API_KEY, SUPABASE_SERVICE_ROLE_KEY, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_AI_GATEWAY_ID
+  // Run: npx wrangler secret put OPENAI_API_KEY
   "name": "nova-ai-api",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],

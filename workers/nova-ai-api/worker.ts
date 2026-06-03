@@ -1,5 +1,6 @@
 // nova-ai-api — POST /api/nova
-// Streams Claude responses for Nova AI chat. Saves to nova_conversations.
+// Streams Claude (Anthropic) or GPT (OpenAI) responses for Nova AI chat.
+// Saves to nova_conversations. Selects provider from request body.
 
 export interface Env {
   SUPABASE_URL: string;
@@ -9,11 +10,13 @@ export interface Env {
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_AI_GATEWAY_ID: string;
   ANTHROPIC_API_KEY: string;
+  OPENAI_API_KEY?: string; // set via: npx wrangler secret put OPENAI_API_KEY
   RATE_LIMITER?: KVNamespace; // set via: npx wrangler kv:namespace create nova-rate-limiter
 }
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
-const MODEL = "claude-sonnet-4-5";
+const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-5";
+const DEFAULT_OPENAI_MODEL = "gpt-4o";
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova.
 
@@ -40,7 +43,6 @@ Dynamic context will be injected at runtime with user business data.`;
 
 async function validateJWT(token: string, env: Env): Promise<{ sub: string } | null> {
   try {
-    // Validate by calling Supabase auth endpoint
     const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: { Authorization: `Bearer ${token}`, apikey: env.SUPABASE_ANON_KEY },
     });
@@ -93,6 +95,76 @@ function rateLimitedResponse(origin: string, retryAfter: number): Response {
   );
 }
 
+// ── Anthropic streaming ───────────────────────────────────────────────────────
+async function streamAnthropic(
+  env: Env,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+  model: string,
+): Promise<Response> {
+  const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/anthropic/v1/messages`;
+  return fetch(gatewayUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2048,
+      stream: true,
+      system: systemPrompt,
+      messages,
+    }),
+  });
+}
+
+// ── OpenAI streaming ──────────────────────────────────────────────────────────
+async function streamOpenAI(
+  env: Env,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+  model: string,
+): Promise<Response> {
+  if (!env.OPENAI_API_KEY) {
+    return new Response(JSON.stringify({ error: "OpenAI not configured" }), { status: 503 });
+  }
+  const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/openai/v1/chat/completions`;
+  const openaiMessages = [
+    { role: "system", content: systemPrompt },
+    ...messages,
+  ];
+  return fetch(gatewayUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2048,
+      stream: true,
+      messages: openaiMessages,
+    }),
+  });
+}
+
+// ── SSE text extractor per provider ──────────────────────────────────────────
+function extractTextFromChunk(data: string, provider: "anthropic" | "openai"): string {
+  if (data === "[DONE]") return "";
+  try {
+    const parsed = JSON.parse(data);
+    if (provider === "anthropic") {
+      return parsed.delta?.text ?? "";
+    }
+    // OpenAI: choices[0].delta.content
+    return parsed.choices?.[0]?.delta?.content ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin") ?? "";
@@ -123,9 +195,22 @@ export default {
       conversation_history?: Array<{ role: string; content: string }>;
       user_context?: Record<string, string>;
       session_id?: string;
+      provider?: "anthropic" | "openai";
+      model?: string;
     };
 
-    const { message, conversation_history = [], user_context = {}, session_id } = body;
+    const {
+      message,
+      conversation_history = [],
+      user_context = {},
+      session_id,
+      provider = "anthropic",
+      model,
+    } = body;
+
+    const resolvedModel =
+      model ??
+      (provider === "openai" ? DEFAULT_OPENAI_MODEL : DEFAULT_ANTHROPIC_MODEL);
 
     // Build system prompt with injected context
     let systemPrompt = NOVA_SYSTEM_PROMPT;
@@ -137,24 +222,11 @@ export default {
 
     const messages = [...conversation_history, { role: "user", content: message }];
 
-    // Stream from Cloudflare AI Gateway → Anthropic
-    const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/anthropic/v1/messages`;
-
-    const aiRes = await fetch(gatewayUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 2048,
-        stream: true,
-        system: systemPrompt,
-        messages,
-      }),
-    });
+    // Dispatch to provider
+    const aiRes =
+      provider === "openai"
+        ? await streamOpenAI(env, systemPrompt, messages, resolvedModel)
+        : await streamAnthropic(env, systemPrompt, messages, resolvedModel);
 
     if (!aiRes.ok) {
       const err = await aiRes.text();
@@ -164,7 +236,7 @@ export default {
       });
     }
 
-    // Collect full text while streaming
+    // Collect full text while streaming, re-emit in unified format
     let fullText = "";
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
@@ -180,16 +252,10 @@ export default {
         const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
         for (const line of lines) {
           const data = line.slice(6);
-          if (data === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(data);
-            const text = parsed.delta?.text ?? "";
-            if (text) {
-              fullText += text;
-              await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
-            }
-          } catch {
-            // ignore malformed SSE chunks
+          const text = extractTextFromChunk(data, provider);
+          if (text) {
+            fullText += text;
+            await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
           }
         }
       }
@@ -225,6 +291,8 @@ export default {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "X-Session-Id": session_id ?? "",
+        "X-Provider": provider,
+        "X-Model": resolvedModel,
       },
     });
   },

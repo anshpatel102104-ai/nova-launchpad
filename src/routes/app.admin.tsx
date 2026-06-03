@@ -14,6 +14,9 @@ import {
   Search,
   ArrowUpRight,
   Crown,
+  Zap,
+  MessageSquare,
+  Coins,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -25,18 +28,22 @@ export const Route = createFileRoute("/app/admin")({
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) throw redirect({ to: "/auth/sign-in" });
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!data) throw redirect({ to: "/app/dashboard" });
+    // Owner email always gets access; other users need admin role in user_roles
+    const isOwner = session.user.email === "ansh.patel102104@gmail.com";
+    if (!isOwner) {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!data) throw redirect({ to: "/app/dashboard" });
+    }
   },
   component: AdminHub,
 });
 
-type TabKey = "overview" | "users" | "orgs" | "subs" | "runs";
+type TabKey = "overview" | "users" | "orgs" | "subs" | "runs" | "auto-logs" | "conversations" | "credits";
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-surface-offset text-foreground/70",
@@ -109,11 +116,53 @@ function AdminHub() {
     },
   });
 
+  const autoLogsQ = useQuery({
+    queryKey: ["admin", "auto-logs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("automation_logs")
+        .select("id, user_id, automation_slug, status, duration_ms, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const convsQ = useQuery({
+    queryKey: ["admin", "conversations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("nova_conversations")
+        .select("id, user_id, session_id, messages, updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const creditsQ = useQuery({
+    queryKey: ["admin", "credits"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("credit_ledger")
+        .select("id, user_id, tool, cost, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const profiles = profilesQ.data ?? [];
   const orgs = orgsQ.data ?? [];
   const subs = subsQ.data ?? [];
   const runs = runsQ.data ?? [];
   const roles = rolesQ.data ?? [];
+  const autoLogs = autoLogsQ.data ?? [];
+  const convs = convsQ.data ?? [];
+  const credits = creditsQ.data ?? [];
 
   const adminIds = useMemo(
     () => new Set(roles.filter((r) => r.role === "admin").map((r) => r.user_id)),
@@ -173,6 +222,9 @@ function AdminHub() {
     { key: "orgs", label: "Workspaces", icon: Building2, count: totalOrgs },
     { key: "subs", label: "Subscriptions", icon: CreditCard, count: subs.length },
     { key: "runs", label: "Tool runs", icon: TrendingUp, count: runs.length },
+    { key: "auto-logs", label: "Automations", icon: Zap, count: autoLogs.length },
+    { key: "conversations", label: "Nova AI", icon: MessageSquare, count: convs.length },
+    { key: "credits", label: "Credits", icon: Coins, count: credits.length },
   ];
 
   return (
@@ -636,6 +688,196 @@ function AdminHub() {
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                       No runs yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === "auto-logs" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">Automation</th>
+                  <th className="text-left px-4 py-2 font-medium">User</th>
+                  <th className="text-left px-4 py-2 font-medium">Status</th>
+                  <th className="text-left px-4 py-2 font-medium">Duration</th>
+                  <th className="text-left px-4 py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {autoLogs.map((l) => {
+                  const owner = profileById.get(l.user_id);
+                  if (search) {
+                    const q = search.toLowerCase();
+                    if (
+                      !`${l.automation_slug} ${owner?.email ?? ""}`.toLowerCase().includes(q)
+                    )
+                      return null;
+                  }
+                  const Icon =
+                    l.status === "success" || l.status === "completed"
+                      ? CheckCircle2
+                      : l.status === "failed"
+                        ? XCircle
+                        : Loader2;
+                  return (
+                    <tr key={l.id} className="hover:bg-surface-2/40">
+                      <td className="px-4 py-2.5 font-medium">
+                        {l.automation_slug.replace(/-/g, " ")}
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground">
+                        {owner?.email ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 text-[11.5px]",
+                            (l.status === "success" || l.status === "completed") && "text-success",
+                            l.status === "failed" && "text-destructive",
+                            l.status === "running" && "text-primary",
+                          )}
+                        >
+                          <Icon className={cn("h-3 w-3", l.status === "running" && "animate-spin")} />
+                          {l.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                        {l.duration_ms ? `${l.duration_ms}ms` : "—"}
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                        {new Date(l.created_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {autoLogs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                      No automation logs yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === "conversations" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">Session</th>
+                  <th className="text-left px-4 py-2 font-medium">User</th>
+                  <th className="text-left px-4 py-2 font-medium">Messages</th>
+                  <th className="text-left px-4 py-2 font-medium">Last message</th>
+                  <th className="text-left px-4 py-2 font-medium">Updated</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {convs.map((c) => {
+                  const owner = profileById.get(c.user_id);
+                  const msgArr = Array.isArray(c.messages) ? c.messages as Array<{ role: string; content: string }> : [];
+                  const lastMsg = msgArr.at(-1);
+                  if (search) {
+                    const q = search.toLowerCase();
+                    if (!`${owner?.email ?? ""} ${lastMsg?.content ?? ""}`.toLowerCase().includes(q))
+                      return null;
+                  }
+                  return (
+                    <tr key={c.id} className="hover:bg-surface-2/40">
+                      <td className="px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
+                        {c.session_id?.slice(0, 8)}…
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-2.5 tabular-nums">{msgArr.length}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground max-w-xs truncate">
+                        {lastMsg?.content?.slice(0, 80) ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                        {new Date(c.updated_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {convs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                      No conversations yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === "credits" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">User</th>
+                  <th className="text-left px-4 py-2 font-medium">Tool</th>
+                  <th className="text-right px-4 py-2 font-medium">Cost</th>
+                  <th className="text-left px-4 py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {credits.map((c) => {
+                  const owner = profileById.get(c.user_id);
+                  if (search) {
+                    const q = search.toLowerCase();
+                    if (
+                      !`${owner?.email ?? ""} ${c.tool ?? ""}`.toLowerCase().includes(q)
+                    )
+                      return null;
+                  }
+                  return (
+                    <tr key={c.id} className="hover:bg-surface-2/40">
+                      <td className="px-4 py-2.5 text-muted-foreground">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-2.5 font-medium">
+                        {c.tool?.replace(/-/g, " ") ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            (c.cost ?? 0) < 0 ? "text-destructive" : "text-foreground",
+                          )}
+                        >
+                          {c.cost ?? 0 > 0 ? "-" : "+"}{Math.abs(c.cost ?? 0)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                        {new Date(c.created_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {credits.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                      No credit events yet.
                     </td>
                   </tr>
                 )}
