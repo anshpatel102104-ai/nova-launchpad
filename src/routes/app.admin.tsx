@@ -435,11 +435,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-orange-500 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Email</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Onboarded</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Role</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Joined</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Onboarded
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Joined
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -496,11 +506,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-orange-500 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Owner</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stage</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Niche</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Created</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Owner
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Stage
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Niche
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Created
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -546,11 +566,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-orange-500 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Plan</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Renews</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stripe</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Plan
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Renews
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Stripe
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -622,11 +652,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-orange-500 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Tool</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">When</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Tool
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    When
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -746,9 +786,7 @@ function StatCard({
         <div
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-xl",
-            variant === "orange"
-              ? "bg-orange-500 text-white"
-              : "bg-amber-400 text-white",
+            variant === "orange" ? "bg-orange-500 text-white" : "bg-amber-400 text-white",
           )}
         >
           <Icon className="h-4 w-4" />
