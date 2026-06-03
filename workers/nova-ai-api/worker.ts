@@ -12,7 +12,7 @@ export interface Env {
 }
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-sonnet-4-6";
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova.
 
@@ -53,7 +53,7 @@ async function validateJWT(token: string, env: Env): Promise<{ sub: string } | n
 
 function corsHeaders(origin: string) {
   return {
-    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };

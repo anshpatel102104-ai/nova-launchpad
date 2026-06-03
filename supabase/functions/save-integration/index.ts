@@ -1,5 +1,4 @@
 // Securely upsert a user_integrations row. The encryption key never leaves the server.
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -16,6 +15,8 @@ const ALLOWED_FLAT = new Set([
   "slack",
   "google_calendar",
   "gmail",
+  "anthropic",
+  "openai",
 ]);
 // Nova module webhooks use the "nova:webhook:<module>" prefix.
 const NOVA_WEBHOOK_RE = /^nova:webhook:[a-z0-9_-]{1,64}$/;
@@ -68,7 +69,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
