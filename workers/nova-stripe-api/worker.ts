@@ -11,6 +11,7 @@ export interface Env {
   STRIPE_PRICE_49: string;
   STRIPE_PRICE_149: string;
   STRIPE_PRICE_299: string;
+  RATE_LIMITER?: KVNamespace;
 }
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
@@ -33,6 +34,25 @@ function jsonResponse(data: unknown, status = 200, extra: Record<string, string>
     status,
     headers: { "Content-Type": "application/json", ...extra },
   });
+}
+
+// ── Rate Limiter ──────────────────────────────────────────────────────────────
+async function checkRateLimit(
+  kv: KVNamespace | undefined,
+  userId: string,
+  endpoint: string,
+  maxPerMinute: number,
+): Promise<{ limited: boolean; retryAfter: number }> {
+  if (!kv) return { limited: false, retryAfter: 0 };
+  const window = Math.floor(Date.now() / 60_000);
+  const key = `rl:${userId}:${endpoint}:${window}`;
+  const raw = await kv.get(key);
+  const count = raw ? parseInt(raw, 10) : 0;
+  if (count >= maxPerMinute) {
+    return { limited: true, retryAfter: 60 - (Date.now() % 60_000) / 1000 };
+  }
+  await kv.put(key, String(count + 1), { expirationTtl: 120 });
+  return { limited: false, retryAfter: 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -401,6 +421,16 @@ async function handleCreateCheckout(request: Request, env: Env, origin: string):
   const user = await validateJWT(token, env);
   if (!user) {
     return jsonResponse({ error: "Unauthorized" }, 401, corsHeaders(origin));
+  }
+
+  // Rate limit: 5 checkout attempts/minute per user
+  const rl = await checkRateLimit(env.RATE_LIMITER, user.sub, "stripe-checkout", 5);
+  if (rl.limited) {
+    return jsonResponse(
+      { error: "Rate limit exceeded. Try again in a moment.", code: "RATE_LIMIT" },
+      429,
+      { ...corsHeaders(origin), "Retry-After": String(Math.ceil(rl.retryAfter)) },
+    );
   }
 
   const body = (await request.json()) as { plan: "49" | "149" | "299" };

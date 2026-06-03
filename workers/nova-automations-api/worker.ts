@@ -8,6 +8,7 @@ export interface Env {
   SUPABASE_ANON_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   AUTOMATION_QUEUE: Queue<AutomationJob>;
+  RATE_LIMITER?: KVNamespace;
 }
 
 interface AutomationJob {
@@ -29,6 +30,39 @@ function corsHeaders(origin: string): Record<string, string> {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
+}
+
+// ── Rate Limiter ──────────────────────────────────────────────────────────────
+async function checkRateLimit(
+  kv: KVNamespace | undefined,
+  userId: string,
+  endpoint: string,
+  maxPerMinute: number,
+): Promise<{ limited: boolean; retryAfter: number }> {
+  if (!kv) return { limited: false, retryAfter: 0 };
+  const window = Math.floor(Date.now() / 60_000);
+  const key = `rl:${userId}:${endpoint}:${window}`;
+  const raw = await kv.get(key);
+  const count = raw ? parseInt(raw, 10) : 0;
+  if (count >= maxPerMinute) {
+    return { limited: true, retryAfter: 60 - (Date.now() % 60_000) / 1000 };
+  }
+  await kv.put(key, String(count + 1), { expirationTtl: 120 });
+  return { limited: false, retryAfter: 0 };
+}
+
+function rateLimitedResponse(origin: string, retryAfter: number): Response {
+  return new Response(
+    JSON.stringify({ error: "Rate limit exceeded. Try again in a moment.", code: "RATE_LIMIT" }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": String(Math.ceil(retryAfter)),
+        ...corsHeaders(origin),
+      },
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -133,6 +167,10 @@ async function handleTrigger(request: Request, env: Env, origin: string): Promis
     });
   }
 
+  // Rate limit: 10 automation triggers/minute per user
+  const rl = await checkRateLimit(env.RATE_LIMITER, user.sub, "automations-trigger", 10);
+  if (rl.limited) return rateLimitedResponse(origin, rl.retryAfter);
+
   const body = (await request.json()) as {
     automation_slug: string;
     payload: Record<string, unknown>;
@@ -235,6 +273,10 @@ async function handleUpsertConfig(request: Request, env: Env, origin: string): P
       headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
     });
   }
+
+  // Rate limit: 20 config writes/minute per user
+  const rl = await checkRateLimit(env.RATE_LIMITER, user.sub, "automations-config", 20);
+  if (rl.limited) return rateLimitedResponse(origin, rl.retryAfter);
 
   const body = (await request.json()) as Record<string, unknown>;
 

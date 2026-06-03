@@ -9,6 +9,7 @@ export interface Env {
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_AI_GATEWAY_ID: string;
   ANTHROPIC_API_KEY: string;
+  RATE_LIMITER?: KVNamespace; // set via: npx wrangler kv:namespace create nova-rate-limiter
 }
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
@@ -59,6 +60,39 @@ function corsHeaders(origin: string) {
   };
 }
 
+// ── Rate Limiter ──────────────────────────────────────────────────────────────
+async function checkRateLimit(
+  kv: KVNamespace | undefined,
+  userId: string,
+  endpoint: string,
+  maxPerMinute: number,
+): Promise<{ limited: boolean; retryAfter: number }> {
+  if (!kv) return { limited: false, retryAfter: 0 };
+  const window = Math.floor(Date.now() / 60_000);
+  const key = `rl:${userId}:${endpoint}:${window}`;
+  const raw = await kv.get(key);
+  const count = raw ? parseInt(raw, 10) : 0;
+  if (count >= maxPerMinute) {
+    return { limited: true, retryAfter: 60 - (Date.now() % 60_000) / 1000 };
+  }
+  await kv.put(key, String(count + 1), { expirationTtl: 120 });
+  return { limited: false, retryAfter: 0 };
+}
+
+function rateLimitedResponse(origin: string, retryAfter: number): Response {
+  return new Response(
+    JSON.stringify({ error: "Rate limit exceeded. Try again in a moment.", code: "RATE_LIMIT" }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": String(Math.ceil(retryAfter)),
+        ...corsHeaders(origin),
+      },
+    },
+  );
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin") ?? "";
@@ -79,6 +113,10 @@ export default {
         headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
+
+    // Rate limit: 20 AI chat requests/minute per user
+    const rl = await checkRateLimit(env.RATE_LIMITER, user.sub, "nova-ai", 20);
+    if (rl.limited) return rateLimitedResponse(origin, rl.retryAfter);
 
     const body = (await request.json()) as {
       message: string;
