@@ -116,7 +116,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
               padding: "7px 16px",
               borderRadius: 8,
               border: "none",
-              background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+              background: "linear-gradient(135deg, var(--primary), var(--mentor-accent))",
               color: "#fff",
               fontSize: 12,
               fontWeight: 600,
@@ -134,14 +134,14 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
     );
   }
 
-  const statusColor = totalActive > 0 ? "#10b981" : "#f59e0b";
+  const statusColor = totalActive > 0 ? "var(--success)" : "var(--warning)";
   const statusLabel = totalActive > 0 ? "Live" : "Setup needed";
 
   return (
     <div
       style={{
         borderRadius: 18,
-        border: "1px solid rgba(139,92,246,0.2)",
+        border: "1px solid color-mix(in oklab, var(--primary) 20%, transparent)",
         background: "var(--surface)",
         padding: 20,
         position: "relative",
@@ -156,7 +156,8 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
           width: 150,
           height: 150,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)",
+          background:
+            "radial-gradient(ellipse, color-mix(in oklab, var(--primary) 10%, transparent) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -168,8 +169,8 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#8b5cf6",
-            background: "rgba(139,92,246,0.12)",
+            color: "var(--primary)",
+            background: "color-mix(in oklab, var(--primary) 12%, transparent)",
             padding: "3px 8px",
             borderRadius: 5,
           }}
@@ -206,7 +207,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
             alignItems: "center",
             gap: 3,
             fontSize: 11,
-            color: "#8b5cf6",
+            color: "var(--primary)",
             fontWeight: 600,
             textDecoration: "none",
           }}
@@ -220,9 +221,9 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}
       >
         {[
-          { label: "Active", value: totalActive, color: "#10b981" },
-          { label: "Automations", value: automations.length, color: "#8b5cf6" },
-          { label: "Integrations", value: activeIntegrations.length, color: "#6366f1" },
+          { label: "Active", value: totalActive, color: "var(--success)" },
+          { label: "Automations", value: automations.length, color: "var(--primary)" },
+          { label: "Integrations", value: activeIntegrations.length, color: "var(--info)" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -258,7 +259,9 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
           {automations.slice(0, 4).map((a) => (
             <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {a.enabled ? (
-                <CheckCircle2 style={{ width: 13, height: 13, color: "#10b981", flexShrink: 0 }} />
+                <CheckCircle2
+                  style={{ width: 13, height: 13, color: "var(--success)", flexShrink: 0 }}
+                />
               ) : (
                 <Clock
                   style={{ width: 13, height: 13, color: "var(--muted-foreground)", flexShrink: 0 }}
@@ -308,7 +311,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
                 fontWeight: 600,
                 background: "rgba(16,185,129,0.1)",
                 border: "1px solid rgba(16,185,129,0.2)",
-                color: "#10b981",
+                color: "var(--success)",
               }}
             >
               <CheckCircle2 style={{ width: 10, height: 10 }} />
@@ -325,7 +328,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
           alignItems: "center",
           gap: 4,
           fontSize: 11.5,
-          color: "#8b5cf6",
+          color: "var(--primary)",
           fontWeight: 600,
           textDecoration: "none",
           marginTop: 12,

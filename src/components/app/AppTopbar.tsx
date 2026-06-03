@@ -306,10 +306,10 @@ export function AppTopbar() {
               title="Owner mode active — Ctrl+Shift+O to toggle"
               className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition"
               style={{
-                background: "linear-gradient(135deg, #78350f, #92400e, #78350f)",
-                border: "1px solid #b45309",
-                color: "#fde68a",
-                boxShadow: "0 0 12px rgba(251,191,36,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
+                background: "color-mix(in oklab, var(--warning) 15%, var(--surface))",
+                border: "1px solid color-mix(in oklab, var(--warning) 40%, transparent)",
+                color: "var(--warning)",
+                boxShadow: "0 0 12px color-mix(in oklab, var(--warning) 35%, transparent)",
                 animation: "breathGlow 3s ease-in-out infinite",
               }}
             >

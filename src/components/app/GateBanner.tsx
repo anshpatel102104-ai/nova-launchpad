@@ -24,8 +24,8 @@ export function GateBanner({ feature, children, fallback }: Props) {
     <div
       style={{
         borderRadius: 14,
-        border: "1px solid rgba(139,92,246,0.25)",
-        background: "rgba(139,92,246,0.06)",
+        border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+        background: "color-mix(in oklab, var(--primary) 6%, transparent)",
         padding: "20px 24px",
         display: "flex",
         flexDirection: "column",
@@ -39,14 +39,14 @@ export function GateBanner({ feature, children, fallback }: Props) {
           width: 40,
           height: 40,
           borderRadius: 10,
-          background: "rgba(139,92,246,0.12)",
-          border: "1px solid rgba(139,92,246,0.25)",
+          background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+          border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Lock style={{ width: 18, height: 18, color: "#8b5cf6" }} />
+        <Lock style={{ width: 18, height: 18, color: "var(--primary)" }} />
       </div>
       <div>
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}>
@@ -72,13 +72,13 @@ export function GateBanner({ feature, children, fallback }: Props) {
             padding: "8px 18px",
             borderRadius: 9,
             border: "none",
-            background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+            background: "linear-gradient(135deg, var(--primary), var(--mentor-accent))",
             color: "#fff",
             fontSize: 12.5,
             fontWeight: 700,
             cursor: "pointer",
             fontFamily: "inherit",
-            boxShadow: "0 4px 14px rgba(139,92,246,0.35)",
+            boxShadow: "0 4px 14px color-mix(in oklab, var(--primary) 35%, transparent)",
           }}
         >
           <Sparkles style={{ width: 12, height: 12 }} />
@@ -121,7 +121,7 @@ export function InlineGate({ feature, children }: InlineGateProps) {
               gap: 5,
               padding: "5px 12px",
               borderRadius: 7,
-              background: "rgba(139,92,246,0.9)",
+              background: "color-mix(in oklab, var(--primary) 90%, transparent)",
               color: "#fff",
               fontSize: 11.5,
               fontWeight: 700,

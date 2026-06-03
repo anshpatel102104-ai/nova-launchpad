@@ -360,7 +360,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(0,0,0,0.88)",
+          background: "var(--modal-overlay)",
           backdropFilter: "blur(6px)",
         }}
       />
@@ -372,9 +372,10 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
           width: "min(94vw, 1080px)",
           height: "min(92vh, 780px)",
           borderRadius: 20,
-          border: "1px solid rgba(249,115,22,0.2)",
-          background: "#0d0d0f",
-          boxShadow: "0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(249,115,22,0.06) inset",
+          border: "1px solid color-mix(in oklab, var(--primary) 20%, transparent)",
+          background: "var(--surface)",
+          boxShadow:
+            "0 32px 100px color-mix(in oklab, var(--background) 70%, transparent), 0 0 0 1px color-mix(in oklab, var(--primary) 6%, transparent) inset",
           display: "flex",
           overflow: "hidden",
           backgroundImage:
@@ -416,7 +417,14 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
               <Sparkles style={{ width: 15, height: 15, color: "#fff" }} />
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: 0.5 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "var(--foreground)",
+                  letterSpacing: 0.5,
+                }}
+              >
                 NOVA
               </div>
               <div style={{ fontSize: 10, color: "#F97316", letterSpacing: 1.5, opacity: 0.8 }}>
@@ -458,7 +466,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   marginBottom: 5,
                 }}
               >
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{label}</span>
                 <span
                   style={{
                     fontSize: 9,
@@ -510,7 +518,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                     <span
                       style={{
                         fontSize: 11,
-                        color: "rgba(255,255,255,0.55)",
+                        color: "var(--muted-foreground)",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -543,7 +551,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   borderRadius: 8,
                   border: "1px solid var(--border)",
                   background: "var(--surface)",
-                  color: "rgba(255,255,255,0.5)",
+                  color: "var(--muted-foreground)",
                   fontSize: 11,
                   fontWeight: 500,
                   textDecoration: "none",
@@ -555,7 +563,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                   (e.currentTarget as HTMLElement).style.borderColor = "var(--surface-2)";
                   (e.currentTarget as HTMLElement).style.background = "var(--surface)";
                 }}
@@ -614,7 +622,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.3)" }}>
+              <div style={{ fontSize: 10.5, color: "var(--muted-foreground)" }}>
                 Chief of Staff · 30-tool suite · startup strategy
               </div>
             </div>
@@ -736,7 +744,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                       border: msg.role === "assistant" ? "1px solid rgba(249,115,22,0.1)" : "none",
                       fontSize: 13,
                       lineHeight: 1.65,
-                      color: msg.role === "user" ? "#fff" : "rgba(255,255,255,0.85)",
+                      color: msg.role === "user" ? "#fff" : "var(--foreground)",
                     }}
                   >
                     {msg.pending && !msg.content ? (
@@ -853,7 +861,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
             <div
               style={{
                 fontSize: 10,
-                color: "rgba(255,255,255,0.2)",
+                color: "var(--muted-foreground)",
                 marginTop: 6,
                 textAlign: "center",
                 letterSpacing: 0.5,
@@ -899,23 +907,23 @@ function HeaderBtn({
         width: 28,
         height: 28,
         borderRadius: 8,
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid var(--border-subtle)",
         background: "none",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "rgba(255,255,255,0.4)",
+        color: "var(--muted-foreground)",
         transition: "all 0.12s",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.color = "#fff";
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+        (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
         (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)";
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+        (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)";
         (e.currentTarget as HTMLElement).style.background = "none";
       }}
     >
@@ -939,12 +947,12 @@ function TelemetryRow({
     <div
       style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}
     >
-      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 10, color: "var(--muted-foreground)", flexShrink: 0 }}>{label}</span>
       <span
         style={{
           fontSize: 11,
           fontWeight: 600,
-          color: accent ? "#F97316" : "rgba(255,255,255,0.7)",
+          color: accent ? "var(--primary)" : "var(--foreground)",
           overflow: truncate ? "hidden" : undefined,
           textOverflow: truncate ? "ellipsis" : undefined,
           whiteSpace: truncate ? "nowrap" : undefined,
@@ -988,7 +996,7 @@ function EmptyState({
         >
           Good to see you, {displayName}.
         </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6 }}>
           I have full visibility into your workspace.
           <br />
           What's the mission today?
@@ -1012,7 +1020,7 @@ function EmptyState({
               borderRadius: 20,
               border: "1px solid rgba(249,115,22,0.2)",
               background: "rgba(249,115,22,0.05)",
-              color: "rgba(255,255,255,0.65)",
+              color: "var(--foreground)",
               fontSize: 12,
               fontWeight: 500,
               cursor: "pointer",
@@ -1027,7 +1035,7 @@ function EmptyState({
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
               (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.2)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.65)";
+              (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
             }}
           >
             {p}

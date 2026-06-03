@@ -110,7 +110,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
             width: 32,
             height: 32,
             borderRadius: 9,
-            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            background: "linear-gradient(135deg, var(--info), var(--mentor-accent))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -174,7 +174,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                   gap: 6,
                 }}
               >
-                <Sparkles style={{ width: 12, height: 12, color: "#3b82f6", flexShrink: 0 }} />
+                <Sparkles style={{ width: 12, height: 12, color: "var(--info)", flexShrink: 0 }} />
                 {q}
               </button>
             ))}
@@ -198,7 +198,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                   height: 26,
                   borderRadius: 7,
                   flexShrink: 0,
-                  background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                  background: "linear-gradient(135deg, var(--info), var(--mentor-accent))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -236,7 +236,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                 height: 26,
                 borderRadius: 7,
                 flexShrink: 0,
-                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                background: "linear-gradient(135deg, var(--info), var(--mentor-accent))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -256,7 +256,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                 style={{
                   width: 14,
                   height: 14,
-                  color: "#3b82f6",
+                  color: "var(--info)",
                   animation: "spin 1s linear infinite",
                 }}
               />

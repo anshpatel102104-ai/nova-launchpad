@@ -311,8 +311,9 @@ export function AppSidebar() {
         <div
           className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white text-[11px] font-bold tracking-tight"
           style={{
-            background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
-            boxShadow: "0 0 14px rgba(249,115,22,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+            boxShadow:
+              "0 0 14px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 color-mix(in oklab, var(--foreground) 25%, transparent)",
           }}
         >
           LN
@@ -398,16 +399,18 @@ export function AppSidebar() {
             collapsed && "justify-center p-1.5",
           )}
           style={{
-            background: "rgba(255,255,255,0.03)",
+            background: "var(--surface-2)",
             border: "1px solid var(--sidebar-border)",
           }}
           onMouseEnter={(e: MouseEvent) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.28)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.06)";
+            (e.currentTarget as HTMLElement).style.borderColor =
+              "color-mix(in oklab, var(--primary) 28%, transparent)";
+            (e.currentTarget as HTMLElement).style.background =
+              "color-mix(in oklab, var(--primary) 6%, transparent)";
           }}
           onMouseLeave={(e: MouseEvent) => {
             (e.currentTarget as HTMLElement).style.borderColor = "var(--sidebar-border)";
-            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
+            (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
           }}
         >
           <span

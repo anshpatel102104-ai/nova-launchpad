@@ -123,44 +123,44 @@ const CHALLENGES = [
 ];
 
 const STEP_META = [
-  { eyebrow: "Step 1 of 6 · Your Idea", heading: "What's your", accent: "#f97316" },
-  { eyebrow: "Step 2 of 6 · Your Stage", heading: "Where are you", accent: "#f97316" },
-  { eyebrow: "Step 3 of 6 · Your Customer", heading: "Who do you", accent: "#fb923c" },
-  { eyebrow: "Step 4 of 6 · Your Goal", heading: "What do you want", accent: "#f97316" },
-  { eyebrow: "Step 5 of 6 · Your Revenue", heading: "Current monthly", accent: "#fb923c" },
-  { eyebrow: "Step 6 of 6 · Your Challenge", heading: "Biggest thing", accent: "#f97316" },
+  { eyebrow: "Step 1 of 6 · Your Idea", heading: "What's your", accent: "var(--primary)" },
+  { eyebrow: "Step 2 of 6 · Your Stage", heading: "Where are you", accent: "var(--primary)" },
+  { eyebrow: "Step 3 of 6 · Your Customer", heading: "Who do you", accent: "var(--primary)" },
+  { eyebrow: "Step 4 of 6 · Your Goal", heading: "What do you want", accent: "var(--primary)" },
+  { eyebrow: "Step 5 of 6 · Your Revenue", heading: "Current monthly", accent: "var(--primary)" },
+  { eyebrow: "Step 6 of 6 · Your Challenge", heading: "Biggest thing", accent: "var(--primary)" },
 ];
 
 const HEADINGS = [
   <>
-    "What's your <span style={{ color: "#f97316" }}>business idea</span>?"
+    "What's your <span style={{ color: "var(--primary)" }}>business idea</span>?"
   </>,
   <>
-    Where are you <span style={{ color: "#f97316" }}>right now</span>?
+    Where are you <span style={{ color: "var(--primary)" }}>right now</span>?
   </>,
   <>
-    Who do you <span style={{ color: "#fb923c" }}>sell to</span>?
+    Who do you <span style={{ color: "var(--primary)" }}>sell to</span>?
   </>,
   <>
-    What do you want to <span style={{ color: "#f97316" }}>achieve</span> in 90 days?
+    What do you want to <span style={{ color: "var(--primary)" }}>achieve</span> in 90 days?
   </>,
   <>
-    Current monthly <span style={{ color: "#fb923c" }}>revenue</span>?
+    Current monthly <span style={{ color: "var(--primary)" }}>revenue</span>?
   </>,
   <>
-    Biggest thing <span style={{ color: "#f97316" }}>holding you back</span>?
+    Biggest thing <span style={{ color: "var(--primary)" }}>holding you back</span>?
   </>,
 ];
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const CARD: React.CSSProperties = {
-  background: "rgba(10,8,5,0.92)",
+  background: "var(--surface)",
   backdropFilter: "blur(28px) saturate(1.4)",
-  border: "1px solid rgba(249,115,22,0.12)",
+  border: "1px solid color-mix(in oklab, var(--primary) 18%, transparent)",
   borderRadius: 22,
   boxShadow:
-    "0 0 0 1px rgba(249,115,22,0.06), 0 40px 100px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.05)",
+    "0 0 0 1px color-mix(in oklab, var(--primary) 8%, transparent), 0 40px 100px color-mix(in oklab, var(--background) 75%, transparent), inset 0 1px 0 color-mix(in oklab, var(--foreground) 5%, transparent)",
   padding: "38px 38px 34px",
   width: "100%",
   maxWidth: 560,
@@ -181,9 +181,9 @@ function ProgressBar({ step }: { step: number }) {
             transition: "background 0.4s ease",
             background:
               i < step
-                ? "#f97316"
+                ? "var(--primary)"
                 : i === step
-                  ? "linear-gradient(90deg, #f97316, #fbbf24)"
+                  ? "linear-gradient(90deg, var(--primary), var(--accent))"
                   : "var(--border)",
             boxShadow: i === step ? "0 0 10px rgba(249,115,22,0.6)" : "none",
           }}
@@ -249,7 +249,7 @@ function IconBox({ Icon, selected }: { Icon: React.ElementType; selected: boolea
         style={{
           width: 16,
           height: 16,
-          color: selected ? "#f97316" : "rgba(240,244,255,0.3)",
+          color: selected ? "var(--primary)" : "var(--muted-foreground)",
         }}
       />
     </div>
@@ -273,11 +273,11 @@ function MCGrid({
         <OptionCard key={id} selected={value === id} onClick={() => onChange(id)}>
           <IconBox Icon={Icon} selected={value === id} />
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f7f0e8" }}>{label}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>{label}</div>
             <div
               style={{
                 fontSize: 11,
-                color: "rgba(240,230,220,0.38)",
+                color: "var(--muted-foreground)",
                 lineHeight: 1.4,
                 marginTop: 2,
               }}
@@ -372,7 +372,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              background: "linear-gradient(135deg, var(--primary), var(--accent))",
               fontSize: 11,
               fontWeight: 800,
               color: "#fff",
@@ -382,7 +382,12 @@ export function OnboardingWizard({ onComplete }: Props) {
             N
           </div>
           <span
-            style={{ fontSize: 13.5, fontWeight: 600, color: "#f7f0e8", letterSpacing: "-0.01em" }}
+            style={{
+              fontSize: 13.5,
+              fontWeight: 600,
+              color: "var(--foreground)",
+              letterSpacing: "-0.01em",
+            }}
           >
             Nova OS
           </span>
@@ -390,7 +395,7 @@ export function OnboardingWizard({ onComplete }: Props) {
         <div
           style={{
             fontSize: 11,
-            color: "rgba(249,115,22,0.7)",
+            color: "var(--primary)",
             fontWeight: 600,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
@@ -413,7 +418,7 @@ export function OnboardingWizard({ onComplete }: Props) {
             fontWeight: 700,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: "rgba(249,115,22,0.75)",
+            color: "var(--primary)",
             marginBottom: 8,
           }}
         >
@@ -423,7 +428,7 @@ export function OnboardingWizard({ onComplete }: Props) {
           style={{
             fontSize: "clamp(1.6rem, 4.5vw, 2.1rem)",
             fontWeight: 800,
-            color: "#f7f0e8",
+            color: "var(--foreground)",
             lineHeight: 1.1,
             letterSpacing: "-0.04em",
             margin: 0,
@@ -449,7 +454,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               style={{
                 background: "var(--surface-2)",
                 border: "1px solid rgba(249,115,22,0.2)",
-                color: "#f7f0e8",
+                color: "var(--foreground)",
                 fontSize: 14,
                 outline: "none",
                 width: "100%",
@@ -470,7 +475,7 @@ export function OnboardingWizard({ onComplete }: Props) {
                 e.target.style.boxShadow = "none";
               }}
             />
-            <div style={{ fontSize: 10.5, color: "rgba(240,230,220,0.3)", marginTop: 6 }}>
+            <div style={{ fontSize: 10.5, color: "var(--muted-foreground)", marginTop: 6 }}>
               {idea.length === 0
                 ? `Describe who it's for and what it does — Nova personalizes your entire dashboard from this`
                 : idea.length < 20
@@ -504,7 +509,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               alignItems: "center",
               justifyContent: "center",
               background: "var(--surface-2)",
-              color: "rgba(240,230,220,0.4)",
+              color: "var(--muted-foreground)",
               transition: "all 0.2s",
               flexShrink: 0,
               fontFamily: "inherit",
@@ -531,13 +536,13 @@ export function OnboardingWizard({ onComplete }: Props) {
             letterSpacing: "-0.01em",
             background:
               canAdvance && !saving
-                ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
-                : "rgba(255,255,255,0.06)",
+                ? "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)"
+                : "var(--surface-2)",
             color: canAdvance && !saving ? "#fff" : "var(--muted-foreground)",
             transition: "all 0.25s",
             boxShadow:
               canAdvance && !saving
-                ? "0 0 40px rgba(249,115,22,0.4), 0 8px 24px rgba(0,0,0,0.4)"
+                ? "0 0 40px color-mix(in oklab, var(--primary) 40%, transparent), 0 8px 24px color-mix(in oklab, var(--background) 60%, transparent)"
                 : "none",
             fontFamily: "inherit",
           }}
