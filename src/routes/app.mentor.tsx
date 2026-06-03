@@ -465,7 +465,7 @@ function ConfRing({ value, color, size = 28 }: { value: number; color: string; s
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
+          stroke="color-mix(in oklab, var(--foreground) 7%, transparent)"
           strokeWidth="2.5"
         />
         <circle
@@ -957,7 +957,7 @@ function MissionBriefPanel({
                           }
                         : {
                             background: "var(--surface-2)",
-                            border: "1px solid rgba(255,255,255,0.06)",
+                            border: "1px solid var(--border-subtle)",
                             color: "rgba(240,244,255,0.8)",
                           }
                     }
@@ -972,7 +972,7 @@ function MissionBriefPanel({
                     className="flex items-center gap-2 rounded-xl px-3 py-2"
                     style={{
                       background: "var(--surface-2)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      border: "1px solid var(--border-subtle)",
                     }}
                   >
                     <Loader2 className="h-3 w-3 animate-spin" style={{ color: agent.color }} />
@@ -1602,7 +1602,7 @@ function MentorPage() {
           className="absolute top-0 left-0 right-0 h-px z-[2]"
           style={{
             background:
-              "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.35), transparent)",
+              "linear-gradient(90deg, transparent, color-mix(in oklab, var(--info) 50%, transparent), rgba(139,92,246,0.35), transparent)",
           }}
         />
         <div className="absolute inset-0 z-[1] nova-grid-bg opacity-25" />
@@ -1685,17 +1685,17 @@ function MentorPage() {
               className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all duration-200"
               style={{
                 background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                boxShadow: "0 4px 16px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+                boxShadow: "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                 (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 8px 24px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  "0 8px 24px color-mix(in oklab, var(--info) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.transform = "none";
                 (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 4px 16px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
               }}
             >
               <Command className="h-3.5 w-3.5" /> Command Center
@@ -2145,8 +2145,8 @@ function MentorPage() {
                     key={agent.id}
                     className="flex items-center gap-3 rounded-xl px-4 py-2.5"
                     style={{
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.05)",
+                      background: "var(--surface)",
+                      border: "1px solid var(--border-subtle)",
                     }}
                   >
                     <span
@@ -2180,7 +2180,7 @@ function MentorPage() {
               fontSize: "8.5px",
               fontWeight: 700,
               letterSpacing: "0.16em",
-              color: "rgba(59,130,246,0.5)",
+              color: "color-mix(in oklab, var(--info) 50%, transparent)",
             }}
           >
             COMMAND QUEUE
@@ -2244,7 +2244,7 @@ function MentorPage() {
           className="flex h-12 w-12 items-center justify-center rounded-full"
           style={{
             background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-            boxShadow: "0 4px 20px rgba(59,130,246,0.5)",
+            boxShadow: "0 4px 20px color-mix(in oklab, var(--info) 50%, transparent)",
           }}
         >
           <Command className="h-5 w-5 text-white" />

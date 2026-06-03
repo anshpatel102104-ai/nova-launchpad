@@ -575,14 +575,14 @@ function Dashboard() {
                         background:
                           i <= stageIdx
                             ? "linear-gradient(90deg, #F97316, #FBBF24)"
-                            : "rgba(255,255,255,0.1)",
+                            : "var(--surface-2)",
                         boxShadow: i <= stageIdx ? "0 0 6px rgba(249,115,22,0.5)" : "none",
                       }}
                     />
                     <span
                       className="text-[8px] font-mono uppercase tracking-wide"
                       style={{
-                        color: i <= stageIdx ? "rgba(249,115,22,0.8)" : "rgba(255,255,255,0.2)",
+                        color: i <= stageIdx ? "rgba(249,115,22,0.8)" : "var(--muted-foreground)",
                       }}
                     >
                       {s}
@@ -593,7 +593,7 @@ function Dashboard() {
                       className="h-px w-3 mb-3"
                       style={{
                         background:
-                          i < stageIdx ? "rgba(249,115,22,0.4)" : "rgba(255,255,255,0.08)",
+                          i < stageIdx ? "rgba(249,115,22,0.4)" : "var(--border)",
                       }}
                     />
                   )}
@@ -824,7 +824,7 @@ function Dashboard() {
                         ? {
                             color: "var(--muted-foreground)",
                             textDecoration: "line-through",
-                            textDecorationColor: "rgba(255,255,255,0.2)",
+                            textDecorationColor: "var(--muted-foreground)",
                           }
                         : { color: "var(--foreground)" }
                     }
@@ -879,7 +879,7 @@ function Dashboard() {
                     background:
                       i <= stageIdx
                         ? "linear-gradient(90deg, #F97316, #FBBF24)"
-                        : "rgba(255,255,255,0.08)",
+                        : "var(--surface-2)",
                     boxShadow: i <= stageIdx ? "0 0 4px rgba(249,115,22,0.4)" : "none",
                   }}
                 />
@@ -919,7 +919,7 @@ function Dashboard() {
                           ? "var(--success)"
                           : st === "setup"
                             ? "var(--warning)"
-                            : "rgba(255,255,255,0.08)",
+                            : "var(--border)",
                       boxShadow: st === "active" ? "0 0 6px rgba(16,185,129,0.6)" : "none",
                     }}
                   />
@@ -1215,7 +1215,7 @@ function Dashboard() {
               </button>
             </Link>
             {limit && (
-              <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="mt-5 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                 <div
                   className="flex items-center justify-between text-[11px]"
                   style={{ color: "var(--muted-foreground)" }}
@@ -1572,7 +1572,7 @@ function Dashboard() {
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                     style={{
                       background: st === "active" ? "rgba(16,185,129,0.1)" : "var(--surface-2)",
-                      border: `1px solid ${st === "active" ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.05)"}`,
+                      border: `1px solid ${st === "active" ? "rgba(16,185,129,0.2)" : "var(--border)"}`,
                     }}
                   >
                     <s.icon
@@ -1598,7 +1598,7 @@ function Dashboard() {
                               ? "var(--success)"
                               : st === "setup"
                                 ? "var(--warning)"
-                                : "rgba(255,255,255,0.15)",
+                                : "var(--border)",
                           boxShadow: st === "active" ? "0 0 5px rgba(16,185,129,0.5)" : "none",
                         }}
                       />

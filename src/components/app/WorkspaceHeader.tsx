@@ -55,20 +55,20 @@ const V: Record<
     orb2: "rgba(6,182,212,0.12)",
   },
   settings: {
-    gradient: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)",
+    gradient: "linear-gradient(135deg, var(--border) 0%, var(--surface-2) 100%)",
     eyebrowColor: "rgba(240,244,255,0.4)",
-    borderColor: "rgba(255,255,255,0.06)",
-    glowColor: "rgba(255,255,255,0.02)",
-    orb1: "rgba(255,255,255,0.04)",
-    orb2: "rgba(255,255,255,0.02)",
+    borderColor: "var(--surface-2)",
+    glowColor: "var(--surface)",
+    orb1: "var(--surface-2)",
+    orb2: "var(--surface)",
   },
   neutral: {
-    gradient: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)",
+    gradient: "linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%)",
     eyebrowColor: "rgba(240,244,255,0.4)",
-    borderColor: "rgba(255,255,255,0.06)",
-    glowColor: "rgba(255,255,255,0.02)",
-    orb1: "rgba(255,255,255,0.04)",
-    orb2: "rgba(255,255,255,0.02)",
+    borderColor: "var(--surface-2)",
+    glowColor: "var(--surface)",
+    orb1: "var(--surface-2)",
+    orb2: "var(--surface)",
   },
 };
 
@@ -98,7 +98,7 @@ export function WorkspaceHeader({
       style={{
         background: "var(--surface)",
         border: `1px solid ${v.borderColor}`,
-        boxShadow: `0 0 0 1px ${v.borderColor}, 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)`,
+        boxShadow: `0 0 0 1px ${v.borderColor}, 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 var(--surface-2)`,
       }}
     >
       {/* Ambient orbs */}
@@ -147,7 +147,7 @@ export function WorkspaceHeader({
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white"
               style={{
                 background: v.gradient,
-                boxShadow: `0 4px 20px ${v.eyebrowColor}40, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                boxShadow: `0 4px 20px ${v.eyebrowColor}40, inset 0 1px 0 var(--muted-foreground)`,
               }}
             >
               <Icon className="h-6 w-6" />

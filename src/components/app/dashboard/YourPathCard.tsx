@@ -175,7 +175,7 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
                   height: 4,
                   width: "100%",
                   borderRadius: 2,
-                  background: i <= stageIdx ? meta.color : "rgba(255,255,255,0.08)",
+                  background: i <= stageIdx ? meta.color : "var(--border)",
                   boxShadow: i <= stageIdx ? `0 0 6px ${meta.color}60` : "none",
                   transition: "all 0.3s",
                 }}
@@ -219,7 +219,7 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
                 gap: 8,
                 padding: "7px 10px",
                 borderRadius: 8,
-                border: i === 0 ? `1px solid ${meta.color}25` : "1px solid rgba(255,255,255,0.05)",
+                border: i === 0 ? `1px solid ${meta.color}25` : "1px solid var(--border-subtle)",
                 background: i === 0 ? `${meta.color}08` : "transparent",
                 cursor: "pointer",
                 transition: "all 0.15s",
@@ -230,7 +230,7 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor =
-                  i === 0 ? `${meta.color}25` : "rgba(255,255,255,0.05)";
+                  i === 0 ? `${meta.color}25` : "var(--border-subtle)";
                 (e.currentTarget as HTMLElement).style.background =
                   i === 0 ? `${meta.color}08` : "transparent";
               }}
@@ -240,7 +240,7 @@ export function YourPathCard({ lane, stage, missionTitle }: Props) {
                   width: 16,
                   height: 16,
                   borderRadius: "50%",
-                  background: i === 0 ? meta.color : "rgba(255,255,255,0.08)",
+                  background: i === 0 ? meta.color : "var(--border)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

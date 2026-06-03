@@ -132,7 +132,7 @@ export function SupportWidget() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                border: `1px solid ${category === c.value ? "var(--primary)" : "rgba(255,255,255,0.08)"}`,
+                border: `1px solid ${category === c.value ? "var(--primary)" : "var(--border)"}`,
                 background: category === c.value ? "rgba(59,130,246,0.12)" : "var(--surface-2)",
                 color: category === c.value ? "var(--primary)" : "var(--muted-foreground)",
                 fontSize: 11.5,

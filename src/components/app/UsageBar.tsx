@@ -34,7 +34,7 @@ export function UsageBar({ compact = false, showUpgrade = true }: Props) {
           style={{
             height: 3,
             borderRadius: 2,
-            background: "rgba(255,255,255,0.08)",
+            background: "var(--border)",
             overflow: "hidden",
           }}
         >
@@ -106,7 +106,7 @@ export function UsageBar({ compact = false, showUpgrade = true }: Props) {
         style={{
           height: 6,
           borderRadius: 3,
-          background: "rgba(255,255,255,0.08)",
+          background: "var(--border)",
           overflow: "hidden",
           marginBottom: 8,
         }}

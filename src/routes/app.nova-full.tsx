@@ -72,7 +72,7 @@ function renderMarkdown(text: string): string {
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(
       /`(.+?)`/g,
-      '<code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:0.9em">$1</code>',
+      '<code style="background:var(--border);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:0.9em">$1</code>',
     )
     .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;font-weight:700;margin:8px 0 4px">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 style="font-size:15px;font-weight:700;margin:10px 0 4px">$1</h2>')
@@ -320,7 +320,7 @@ function NovaFullPage() {
   return (
     <div
       className="flex h-[calc(100vh-64px)] overflow-hidden rounded-2xl"
-      style={{ border: "1px solid rgba(255,255,255,0.08)", background: "var(--surface)" }}
+      style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
     >
       {/* ── Left Sidebar: Past Sessions ── */}
       <div
@@ -328,11 +328,11 @@ function NovaFullPage() {
           "flex flex-col shrink-0 transition-all duration-200 overflow-hidden",
           sidebarOpen ? "w-64" : "w-0",
         )}
-        style={{ borderRight: sidebarOpen ? "1px solid rgba(255,255,255,0.06)" : "none" }}
+        style={{ borderRight: sidebarOpen ? "1px solid var(--surface-2)" : "none" }}
       >
         <div
           className="flex items-center justify-between px-4 py-3"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+          style={{ borderBottom: "1px solid var(--surface-2)" }}
         >
           <span
             className="text-[11px] font-bold uppercase tracking-wider"
@@ -345,14 +345,14 @@ function NovaFullPage() {
             className="flex h-7 w-7 items-center justify-center rounded-lg transition-all"
             style={{
               color: "var(--muted-foreground)",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
             }}
             onMouseEnter={(e) =>
               ((e.currentTarget as HTMLElement).style.borderColor = "rgba(75,139,244,0.4)")
             }
             onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)")
+              ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")
             }
             title="New session"
           >
@@ -393,7 +393,7 @@ function NovaFullPage() {
                   }
                   onMouseEnter={(e) => {
                     if (!isActive)
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface)";
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive)
@@ -425,14 +425,14 @@ function NovaFullPage() {
         {/* Chat header */}
         <div
           className="flex items-center gap-3 px-4 py-3"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+          style={{ borderBottom: "1px solid var(--surface-2)" }}
         >
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+              ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
             }
             onMouseLeave={(e) =>
               ((e.currentTarget as HTMLElement).style.background = "transparent")
@@ -477,8 +477,8 @@ function NovaFullPage() {
             onClick={() => setContextPanelOpen((o) => !o)}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
             style={{
-              background: contextPanelOpen ? "rgba(75,139,244,0.1)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${contextPanelOpen ? "rgba(75,139,244,0.3)" : "rgba(255,255,255,0.08)"}`,
+              background: contextPanelOpen ? "rgba(75,139,244,0.1)" : "var(--surface-2)",
+              border: `1px solid ${contextPanelOpen ? "rgba(75,139,244,0.3)" : "var(--border)"}`,
               color: contextPanelOpen ? "#4B8BF4" : "var(--muted-foreground)",
             }}
           >
@@ -517,8 +517,8 @@ function NovaFullPage() {
                     onClick={() => sendMessage(qa.prompt)}
                     className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-medium transition-all"
                     style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       color: "var(--foreground)",
                     }}
                     onMouseEnter={(e) => {
@@ -526,8 +526,8 @@ function NovaFullPage() {
                       (e.currentTarget as HTMLElement).style.background = "rgba(75,139,244,0.08)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                     }}
                   >
                     <qa.icon className="h-3.5 w-3.5" style={{ color: "#4B8BF4" }} />
@@ -602,7 +602,7 @@ function NovaFullPage() {
         </div>
 
         {/* Input area */}
-        <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="px-4 py-4" style={{ borderTop: "1px solid var(--surface-2)" }}>
           {/* Quick actions */}
           {messages.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -613,8 +613,8 @@ function NovaFullPage() {
                   disabled={streaming}
                   className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all disabled:opacity-40"
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
                     color: "var(--muted-foreground)",
                   }}
                   onMouseEnter={(e) => {
@@ -624,7 +624,7 @@ function NovaFullPage() {
                     }
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
                     (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                   }}
                 >
@@ -638,8 +638,8 @@ function NovaFullPage() {
           <div
             className="flex items-end gap-3 rounded-2xl px-4 py-3"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--surface-offset)",
             }}
             onFocus={() => {
               /* highlight on focus via CSS would be added */
@@ -664,7 +664,7 @@ function NovaFullPage() {
                 background:
                   input.trim() && !streaming
                     ? "linear-gradient(135deg, #4B8BF4, #8B5CF6)"
-                    : "rgba(255,255,255,0.08)",
+                    : "var(--border)",
               }}
               onMouseEnter={(e) => {
                 if (input.trim() && !streaming)
@@ -681,7 +681,7 @@ function NovaFullPage() {
               )}
             </button>
           </div>
-          <p className="mt-2 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+          <p className="mt-2 text-center text-[10px]" style={{ color: "var(--muted-foreground)" }}>
             Nova AI can make mistakes. Verify important information.
           </p>
         </div>
@@ -782,11 +782,11 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
   return (
     <div
       className="flex flex-col w-72 shrink-0"
-      style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}
+      style={{ borderLeft: "1px solid var(--surface-2)" }}
     >
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderBottom: "1px solid var(--surface-2)" }}
       >
         <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
           Org Context
@@ -826,8 +826,8 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
                   onChange={(e) => setContext((c) => ({ ...c, [f.key]: e.target.value }))}
                   className="w-full rounded-lg px-3 py-1.5 text-[12px] outline-none"
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
                     color: "var(--foreground)",
                   }}
                 />
@@ -837,7 +837,7 @@ function ContextPanel({ orgId, onClose }: { orgId: string | null; onClose: () =>
         )}
       </div>
 
-      <div className="p-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="p-4" style={{ borderTop: "1px solid var(--surface-2)" }}>
         <button
           onClick={handleSave}
           disabled={saving || loading}

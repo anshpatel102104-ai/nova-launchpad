@@ -94,7 +94,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
           style={{
             height: 4,
             borderRadius: 99,
-            background: "rgba(255,255,255,0.08)",
+            background: "var(--border)",
             overflow: "hidden",
           }}
         >
@@ -129,8 +129,8 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                 borderRadius: 12,
                 border: isDone
                   ? "1px solid rgba(34,197,94,0.2)"
-                  : "1px solid rgba(255,255,255,0.07)",
-                background: isDone ? "rgba(34,197,94,0.05)" : "rgba(255,255,255,0.02)",
+                  : "1px solid var(--border-subtle)",
+                background: isDone ? "color-mix(in oklab, var(--success) 5%, transparent)" : "var(--surface)",
                 transition: "all 0.2s",
                 opacity: isDone ? 0.7 : 1,
               }}
@@ -140,7 +140,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                 {isDone ? (
                   <CheckCircle2 style={{ width: 18, height: 18, color: "#22c55e" }} />
                 ) : (
-                  <Circle style={{ width: 18, height: 18, color: "rgba(255,255,255,0.2)" }} />
+                  <Circle style={{ width: 18, height: 18, color: "var(--muted-foreground)" }} />
                 )}
               </div>
 

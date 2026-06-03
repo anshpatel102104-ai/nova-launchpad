@@ -222,7 +222,7 @@ export function LaunchAssetsCard({ orgId }: Props) {
                   borderRadius: 10,
                   border: hasAssets
                     ? "1px solid rgba(99,102,241,0.25)"
-                    : "1px solid rgba(255,255,255,0.06)",
+                    : "1px solid var(--surface-2)",
                   background: hasAssets ? "rgba(99,102,241,0.07)" : "var(--surface-2)",
                   cursor: "pointer",
                   transition: "all 0.15s",
@@ -234,7 +234,7 @@ export function LaunchAssetsCard({ orgId }: Props) {
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = hasAssets
                     ? "rgba(99,102,241,0.25)"
-                    : "rgba(255,255,255,0.06)";
+                    : "var(--surface-2)";
                   (e.currentTarget as HTMLElement).style.background = hasAssets
                     ? "rgba(99,102,241,0.07)"
                     : "var(--surface-2)";

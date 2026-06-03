@@ -218,6 +218,9 @@
   --sidebar-accent-foreground:  #FFFFFF;
   --sidebar-border:             rgba(245,200,140,0.09);
   --sidebar-ring:               #FF6B1A;
+
+  /* ── Modal overlay ── */
+  --modal-overlay: rgba(0, 0, 0, 0.80);
 }
 
 /* ─────────────────────────── Light theme: White & Tan Launch Deck ─────────────────────────── */
@@ -327,6 +330,9 @@
   --sidebar-accent-foreground:  #18100A;
   --sidebar-border:             rgba(160,100,40,0.12);
   --sidebar-ring:               #E8500A;
+
+  /* ── Modal overlay ── */
+  --modal-overlay: rgba(0, 0, 0, 0.50);
 }
 
 /* ─────────────────────────── Base ─────────────────────────── */
@@ -383,6 +389,7 @@
 @layer utilities {
 
   /* ── Opacity tint helpers ── */
+  .bg-primary\/3  { background-color: color-mix(in oklab, var(--primary) 3%, transparent); }
   .bg-primary\/8  { background-color: color-mix(in oklab, var(--primary) 8%, transparent); }
   .bg-primary\/12 { background-color: color-mix(in oklab, var(--primary) 12%, transparent); }
   .bg-accent\/8   { background-color: color-mix(in oklab, var(--accent) 8%, transparent); }
@@ -433,6 +440,9 @@
   /* ── Gradient utilities ── */
   .bg-gradient-1         { background: var(--gradient-1); }
   .bg-gradient-2         { background: var(--gradient-2); }
+
+  /* ── Modal / drawer overlay — adapts opacity per theme ── */
+  .bg-modal-overlay { background-color: var(--modal-overlay); }
 
   /* ── Glassmorphism ── */
   .glass {
