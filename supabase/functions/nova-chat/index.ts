@@ -78,13 +78,7 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  let body: {
-    message: string;
-    conversation_history?: Array<{ role: string; content: string }>;
-    user_context?: Record<string, string>;
-    session_id?: string;
-    org_id?: string;
-  };
+  let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
@@ -94,40 +88,44 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const { message, conversation_history = [], user_context = {}, session_id, org_id } = body;
+  // Accept both formats:
+  // New (NovaChatModal): { messages: [{role, content},...], context: {...} }
+  // Old (legacy):        { message: string, conversation_history: [...], user_context: {...} }
+  const messages: Array<{ role: string; content: string }> = Array.isArray(body.messages)
+    ? (body.messages as Array<{ role: string; content: string }>).slice(-20)
+    : [
+        ...((body.conversation_history as Array<{ role: string; content: string }>) ?? []).slice(-20),
+        { role: "user", content: String(body.message ?? "") },
+      ];
 
-  // Fetch org context if not provided
+  const userContext =
+    (body.context as Record<string, unknown>) ??
+    (body.user_context as Record<string, unknown>) ??
+    {};
+  const sessionId = (body.session_id as string) ?? crypto.randomUUID();
+
+  // Build system prompt with injected business context
   let contextStr = "";
-  if (Object.keys(user_context).length > 0) {
-    contextStr = Object.entries(user_context)
+  if (Object.keys(userContext).length > 0) {
+    contextStr = Object.entries(userContext)
+      .filter(([, v]) => v != null && v !== "")
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
-  } else if (org_id) {
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("name, niche, stage, target_customer, offer, goal")
-      .eq("id", org_id)
-      .maybeSingle();
-    if (org) {
-      contextStr = Object.entries(org)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join("\n");
-    }
   }
 
   const systemPrompt = contextStr
     ? `${NOVA_SYSTEM_PROMPT}\n\n## User Business Context\n${contextStr}`
     : NOVA_SYSTEM_PROMPT;
 
-  const messages = [
-    ...conversation_history.slice(-20), // keep last 20 messages for context
-    { role: "user", content: message },
-  ];
-
   // Determine Claude endpoint
   const cfGatewayUrl = Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL");
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")!;
+  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!anthropicKey) {
+    return new Response(JSON.stringify({ error: "AI not configured" }), {
+      status: 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const endpoint = cfGatewayUrl
     ? `${cfGatewayUrl}/anthropic/v1/messages`
@@ -157,13 +155,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // Stream SSE response + save conversation async
-  const sid = session_id ?? crypto.randomUUID();
+  // Pass through native Anthropic SSE stream while accumulating text for saving
   let fullText = "";
 
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
-  const encoder = new TextEncoder();
 
   (async () => {
     try {
@@ -173,23 +169,23 @@ Deno.serve(async (req: Request) => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
 
-        for (const line of lines) {
-          const data = line.slice(6);
-          if (data === "[DONE]") continue;
+        // Intercept content_block_delta events to accumulate full text for saving
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
           try {
-            const parsed = JSON.parse(data);
-            const text = parsed.delta?.text ?? "";
-            if (text) {
-              fullText += text;
-              await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            const parsed = JSON.parse(line.slice(6));
+            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
+              fullText += parsed.delta.text ?? "";
             }
           } catch {
-            /* skip malformed SSE chunks */
+            /* ignore non-JSON lines */
           }
         }
+
+        // Forward raw bytes — frontend parses native Anthropic SSE format
+        await writer.write(value);
       }
     } finally {
       await writer.close();
@@ -198,9 +194,9 @@ Deno.serve(async (req: Request) => {
     // Persist conversation (fire-and-forget)
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (serviceKey && fullText) {
-      const updatedMessages = [
-        ...conversation_history,
-        { role: "user", content: message },
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+      const savedMessages = [
+        ...messages,
         { role: "assistant", content: fullText },
       ];
       await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/nova_conversations`, {
@@ -213,13 +209,12 @@ Deno.serve(async (req: Request) => {
         },
         body: JSON.stringify({
           user_id: user.id,
-          session_id: sid,
-          messages: updatedMessages,
+          session_id: sessionId,
+          messages: savedMessages,
           updated_at: new Date().toISOString(),
         }),
-      }).catch(() => {
-        /* non-blocking */
-      });
+      }).catch(() => { /* non-blocking */ });
+      void lastUserMsg; // suppress unused warning
     }
   })();
 
@@ -228,7 +223,7 @@ Deno.serve(async (req: Request) => {
       ...corsHeaders,
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "X-Session-Id": sid,
+      "X-Session-Id": sessionId,
     },
   });
 });
