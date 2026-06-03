@@ -1468,7 +1468,8 @@ For each: state the objection, then how the offer architecture neutralises it
       },
     },
     assetCategory: "offer",
-    assetTitle: (i) => `Offer Builder: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Offer Builder: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "generate-ops-plan": {
@@ -1588,7 +1589,8 @@ For each reply type (interested, not now, wrong person, no response):
       },
     },
     assetCategory: "followup",
-    assetTitle: (i) => `Follow-Up Sequence: ${String(i.goal || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Follow-Up Sequence: ${String(i.goal || i.context || "Untitled").slice(0, 60)}`,
   },
 
   "revenue-projector": {
@@ -1657,21 +1659,22 @@ For each: lever name, expected MRR impact, how to pull it
       },
     },
     assetCategory: "revenue-projection",
-    assetTitle: (i) => `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+    assetTitle: (i) =>
+      `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
 };
 
 // ─── Frontend-naming aliases ─────────────────────────────────────────────────
 // mock.ts uses these toolKey values; map them to the matching configs above.
 const TOOL_ALIASES: Record<string, string> = {
-  "generate-pitch":        "pitch-generator",
+  "generate-pitch": "pitch-generator",
   "generate-gtm-strategy": "gtm-strategy-builder",
-  "landing-page":          "landing-page-creator",
-  "first-10-customers":    "first-10-customers-finder",
-  "funding-score":         "funding-readiness-score",
-  "investor-emails":       "investor-email-writer",
-  "competitor-analysis":   "competitor-scanner",
-  "pricing-strategy":      "pricing-calculator",
+  "landing-page": "landing-page-creator",
+  "first-10-customers": "first-10-customers-finder",
+  "funding-score": "funding-readiness-score",
+  "investor-emails": "investor-email-writer",
+  "competitor-analysis": "competitor-scanner",
+  "pricing-strategy": "pricing-calculator",
 };
 for (const [alias, target] of Object.entries(TOOL_ALIASES)) {
   if (TOOLS[target]) TOOLS[alias] = TOOLS[target];
