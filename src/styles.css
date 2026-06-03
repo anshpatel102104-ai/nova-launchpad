@@ -96,154 +96,154 @@
   --shadow-card:    0 1px 3px rgba(0,0,0,0.32), 0 4px 16px rgba(0,0,0,0.26);
   --shadow-hover:   0 4px 8px rgba(0,0,0,0.40), 0 16px 40px rgba(0,0,0,0.32);
   --shadow-lifted:  0 8px 16px rgba(0,0,0,0.50), 0 32px 64px rgba(0,0,0,0.42);
-  --shadow-glow-primary:   0 0 0 1px rgba(249,115,22,0.26), 0 4px 24px rgba(249,115,22,0.18), 0 0 48px rgba(249,115,22,0.06);
-  --shadow-glow-secondary: 0 0 0 1px rgba(251,191,36,0.26), 0 4px 24px rgba(251,191,36,0.16);
+  --shadow-glow-primary:   0 0 0 1px rgba(255,107,26,0.28), 0 4px 24px rgba(255,107,26,0.20), 0 0 48px rgba(255,107,26,0.07);
+  --shadow-glow-secondary: 0 0 0 1px rgba(245,166,35,0.28), 0 4px 24px rgba(245,166,35,0.18);
   --shadow-glow-cyan:      0 0 0 1px rgba(94,234,212,0.24), 0 4px 24px rgba(94,234,212,0.16);
-  --shadow-glow-orange:    0 0 0 1px rgba(249,115,22,0.26), 0 4px 24px rgba(249,115,22,0.18);
+  --shadow-glow-orange:    0 0 0 1px rgba(255,107,26,0.28), 0 4px 24px rgba(255,107,26,0.20);
   --shadow-glow-mentor:    0 0 0 1px rgba(125,211,252,0.22), 0 4px 24px rgba(125,211,252,0.14);
   --shadow-glow-orbit:     0 0 0 1px rgba(94,234,212,0.22), 0 4px 24px rgba(94,234,212,0.14);
-  --shadow-neon-orange: 0 0 14px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.20), 0 0 56px rgba(249,115,22,0.07);
-  --shadow-neon-amber:  0 0 14px rgba(251,191,36,0.45), 0 0 28px rgba(251,191,36,0.20);
+  --shadow-neon-orange: 0 0 14px rgba(255,107,26,0.48), 0 0 28px rgba(255,107,26,0.22), 0 0 56px rgba(255,107,26,0.08);
+  --shadow-neon-amber:  0 0 14px rgba(245,166,35,0.45), 0 0 28px rgba(245,166,35,0.20);
   --shadow-soft:    0 1px 2px rgba(0,0,0,0.22);
   --shadow-elevated: var(--shadow-card);
   --shadow-glow:    var(--shadow-glow-primary);
 }
 
-/* ─────────────────────────── Dark theme: Orbital Command ─────────────────────────── */
+/* ─────────────────────────── Dark theme: Ember Command ─────────────────────────── */
 /*
-  Visual story: Deep space mission control. Midnight graphite surfaces
-  with warm orange ignition. Cool blue-gray structural borders so orange
-  reads as pure signal, not noise. Warm cream text against near-black.
+  Visual story: Warm tan/charcoal command deck lit by orange ignition.
+  Rich tan surfaces replace cold graphite — feels like polished oak and
+  brushed metal under launch-pad floodlights. True white highlights pop
+  against deep tan backgrounds. Orange is pure signal energy.
 */
 :root,
 .dark {
-  /* ── Backgrounds (midnight graphite — layered depth) ── */
-  --background:    #07080D;
-  --bg-elevated:   #0C0E15;
-  --bg-panel:      #090B11;
+  /* ── Backgrounds (deep warm tan — layered depth) ── */
+  --background:    #1A1208;
+  --bg-elevated:   #211709;
+  --bg-panel:      #160F06;
 
-  /* ── Surfaces (card / container layers) ── */
-  --surface:           #111520;
-  --surface-2:         #161B28;
-  --surface-offset:    #1D2336;
-  --surface-secondary: #161B28;
-  --surface-tertiary:  #1D2336;
+  /* ── Surfaces (tan / ember card layers) ── */
+  --surface:           #2C1E0F;
+  --surface-2:         #352514;
+  --surface-offset:    #3F2D1A;
+  --surface-secondary: #352514;
+  --surface-tertiary:  #3F2D1A;
 
-  /* ── Text ── */
-  --foreground:        #EDE8DF;
-  --text-inverse:      #07080D;
-  --muted-foreground:  rgba(237,232,223,0.48);
-  --text-faint:        rgba(237,232,223,0.20);
+  /* ── Text — crisp white on tan ── */
+  --foreground:        #FFFFFF;
+  --text-inverse:      #1A1208;
+  --muted-foreground:  rgba(255,255,255,0.50);
+  --text-faint:        rgba(255,255,255,0.22);
 
   /* ── Card / Popover ── */
   --card:              var(--surface);
   --card-foreground:   var(--foreground);
-  --popover:           #0E1219;
+  --popover:           #241809;
   --popover-foreground:var(--foreground);
 
-  /* ── Primary — Launch Orange ── */
-  --primary:           #F97316;
+  /* ── Primary — Vivid Launch Orange ── */
+  --primary:           #FF6B1A;
   --primary-foreground:#FFFFFF;
-  --primary-hover:     #FB923C;
-  --primary-active:    #EA580C;
-  --primary-soft:      rgba(249,115,22,0.10);
-  --primary-glow:      rgba(249,115,22,0.28);
+  --primary-hover:     #FF8A40;
+  --primary-active:    #E55A0C;
+  --primary-soft:      rgba(255,107,26,0.12);
+  --primary-glow:      rgba(255,107,26,0.32);
 
   /* ── Secondary ── */
   --secondary:            var(--surface-2);
   --secondary-foreground: var(--foreground);
-  --secondary-accent:     #FBBF24;
+  --secondary-accent:     #F5A623;
 
-  /* ── Accent — Amber Gold ── */
-  --accent:            #FBBF24;
-  --accent-foreground: #07080D;
-  --accent-glow:       rgba(251,191,36,0.26);
+  /* ── Accent — Warm Tan Gold ── */
+  --accent:            #F5A623;
+  --accent-foreground: #1A1208;
+  --accent-glow:       rgba(245,166,35,0.28);
 
   /* ── Orange alias ── */
-  --orange:            #F97316;
+  --orange:            #FF6B1A;
   --orange-foreground: #FFFFFF;
-  --orange-glow:       rgba(249,115,22,0.20);
+  --orange-glow:       rgba(255,107,26,0.22);
 
   /* ── Muted ── */
   --muted:             var(--surface-2);
 
   /* ── Status ── */
   --success:           #34D399;
-  --success-foreground:#07080D;
-  --warning:           #FBBF24;
-  --warning-foreground:#07080D;
+  --success-foreground:#1A1208;
+  --warning:           #F5A623;
+  --warning-foreground:#1A1208;
   --destructive:       #F87171;
   --destructive-foreground:#FFFFFF;
   --info:              #60A5FA;
-  --info-foreground:   #07080D;
+  --info-foreground:   #1A1208;
 
-  /* ── Borders — cool blue-gray structural, orange only for accent ── */
-  --border:        rgba(100,130,190,0.09);
-  --border-subtle: rgba(100,130,190,0.05);
-  --border-strong: rgba(249,115,22,0.22);
-  --border-neon:   rgba(249,115,22,0.40);
-  --input:         rgba(255,255,255,0.06);
-  --ring:          #F97316;
-  --focus-ring:    rgba(249,115,22,0.55);
+  /* ── Borders — warm tan structural, orange for accent ── */
+  --border:        rgba(245,200,140,0.10);
+  --border-subtle: rgba(245,200,140,0.05);
+  --border-strong: rgba(255,107,26,0.28);
+  --border-neon:   rgba(255,107,26,0.45);
+  --input:         rgba(255,255,255,0.07);
+  --ring:          #FF6B1A;
+  --focus-ring:    rgba(255,107,26,0.58);
 
   /* ── Mission accents ── */
   --mentor-accent: #7DD3FC;
   --orbit-accent:  #5EEAD4;
-  --launch-accent: #F97316;
+  --launch-accent: #FF6B1A;
   --cyan:          #5EEAD4;
 
   /* ── Brand ── */
-  --launchpad: #F97316;
-  --nova:      #FBBF24;
+  --launchpad: #FF6B1A;
+  --nova:      #F5A623;
 
   /* ── Charts — 6-series data palette ── */
-  --chart-1: #F97316;
-  --chart-2: #FBBF24;
+  --chart-1: #FF6B1A;
+  --chart-2: #F5A623;
   --chart-3: #34D399;
   --chart-4: #60A5FA;
   --chart-5: #A78BFA;
   --chart-6: #F87171;
 
   /* ── Gradient tokens ── */
-  --gradient-1: linear-gradient(135deg, #F97316 0%, #FBBF24 100%);
-  --gradient-2: linear-gradient(135deg, #07080D 0%, #161B28 100%);
+  --gradient-1: linear-gradient(135deg, #FF6B1A 0%, #F5A623 100%);
+  --gradient-2: linear-gradient(135deg, #1A1208 0%, #352514 100%);
 
   /* ── Sidebar ── */
-  --sidebar:                    #07080D;
-  --sidebar-foreground:         #EDE8DF;
-  --sidebar-primary:            #F97316;
+  --sidebar:                    #160F06;
+  --sidebar-foreground:         #FFFFFF;
+  --sidebar-primary:            #FF6B1A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             rgba(249,115,22,0.07);
-  --sidebar-accent-foreground:  #EDE8DF;
-  --sidebar-border:             rgba(100,130,190,0.08);
-  --sidebar-ring:               #F97316;
+  --sidebar-accent:             rgba(255,107,26,0.09);
+  --sidebar-accent-foreground:  #FFFFFF;
+  --sidebar-border:             rgba(245,200,140,0.09);
+  --sidebar-ring:               #FF6B1A;
 }
 
-/* ─────────────────────────── Light theme: Solar Deck ─────────────────────────── */
+/* ─────────────────────────── Light theme: White & Tan Launch Deck ─────────────────────────── */
 /*
-  Visual story: Dawn launch — warm parchment surfaces like a blueprint
-  table lit by morning sun. Darker, more saturated orange so it reads
-  on warm backgrounds. Warm brown structural borders. Teal AI accents
-  provide cool precision against the warm field.
+  Visual story: Clean white mission surfaces — stark, precise, modern.
+  Tan accents warm the structure. True orange pops with maximum contrast
+  against white. Feels like a premium product — Apple-meets-SpaceX.
 */
 .light {
-  /* ── Backgrounds (solar parchment — warm layered depth) ── */
-  --background:    #FAF7F2;
+  /* ── Backgrounds — pure white primary, tan secondary depth ── */
+  --background:    #FFFFFF;
   --bg-elevated:   #FFFFFF;
-  --bg-panel:      #EFE8DB;
+  --bg-panel:      #F5EFE4;
 
-  /* ── Surfaces ── */
+  /* ── Surfaces — white cards on tan field ── */
   --surface:           #FFFFFF;
-  --surface-2:         #F5EFE4;
-  --surface-offset:    #EDE5D4;
-  --surface-secondary: #F5EFE4;
-  --surface-tertiary:  #EDE5D4;
+  --surface-2:         #FAF5EC;
+  --surface-offset:    #F0E6D2;
+  --surface-secondary: #FAF5EC;
+  --surface-tertiary:  #F0E6D2;
 
-  /* ── Text ── */
-  --foreground:        #1C0D02;
+  /* ── Text — near-black on white, crisp legibility ── */
+  --foreground:        #18100A;
   --text-inverse:      #FFFFFF;
-  --muted-foreground:  #7A4E30;
-  --text-faint:        #B07A55;
+  --muted-foreground:  #8C6240;
+  --text-faint:        #C4976A;
 
   /* ── Card / Popover ── */
   --card:              var(--surface);
@@ -251,31 +251,31 @@
   --popover:           #FFFFFF;
   --popover-foreground:var(--foreground);
 
-  /* ── Primary — Dawn Orange (deeper for legibility) ── */
-  --primary:           #C2410C;
+  /* ── Primary — True Orange on white (maximum contrast) ── */
+  --primary:           #E8500A;
   --primary-foreground:#FFFFFF;
-  --primary-hover:     #9A3412;
-  --primary-active:    #7C2D12;
-  --primary-soft:      rgba(194,65,12,0.08);
-  --primary-glow:      rgba(194,65,12,0.16);
+  --primary-hover:     #C43D06;
+  --primary-active:    #A33005;
+  --primary-soft:      rgba(232,80,10,0.08);
+  --primary-glow:      rgba(232,80,10,0.18);
 
   /* ── Secondary ── */
-  --secondary:            #F5EFE4;
-  --secondary-foreground: #1C0D02;
-  --secondary-accent:     #B45309;
+  --secondary:            #FAF5EC;
+  --secondary-foreground: #18100A;
+  --secondary-accent:     #C27A1A;
 
-  /* ── Accent — Dark Amber ── */
-  --accent:            #B45309;
+  /* ── Accent — Warm Tan / Gold ── */
+  --accent:            #C27A1A;
   --accent-foreground: #FFFFFF;
-  --accent-glow:       rgba(180,83,9,0.16);
+  --accent-glow:       rgba(194,122,26,0.18);
 
   /* ── Orange alias ── */
-  --orange:            #C2410C;
+  --orange:            #E8500A;
   --orange-foreground: #FFFFFF;
-  --orange-glow:       rgba(194,65,12,0.14);
+  --orange-glow:       rgba(232,80,10,0.15);
 
   /* ── Muted ── */
-  --muted:             #F5EFE4;
+  --muted:             #FAF5EC;
 
   /* ── Status ── */
   --success:           #16A34A;
@@ -287,46 +287,46 @@
   --info:              #2563EB;
   --info-foreground:   #FFFFFF;
 
-  /* ── Borders — warm brown structural trace ── */
-  --border:        rgba(120,70,20,0.10);
-  --border-subtle: rgba(120,70,20,0.06);
-  --border-strong: rgba(194,65,12,0.22);
-  --border-neon:   rgba(194,65,12,0.30);
-  --input:         rgba(28,13,2,0.08);
-  --ring:          #C2410C;
-  --focus-ring:    rgba(194,65,12,0.40);
+  /* ── Borders — tan structural, orange accent ── */
+  --border:        rgba(160,100,40,0.12);
+  --border-subtle: rgba(160,100,40,0.07);
+  --border-strong: rgba(232,80,10,0.24);
+  --border-neon:   rgba(232,80,10,0.36);
+  --input:         rgba(24,16,10,0.09);
+  --ring:          #E8500A;
+  --focus-ring:    rgba(232,80,10,0.42);
 
   /* ── Mission accents ── */
   --mentor-accent: #0E7490;
   --orbit-accent:  #0369A1;
-  --launch-accent: #C2410C;
+  --launch-accent: #E8500A;
   --cyan:          #0369A1;
 
   /* ── Brand ── */
-  --launchpad: #C2410C;
-  --nova:      #B45309;
+  --launchpad: #E8500A;
+  --nova:      #C27A1A;
 
   /* ── Charts — 6-series data palette ── */
-  --chart-1: #C2410C;
-  --chart-2: #B45309;
+  --chart-1: #E8500A;
+  --chart-2: #C27A1A;
   --chart-3: #16A34A;
   --chart-4: #2563EB;
   --chart-5: #7C3AED;
   --chart-6: #DC2626;
 
   /* ── Gradient tokens ── */
-  --gradient-1: linear-gradient(135deg, #EA580C 0%, #CA8A04 100%);
-  --gradient-2: linear-gradient(135deg, #FAF7F2 0%, #EDE5D4 100%);
+  --gradient-1: linear-gradient(135deg, #E8500A 0%, #C27A1A 100%);
+  --gradient-2: linear-gradient(135deg, #FFFFFF 0%, #F0E6D2 100%);
 
-  /* ── Sidebar ── */
-  --sidebar:                    #EFE8DB;
-  --sidebar-foreground:         #1C0D02;
-  --sidebar-primary:            #C2410C;
+  /* ── Sidebar — tan warm rail ── */
+  --sidebar:                    #F5EFE4;
+  --sidebar-foreground:         #18100A;
+  --sidebar-primary:            #E8500A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             rgba(194,65,12,0.08);
-  --sidebar-accent-foreground:  #1C0D02;
-  --sidebar-border:             rgba(120,70,20,0.10);
-  --sidebar-ring:               #C2410C;
+  --sidebar-accent:             rgba(232,80,10,0.08);
+  --sidebar-accent-foreground:  #18100A;
+  --sidebar-border:             rgba(160,100,40,0.12);
+  --sidebar-ring:               #E8500A;
 }
 
 /* ─────────────────────────── Base ─────────────────────────── */
@@ -336,14 +336,14 @@
   html {
     height: 100%;
     scroll-behavior: smooth;
-    background-color: #07080D;
-    color: #EDE8DF;
+    background-color: #1A1208;
+    color: #FFFFFF;
     color-scheme: dark;
   }
 
   html.light {
-    background-color: #FAF7F2;
-    color: #1C0D02;
+    background-color: #FFFFFF;
+    color: #18100A;
     color-scheme: light;
   }
 
@@ -552,14 +552,14 @@
   /* ── Brand gradients ── */
   .text-gradient,
   .text-gradient-brand {
-    background: linear-gradient(110deg, #F97316 0%, #FBBF24 100%);
+    background: linear-gradient(110deg, #FF6B1A 0%, #F5A623 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
   .light .text-gradient,
   .light .text-gradient-brand {
-    background: linear-gradient(110deg, #C2410C 0%, #B45309 100%);
+    background: linear-gradient(110deg, #E8500A 0%, #C27A1A 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -577,13 +577,13 @@
     color: transparent;
   }
   .bg-gradient-primary {
-    background: linear-gradient(135deg, #F97316, #FBBF24);
+    background: linear-gradient(135deg, #FF6B1A, #F5A623);
   }
   .light .bg-gradient-primary {
-    background: linear-gradient(135deg, #C2410C, #B45309);
+    background: linear-gradient(135deg, #E8500A, #C27A1A);
   }
   .bg-gradient-neon {
-    background: linear-gradient(135deg, #EA580C 0%, #F97316 50%, #FBBF24 100%);
+    background: linear-gradient(135deg, #E55A0C 0%, #FF6B1A 50%, #F5A623 100%);
   }
   .bg-gradient-energy {
     background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -592,15 +592,15 @@
   /* ── Ambient mesh backgrounds ── */
   .bg-gradient-mesh {
     background:
-      radial-gradient(60rem 40rem at 0% 0%, rgba(249,115,22,0.09), transparent 60%),
-      radial-gradient(50rem 36rem at 100% 0%, rgba(251,191,36,0.07), transparent 60%),
+      radial-gradient(60rem 40rem at 0% 0%, rgba(255,107,26,0.12), transparent 60%),
+      radial-gradient(50rem 36rem at 100% 0%, rgba(245,166,35,0.09), transparent 60%),
       radial-gradient(48rem 32rem at 50% 100%, rgba(94,234,212,0.04), transparent 60%);
   }
   .light .bg-gradient-mesh {
     background:
-      radial-gradient(60rem 40rem at 0% 0%, rgba(194,65,12,0.07), transparent 60%),
-      radial-gradient(50rem 36rem at 100% 0%, rgba(180,83,9,0.05), transparent 60%),
-      radial-gradient(48rem 32rem at 50% 100%, rgba(14,116,144,0.04), transparent 60%);
+      radial-gradient(60rem 40rem at 0% 0%, rgba(232,80,10,0.06), transparent 60%),
+      radial-gradient(50rem 36rem at 100% 0%, rgba(194,122,26,0.05), transparent 60%),
+      radial-gradient(48rem 32rem at 50% 100%, rgba(14,116,144,0.03), transparent 60%);
   }
 
   /* ── Structural grid/dot patterns ── */
@@ -677,7 +677,7 @@
     50%       { background-position: 100% 50%; }
   }
   .text-brand-cycle {
-    background: linear-gradient(110deg, #F97316 0%, #FB923C 25%, #FBBF24 50%, #F97316 75%, #EA580C 100%);
+    background: linear-gradient(110deg, #FF6B1A 0%, #FF8A40 25%, #F5A623 50%, #FF6B1A 75%, #E55A0C 100%);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -685,7 +685,7 @@
     animation: brandShift 6s ease-in-out infinite;
   }
   .light .text-brand-cycle {
-    background: linear-gradient(110deg, #C2410C 0%, #EA580C 25%, #B45309 50%, #C2410C 75%, #9A3412 100%);
+    background: linear-gradient(110deg, #E8500A 0%, #C43D06 25%, #C27A1A 50%, #E8500A 75%, #A33005 100%);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -789,14 +789,14 @@
   .boot-grid {
     background-color: var(--background);
     background-image:
-      radial-gradient(60rem 36rem at 50% -10%, rgba(249,115,22,0.12), transparent 60%),
-      radial-gradient(48rem 30rem at 90% 110%, rgba(251,191,36,0.09), transparent 60%);
+      radial-gradient(60rem 36rem at 50% -10%, rgba(255,107,26,0.14), transparent 60%),
+      radial-gradient(48rem 30rem at 90% 110%, rgba(245,166,35,0.10), transparent 60%);
   }
   .light .boot-grid {
     background-color: var(--background);
     background-image:
-      radial-gradient(60rem 36rem at 50% -10%, rgba(194,65,12,0.07), transparent 60%),
-      radial-gradient(48rem 30rem at 90% 110%, rgba(180,83,9,0.05), transparent 60%);
+      radial-gradient(60rem 36rem at 50% -10%, rgba(232,80,10,0.06), transparent 60%),
+      radial-gradient(48rem 30rem at 90% 110%, rgba(194,122,26,0.05), transparent 60%);
   }
 
   /* ── Terminal input ── */
@@ -859,12 +859,12 @@
 
   /* ── Progress bars ── */
   .neon-progress {
-    background: linear-gradient(90deg, #F97316, #FB923C, #FBBF24);
-    box-shadow: 0 0 10px rgba(249,115,22,0.60), 0 0 20px rgba(249,115,22,0.25);
+    background: linear-gradient(90deg, #FF6B1A, #FF8A40, #F5A623);
+    box-shadow: 0 0 10px rgba(255,107,26,0.62), 0 0 20px rgba(255,107,26,0.26);
   }
   .light .neon-progress {
-    background: linear-gradient(90deg, #C2410C, #EA580C, #B45309);
-    box-shadow: 0 0 6px rgba(194,65,12,0.35);
+    background: linear-gradient(90deg, #E8500A, #C43D06, #C27A1A);
+    box-shadow: 0 0 6px rgba(232,80,10,0.35);
   }
 
   /* ── Trajectory indicator ── */
@@ -959,8 +959,8 @@
 }
 .bg-gradient-mesh-animated {
   background:
-    radial-gradient(60rem 40rem at 0% 0%, rgba(249,115,22,0.14), transparent 60%),
-    radial-gradient(50rem 36rem at 100% 0%, rgba(251,191,36,0.10), transparent 60%),
+    radial-gradient(60rem 40rem at 0% 0%, rgba(255,107,26,0.16), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, rgba(245,166,35,0.11), transparent 60%),
     radial-gradient(48rem 32rem at 50% 100%, rgba(94,234,212,0.05), transparent 60%);
   background-size: 140% 140%, 140% 140%, 140% 140%;
   animation: meshDrift 22s ease-in-out infinite;
@@ -1001,8 +1001,8 @@
 
 /* Breath glow — mentor/AI accent */
 @keyframes breathGlow {
-  0%, 100% { opacity: 0.50; box-shadow: 0 0 10px rgba(249,115,22,0.20); }
-  50%       { opacity: 1;    box-shadow: 0 0 18px rgba(249,115,22,0.48); }
+  0%, 100% { opacity: 0.50; box-shadow: 0 0 10px rgba(255,107,26,0.22); }
+  50%       { opacity: 1;    box-shadow: 0 0 18px rgba(255,107,26,0.50); }
 }
 .breath-glow { animation: breathGlow 3s ease-in-out infinite; }
 
@@ -1075,13 +1075,13 @@
 :root {
   --surface-elevated: var(--surface-2);
 
-  /* Mission color palette — warm fire spectrum (oklch for perceptual uniformity) */
-  --ignition: oklch(0.62 0.22 35);   /* deep rocket flame */
-  --plasma:   oklch(0.70 0.19 55);   /* deep amber */
-  --aurora:   oklch(0.68 0.20 48);   /* warm gold */
-  --solar:    oklch(0.78 0.17 70);   /* bright yellow-orange */
-  --cosmic:   oklch(0.58 0.21 25);   /* burnt sienna */
-  --nebula:   oklch(0.65 0.18 44);   /* tangerine */
+  /* Mission color palette — white/orange/tan fire spectrum (oklch for perceptual uniformity) */
+  --ignition: oklch(0.64 0.23 38);   /* vivid rocket orange */
+  --plasma:   oklch(0.72 0.20 56);   /* warm amber-tan */
+  --aurora:   oklch(0.70 0.20 50);   /* tan gold */
+  --solar:    oklch(0.80 0.17 72);   /* bright tan-yellow */
+  --cosmic:   oklch(0.60 0.22 28);   /* deep burnt orange */
+  --nebula:   oklch(0.67 0.19 46);   /* warm tangerine */
   --signal:   var(--primary);
   --meridian: oklch(0.70 0.14 220);  /* cool blue — navigation/AI */
   --horizon:  oklch(0.72 0.12 195);  /* teal horizon — orbit accent */
