@@ -44,6 +44,8 @@ import {
   Navigation,
   Map,
   Bot,
+  Receipt,
+  Star,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -84,7 +86,10 @@ const NOVA_MODULES: SubItem[] = [
   { to: "/app/nova/crm", label: "CRM Pipeline", icon: Workflow },
   { to: "/app/nova/leads", label: "Lead Capture", icon: Inbox },
   { to: "/app/nova/workflows", label: "Automation", icon: GitBranch },
+  { to: "/app/nova/followup", label: "Follow-Up", icon: Mail },
   { to: "/app/nova/clients", label: "Client Onboarding", icon: ListChecks },
+  { to: "/app/nova/invoice", label: "Invoicing", icon: Receipt },
+  { to: "/app/nova/reputation", label: "Reputation", icon: Star },
   { to: "/app/nova/reports", label: "Reporting", icon: LineChart },
 ];
 
