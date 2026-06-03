@@ -11,14 +11,14 @@ export interface Env {
 }
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-sonnet-4-6";
 
 // ---------------------------------------------------------------------------
 // CORS
 // ---------------------------------------------------------------------------
 function corsHeaders(origin: string): Record<string, string> {
   return {
-    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };

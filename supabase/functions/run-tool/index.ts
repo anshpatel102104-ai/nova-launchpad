@@ -1,7 +1,6 @@
 // Central router for all 19 Launchpad AI tools.
 // The frontend calls supabase.functions.invoke("run-tool", { toolKey, input, organizationId })
 // and this function dispatches to the correct tool configuration.
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, jsonResponse, runTool } from "../_shared/helpers.ts";
 
 type ToolConfig = {
@@ -1680,7 +1679,7 @@ for (const [alias, target] of Object.entries(TOOL_ALIASES)) {
   if (TOOLS[target]) TOOLS[alias] = TOOLS[target];
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
