@@ -163,7 +163,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                   borderRadius: 8,
                   textAlign: "left",
                   border: "1px solid var(--border)",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--surface)",
                   color: "var(--muted-foreground)",
                   fontSize: 12,
                   cursor: "pointer",
@@ -215,7 +215,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
                 background:
                   msg.role === "user"
                     ? "linear-gradient(135deg, #3b82f6, #6366f1)"
-                    : "rgba(255,255,255,0.05)",
+                    : "var(--border-subtle)",
                 border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                 fontSize: 12.5,
                 color: msg.role === "user" ? "#fff" : "var(--foreground)",
@@ -248,7 +248,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
               style={{
                 padding: "8px 12px",
                 borderRadius: "12px 12px 12px 4px",
-                background: "rgba(255,255,255,0.05)",
+                background: "var(--border-subtle)",
                 border: "1px solid var(--border)",
               }}
             >
@@ -285,7 +285,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
           rows={1}
           style={{
             flex: 1,
-            background: "rgba(255,255,255,0.04)",
+            background: "var(--surface-2)",
             border: "1px solid var(--border)",
             borderRadius: 10,
             padding: "8px 12px",
@@ -308,7 +308,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
             background:
               input.trim() && !loading
                 ? "linear-gradient(135deg, #3b82f6, #6366f1)"
-                : "rgba(255,255,255,0.08)",
+                : "var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -321,7 +321,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
             style={{
               width: 15,
               height: 15,
-              color: input.trim() && !loading ? "#fff" : "rgba(255,255,255,0.25)",
+              color: input.trim() && !loading ? "#fff" : "var(--muted-foreground)",
             }}
           />
         </button>

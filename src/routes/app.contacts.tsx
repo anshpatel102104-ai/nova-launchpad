@@ -79,15 +79,15 @@ const STATUS_COLORS: Record<ContactStatus, { bg: string; text: string; border: s
   nurture: { bg: "rgba(249,115,22,0.12)", text: "#F97316", border: "rgba(249,115,22,0.25)" },
   cold: { bg: "rgba(136,136,170,0.12)", text: "#8888AA", border: "rgba(136,136,170,0.25)" },
   archived: {
-    bg: "rgba(255,255,255,0.06)",
-    text: "rgba(255,255,255,0.3)",
-    border: "rgba(255,255,255,0.08)",
+    bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
+    text: "var(--muted-foreground)",
+    border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
   },
 };
 
 function leadScoreColor(score: number | null) {
   if (!score)
-    return { bg: "rgba(255,255,255,0.06)", text: "#8888AA", border: "rgba(255,255,255,0.08)" };
+    return { bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)", text: "var(--muted-foreground)", border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)" };
   if (score >= 70)
     return { bg: "rgba(34,197,94,0.12)", text: "#22C55E", border: "rgba(34,197,94,0.25)" };
   if (score >= 40)
@@ -291,7 +291,7 @@ function ContactsPage() {
       {/* Filters */}
       <div
         className="rounded-2xl p-4 space-y-3"
-        style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {/* Search */}
@@ -309,15 +309,15 @@ function ContactsPage() {
               placeholder="Search contacts…"
               className="w-full rounded-lg py-2 pl-9 pr-4 text-[13px] outline-none transition"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
               onFocus={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor = "rgba(75,139,244,0.4)";
               }}
               onBlur={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
               }}
             />
           </div>
@@ -331,8 +331,8 @@ function ContactsPage() {
             }}
             className="rounded-lg px-3 py-2 text-[13px] outline-none"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
               color: "var(--foreground)",
             }}
           >
@@ -386,7 +386,7 @@ function ContactsPage() {
               onChange={(e) => setBulkAction(e.target.value as "" | "status" | "trigger")}
               className="rounded-lg px-3 py-1.5 text-[12px] outline-none"
               style={{
-                background: "rgba(255,255,255,0.06)",
+                background: "var(--surface-2)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 color: "var(--foreground)",
               }}
@@ -406,7 +406,7 @@ function ContactsPage() {
                 }}
                 className="rounded-lg px-3 py-1.5 text-[12px] outline-none"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
+                  background: "var(--surface-2)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   color: "var(--foreground)",
                 }}
@@ -457,7 +457,7 @@ function ContactsPage() {
       {/* Table */}
       <div
         className="overflow-hidden rounded-2xl"
-        style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         {contactsQ.isLoading ? (
           <div className="flex justify-center py-16">
@@ -469,7 +469,7 @@ function ContactsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <thead style={{ borderBottom: "1px solid var(--surface-2)" }}>
                 <tr>
                   <th className="px-4 py-3 w-10">
                     <button onClick={selectAll}>
@@ -559,10 +559,10 @@ function ContactsPage() {
                       <tr
                         key={contact.id}
                         className="transition-all cursor-pointer"
-                        style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                        style={{ borderBottom: "1px solid var(--surface-2)" }}
                         onMouseEnter={(e) =>
                           ((e.currentTarget as HTMLElement).style.background =
-                            "rgba(255,255,255,0.02)")
+                            "var(--surface)")
                         }
                         onMouseLeave={(e) =>
                           ((e.currentTarget as HTMLElement).style.background = "transparent")
@@ -654,7 +654,7 @@ function ContactsPage() {
                             style={{ color: "var(--muted-foreground)" }}
                             onMouseEnter={(e) => {
                               (e.currentTarget as HTMLElement).style.background =
-                                "rgba(255,255,255,0.06)";
+                                "var(--surface-2)";
                               (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                             }}
                             onMouseLeave={(e) => {
@@ -680,7 +680,7 @@ function ContactsPage() {
         {totalPages > 1 && (
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ borderTop: "1px solid var(--surface-2)" }}
           >
             <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
               Page {page} of {totalPages} · {filtered.length} results
@@ -691,8 +691,8 @@ function ContactsPage() {
                 onClick={() => setPage((p) => p - 1)}
                 className="rounded-lg px-3 py-1 text-[12px] font-medium transition-all disabled:opacity-40"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
                   color: "var(--foreground)",
                 }}
               >
@@ -703,8 +703,8 @@ function ContactsPage() {
                 onClick={() => setPage((p) => p + 1)}
                 className="rounded-lg px-3 py-1 text-[12px] font-medium transition-all disabled:opacity-40"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
                   color: "var(--foreground)",
                 }}
               >
@@ -796,14 +796,14 @@ function AddContactModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative w-full max-w-lg rounded-2xl"
         style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.1)" }}
       >
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="font-semibold text-[15px]" style={{ color: "var(--foreground)" }}>
             Add Contact
@@ -831,8 +831,8 @@ function AddContactModal({
                   placeholder={f.placeholder}
                   className="w-full rounded-lg px-3 py-2 text-[13px] outline-none"
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
                     color: "var(--foreground)",
                   }}
                 />
@@ -864,8 +864,8 @@ function AddContactModal({
                 placeholder={f.placeholder}
                 className="w-full rounded-lg px-3 py-2 text-[13px] outline-none"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
                   color: "var(--foreground)",
                 }}
               />
@@ -885,8 +885,8 @@ function AddContactModal({
               rows={3}
               className="w-full rounded-lg px-3 py-2 text-[13px] outline-none resize-none"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
             />
@@ -910,8 +910,8 @@ function AddContactModal({
               onClick={onClose}
               className="rounded-lg px-4 py-2 text-[13px] font-medium"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
             >
@@ -969,14 +969,14 @@ function ContactDetail({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative ml-auto flex h-full w-full max-w-md flex-col"
-        style={{ background: "var(--surface)", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="font-semibold text-[15px]" style={{ color: "var(--foreground)" }}>
             {fullName}
@@ -990,7 +990,7 @@ function ContactDetail({
           {/* Profile */}
           <div
             className="px-6 py-5 space-y-4"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ borderBottom: "1px solid var(--surface-2)" }}
           >
             <div className="flex items-center gap-3">
               <div
@@ -1059,9 +1059,9 @@ function ContactDetail({
                         active
                           ? { background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }
                           : {
-                              background: "rgba(255,255,255,0.04)",
+                              background: "var(--surface-2)",
                               color: "var(--muted-foreground)",
-                              border: "1px solid rgba(255,255,255,0.08)",
+                              border: "1px solid var(--border)",
                             }
                       }
                     >

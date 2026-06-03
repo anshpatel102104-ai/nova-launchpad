@@ -113,7 +113,7 @@ const AUTOMATIONS = [
       "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
     icon: UserCheck,
     metric: "leads qualified",
-    color: "#22C55E",
+    color: "var(--success)",
     configFields: [
       { key: "score_threshold", label: "Minimum Qualification Score (0-100)", placeholder: "65" },
       {
@@ -302,7 +302,7 @@ function AutomationsPage() {
               className="relative overflow-hidden rounded-2xl transition-all duration-200"
               style={{
                 background: "var(--surface)",
-                border: `1px solid ${active ? automation.color + "30" : "rgba(255,255,255,0.08)"}`,
+                border: `1px solid ${active ? automation.color + "30" : "var(--border)"}`,
                 boxShadow: active
                   ? `0 0 0 1px ${automation.color}10, 0 4px 20px rgba(0,0,0,0.3)`
                   : "0 1px 3px rgba(0,0,0,0.3)",
@@ -328,7 +328,7 @@ function AutomationsPage() {
                         background: active
                           ? `${automation.color}18`
                           : "var(--surface-elevated, #16161F)",
-                        border: `1px solid ${active ? automation.color + "30" : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${active ? automation.color + "30" : "var(--surface-2)"}`,
                       }}
                     >
                       <Icon
@@ -360,9 +360,9 @@ function AutomationsPage() {
                                   border: "1px solid rgba(251,191,36,0.2)",
                                 }
                               : {
-                                  background: "rgba(255,255,255,0.06)",
+                                  background: "var(--surface-2)",
                                   color: "var(--muted-foreground)",
-                                  border: "1px solid rgba(255,255,255,0.08)",
+                                  border: "1px solid var(--border)",
                                 }
                         }
                       >
@@ -430,8 +430,8 @@ function AutomationsPage() {
                     onClick={() => setConfigSlug(automation.slug)}
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
                     style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       color: "var(--foreground)",
                     }}
                     onMouseEnter={(e) => {
@@ -439,8 +439,8 @@ function AutomationsPage() {
                       (e.currentTarget as HTMLElement).style.background = `${automation.color}08`;
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                     }}
                   >
                     <Settings className="h-3.5 w-3.5" />
@@ -450,8 +450,8 @@ function AutomationsPage() {
                     onClick={() => setLogsSlug(automation.slug)}
                     className="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
                     style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                       color: "var(--muted-foreground)",
                     }}
                     onMouseEnter={(e) => {
@@ -540,17 +540,17 @@ function ConfigPanel({
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
 
       {/* Panel */}
       <div
         className="relative ml-auto flex h-full w-full max-w-md flex-col"
-        style={{ background: "var(--surface)", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="flex items-center gap-3">
             <div
@@ -576,7 +576,7 @@ function ConfigPanel({
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+              ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
             }
             onMouseLeave={(e) =>
               ((e.currentTarget as HTMLElement).style.background = "transparent")
@@ -607,8 +607,8 @@ function ConfigPanel({
                 placeholder={field.placeholder}
                 className="w-full rounded-lg px-3 py-2 text-[13px] outline-none transition"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
                   color: "var(--foreground)",
                 }}
                 onFocus={(e) => {
@@ -617,7 +617,7 @@ function ConfigPanel({
                     `0 0 0 3px ${automation.color}12`;
                 }}
                 onBlur={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
                   (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               />
@@ -628,9 +628,9 @@ function ConfigPanel({
             <div
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]"
               style={{
-                background: "rgba(239,68,68,0.1)",
+                background: "color-mix(in oklab, var(--destructive) 10%, transparent)",
                 border: "1px solid rgba(239,68,68,0.2)",
-                color: "#EF4444",
+                color: "var(--destructive)",
               }}
             >
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -642,14 +642,14 @@ function ConfigPanel({
         {/* Footer */}
         <div
           className="flex items-center justify-end gap-3 px-6 py-4"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderTop: "1px solid var(--border)" }}
         >
           <button
             onClick={onClose}
             className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
               color: "var(--foreground)",
             }}
           >
@@ -694,14 +694,14 @@ function LogsPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative ml-auto flex h-full w-full max-w-lg flex-col"
-        style={{ background: "var(--surface)", borderLeft: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div>
             <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
@@ -716,7 +716,7 @@ function LogsPanel({
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")
+              ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
             }
             onMouseLeave={(e) =>
               ((e.currentTarget as HTMLElement).style.background = "transparent")
@@ -758,17 +758,17 @@ function LogsPanel({
                       : Clock;
                 const color =
                   log.status === "success"
-                    ? "#22C55E"
+                    ? "var(--success)"
                     : log.status === "error"
-                      ? "#EF4444"
+                      ? "var(--destructive)"
                       : "#FBBF24";
                 return (
                   <div
                     key={log.id}
                     className="flex items-start gap-3 rounded-lg px-3 py-2.5"
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "var(--surface)",
+                      border: "1px solid var(--surface-2)",
                     }}
                   >
                     <Icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color }} />

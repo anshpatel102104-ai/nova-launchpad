@@ -312,7 +312,7 @@ function LaunchpadPathPage() {
         </div>
         <div
           className="h-3 w-full overflow-hidden rounded-full"
-          style={{ background: "rgba(255,255,255,0.06)" }}
+          style={{ background: "var(--surface-2)" }}
         >
           <div
             className="h-full rounded-full transition-all duration-1000"
@@ -337,7 +337,7 @@ function LaunchpadPathPage() {
                 </div>
                 <div
                   className="text-[10px] font-mono"
-                  style={{ color: phaseComplete ? phase.color : "rgba(255,255,255,0.2)" }}
+                  style={{ color: phaseComplete ? phase.color : "var(--muted-foreground)" }}
                 >
                   {phaseStepsDone}/{phase.steps.length}
                 </div>
@@ -361,7 +361,7 @@ function LaunchpadPathPage() {
               className="overflow-hidden rounded-2xl"
               style={{
                 background: "var(--surface)",
-                border: `1px solid ${unlocked ? phase.color + "25" : "rgba(255,255,255,0.08)"}`,
+                border: `1px solid ${unlocked ? phase.color + "25" : "var(--border)"}`,
                 opacity: unlocked ? 1 : 0.8,
               }}
             >
@@ -369,7 +369,7 @@ function LaunchpadPathPage() {
               <div
                 className="relative overflow-hidden px-6 py-4 flex items-center gap-4"
                 style={{
-                  borderBottom: `1px solid ${unlocked ? phase.color + "15" : "rgba(255,255,255,0.06)"}`,
+                  borderBottom: `1px solid ${unlocked ? phase.color + "15" : "var(--surface-2)"}`,
                 }}
               >
                 {unlocked && (
@@ -386,8 +386,8 @@ function LaunchpadPathPage() {
                     unlocked
                       ? { background: phase.gradient, boxShadow: `0 4px 15px ${phase.glow}` }
                       : {
-                          background: "rgba(255,255,255,0.06)",
-                          border: "1px solid rgba(255,255,255,0.08)",
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
                         }
                   }
                 >
@@ -416,9 +416,9 @@ function LaunchpadPathPage() {
                                 border: `1px solid ${phase.color}25`,
                               }
                             : {
-                                background: "rgba(255,255,255,0.06)",
+                                background: "var(--surface-2)",
                                 color: "var(--muted-foreground)",
-                                border: "1px solid rgba(255,255,255,0.08)",
+                                border: "1px solid var(--border)",
                               }
                         }
                       >
@@ -481,8 +481,8 @@ function LaunchpadPathPage() {
                         onClick={() => handleStepClick(phase, step)}
                         className="flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all group"
                         style={{
-                          background: done ? `${phase.color}08` : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${done ? phase.color + "25" : "rgba(255,255,255,0.06)"}`,
+                          background: done ? `${phase.color}08` : "var(--surface)",
+                          border: `1px solid ${done ? phase.color + "25" : "var(--surface-2)"}`,
                         }}
                         onMouseEnter={(e) => {
                           (e.currentTarget as HTMLElement).style.borderColor = `${phase.color}40`;
@@ -491,10 +491,10 @@ function LaunchpadPathPage() {
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLElement).style.borderColor = done
                             ? `${phase.color}25`
-                            : "rgba(255,255,255,0.06)";
+                            : "var(--surface-2)";
                           (e.currentTarget as HTMLElement).style.background = done
                             ? `${phase.color}08`
-                            : "rgba(255,255,255,0.03)";
+                            : "var(--surface)";
                         }}
                       >
                         {/* Step number */}
@@ -504,7 +504,7 @@ function LaunchpadPathPage() {
                             done
                               ? { background: `${phase.color}20`, color: phase.color }
                               : {
-                                  background: "rgba(255,255,255,0.06)",
+                                  background: "var(--surface-2)",
                                   color: "var(--muted-foreground)",
                                 }
                           }
@@ -544,9 +544,9 @@ function LaunchpadPathPage() {
                                   border: `1px solid ${phase.color}20`,
                                 }
                               : {
-                                  background: "rgba(255,255,255,0.04)",
+                                  background: "var(--surface-2)",
                                   color: "var(--muted-foreground)",
-                                  border: "1px solid rgba(255,255,255,0.06)",
+                                  border: "1px solid var(--border-subtle)",
                                 }
                           }
                         >
@@ -612,7 +612,7 @@ function PhaseCompletionModal({ phase, onClose }: { phase: Phase; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative w-full max-w-md overflow-hidden rounded-2xl text-center"
         style={{ background: "var(--surface)", border: `1px solid ${phase.color}40` }}
@@ -708,8 +708,8 @@ function PhaseCompletionModal({ phase, onClose }: { phase: Phase; onClose: () =>
               onClick={onClose}
               className="w-full rounded-xl py-3 text-[13px] font-medium"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
             >

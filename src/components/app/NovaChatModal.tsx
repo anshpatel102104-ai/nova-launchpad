@@ -502,8 +502,8 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                       gap: 6,
                       padding: "5px 8px",
                       borderRadius: 7,
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      background: "rgba(255,255,255,0.02)",
+                      border: "1px solid var(--border-subtle)",
+                      background: "var(--surface)",
                     }}
                   >
                     <Activity style={{ width: 10, height: 10, color: "rgba(249,115,22,0.5)" }} />
@@ -541,8 +541,8 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   justifyContent: "space-between",
                   padding: "6px 10px",
                   borderRadius: 8,
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid var(--border)",
+                  background: "var(--surface)",
                   color: "rgba(255,255,255,0.5)",
                   fontSize: 11,
                   fontWeight: 500,
@@ -556,8 +556,8 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--surface-2)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface)";
                 }}
               >
                 {label}
@@ -732,7 +732,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                       background:
                         msg.role === "user"
                           ? "linear-gradient(135deg, #F97316, #ea580c)"
-                          : "rgba(255,255,255,0.04)",
+                          : "var(--surface-2)",
                       border: msg.role === "assistant" ? "1px solid rgba(249,115,22,0.1)" : "none",
                       fontSize: 13,
                       lineHeight: 1.65,
@@ -787,7 +787,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                 padding: "10px 14px",
                 borderRadius: 12,
                 border: "1px solid rgba(249,115,22,0.2)",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--surface)",
                 transition: "border-color 0.15s",
               }}
               onFocusCapture={(e) => {
@@ -836,8 +836,8 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                   background:
                     input.trim() && !streaming
                       ? "linear-gradient(135deg, #F97316, #ea580c)"
-                      : "rgba(255,255,255,0.06)",
-                  color: input.trim() && !streaming ? "#fff" : "rgba(255,255,255,0.25)",
+                      : "var(--surface-2)",
+                  color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
                   cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
                   display: "flex",
                   alignItems: "center",
@@ -911,7 +911,7 @@ function HeaderBtn({
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.color = "#fff";
         (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
-        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)";

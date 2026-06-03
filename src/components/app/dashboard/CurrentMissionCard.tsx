@@ -118,8 +118,8 @@ export function CurrentMissionCard({ userId }: Props) {
           style={{
             padding: "8px 18px",
             borderRadius: 9,
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "rgba(255,255,255,0.06)",
+            border: "1px solid var(--border-strong)",
+            background: "var(--surface-2)",
             color: "rgba(240,244,255,0.7)",
             fontSize: 13,
             fontWeight: 500,

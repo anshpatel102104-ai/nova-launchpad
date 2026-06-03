@@ -229,7 +229,7 @@ export function AutomationStatusCard({ orgId, userId }: Props) {
             style={{
               padding: "8px 10px",
               borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.06)",
+              border: "1px solid var(--surface-2)",
               background: "var(--surface-2)",
               textAlign: "center",
             }}

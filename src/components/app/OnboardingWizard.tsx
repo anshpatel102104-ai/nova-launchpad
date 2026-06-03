@@ -184,7 +184,7 @@ function ProgressBar({ step }: { step: number }) {
                 ? "#f97316"
                 : i === step
                   ? "linear-gradient(90deg, #f97316, #fbbf24)"
-                  : "rgba(255,255,255,0.08)",
+                  : "var(--border)",
             boxShadow: i === step ? "0 0 10px rgba(249,115,22,0.6)" : "none",
           }}
         />
@@ -215,8 +215,8 @@ function OptionCard({
         borderRadius: 13,
         border: selected
           ? "1.5px solid rgba(249,115,22,0.5)"
-          : "1.5px solid rgba(255,255,255,0.07)",
-        background: selected ? "rgba(249,115,22,0.09)" : "rgba(255,255,255,0.03)",
+          : "1.5px solid var(--border-subtle)",
+        background: selected ? "rgba(249,115,22,0.09)" : "var(--surface)",
         cursor: "pointer",
         textAlign: "left",
         transition: "all 0.18s",
@@ -243,7 +243,7 @@ function IconBox({ Icon, selected }: { Icon: React.ElementType; selected: boolea
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: selected ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.05)",
+        background: selected ? "rgba(249,115,22,0.2)" : "var(--border-subtle)",
         transition: "background 0.18s",
       }}
     >
@@ -449,7 +449,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               placeholder="e.g. A SaaS tool for freelance designers to automate client invoicing and follow-ups, saving 3+ hours a week"
               rows={4}
               style={{
-                background: "rgba(255,255,255,0.04)",
+                background: "var(--surface-2)",
                 border: "1px solid rgba(249,115,22,0.2)",
                 color: "#f7f0e8",
                 fontSize: 14,
@@ -500,12 +500,12 @@ export function OnboardingWizard({ onComplete }: Props) {
               height: 52,
               width: 52,
               borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.09)",
+              border: "1px solid var(--border)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(255,255,255,0.04)",
+              background: "var(--surface-2)",
               color: "rgba(240,230,220,0.4)",
               transition: "all 0.2s",
               flexShrink: 0,
@@ -535,7 +535,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               canAdvance && !saving
                 ? "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
                 : "rgba(255,255,255,0.06)",
-            color: canAdvance && !saving ? "#fff" : "rgba(255,255,255,0.2)",
+            color: canAdvance && !saving ? "#fff" : "var(--muted-foreground)",
             transition: "all 0.25s",
             boxShadow:
               canAdvance && !saving

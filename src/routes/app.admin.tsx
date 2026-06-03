@@ -42,14 +42,14 @@ export const Route = createFileRoute("/app/admin")({
 type TabKey = "overview" | "users" | "orgs" | "subs" | "runs";
 
 const PLAN_COLORS: Record<string, string> = {
-  starter: "bg-gray-100 text-gray-600",
-  launch: "bg-orange-100 text-orange-700",
-  operate: "bg-amber-100 text-amber-700",
-  scale: "bg-red-100 text-red-700",
+  starter: "bg-muted text-muted-foreground",
+  launch: "bg-primary/10 text-primary",
+  operate: "bg-warning/10 text-warning",
+  scale: "bg-destructive/10 text-destructive",
 };
 
 const PLAN_STRIPE: Record<string, string> = {
-  starter: "bg-gray-300",
+  starter: "bg-border",
   launch: "bg-orange-400",
   operate: "bg-amber-500",
   scale: "bg-red-500",
@@ -185,7 +185,7 @@ function AdminHub() {
   return (
     <div className="space-y-6">
       {/* ── Hero header ── */}
-      <section className="relative overflow-hidden rounded-2xl bg-orange-500 px-6 py-8 text-white shadow-lg">
+      <section className="relative overflow-hidden rounded-2xl bg-primary/50 px-6 py-8 text-white shadow-lg">
         {/* Decorative rings */}
         <span className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[32px] border-white/10" />
         <span className="pointer-events-none absolute -right-4 -bottom-20 h-48 w-48 rounded-full border-[20px] border-white/8" />
@@ -253,9 +253,9 @@ function AdminHub() {
       </section>
 
       {/* ── Tabs panel ── */}
-      <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         {/* Tab bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-100 bg-orange-50/60 px-3 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-primary/5 px-3 py-2.5">
           <div className="flex flex-wrap gap-1">
             {tabs.map((t) => {
               const active = tab === t.key;
@@ -266,8 +266,8 @@ function AdminHub() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-all",
                     active
-                      ? "bg-orange-500 text-white shadow-sm"
-                      : "text-gray-500 hover:bg-orange-100 hover:text-orange-700",
+                      ? "bg-primary/50 text-white shadow-sm"
+                      : "text-muted-foreground text-muted-foreground hover:bg-primary/10 hover:text-primary",
                   )}
                 >
                   <t.icon className="h-3.5 w-3.5" />
@@ -276,7 +276,7 @@ function AdminHub() {
                     <span
                       className={cn(
                         "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-                        active ? "bg-white/25 text-white" : "bg-orange-100 text-orange-600",
+                        active ? "bg-white/25 text-white" : "bg-primary/10 text-primary",
                       )}
                     >
                       {t.count}
@@ -288,12 +288,12 @@ function AdminHub() {
           </div>
           {tab !== "overview" && (
             <div className="relative w-full sm:w-60">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="h-8 border-orange-200 bg-white pl-8 text-[12.5px] placeholder:text-gray-400 focus-visible:ring-orange-400"
+                className="h-8 border-border bg-background pl-8 text-[12.5px] placeholder:text-muted-foreground focus-visible:ring-orange-400"
               />
             </div>
           )}
@@ -303,7 +303,7 @@ function AdminHub() {
         {tab === "overview" && (
           <div className="grid gap-4 p-4 lg:grid-cols-2">
             {/* Plan distribution */}
-            <div className="rounded-xl border border-orange-100 bg-white p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
                 <BarChart3 className="h-3.5 w-3.5" />
                 Plan distribution
@@ -316,12 +316,12 @@ function AdminHub() {
                   return (
                     <div key={p}>
                       <div className="flex items-center justify-between text-[12.5px]">
-                        <span className="font-semibold capitalize text-gray-800">{p}</span>
-                        <span className="tabular-nums text-gray-400">
+                        <span className="font-semibold capitalize text-foreground">{p}</span>
+                        <span className="tabular-nums text-muted-foreground">
                           {count} &middot; {pct}%
                         </span>
                       </div>
-                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-orange-50">
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-primary/5">
                         <div
                           className={cn("h-full rounded-full transition-all", PLAN_STRIPE[p])}
                           style={{ width: `${pct}%` }}
@@ -334,23 +334,23 @@ function AdminHub() {
             </div>
 
             {/* Top tools */}
-            <div className="rounded-xl border border-orange-100 bg-white p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
                 <TrendingUp className="h-3.5 w-3.5" />
                 Top tools
               </div>
               <div className="mt-4 space-y-2.5">
                 {toolCounts.length === 0 && (
-                  <div className="text-[12px] text-gray-400">No runs yet.</div>
+                  <div className="text-[12px] text-muted-foreground">No runs yet.</div>
                 )}
                 {toolCounts.map(([key, count]) => {
                   const max = toolCounts[0][1];
                   return (
                     <div key={key} className="flex items-center gap-3">
-                      <div className="w-36 truncate text-[12.5px] font-medium text-gray-700">
+                      <div className="w-36 truncate text-[12.5px] font-medium text-foreground">
                         {key.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </div>
-                      <div className="flex-1 h-2 overflow-hidden rounded-full bg-orange-50">
+                      <div className="flex-1 h-2 overflow-hidden rounded-full bg-primary/5">
                         <div
                           className="h-full rounded-full bg-orange-400"
                           style={{ width: `${(count / max) * 100}%` }}
@@ -366,12 +366,12 @@ function AdminHub() {
             </div>
 
             {/* Live activity */}
-            <div className="lg:col-span-2 rounded-xl border border-orange-100 bg-white p-5">
+            <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-70" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary/50" />
                   </span>
                   Live activity
                 </div>
@@ -397,20 +397,20 @@ function AdminHub() {
                       <Icon
                         className={cn(
                           "h-4 w-4 shrink-0",
-                          r.status === "succeeded" && "text-green-500",
-                          r.status === "failed" && "text-red-500",
+                          r.status === "succeeded" && "text-success",
+                          r.status === "failed" && "text-destructive",
                           r.status === "running" && "animate-spin text-orange-500",
                         )}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[12.5px] font-semibold text-gray-800">
+                        <div className="truncate text-[12.5px] font-semibold text-foreground">
                           {r.tool_key.replace(/-/g, " ")}
                         </div>
-                        <div className="truncate text-[11px] text-gray-400">
+                        <div className="truncate text-[11px] text-muted-foreground">
                           {org?.name ?? "—"} &middot; {owner?.email ?? "—"}
                         </div>
                       </div>
-                      <span className="shrink-0 text-[10.5px] text-gray-400 tabular-nums">
+                      <span className="shrink-0 text-[10.5px] text-muted-foreground tabular-nums">
                         {new Date(r.created_at).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -422,7 +422,7 @@ function AdminHub() {
                   );
                 })}
                 {runs.length === 0 && (
-                  <li className="py-6 text-center text-[12px] text-gray-400">No activity yet.</li>
+                  <li className="py-6 text-center text-[12px] text-muted-foreground">No activity yet.</li>
                 )}
               </ul>
             </div>
@@ -434,7 +434,7 @@ function AdminHub() {
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
               <thead>
-                <tr className="bg-orange-500 text-white">
+                <tr className="bg-primary/50 text-white">
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Email</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Onboarded</th>
@@ -447,19 +447,19 @@ function AdminHub() {
                   <tr
                     key={p.id}
                     className={cn(
-                      "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
-                      i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                      "border-b border-border transition-colors hover:bg-primary/5",
+                      i % 2 === 0 ? "bg-card" : "bg-primary/3",
                     )}
                   >
-                    <td className="px-4 py-3 font-semibold text-gray-800">{p.full_name || "—"}</td>
-                    <td className="px-4 py-3 text-gray-500">{p.email}</td>
+                    <td className="px-4 py-3 font-semibold text-foreground">{p.full_name || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
                     <td className="px-4 py-3">
                       {p.onboarding_complete ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10.5px] font-semibold text-green-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10.5px] font-semibold text-success">
                           <CheckCircle2 className="h-3 w-3" /> Yes
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10.5px] font-medium text-gray-500">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10.5px] font-medium text-muted-foreground">
                           <Circle className="h-3 w-3" /> No
                         </span>
                       )}
@@ -470,17 +470,17 @@ function AdminHub() {
                           <Crown className="h-3 w-3" /> Admin
                         </span>
                       ) : (
-                        <span className="text-[11.5px] text-gray-400">User</span>
+                        <span className="text-[11.5px] text-muted-foreground">User</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 tabular-nums text-gray-400">
+                    <td className="px-4 py-3 tabular-nums text-muted-foreground">
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
                 {filteredProfiles.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                       No users match.
                     </td>
                   </tr>
@@ -495,7 +495,7 @@ function AdminHub() {
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
               <thead>
-                <tr className="bg-orange-500 text-white">
+                <tr className="bg-primary/50 text-white">
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Owner</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stage</th>
@@ -510,19 +510,19 @@ function AdminHub() {
                     <tr
                       key={o.id}
                       className={cn(
-                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
-                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                        "border-b border-border transition-colors hover:bg-primary/5",
+                        i % 2 === 0 ? "bg-card" : "bg-primary/3",
                       )}
                     >
-                      <td className="px-4 py-3 font-semibold text-gray-800">{o.name}</td>
-                      <td className="px-4 py-3 text-gray-500">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-3 font-semibold text-foreground">{o.name}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{owner?.email ?? "—"}</td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10.5px] font-semibold text-orange-700">
                           {o.stage}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{o.niche || "—"}</td>
-                      <td className="px-4 py-3 tabular-nums text-gray-400">
+                      <td className="px-4 py-3 text-muted-foreground">{o.niche || "—"}</td>
+                      <td className="px-4 py-3 tabular-nums text-muted-foreground">
                         {new Date(o.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -530,7 +530,7 @@ function AdminHub() {
                 })}
                 {filteredOrgs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                       No workspaces match.
                     </td>
                   </tr>
@@ -545,7 +545,7 @@ function AdminHub() {
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
               <thead>
-                <tr className="bg-orange-500 text-white">
+                <tr className="bg-primary/50 text-white">
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Plan</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
@@ -562,16 +562,16 @@ function AdminHub() {
                     <tr
                       key={s.id}
                       className={cn(
-                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
-                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                        "border-b border-border transition-colors hover:bg-primary/5",
+                        i % 2 === 0 ? "bg-card" : "bg-primary/3",
                       )}
                     >
-                      <td className="px-4 py-3 font-semibold text-gray-800">{org?.name ?? "—"}</td>
+                      <td className="px-4 py-3 font-semibold text-foreground">{org?.name ?? "—"}</td>
                       <td className="px-4 py-3">
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-[10.5px] font-semibold capitalize",
-                            PLAN_COLORS[s.plan] ?? "bg-gray-100 text-gray-600",
+                            PLAN_COLORS[s.plan] ?? "bg-muted text-muted-foreground",
                           )}
                         >
                           {s.plan}
@@ -581,24 +581,24 @@ function AdminHub() {
                         <span
                           className={cn(
                             "inline-flex items-center gap-1.5 text-[11.5px] font-medium",
-                            s.status === "active" ? "text-green-600" : "text-gray-400",
+                            s.status === "active" ? "text-success" : "text-muted-foreground",
                           )}
                         >
                           <span
                             className={cn(
                               "h-1.5 w-1.5 rounded-full",
-                              s.status === "active" ? "bg-green-500" : "bg-gray-300",
+                              s.status === "active" ? "bg-success" : "bg-border",
                             )}
                           />
                           {s.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 tabular-nums text-gray-400">
+                      <td className="px-4 py-3 tabular-nums text-muted-foreground">
                         {s.current_period_end
                           ? new Date(s.current_period_end).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="max-w-[160px] truncate px-4 py-3 font-mono text-[11px] text-gray-400">
+                      <td className="max-w-[160px] truncate px-4 py-3 font-mono text-[11px] text-muted-foreground">
                         {s.stripe_customer_id ?? "—"}
                       </td>
                     </tr>
@@ -606,7 +606,7 @@ function AdminHub() {
                 })}
                 {subs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                       No subscriptions yet.
                     </td>
                   </tr>
@@ -621,7 +621,7 @@ function AdminHub() {
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
               <thead>
-                <tr className="bg-orange-500 text-white">
+                <tr className="bg-primary/50 text-white">
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Tool</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
@@ -649,21 +649,21 @@ function AdminHub() {
                     <tr
                       key={r.id}
                       className={cn(
-                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
-                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                        "border-b border-border transition-colors hover:bg-primary/5",
+                        i % 2 === 0 ? "bg-card" : "bg-primary/3",
                       )}
                     >
-                      <td className="px-4 py-3 font-semibold text-gray-800">
+                      <td className="px-4 py-3 font-semibold text-foreground">
                         {r.tool_key.replace(/-/g, " ")}
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{org?.name ?? "—"}</td>
-                      <td className="px-4 py-3 text-gray-500">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{org?.name ?? "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{owner?.email ?? "—"}</td>
                       <td className="px-4 py-3">
                         <span
                           className={cn(
                             "inline-flex items-center gap-1.5 text-[11.5px] font-medium",
-                            r.status === "succeeded" && "text-green-600",
-                            r.status === "failed" && "text-red-500",
+                            r.status === "succeeded" && "text-success",
+                            r.status === "failed" && "text-destructive",
                             r.status === "running" && "text-orange-500",
                           )}
                         >
@@ -673,7 +673,7 @@ function AdminHub() {
                           {r.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 tabular-nums text-gray-400">
+                      <td className="px-4 py-3 tabular-nums text-muted-foreground">
                         {new Date(r.created_at).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -686,7 +686,7 @@ function AdminHub() {
                 })}
                 {runs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                       No runs yet.
                     </td>
                   </tr>
@@ -697,7 +697,7 @@ function AdminHub() {
         )}
       </section>
 
-      <div className="text-center text-[11px] text-gray-400">
+      <div className="text-center text-[11px] text-muted-foreground">
         <Link to="/app/dashboard" className="hover:text-orange-500 transition-colors">
           ← Back to dashboard
         </Link>
@@ -720,35 +720,35 @@ function StatCard({
   variant: "orange" | "amber";
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-orange-200">
+    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:border-border">
       {/* Subtle corner accent */}
       <span
         className={cn(
           "pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full opacity-10",
-          variant === "orange" ? "bg-orange-500" : "bg-amber-400",
+          variant === "orange" ? "bg-primary/50" : "bg-amber-400",
         )}
       />
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[10.5px] font-semibold uppercase tracking-widest text-gray-400">
+          <div className="text-[10.5px] font-semibold uppercase tracking-widest text-muted-foreground">
             {label}
           </div>
           <div
             className={cn(
               "mt-2 font-display text-[2rem] font-bold leading-none tracking-tight tabular-nums",
-              variant === "orange" ? "text-orange-500" : "text-amber-500",
+              variant === "orange" ? "text-primary" : "text-accent",
             )}
           >
             {value}
           </div>
-          <div className="mt-2 text-[11px] text-gray-400">{sub}</div>
+          <div className="mt-2 text-[11px] text-muted-foreground">{sub}</div>
         </div>
         <div
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-xl",
             variant === "orange"
-              ? "bg-orange-500 text-white"
-              : "bg-amber-400 text-white",
+              ? "bg-primary text-primary-foreground"
+              : "bg-accent text-accent-foreground",
           )}
         >
           <Icon className="h-4 w-4" />
