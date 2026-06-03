@@ -21,7 +21,7 @@ interface AutomationJob {
   log_id?: string;
 }
 
-const CLAUDE_MODEL = "claude-sonnet-4-5";
+const CLAUDE_MODEL = "claude-sonnet-4-6";
 
 // ---------------------------------------------------------------------------
 // Supabase helpers

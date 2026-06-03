@@ -27,9 +27,9 @@ const PLAN_SLUG_BY_PRICE_KEY: Record<string, string> = {
 // ---------------------------------------------------------------------------
 // CORS
 // ---------------------------------------------------------------------------
-function corsHeaders(origin: string): Record<string, string> {
+function corsHeaders(_origin: string): Record<string, string> {
   return {
-    "Access-Control-Allow-Origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
