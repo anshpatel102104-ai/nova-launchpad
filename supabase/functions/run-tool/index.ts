@@ -1397,7 +1397,285 @@ Timeline: [X years]
     assetCategory: "validation",
     assetTitle: (i) => `Idea Validation: ${String(i.idea || i.idea_description).slice(0, 60)}`,
   },
+
+  // ─── New tools: frontend toolKey naming ────────────────────────────────────
+
+  "generate-offer": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Offer Builder — Irresistible Offer Architecture Engine
+
+You design offers that are impossible to say no to. Built on the Hormozi $100M Offers methodology. Stack value, eliminate risk, create urgency.
+
+Inputs: {business}, {target_customer}, {outcome}
+
+Output format:
+## Offer Architecture
+
+## Offer Name
+[Transformation-focused name — not feature-focused]
+
+## The Promise
+[Bold, specific promise — what outcome is guaranteed]
+
+## Dream Outcome
+[Vivid picture of life after the offer]
+
+## What's Included
+[Every deliverable — use vivid language, stack the value]
+
+## Bonuses
+[2-3 high-perceived-value bonuses that make it feel like a steal]
+
+## Price Anchor
+[What it would cost to get this outcome elsewhere — creates contrast]
+
+## Recommended Price
+[Price with reasoning — charge for outcomes, not time]
+
+## Guarantee
+[Specific guarantee that removes all perceived risk]
+
+## Urgency/Scarcity
+[Real reason to act now — not manufactured fake urgency]
+
+## Positioning Line
+[The one sentence vs every alternative]
+
+## Top 3 Objections — Handled
+For each: state the objection, then how the offer architecture neutralises it
+
+## Next Step
+[Recommend GTM Strategy Builder or Landing Page Creator]`,
+    buildUserPrompt: (i) =>
+      `Business/service: ${i.business || i.context || ""}\nTarget customer: ${i.target || i.targetCustomer || "not specified"}\nOutcome delivered: ${i.outcome || i.goal || "not specified"}\nCurrent price: ${i.current_price || "not set"}`,
+    schema: {
+      name: "generate_offer",
+      description: "Return a structured, psychology-driven offer architecture",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          promise: { type: "string" },
+          dream_outcome: { type: "string" },
+          deliverables: { type: "array", items: { type: "string" } },
+          bonuses: { type: "array", items: { type: "string" } },
+          price_recommendation: { type: "string" },
+          guarantee: { type: "string" },
+          full_report: { type: "string" },
+        },
+        required: ["name", "promise", "price_recommendation", "full_report"],
+      },
+    },
+    assetCategory: "offer",
+    assetTitle: (i) => `Offer Builder: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+  },
+
+  "generate-ops-plan": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Operations Plan Builder — Business Systems Engine
+
+You design operating systems for sub-$10M companies. No-code automations, KPIs founders actually track weekly, delegation frameworks that work before you can afford a full team.
+
+Inputs: {business}, {team_size}, {pains}
+
+Output format:
+## Operations Plan
+
+## North Star KPI
+[The single metric that drives everything else]
+
+## Core Workflows (3-5)
+For each:
+- Workflow: [Name]
+- Trigger: [What starts it]
+- Steps: [Each step in sequence]
+- Owner: [Who owns execution]
+- Tool: [Primary software]
+
+## Automations to Build
+[Specific automations — include tool + trigger + output]
+
+## Weekly Rhythm
+[The recurring weekly operating cadence]
+
+## KPIs to Track Weekly
+[5-7 specific, measurable metrics with red-flag thresholds]
+
+## First Hire
+[Who to hire first and exactly what to hand off]
+
+## Recommended Stack
+[Lean, effective tools — only what's needed]
+
+## Quick Wins (Implementable This Week)
+[3 ops improvements < 1 week to implement]
+
+## Next Step
+[Recommend KPI Dashboard Builder or Launch Checklist]`,
+    buildUserPrompt: (i) =>
+      `Business: ${i.business || i.context || ""}\nTeam size: ${i.team_size || "solo"}\nBiggest operational pain: ${i.pains || i.context || "not specified"}\nRevenue stage: ${i.revenue || "early"}`,
+    schema: {
+      name: "generate_ops",
+      description: "Return a structured operational plan",
+      parameters: {
+        type: "object",
+        properties: {
+          north_star_kpi: { type: "string" },
+          core_workflows: { type: "array", items: { type: "object" } },
+          automations: { type: "array", items: { type: "string" } },
+          weekly_rhythm: { type: "array", items: { type: "string" } },
+          kpis: { type: "array", items: { type: "string" } },
+          quick_wins: { type: "array", items: { type: "string" } },
+          full_report: { type: "string" },
+        },
+        required: ["north_star_kpi", "full_report"],
+      },
+    },
+    assetCategory: "ops",
+    assetTitle: (i) => `Ops Plan: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+  },
+
+  "generate-followup-sequence": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Follow-Up Sequence Builder — Sales Conversion Engine
+
+You build multi-touch follow-up sequences that convert cold leads. Pattern interrupts, value-add touches, behavioral psychology. Write for busy buyers who delete most messages.
+
+Inputs: {context}, {goal}, {channels}
+
+Output format:
+## Follow-Up Sequence
+
+## Strategy
+[The psychological approach and why it works for this situation]
+
+## Sequence (5-7 touches)
+For each touch:
+- Day: [X]
+- Channel: [Email / LinkedIn / SMS]
+- Subject: [Subject line]
+- Body: [Full word-for-word message — natural, not templated]
+- Goal: [What this touch is trying to achieve]
+
+## Reply Handlers
+For each reply type (interested, not now, wrong person, no response):
+- Type: [X]
+- Response: [Exact word-for-word reply]
+
+## Success Metrics
+[Open rate target, reply rate target, conversion target]
+
+## Next Step
+[Recommend Landing Page Creator or Ad Copy Generator]`,
+    buildUserPrompt: (i) =>
+      `Lead context: ${i.context || ""}\nGoal: ${i.goal || "book a discovery call"}\nChannel preference: ${i.channels || "email"}`,
+    schema: {
+      name: "generate_followup",
+      description: "Return a structured, ready-to-deploy follow-up sequence",
+      parameters: {
+        type: "object",
+        properties: {
+          sequence_strategy: { type: "string" },
+          sequence: { type: "array", items: { type: "object" } },
+          reply_handlers: { type: "array", items: { type: "object" } },
+          success_metrics: { type: "array", items: { type: "string" } },
+          full_report: { type: "string" },
+        },
+        required: ["sequence_strategy", "sequence", "full_report"],
+      },
+    },
+    assetCategory: "followup",
+    assetTitle: (i) => `Follow-Up Sequence: ${String(i.goal || i.context || "Untitled").slice(0, 60)}`,
+  },
+
+  "revenue-projector": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Revenue Projector — 12-Month Financial Model
+
+You build bottom-up revenue models with unit economics and three scenarios. No top-down market-capture fantasies. Real assumptions. Real math. Flag when assumptions are unrealistic.
+
+Inputs: {business}, {model}, {current_mrr}, {pricing}
+
+Output format:
+## Revenue Projection: 12 Months
+
+## Model Assumptions
+- Average contract value: $[X]
+- Monthly churn: [X]%
+- Estimated CAC: $[X]
+- LTV: $[X]
+- LTV:CAC ratio: [X]:1
+- Payback period: [X] months
+
+## Conservative Scenario (60% probability)
+Month 3 MRR: $[X] | Month 6 MRR: $[X] | Month 12 MRR: $[X]
+Customers at 12M: [X]
+Key assumption: [What must be true]
+
+## Base Scenario (30% probability)
+[Same format + ARR at month 12]
+
+## Optimistic Scenario (10% probability)
+[Same format + what must be true for this to happen]
+
+## Top 4 Growth Levers
+For each: lever name, expected MRR impact, how to pull it
+
+## Breakeven Analysis
+[Month breakeven expected + what it requires]
+
+## Unit Economics Verdict
+[Are the unit economics healthy, acceptable, or concerning?]
+
+## Investor Financial Story
+[The 3-sentence narrative for investors]
+
+## Next Step
+[Recommend GTM Strategy Builder or Funding Readiness Score]`,
+    buildUserPrompt: (i) =>
+      `Business: ${i.business || i.context || ""}\nBusiness model: ${i.model || "SaaS/recurring"}\nCurrent MRR: ${i.current_mrr || "$0"}\nPricing: ${i.pricing || "TBD"}\nGrowth lever: ${i.growth_lever || "not specified"}`,
+    schema: {
+      name: "revenue_projector",
+      description: "Return a 12-month revenue projection with three scenarios",
+      parameters: {
+        type: "object",
+        properties: {
+          model_assumptions: { type: "object" },
+          conservative_scenario: { type: "object" },
+          base_scenario: { type: "object" },
+          optimistic_scenario: { type: "object" },
+          growth_levers: { type: "array", items: { type: "object" } },
+          breakeven_analysis: { type: "string" },
+          unit_economics_verdict: { type: "string" },
+          full_report: { type: "string" },
+        },
+        required: ["base_scenario", "unit_economics_verdict", "full_report"],
+      },
+    },
+    assetCategory: "revenue-projection",
+    assetTitle: (i) => `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
+  },
 };
+
+// ─── Frontend-naming aliases ─────────────────────────────────────────────────
+// mock.ts uses these toolKey values; map them to the matching configs above.
+const TOOL_ALIASES: Record<string, string> = {
+  "generate-pitch":        "pitch-generator",
+  "generate-gtm-strategy": "gtm-strategy-builder",
+  "landing-page":          "landing-page-creator",
+  "first-10-customers":    "first-10-customers-finder",
+  "funding-score":         "funding-readiness-score",
+  "investor-emails":       "investor-email-writer",
+  "competitor-analysis":   "competitor-scanner",
+  "pricing-strategy":      "pricing-calculator",
+};
+for (const [alias, target] of Object.entries(TOOL_ALIASES)) {
+  if (TOOLS[target]) TOOLS[alias] = TOOLS[target];
+}
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
