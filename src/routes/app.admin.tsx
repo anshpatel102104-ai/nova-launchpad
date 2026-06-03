@@ -14,6 +14,9 @@ import {
   Search,
   ArrowUpRight,
   Crown,
+  Zap,
+  BarChart3,
+  Circle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -39,10 +42,17 @@ export const Route = createFileRoute("/app/admin")({
 type TabKey = "overview" | "users" | "orgs" | "subs" | "runs";
 
 const PLAN_COLORS: Record<string, string> = {
-  starter: "bg-surface-offset text-foreground/70",
-  launch: "bg-primary/15 text-primary",
-  operate: "bg-accent/15 text-accent",
-  scale: "bg-warning/15 text-warning",
+  starter: "bg-gray-100 text-gray-600",
+  launch: "bg-orange-100 text-orange-700",
+  operate: "bg-amber-100 text-amber-700",
+  scale: "bg-red-100 text-red-700",
+};
+
+const PLAN_STRIPE: Record<string, string> = {
+  starter: "bg-gray-300",
+  launch: "bg-orange-400",
+  operate: "bg-amber-500",
+  scale: "bg-red-500",
 };
 
 function AdminHub() {
@@ -122,7 +132,6 @@ function AdminHub() {
   const orgById = useMemo(() => new Map(orgs.map((o) => [o.id, o])), [orgs]);
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
 
-  // Stats
   const totalUsers = profiles.length;
   const onboardedUsers = profiles.filter((p) => p.onboarding_complete).length;
   const totalOrgs = orgs.length;
@@ -136,13 +145,11 @@ function AdminHub() {
     (r) => Date.now() - new Date(r.created_at).getTime() < 7 * 86400e3,
   ).length;
 
-  // Plan distribution
   const planCounts = subs.reduce<Record<string, number>>((acc, s) => {
     acc[s.plan] = (acc[s.plan] ?? 0) + 1;
     return acc;
   }, {});
 
-  // Tool usage breakdown
   const toolCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of runs) m.set(r.tool_key, (m.get(r.tool_key) ?? 0) + 1);
@@ -172,67 +179,84 @@ function AdminHub() {
     { key: "users", label: "Users", icon: Users, count: totalUsers },
     { key: "orgs", label: "Workspaces", icon: Building2, count: totalOrgs },
     { key: "subs", label: "Subscriptions", icon: CreditCard, count: subs.length },
-    { key: "runs", label: "Tool runs", icon: TrendingUp, count: runs.length },
+    { key: "runs", label: "Tool Runs", icon: TrendingUp, count: runs.length },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <section className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-2.5 py-0.5 text-[10.5px] font-semibold text-warning">
-              <Shield className="h-3 w-3" /> Admin
-            </span>
-            <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-[10.5px] font-medium text-muted-foreground">
-              Platform-wide
+      {/* ── Hero header ── */}
+      <section className="relative overflow-hidden rounded-2xl bg-orange-500 px-6 py-8 text-white shadow-lg">
+        {/* Decorative rings */}
+        <span className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[32px] border-white/10" />
+        <span className="pointer-events-none absolute -right-4 -bottom-20 h-48 w-48 rounded-full border-[20px] border-white/8" />
+        <span className="pointer-events-none absolute right-48 -top-8 h-32 w-32 rounded-full border-[16px] border-white/6" />
+
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
+                <Shield className="h-3 w-3" /> Admin
+              </span>
+              <span className="rounded-full bg-orange-600/60 px-2.5 py-1 text-[11px] font-medium">
+                Platform-wide
+              </span>
+            </div>
+            <h1 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Admin Hub
+            </h1>
+            <p className="mt-1 text-[13px] text-orange-100">
+              Operate the platform — users, workspaces, billing, and live activity.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-[12px] text-orange-100">
+            <span className="flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+              </span>
+              Live
             </span>
           </div>
-          <h1 className="mt-3 font-display text-[1.75rem] font-semibold tracking-tight md:text-[2rem]">
-            Admin Hub
-          </h1>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">
-            Operate the platform — users, workspaces, billing, and live activity.
-          </p>
         </div>
       </section>
 
-      {/* Stat row */}
-      <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <AdminStat
-          label="Total users"
+      {/* ── Stat row ── */}
+      <section className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Total Users"
           value={totalUsers}
           sub={`${onboardedUsers} onboarded`}
           icon={Users}
-          accent="primary"
+          variant="orange"
         />
-        <AdminStat
+        <StatCard
           label="Workspaces"
           value={totalOrgs}
           sub={`${paidSubs} on paid plans`}
           icon={Building2}
-          accent="primary"
+          variant="amber"
         />
-        <AdminStat
-          label="Estimated MRR"
+        <StatCard
+          label="Est. MRR"
           value={`$${mrr.toLocaleString()}`}
           sub={`${paidSubs} active paid`}
           icon={CreditCard}
-          accent="secondary"
+          variant="orange"
         />
-        <AdminStat
-          label="Tool runs"
+        <StatCard
+          label="Tool Runs"
           value={succeededRuns}
           sub={`${last7d} in last 7d`}
-          icon={TrendingUp}
-          accent="secondary"
+          icon={Zap}
+          variant="amber"
         />
       </section>
 
-      {/* Tabs */}
-      <section className="rounded-lg border border-border bg-surface shadow-card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-2 py-2">
-          <div className="flex flex-wrap gap-0.5">
+      {/* ── Tabs panel ── */}
+      <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+        {/* Tab bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-orange-100 bg-orange-50/60 px-3 py-2.5">
+          <div className="flex flex-wrap gap-1">
             {tabs.map((t) => {
               const active = tab === t.key;
               return (
@@ -240,10 +264,10 @@ function AdminHub() {
                   key={t.key}
                   onClick={() => setTab(t.key)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-medium transition",
+                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-all",
                     active
-                      ? "bg-surface-2 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-surface-2/60 hover:text-foreground",
+                      ? "bg-orange-500 text-white shadow-sm"
+                      : "text-gray-500 hover:bg-orange-100 hover:text-orange-700",
                   )}
                 >
                   <t.icon className="h-3.5 w-3.5" />
@@ -251,10 +275,8 @@ function AdminHub() {
                   {typeof t.count === "number" && (
                     <span
                       className={cn(
-                        "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
-                        active
-                          ? "bg-primary/15 text-primary"
-                          : "bg-surface-offset text-muted-foreground",
+                        "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
+                        active ? "bg-white/25 text-white" : "bg-orange-100 text-orange-600",
                       )}
                     >
                       {t.count}
@@ -265,48 +287,43 @@ function AdminHub() {
             })}
           </div>
           {tab !== "overview" && (
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative w-full sm:w-60">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="h-8 pl-8 text-[12.5px]"
+                className="h-8 border-orange-200 bg-white pl-8 text-[12.5px] placeholder:text-gray-400 focus-visible:ring-orange-400"
               />
             </div>
           )}
         </div>
 
-        {/* Tab content */}
+        {/* ── Overview tab ── */}
         {tab === "overview" && (
           <div className="grid gap-4 p-4 lg:grid-cols-2">
             {/* Plan distribution */}
-            <div className="rounded-md border border-border bg-surface-2/40 p-4">
-              <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="rounded-xl border border-orange-100 bg-white p-5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
+                <BarChart3 className="h-3.5 w-3.5" />
                 Plan distribution
               </div>
-              <div className="mt-3 space-y-2.5">
+              <div className="mt-4 space-y-3.5">
                 {(["starter", "launch", "operate", "scale"] as const).map((p) => {
                   const count = planCounts[p] ?? 0;
                   const total = subs.length || 1;
                   const pct = Math.round((count / total) * 100);
                   return (
                     <div key={p}>
-                      <div className="flex items-center justify-between text-[12px]">
-                        <span className="capitalize font-medium">{p}</span>
-                        <span className="tabular-nums text-muted-foreground">
-                          {count} · {pct}%
+                      <div className="flex items-center justify-between text-[12.5px]">
+                        <span className="font-semibold capitalize text-gray-800">{p}</span>
+                        <span className="tabular-nums text-gray-400">
+                          {count} &middot; {pct}%
                         </span>
                       </div>
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-offset">
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-orange-50">
                         <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            p === "starter" && "bg-muted-foreground/40",
-                            p === "launch" && "bg-primary",
-                            p === "operate" && "bg-accent",
-                            p === "scale" && "bg-warning",
-                          )}
+                          className={cn("h-full rounded-full transition-all", PLAN_STRIPE[p])}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -317,28 +334,29 @@ function AdminHub() {
             </div>
 
             {/* Top tools */}
-            <div className="rounded-md border border-border bg-surface-2/40 p-4">
-              <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="rounded-xl border border-orange-100 bg-white p-5">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
+                <TrendingUp className="h-3.5 w-3.5" />
                 Top tools
               </div>
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-2.5">
                 {toolCounts.length === 0 && (
-                  <div className="text-[12px] text-muted-foreground">No runs yet.</div>
+                  <div className="text-[12px] text-gray-400">No runs yet.</div>
                 )}
                 {toolCounts.map(([key, count]) => {
                   const max = toolCounts[0][1];
                   return (
                     <div key={key} className="flex items-center gap-3">
-                      <div className="w-40 truncate text-[12.5px] font-medium">
+                      <div className="w-36 truncate text-[12.5px] font-medium text-gray-700">
                         {key.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </div>
-                      <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-surface-offset">
+                      <div className="flex-1 h-2 overflow-hidden rounded-full bg-orange-50">
                         <div
-                          className="h-full bg-primary rounded-full"
+                          className="h-full rounded-full bg-orange-400"
                           style={{ width: `${(count / max) * 100}%` }}
                         />
                       </div>
-                      <div className="w-8 text-right text-[11.5px] tabular-nums text-muted-foreground">
+                      <div className="w-8 text-right text-[11.5px] tabular-nums font-semibold text-orange-500">
                         {count}
                       </div>
                     </div>
@@ -347,20 +365,24 @@ function AdminHub() {
               </div>
             </div>
 
-            {/* Recent activity */}
-            <div className="lg:col-span-2 rounded-md border border-border bg-surface-2/40 p-4">
+            {/* Live activity */}
+            <div className="lg:col-span-2 rounded-xl border border-orange-100 bg-white p-5">
               <div className="flex items-center justify-between">
-                <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-orange-500">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-70" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
+                  </span>
                   Live activity
                 </div>
                 <button
                   onClick={() => setTab("runs")}
-                  className="text-[11.5px] text-primary hover:underline inline-flex items-center gap-1"
+                  className="inline-flex items-center gap-1 text-[11.5px] font-medium text-orange-500 hover:text-orange-600"
                 >
                   View all <ArrowUpRight className="h-3 w-3" />
                 </button>
               </div>
-              <ul className="mt-3 divide-y divide-border">
+              <ul className="mt-3 divide-y divide-orange-50">
                 {runs.slice(0, 8).map((r) => {
                   const Icon =
                     r.status === "succeeded"
@@ -371,24 +393,24 @@ function AdminHub() {
                   const owner = profileById.get(r.user_id);
                   const org = orgById.get(r.organization_id);
                   return (
-                    <li key={r.id} className="flex items-center gap-3 py-2">
+                    <li key={r.id} className="flex items-center gap-3 py-2.5">
                       <Icon
                         className={cn(
-                          "h-3.5 w-3.5 shrink-0",
-                          r.status === "succeeded" && "text-success",
-                          r.status === "failed" && "text-destructive",
-                          r.status === "running" && "text-primary animate-spin",
+                          "h-4 w-4 shrink-0",
+                          r.status === "succeeded" && "text-green-500",
+                          r.status === "failed" && "text-red-500",
+                          r.status === "running" && "animate-spin text-orange-500",
                         )}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[12.5px] font-medium">
+                        <div className="truncate text-[12.5px] font-semibold text-gray-800">
                           {r.tool_key.replace(/-/g, " ")}
                         </div>
-                        <div className="truncate text-[11px] text-muted-foreground">
-                          {org?.name ?? "—"} · {owner?.email ?? "—"}
+                        <div className="truncate text-[11px] text-gray-400">
+                          {org?.name ?? "—"} &middot; {owner?.email ?? "—"}
                         </div>
                       </div>
-                      <span className="text-[10.5px] text-muted-foreground tabular-nums">
+                      <span className="shrink-0 text-[10.5px] text-gray-400 tabular-nums">
                         {new Date(r.created_at).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -400,58 +422,65 @@ function AdminHub() {
                   );
                 })}
                 {runs.length === 0 && (
-                  <li className="py-4 text-center text-[12px] text-muted-foreground">
-                    No activity yet.
-                  </li>
+                  <li className="py-6 text-center text-[12px] text-gray-400">No activity yet.</li>
                 )}
               </ul>
             </div>
           </div>
         )}
 
+        {/* ── Users tab ── */}
         {tab === "users" && (
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
-              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium">User</th>
-                  <th className="text-left px-4 py-2 font-medium">Email</th>
-                  <th className="text-left px-4 py-2 font-medium">Onboarded</th>
-                  <th className="text-left px-4 py-2 font-medium">Role</th>
-                  <th className="text-left px-4 py-2 font-medium">Joined</th>
+              <thead>
+                <tr className="bg-orange-500 text-white">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Email</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Onboarded</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Role</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Joined</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {filteredProfiles.map((p) => (
-                  <tr key={p.id} className="hover:bg-surface-2/40">
-                    <td className="px-4 py-2.5 font-medium">{p.full_name || "—"}</td>
-                    <td className="px-4 py-2.5 text-muted-foreground">{p.email}</td>
-                    <td className="px-4 py-2.5">
+              <tbody>
+                {filteredProfiles.map((p, i) => (
+                  <tr
+                    key={p.id}
+                    className={cn(
+                      "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
+                      i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                    )}
+                  >
+                    <td className="px-4 py-3 font-semibold text-gray-800">{p.full_name || "—"}</td>
+                    <td className="px-4 py-3 text-gray-500">{p.email}</td>
+                    <td className="px-4 py-3">
                       {p.onboarding_complete ? (
-                        <span className="inline-flex items-center gap-1 text-success">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10.5px] font-semibold text-green-700">
                           <CheckCircle2 className="h-3 w-3" /> Yes
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">No</span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10.5px] font-medium text-gray-500">
+                          <Circle className="h-3 w-3" /> No
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-4 py-3">
                       {adminIds.has(p.id) ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10.5px] font-semibold text-warning">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[10.5px] font-semibold text-orange-700">
                           <Crown className="h-3 w-3" /> Admin
                         </span>
                       ) : (
-                        <span className="text-muted-foreground text-[11.5px]">User</span>
+                        <span className="text-[11.5px] text-gray-400">User</span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                    <td className="px-4 py-3 tabular-nums text-gray-400">
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
                 {filteredProfiles.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
                       No users match.
                     </td>
                   </tr>
@@ -461,32 +490,39 @@ function AdminHub() {
           </div>
         )}
 
+        {/* ── Workspaces tab ── */}
         {tab === "orgs" && (
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
-              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium">Workspace</th>
-                  <th className="text-left px-4 py-2 font-medium">Owner</th>
-                  <th className="text-left px-4 py-2 font-medium">Stage</th>
-                  <th className="text-left px-4 py-2 font-medium">Niche</th>
-                  <th className="text-left px-4 py-2 font-medium">Created</th>
+              <thead>
+                <tr className="bg-orange-500 text-white">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Owner</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stage</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Niche</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Created</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {filteredOrgs.map((o) => {
+              <tbody>
+                {filteredOrgs.map((o, i) => {
                   const owner = profileById.get(o.owner_id);
                   return (
-                    <tr key={o.id} className="hover:bg-surface-2/40">
-                      <td className="px-4 py-2.5 font-medium">{o.name}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{owner?.email ?? "—"}</td>
-                      <td className="px-4 py-2.5">
-                        <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[10.5px] font-medium text-primary">
+                    <tr
+                      key={o.id}
+                      className={cn(
+                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
+                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                      )}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-800">{o.name}</td>
+                      <td className="px-4 py-3 text-gray-500">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10.5px] font-semibold text-orange-700">
                           {o.stage}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{o.niche || "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                      <td className="px-4 py-3 text-gray-500">{o.niche || "—"}</td>
+                      <td className="px-4 py-3 tabular-nums text-gray-400">
                         {new Date(o.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -494,7 +530,7 @@ function AdminHub() {
                 })}
                 {filteredOrgs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
                       No workspaces match.
                     </td>
                   </tr>
@@ -504,58 +540,65 @@ function AdminHub() {
           </div>
         )}
 
+        {/* ── Subscriptions tab ── */}
         {tab === "subs" && (
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
-              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium">Workspace</th>
-                  <th className="text-left px-4 py-2 font-medium">Plan</th>
-                  <th className="text-left px-4 py-2 font-medium">Status</th>
-                  <th className="text-left px-4 py-2 font-medium">Renews</th>
-                  <th className="text-left px-4 py-2 font-medium">Stripe</th>
+              <thead>
+                <tr className="bg-orange-500 text-white">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Plan</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Renews</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stripe</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {subs.map((s) => {
+              <tbody>
+                {subs.map((s, i) => {
                   const org = orgById.get(s.organization_id);
                   if (search && org && !org.name.toLowerCase().includes(search.toLowerCase()))
                     return null;
                   return (
-                    <tr key={s.id} className="hover:bg-surface-2/40">
-                      <td className="px-4 py-2.5 font-medium">{org?.name ?? "—"}</td>
-                      <td className="px-4 py-2.5">
+                    <tr
+                      key={s.id}
+                      className={cn(
+                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
+                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                      )}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-800">{org?.name ?? "—"}</td>
+                      <td className="px-4 py-3">
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-[10.5px] font-semibold capitalize",
-                            PLAN_COLORS[s.plan] ?? "bg-surface-offset",
+                            PLAN_COLORS[s.plan] ?? "bg-gray-100 text-gray-600",
                           )}
                         >
                           {s.plan}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1 text-[11.5px]",
-                            s.status === "active" ? "text-success" : "text-muted-foreground",
+                            "inline-flex items-center gap-1.5 text-[11.5px] font-medium",
+                            s.status === "active" ? "text-green-600" : "text-gray-400",
                           )}
                         >
                           <span
                             className={cn(
                               "h-1.5 w-1.5 rounded-full",
-                              s.status === "active" ? "bg-success" : "bg-muted-foreground/40",
+                              s.status === "active" ? "bg-green-500" : "bg-gray-300",
                             )}
                           />
                           {s.status}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                      <td className="px-4 py-3 tabular-nums text-gray-400">
                         {s.current_period_end
                           ? new Date(s.current_period_end).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground font-mono text-[11px] truncate max-w-[160px]">
+                      <td className="max-w-[160px] truncate px-4 py-3 font-mono text-[11px] text-gray-400">
                         {s.stripe_customer_id ?? "—"}
                       </td>
                     </tr>
@@ -563,7 +606,7 @@ function AdminHub() {
                 })}
                 {subs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
                       No subscriptions yet.
                     </td>
                   </tr>
@@ -573,20 +616,21 @@ function AdminHub() {
           </div>
         )}
 
+        {/* ── Tool runs tab ── */}
         {tab === "runs" && (
           <div className="overflow-x-auto">
             <table className="w-full text-[12.5px]">
-              <thead className="bg-surface-2/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium">Tool</th>
-                  <th className="text-left px-4 py-2 font-medium">Workspace</th>
-                  <th className="text-left px-4 py-2 font-medium">User</th>
-                  <th className="text-left px-4 py-2 font-medium">Status</th>
-                  <th className="text-left px-4 py-2 font-medium">When</th>
+              <thead>
+                <tr className="bg-orange-500 text-white">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Tool</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">When</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {runs.map((r) => {
+              <tbody>
+                {runs.map((r, i) => {
                   const owner = profileById.get(r.user_id);
                   const org = orgById.get(r.organization_id);
                   if (search) {
@@ -602,26 +646,34 @@ function AdminHub() {
                         ? XCircle
                         : Loader2;
                   return (
-                    <tr key={r.id} className="hover:bg-surface-2/40">
-                      <td className="px-4 py-2.5 font-medium">{r.tool_key.replace(/-/g, " ")}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{org?.name ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{owner?.email ?? "—"}</td>
-                      <td className="px-4 py-2.5">
+                    <tr
+                      key={r.id}
+                      className={cn(
+                        "border-b border-orange-50 transition-colors hover:bg-orange-50/60",
+                        i % 2 === 0 ? "bg-white" : "bg-orange-50/30",
+                      )}
+                    >
+                      <td className="px-4 py-3 font-semibold text-gray-800">
+                        {r.tool_key.replace(/-/g, " ")}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500">{org?.name ?? "—"}</td>
+                      <td className="px-4 py-3 text-gray-500">{owner?.email ?? "—"}</td>
+                      <td className="px-4 py-3">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1 text-[11.5px]",
-                            r.status === "succeeded" && "text-success",
-                            r.status === "failed" && "text-destructive",
-                            r.status === "running" && "text-primary",
+                            "inline-flex items-center gap-1.5 text-[11.5px] font-medium",
+                            r.status === "succeeded" && "text-green-600",
+                            r.status === "failed" && "text-red-500",
+                            r.status === "running" && "text-orange-500",
                           )}
                         >
                           <Icon
-                            className={cn("h-3 w-3", r.status === "running" && "animate-spin")}
+                            className={cn("h-3.5 w-3.5", r.status === "running" && "animate-spin")}
                           />
                           {r.status}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
+                      <td className="px-4 py-3 tabular-nums text-gray-400">
                         {new Date(r.created_at).toLocaleString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -634,7 +686,7 @@ function AdminHub() {
                 })}
                 {runs.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
                       No runs yet.
                     </td>
                   </tr>
@@ -645,8 +697,8 @@ function AdminHub() {
         )}
       </section>
 
-      <div className="text-center text-[11px] text-muted-foreground">
-        <Link to="/app/dashboard" className="hover:text-foreground">
+      <div className="text-center text-[11px] text-gray-400">
+        <Link to="/app/dashboard" className="hover:text-orange-500 transition-colors">
           ← Back to dashboard
         </Link>
       </div>
@@ -654,35 +706,49 @@ function AdminHub() {
   );
 }
 
-function AdminStat({
+function StatCard({
   label,
   value,
   sub,
   icon: Icon,
-  accent,
+  variant,
 }: {
   label: string;
   value: string | number;
   sub: string;
   icon: React.ComponentType<{ className?: string }>;
-  accent: "primary" | "secondary";
+  variant: "orange" | "amber";
 }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-card transition hover:border-foreground/15">
+    <div className="group relative overflow-hidden rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-orange-200">
+      {/* Subtle corner accent */}
+      <span
+        className={cn(
+          "pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full opacity-10",
+          variant === "orange" ? "bg-orange-500" : "bg-amber-400",
+        )}
+      />
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="text-[10.5px] font-semibold uppercase tracking-widest text-gray-400">
             {label}
           </div>
-          <div className="mt-2 font-display text-[1.5rem] font-semibold leading-none tracking-tight tabular-nums">
+          <div
+            className={cn(
+              "mt-2 font-display text-[2rem] font-bold leading-none tracking-tight tabular-nums",
+              variant === "orange" ? "text-orange-500" : "text-amber-500",
+            )}
+          >
             {value}
           </div>
-          <div className="mt-2 text-[11px] text-muted-foreground">{sub}</div>
+          <div className="mt-2 text-[11px] text-gray-400">{sub}</div>
         </div>
         <div
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-md",
-            accent === "primary" ? "bg-primary/15 text-primary" : "bg-accent/15 text-accent",
+            "flex h-9 w-9 items-center justify-center rounded-xl",
+            variant === "orange"
+              ? "bg-orange-500 text-white"
+              : "bg-amber-400 text-white",
           )}
         >
           <Icon className="h-4 w-4" />
