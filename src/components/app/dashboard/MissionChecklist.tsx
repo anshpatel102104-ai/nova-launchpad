@@ -127,10 +127,10 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                 gap: 12,
                 padding: "12px 14px",
                 borderRadius: 12,
-                border: isDone
-                  ? "1px solid rgba(34,197,94,0.2)"
-                  : "1px solid var(--border-subtle)",
-                background: isDone ? "color-mix(in oklab, var(--success) 5%, transparent)" : "var(--surface)",
+                border: isDone ? "1px solid rgba(34,197,94,0.2)" : "1px solid var(--border-subtle)",
+                background: isDone
+                  ? "color-mix(in oklab, var(--success) 5%, transparent)"
+                  : "var(--surface)",
                 transition: "all 0.2s",
                 opacity: isDone ? 0.7 : 1,
               }}

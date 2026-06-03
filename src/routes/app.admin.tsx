@@ -422,7 +422,9 @@ function AdminHub() {
                   );
                 })}
                 {runs.length === 0 && (
-                  <li className="py-6 text-center text-[12px] text-muted-foreground">No activity yet.</li>
+                  <li className="py-6 text-center text-[12px] text-muted-foreground">
+                    No activity yet.
+                  </li>
                 )}
               </ul>
             </div>
@@ -435,11 +437,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-primary/50 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Email</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Onboarded</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Role</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Joined</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Onboarded
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Joined
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -451,7 +463,9 @@ function AdminHub() {
                       i % 2 === 0 ? "bg-card" : "bg-primary/3",
                     )}
                   >
-                    <td className="px-4 py-3 font-semibold text-foreground">{p.full_name || "—"}</td>
+                    <td className="px-4 py-3 font-semibold text-foreground">
+                      {p.full_name || "—"}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{p.email}</td>
                     <td className="px-4 py-3">
                       {p.onboarding_complete ? (
@@ -496,11 +510,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-primary/50 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Owner</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stage</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Niche</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Created</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Owner
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Stage
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Niche
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Created
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -546,11 +570,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-primary/50 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Plan</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Renews</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Stripe</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Plan
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Renews
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Stripe
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -566,7 +600,9 @@ function AdminHub() {
                         i % 2 === 0 ? "bg-card" : "bg-primary/3",
                       )}
                     >
-                      <td className="px-4 py-3 font-semibold text-foreground">{org?.name ?? "—"}</td>
+                      <td className="px-4 py-3 font-semibold text-foreground">
+                        {org?.name ?? "—"}
+                      </td>
                       <td className="px-4 py-3">
                         <span
                           className={cn(
@@ -622,11 +658,21 @@ function AdminHub() {
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr className="bg-primary/50 text-white">
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Tool</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Workspace</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">User</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">When</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Tool
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Workspace
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    When
+                  </th>
                 </tr>
               </thead>
               <tbody>

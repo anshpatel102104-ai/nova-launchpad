@@ -87,7 +87,11 @@ const STATUS_COLORS: Record<ContactStatus, { bg: string; text: string; border: s
 
 function leadScoreColor(score: number | null) {
   if (!score)
-    return { bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)", text: "var(--muted-foreground)", border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)" };
+    return {
+      bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
+      text: "var(--muted-foreground)",
+      border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
+    };
   if (score >= 70)
     return { bg: "rgba(34,197,94,0.12)", text: "#22C55E", border: "rgba(34,197,94,0.25)" };
   if (score >= 40)
@@ -561,8 +565,7 @@ function ContactsPage() {
                         className="transition-all cursor-pointer"
                         style={{ borderBottom: "1px solid var(--surface-2)" }}
                         onMouseEnter={(e) =>
-                          ((e.currentTarget as HTMLElement).style.background =
-                            "var(--surface)")
+                          ((e.currentTarget as HTMLElement).style.background = "var(--surface)")
                         }
                         onMouseLeave={(e) =>
                           ((e.currentTarget as HTMLElement).style.background = "transparent")
