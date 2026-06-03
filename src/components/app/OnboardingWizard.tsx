@@ -213,9 +213,7 @@ function OptionCard({
         gap: 12,
         padding: "13px 15px",
         borderRadius: 13,
-        border: selected
-          ? "1.5px solid rgba(249,115,22,0.5)"
-          : "1.5px solid var(--border-subtle)",
+        border: selected ? "1.5px solid rgba(249,115,22,0.5)" : "1.5px solid var(--border-subtle)",
         background: selected ? "rgba(249,115,22,0.09)" : "var(--surface)",
         cursor: "pointer",
         textAlign: "left",

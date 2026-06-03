@@ -592,8 +592,7 @@ function Dashboard() {
                     <div
                       className="h-px w-3 mb-3"
                       style={{
-                        background:
-                          i < stageIdx ? "rgba(249,115,22,0.4)" : "var(--border)",
+                        background: i < stageIdx ? "rgba(249,115,22,0.4)" : "var(--border)",
                       }}
                     />
                   )}

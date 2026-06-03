@@ -1685,7 +1685,8 @@ function MentorPage() {
               className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all duration-200"
               style={{
                 background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                boxShadow: "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
+                boxShadow:
+                  "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";

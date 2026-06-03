@@ -165,7 +165,10 @@ function SectionHeader({
     <div className="flex items-center gap-2.5">
       <div
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: `color-mix(in oklab, ${color} 10%, transparent)`, border: `1px solid color-mix(in oklab, ${color} 20%, transparent)` }}
+        style={{
+          background: `color-mix(in oklab, ${color} 10%, transparent)`,
+          border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+        }}
       >
         <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
@@ -212,7 +215,10 @@ function GuideCard({ guide }: { guide: Guide }) {
       >
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: `color-mix(in oklab, ${color} 10%, transparent)`, border: `1px solid color-mix(in oklab, ${color} 20%, transparent)` }}
+          style={{
+            background: `color-mix(in oklab, ${color} 10%, transparent)`,
+            border: `1px solid color-mix(in oklab, ${color} 20%, transparent)`,
+          }}
         >
           <Icon className="h-4 w-4" style={{ color }} />
         </div>
@@ -251,9 +257,10 @@ function GuideCard({ guide }: { guide: Guide }) {
               key={i}
               className="flex gap-3 px-5 py-3.5 cursor-pointer"
               style={{
-                borderBottom:
-                  i < guide.steps.length - 1 ? "1px solid var(--surface-2)" : "none",
-                background: done.has(i) ? `color-mix(in oklab, ${color} 6%, transparent)` : "transparent",
+                borderBottom: i < guide.steps.length - 1 ? "1px solid var(--surface-2)" : "none",
+                background: done.has(i)
+                  ? `color-mix(in oklab, ${color} 6%, transparent)`
+                  : "transparent",
               }}
               onClick={() => toggle(i)}
             >
@@ -643,7 +650,10 @@ function DashboardView({
           <div className="flex items-center gap-2 flex-wrap mb-4">
             <span
               className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
-              style={{ background: `color-mix(in oklab, ${stageColor} 10%, transparent)`, color: stageColor }}
+              style={{
+                background: `color-mix(in oklab, ${stageColor} 10%, transparent)`,
+                color: stageColor,
+              }}
             >
               Stage: {data.stage}
             </span>
@@ -716,7 +726,10 @@ function DashboardView({
                   border: "1px solid rgba(239,68,68,0.15)",
                 }}
               >
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--destructive)" }} />
+                <AlertTriangle
+                  className="h-3.5 w-3.5 shrink-0"
+                  style={{ color: "var(--destructive)" }}
+                />
                 <span className="text-[12px]" style={{ color: "var(--destructive)" }}>
                   {r}
                 </span>
@@ -753,7 +766,12 @@ function DashboardView({
 
       {/* Quick wins */}
       <section>
-        <SectionHeader icon={Zap} label="Quick Wins" sub="Execute this week" color="var(--warning)" />
+        <SectionHeader
+          icon={Zap}
+          label="Quick Wins"
+          sub="Execute this week"
+          color="var(--warning)"
+        />
         <div className="space-y-2.5 mt-4">
           {data.quick_wins.map((w, i) => (
             <QuickWinCard key={i} win={w} />
@@ -778,7 +796,10 @@ function DashboardView({
               <div className="flex items-center gap-2 mb-3">
                 <div
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black"
-                  style={{ background: "color-mix(in oklab, var(--success) 12%, transparent)", color: "var(--success)" }}
+                  style={{
+                    background: "color-mix(in oklab, var(--success) 12%, transparent)",
+                    color: "var(--success)",
+                  }}
                 >
                   {i + 1}
                 </div>
@@ -1012,7 +1033,10 @@ function AiDashboardPage() {
                 border: "1px solid rgba(139,92,246,0.22)",
               }}
             >
-              <Sparkles className="h-7 w-7 animate-pulse" style={{ color: "var(--mentor-accent)" }} />
+              <Sparkles
+                className="h-7 w-7 animate-pulse"
+                style={{ color: "var(--mentor-accent)" }}
+              />
             </div>
             <div className="text-center">
               <div className="font-bold text-[16px] mb-1" style={{ color: "var(--foreground)" }}>
