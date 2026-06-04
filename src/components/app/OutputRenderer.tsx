@@ -369,17 +369,25 @@ const str = (v: unknown): string =>
 const num = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
 
 function ValidatorOut({ o }: { o: Record<string, unknown> }) {
-  const score = num(o.score ?? o.viability_score ?? o.overall_score, 0);
+  // Edge function returns total_score (out of 80) — normalize to 0-100
+  const rawScore = o.score ?? o.viability_score ?? o.overall_score ?? o.total_score;
+  const score =
+    typeof rawScore === "number" && rawScore > 0
+      ? rawScore > 100
+        ? Math.round((rawScore / 80) * 100)
+        : rawScore
+      : 0;
   const verdict = str(o.verdict ?? o.recommendation);
-  const summary = str(o.summary);
+  const summary = str(o.summary ?? o.full_report);
   const strengths = arr(o.strengths);
   const weaknesses = arr(o.weaknesses);
   const risks = arr(o.risks);
-  const next = arr(o.next_steps ?? o.recommendations);
+  const next = arr(o.next_steps ?? o.recommendations ?? o.action_items);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {(score > 0 || verdict) && <ScoreGauge value={score} label={verdict || "Viability score"} />}
-      {summary && <Block title="Summary">{summary}</Block>}
+      {summary && !fullReport && <Block title="Summary">{summary}</Block>}
       {strengths.length > 0 && (
         <Block title="Strengths" accent="success">
           <BulletList items={strengths} accent="success" />
@@ -400,6 +408,11 @@ function ValidatorOut({ o }: { o: Record<string, unknown> }) {
           <BulletList items={next} accent="primary" />
         </Block>
       )}
+      {fullReport && strengths.length === 0 && weaknesses.length === 0 && (
+        <Block title="Full Report">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
@@ -410,6 +423,99 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
   const solution = str(o.offer ?? o.solution);
   const outcome = str(o.outcome);
   const cta = str(o.cta);
+  // Edge function returns verbal_pitch + slide_narrative
+  const verbalPitch = str(o.verbal_pitch);
+  const slideNarrative = arr(o.slide_narrative);
+  const fullReport = str(o.full_report);
+
+  // If no structured fields, render verbal_pitch + slides
+  const hasStructured = headline || problem || solution || outcome || cta;
+
+  if (!hasStructured) {
+    return (
+      <div className="space-y-3">
+        {verbalPitch && (
+          <div
+            className="overflow-hidden rounded-xl p-5"
+            style={{
+              background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
+              border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+              borderLeft: "3px solid var(--primary)",
+            }}
+          >
+            <div
+              className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-3"
+              style={{ color: "var(--primary)" }}
+            >
+              60-Second Verbal Pitch
+            </div>
+            <div
+              className="whitespace-pre-wrap text-[13.5px] leading-relaxed"
+              style={{ color: "var(--foreground)" }}
+            >
+              {verbalPitch}
+            </div>
+          </div>
+        )}
+        {slideNarrative.length > 0 && (
+          <div
+            className="overflow-hidden rounded-xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            }}
+          >
+            <div
+              className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
+              style={{
+                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              10-Slide Narrative
+            </div>
+            <ol
+              className="divide-y"
+              style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
+            >
+              {slideNarrative.map((s, i) => {
+                const slide =
+                  typeof s === "object" && s ? (s as Record<string, unknown>) : { content: String(s) };
+                const title = str(slide.title ?? slide.slide ?? slide.name ?? `Slide ${i + 1}`);
+                const content = str(slide.content ?? slide.description ?? slide.body ?? slide.key_insight ?? slide.key_stat);
+                return (
+                  <li key={i} className="flex gap-3 px-4 py-3">
+                    <span
+                      className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                      style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1 text-[13.5px]">
+                      <div className="font-semibold" style={{ color: "var(--foreground)" }}>
+                        {title}
+                      </div>
+                      {content && (
+                        <div className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+                          {content}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        )}
+        {!verbalPitch && !slideNarrative.length && fullReport && (
+          <Block title="Pitch Package">
+            <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          </Block>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {headline && (
@@ -741,12 +847,14 @@ function WebsiteOut({ o }: { o: Record<string, unknown> }) {
 function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
   const score = num(o.survival_score, 0);
   const verdict = str(o.verdict);
-  const killShot = str(o.the_kill_shot);
-  const fatalFlaws = arr(o.fatal_flaws);
+  // Edge function returns fatal_flaw (singular) and reasons_to_fail array
+  const killShot = str(o.the_kill_shot ?? o.fatal_flaw);
+  const fatalFlaws = arr(o.fatal_flaws ?? o.reasons_to_fail);
   const marketRisks = arr(o.market_risks);
   const executionRisks = arr(o.execution_risks);
   const assumptions = arr(o.dangerous_assumptions);
-  const ifYouProceed = arr(o.if_you_proceed);
+  const ifYouProceed = arr(o.if_you_proceed ?? o.pivots);
+  const fullReport = str(o.full_report);
 
   const pct = Math.max(0, Math.min(100, score));
   const color = pct >= 65 ? "var(--warning)" : "var(--destructive)";
@@ -897,6 +1005,11 @@ function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
       {ifYouProceed.length > 0 && (
         <Block title="If you proceed — fix these first" accent="primary">
           <BulletList items={ifYouProceed} accent="primary" />
+        </Block>
+      )}
+      {fullReport && !killShot && fatalFlaws.length === 0 && (
+        <Block title="Devil's Advocate Report">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
         </Block>
       )}
     </div>
