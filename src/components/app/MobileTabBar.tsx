@@ -1,18 +1,42 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Rocket, Cpu, Inbox, FolderOpen } from "lucide-react";
+import { LayoutDashboard, BookOpen, Map, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { to: "/app/dashboard", label: "Home", icon: LayoutDashboard },
   {
-    to: "/app/launchpad",
-    label: "Tools",
-    icon: Rocket,
-    match: (p: string) => p.startsWith("/app/launchpad"),
+    to: "/app/mission-control",
+    label: "Mission",
+    icon: LayoutDashboard,
+    match: (p: string) =>
+      p.startsWith("/app/mission-control") || p === "/app/dashboard",
   },
-  { to: "/app/nova", label: "Nova", icon: Cpu, match: (p: string) => p.startsWith("/app/nova") },
-  { to: "/app/leads", label: "Leads", icon: Inbox },
-  { to: "/app/assets", label: "Assets", icon: FolderOpen },
+  {
+    to: "/app/academy",
+    label: "Academy",
+    icon: BookOpen,
+    match: (p: string) => p.startsWith("/app/academy"),
+  },
+  {
+    to: "/app/galaxy",
+    label: "Galaxy",
+    icon: Map,
+    match: (p: string) => p === "/app/galaxy",
+  },
+  {
+    to: "/app/scale",
+    label: "Scale",
+    icon: TrendingUp,
+    match: (p: string) =>
+      p.startsWith("/app/scale") ||
+      p.startsWith("/app/nova") ||
+      p.startsWith("/app/automations"),
+  },
+  {
+    to: "/app/settings",
+    label: "Settings",
+    icon: Settings,
+    match: (p: string) => p.startsWith("/app/settings"),
+  },
 ];
 
 export function MobileTabBar() {
