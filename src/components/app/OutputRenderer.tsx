@@ -578,10 +578,12 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
 
 function GtmOut({ o }: { o: Record<string, unknown> }) {
   const icp = str(o.icp);
-  const positioning = str(o.positioning);
-  const channels = arr(o.channels);
+  // Edge function returns positioning_statement, top_channels, kpis
+  const positioning = str(o.positioning ?? o.positioning_statement);
+  const channels = arr(o.channels ?? o.top_channels);
   const phases = arr(o.phases ?? o.timeline);
-  const priorities = arr(o.priorities);
+  const priorities = arr(o.priorities ?? o.kpis);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {icp && (
@@ -653,6 +655,11 @@ function GtmOut({ o }: { o: Record<string, unknown> }) {
           <BulletList items={priorities} accent="warning" />
         </Block>
       )}
+      {fullReport && !positioning && channels.length === 0 && (
+        <Block title="GTM Strategy">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
@@ -661,8 +668,10 @@ function OfferOut({ o }: { o: Record<string, unknown> }) {
   const name = str(o.name);
   const promise = str(o.promise);
   const deliverables = arr(o.deliverables);
-  const priceAnchor = str(o.price_anchor);
+  // Edge function returns price_recommendation, not price_anchor
+  const priceAnchor = str(o.price_anchor ?? o.price_recommendation ?? o.dream_outcome);
   const guarantee = str(o.guarantee);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {name && (
@@ -1017,12 +1026,15 @@ function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
 }
 
 function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
+  // Edge function returns overall_score, grade, dimension_scores
   const score = num(o.score ?? o.funding_score ?? o.overall_score, 0);
-  const verdict = str(o.verdict ?? o.summary);
-  const breakdown = arr(o.breakdown ?? o.criteria);
+  const verdict = str(o.verdict ?? o.summary ?? o.grade);
+  const breakdown = arr(o.breakdown ?? o.criteria ?? o.dimension_scores);
   const strengths = arr(o.investor_strengths ?? o.strengths);
   const weaknesses = arr(o.investor_concerns ?? o.weaknesses);
   const recommendations = arr(o.recommendations ?? o.next_steps);
+  const investorType = str(o.investor_type);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       <ScoreGauge value={score} label={verdict || "Fundability score"} />
@@ -1106,16 +1118,32 @@ function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
           <BulletList items={recommendations} accent="primary" />
         </Block>
       )}
+      {investorType && (
+        <Block title="Best investor match" accent="accent">
+          {investorType}
+        </Block>
+      )}
+      {fullReport && score === 0 && breakdown.length === 0 && (
+        <Block title="Funding Readiness Report">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
 
 function FirstTenOut({ o }: { o: Record<string, unknown> }) {
   const strategy = str(o.strategy ?? o.overview);
+  // Edge function returns steps array and template strings
   const channels = arr(o.channels ?? o.acquisition_channels);
-  const scripts = arr(o.outreach_scripts ?? o.scripts);
+  // Edge function returns steps array and cold_dm_template / cold_email_template strings
+  const scripts = arr(o.outreach_scripts ?? o.scripts ?? o.steps);
   const weekByWeek = arr(o.week_by_week ?? o.plan ?? o.timeline);
   const templates = arr(o.templates ?? o.outreach_templates);
+  const coldDm = str(o.cold_dm_template);
+  const coldEmail = str(o.cold_email_template);
+  const linkedin = str(o.linkedin_template);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {strategy && (
@@ -1232,19 +1260,41 @@ function FirstTenOut({ o }: { o: Record<string, unknown> }) {
           <BulletList items={templates} accent="success" />
         </Block>
       )}
+      {coldDm && (
+        <Block title="Cold DM Template" accent="primary">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{coldDm}</div>
+        </Block>
+      )}
+      {coldEmail && (
+        <Block title="Cold Email Template">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{coldEmail}</div>
+        </Block>
+      )}
+      {linkedin && (
+        <Block title="LinkedIn Outreach">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{linkedin}</div>
+        </Block>
+      )}
+      {fullReport && !strategy && scripts.length === 0 && !coldDm && (
+        <Block title="First 10 Customers Playbook">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
 
 function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
   const exec = str(o.executive_summary ?? o.summary);
-  const market = str(o.market_analysis ?? o.market);
+  // Edge function returns market_opportunity object, not market_analysis string
+  const market = str(o.market_analysis ?? o.market ?? JSON.stringify(o.market_opportunity ?? {}));
   const competitive = str(o.competitive_landscape ?? o.competition);
   const revenue = str(o.revenue_model ?? o.business_model);
   const gtm = str(o.go_to_market ?? o.gtm);
   const ops = str(o.operations ?? o.operational_plan);
   const financials = str(o.financial_projections ?? o.financials);
   const risks = arr(o.risks ?? o.key_risks);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {exec && (
@@ -1293,6 +1343,11 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       {risks.length > 0 && (
         <Block title="Key risks" accent="destructive">
           <BulletList items={risks} accent="destructive" />
+        </Block>
+      )}
+      {fullReport && !exec && risks.length === 0 && (
+        <Block title="Business Plan">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
         </Block>
       )}
     </div>
@@ -1384,10 +1439,15 @@ function InvestorEmailsOut({ o }: { o: Record<string, unknown> }) {
 
 function IdeaVsIdeaOut({ o }: { o: Record<string, unknown> }) {
   const winner = str(o.winner ?? o.recommended_idea);
-  const rationale = str(o.winner_rationale ?? o.rationale ?? o.recommendation);
+  // Edge fn returns rationale as array — join if needed
+  const rationaleRaw = o.winner_rationale ?? o.rationale ?? o.recommendation;
+  const rationale = Array.isArray(rationaleRaw)
+    ? (rationaleRaw as string[]).join("\n")
+    : str(rationaleRaw);
   const comparison = arr(o.comparison ?? o.criteria);
   const ideaA = str(o.idea_a_summary ?? o.idea_a);
   const ideaB = str(o.idea_b_summary ?? o.idea_b);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {winner && (
@@ -1466,19 +1526,27 @@ function IdeaVsIdeaOut({ o }: { o: Record<string, unknown> }) {
           </div>
         </div>
       )}
+      {fullReport && !winner && (
+        <Block title="Idea Comparison">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
 
 function LandingPageOut({ o }: { o: Record<string, unknown> }) {
-  const headline = str(o.headline);
-  const subheadline = str(o.subheadline ?? o.sub_headline);
-  const heroCopy = str(o.hero_copy ?? o.hero);
-  const features = arr(o.features ?? o.value_props);
+  // Edge function returns hero as an object — extract fields from it
+  const heroObj = (typeof o.hero === "object" && o.hero ? o.hero : {}) as Record<string, unknown>;
+  const headline = str(o.headline ?? heroObj.headline);
+  const subheadline = str(o.subheadline ?? o.sub_headline ?? heroObj.subheadline);
+  const heroCopy = str(o.hero_copy ?? heroObj.copy ?? heroObj.body);
+  const features = arr(o.features ?? o.value_props ?? o.sections);
   const socialProof = str(o.social_proof ?? o.testimonial_hooks);
-  const cta = str(o.cta ?? o.call_to_action);
+  const cta = str(o.cta ?? o.call_to_action ?? heroObj.cta);
   const seoKeywords = arr(o.seo_keywords ?? o.keywords);
   const abVariants = arr(o.ab_variants ?? o.headline_variants);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {headline && (
@@ -1588,16 +1656,25 @@ function LandingPageOut({ o }: { o: Record<string, unknown> }) {
           <BulletList items={seoKeywords} />
         </Block>
       )}
+      {fullReport && !headline && !heroCopy && (
+        <Block title="Landing Page Copy">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
 
 function CompetitorOut({ o }: { o: Record<string, unknown> }) {
   const overview = str(o.market_overview ?? o.overview);
-  const competitors = arr(o.competitors);
+  // Edge function returns tier1 + tier2 arrays instead of a combined competitors array
+  const tier1 = arr(o.tier1);
+  const tier2 = arr(o.tier2);
+  const competitors = arr(o.competitors).length > 0 ? arr(o.competitors) : [...tier1, ...tier2];
   const gaps = arr(o.gaps ?? o.market_gaps);
-  const opportunity = str(o.positioning_opportunity ?? o.opportunity);
+  const opportunity = str(o.positioning_opportunity ?? o.opportunity ?? o.winning_angle);
   const gtm = str(o.go_to_market ?? o.recommendation);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {overview && (
@@ -1684,16 +1761,30 @@ function CompetitorOut({ o }: { o: Record<string, unknown> }) {
           {gtm}
         </Block>
       )}
+      {fullReport && competitors.length === 0 && !opportunity && (
+        <Block title="Competitive Analysis">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+        </Block>
+      )}
     </div>
   );
 }
 
 function PricingOut({ o }: { o: Record<string, unknown> }) {
-  const model = str(o.recommended_model ?? o.pricing_model ?? o.model);
+  // Edge function returns recommended_strategy and recommended_price (number)
+  const model = str(o.recommended_model ?? o.pricing_model ?? o.model ?? o.recommended_strategy);
   const rationale = str(o.rationale ?? o.positioning_rationale);
+  const recommendedPrice = o.recommended_price != null ? `$${String(o.recommended_price)}` : "";
   const tiers = arr(o.pricing_tiers ?? o.tiers ?? o.plans);
   const comparison = str(o.competitor_comparison ?? o.market_context);
-  const revenue = arr(o.revenue_projections ?? o.projections);
+  // Edge function returns revenue_projections as object with scenarios, not array
+  const revenueObj = o.revenue_projections;
+  const revenue = Array.isArray(revenueObj)
+    ? (revenueObj as unknown[])
+    : revenueObj && typeof revenueObj === "object"
+      ? Object.entries(revenueObj as Record<string, unknown>).map(([k, v]) => `${k}: ${String(v)}`)
+      : [];
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {model && (
@@ -1797,10 +1888,20 @@ function PricingOut({ o }: { o: Record<string, unknown> }) {
           })}
         </div>
       )}
+      {recommendedPrice && !model && (
+        <Block title="Recommended Price" accent="success">
+          <span className="font-display text-2xl font-bold">{recommendedPrice}</span>
+        </Block>
+      )}
       {comparison && <Block title="Competitor comparison">{comparison}</Block>}
       {revenue.length > 0 && (
         <Block title="Revenue projections" accent="success">
           <BulletList items={revenue} accent="success" />
+        </Block>
+      )}
+      {fullReport && !model && tiers.length === 0 && (
+        <Block title="Pricing Strategy">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
         </Block>
       )}
     </div>
@@ -1809,10 +1910,18 @@ function PricingOut({ o }: { o: Record<string, unknown> }) {
 
 function RevenueOut({ o }: { o: Record<string, unknown> }) {
   const assumptions = arr(o.assumptions);
+  // Edge function returns conservative_scenario, base_scenario, optimistic_scenario objects
   const projections = arr(o.projections ?? o.monthly_projections ?? o.yearly_projections);
+  const baseScenario = o.base_scenario as Record<string, unknown> | undefined;
+  const conservativeScenario = o.conservative_scenario as Record<string, unknown> | undefined;
+  const optimisticScenario = o.optimistic_scenario as Record<string, unknown> | undefined;
+  const growthLevers = arr(o.growth_levers);
+  const breakeven = str(o.breakeven_analysis);
+  const verdict = str(o.unit_economics_verdict);
   const totalArr = str(o.total_arr ?? o.projected_arr ?? o.arr);
   const milestones = arr(o.milestones);
   const risks = arr(o.risks ?? o.key_risks);
+  const fullReport = str(o.full_report);
   return (
     <div className="space-y-3">
       {totalArr && (
@@ -1910,6 +2019,42 @@ function RevenueOut({ o }: { o: Record<string, unknown> }) {
       {risks.length > 0 && (
         <Block title="Revenue risks" accent="warning">
           <BulletList items={risks} accent="warning" />
+        </Block>
+      )}
+      {/* Edge function scenario blocks */}
+      {!projections.length && (baseScenario || conservativeScenario || optimisticScenario) && (
+        <div className="space-y-2">
+          {[
+            { label: "Conservative", data: conservativeScenario, accent: "warning" as const },
+            { label: "Base", data: baseScenario, accent: "primary" as const },
+            { label: "Optimistic", data: optimisticScenario, accent: "success" as const },
+          ]
+            .filter((s) => s.data)
+            .map((s) => (
+              <Block key={s.label} title={`${s.label} scenario`} accent={s.accent}>
+                <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
+                  {Object.entries(s.data as Record<string, unknown>)
+                    .map(([k, v]) => `${k}: ${String(v)}`)
+                    .join("\n")}
+                </div>
+              </Block>
+            ))}
+        </div>
+      )}
+      {verdict && (
+        <Block title="Unit economics verdict" accent="accent">
+          {verdict}
+        </Block>
+      )}
+      {breakeven && <Block title="Breakeven analysis">{breakeven}</Block>}
+      {growthLevers.length > 0 && (
+        <Block title="Growth levers" accent="primary">
+          <BulletList items={growthLevers} accent="primary" />
+        </Block>
+      )}
+      {fullReport && !totalArr && projections.length === 0 && !baseScenario && (
+        <Block title="Revenue Projection">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
         </Block>
       )}
     </div>
