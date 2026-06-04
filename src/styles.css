@@ -81,8 +81,8 @@
   --color-sidebar-border:       var(--sidebar-border);
   --color-sidebar-ring:         var(--sidebar-ring);
 
-  --font-sans:    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Inter Display", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Times New Roman", Times, Georgia, serif;
+  --font-display: "Times New Roman", Times, Georgia, serif;
   --font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --text-xs:   clamp(0.72rem, 0.68rem + 0.2vw, 0.8rem);
@@ -116,7 +116,6 @@
   brushed metal under launch-pad floodlights. True white highlights pop
   against deep tan backgrounds. Orange is pure signal energy.
 */
-:root,
 .dark {
   /* ── Backgrounds (deep warm tan — layered depth) ── */
   --background:    #1A1208;
@@ -223,30 +222,31 @@
   --modal-overlay: rgba(0, 0, 0, 0.80);
 }
 
-/* ─────────────────────────── Light theme: White & Tan Launch Deck ─────────────────────────── */
+/* ─────────────────────────── Light theme (default): Warm White & Tan ─────────────────────────── */
 /*
-  Visual story: Clean white mission surfaces — stark, precise, modern.
-  Tan accents warm the structure. True orange pops with maximum contrast
-  against white. Feels like a premium product — Apple-meets-SpaceX.
+  Visual story: Warm editorial paper — like a premium business document.
+  White/tan surfaces, warm brown text, orange/brown accent.
+  Times New Roman at its best. Clean, serious, trustworthy.
 */
+:root,
 .light {
-  /* ── Backgrounds — pure white primary, tan secondary depth ── */
-  --background:    #FFFFFF;
+  /* ── Backgrounds — warm paper white, tan depth ── */
+  --background:    #FAF7F2;
   --bg-elevated:   #FFFFFF;
-  --bg-panel:      #F5EFE4;
+  --bg-panel:      #F0E8D8;
 
-  /* ── Surfaces — white cards on tan field ── */
+  /* ── Surfaces — white cards on warm field ── */
   --surface:           #FFFFFF;
-  --surface-2:         #FAF5EC;
-  --surface-offset:    #F0E6D2;
-  --surface-secondary: #FAF5EC;
-  --surface-tertiary:  #F0E6D2;
+  --surface-2:         #F3EDE1;
+  --surface-offset:    #EBE2D0;
+  --surface-secondary: #F3EDE1;
+  --surface-tertiary:  #EBE2D0;
 
-  /* ── Text — near-black on white, crisp legibility ── */
-  --foreground:        #18100A;
+  /* ── Text — warm near-black, editorial ── */
+  --foreground:        #1C1208;
   --text-inverse:      #FFFFFF;
-  --muted-foreground:  #8C6240;
-  --text-faint:        #C4976A;
+  --muted-foreground:  #7A6348;
+  --text-faint:        #B8956A;
 
   /* ── Card / Popover ── */
   --card:              var(--surface);
@@ -254,13 +254,13 @@
   --popover:           #FFFFFF;
   --popover-foreground:var(--foreground);
 
-  /* ── Primary — True Orange on white (maximum contrast) ── */
-  --primary:           #E8500A;
+  /* ── Primary — Orange-brown on warm tan (editorial energy) ── */
+  --primary:           #C85D0A;
   --primary-foreground:#FFFFFF;
-  --primary-hover:     #C43D06;
-  --primary-active:    #A33005;
-  --primary-soft:      rgba(232,80,10,0.08);
-  --primary-glow:      rgba(232,80,10,0.18);
+  --primary-hover:     #A84808;
+  --primary-active:    #8A3906;
+  --primary-soft:      rgba(200,93,10,0.09);
+  --primary-glow:      rgba(200,93,10,0.16);
 
   /* ── Secondary ── */
   --secondary:            #FAF5EC;
@@ -273,9 +273,9 @@
   --accent-glow:       rgba(194,122,26,0.18);
 
   /* ── Orange alias ── */
-  --orange:            #E8500A;
+  --orange:            #C85D0A;
   --orange-foreground: #FFFFFF;
-  --orange-glow:       rgba(232,80,10,0.15);
+  --orange-glow:       rgba(200,93,10,0.14);
 
   /* ── Muted ── */
   --muted:             #FAF5EC;
@@ -321,15 +321,15 @@
   --gradient-1: linear-gradient(135deg, #E8500A 0%, #C27A1A 100%);
   --gradient-2: linear-gradient(135deg, #FFFFFF 0%, #F0E6D2 100%);
 
-  /* ── Sidebar — tan warm rail ── */
-  --sidebar:                    #F5EFE4;
-  --sidebar-foreground:         #18100A;
-  --sidebar-primary:            #E8500A;
+  /* ── Sidebar — warm tan rail ── */
+  --sidebar:                    #F0E8D8;
+  --sidebar-foreground:         #1C1208;
+  --sidebar-primary:            #D4560A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             rgba(232,80,10,0.08);
-  --sidebar-accent-foreground:  #18100A;
-  --sidebar-border:             rgba(160,100,40,0.12);
-  --sidebar-ring:               #E8500A;
+  --sidebar-accent:             rgba(212,86,10,0.08);
+  --sidebar-accent-foreground:  #1C1208;
+  --sidebar-border:             rgba(140,90,40,0.14);
+  --sidebar-ring:               #D4560A;
 
   /* ── Modal overlay ── */
   --modal-overlay: rgba(0, 0, 0, 0.50);
@@ -342,22 +342,22 @@
   html {
     height: 100%;
     scroll-behavior: smooth;
+    background-color: #FAF7F2;
+    color: #18100A;
+    color-scheme: light;
+  }
+
+  html.dark {
     background-color: #1A1208;
     color: #FFFFFF;
     color-scheme: dark;
-  }
-
-  html.light {
-    background-color: #FFFFFF;
-    color: #18100A;
-    color-scheme: light;
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02","cv03","cv04","cv11","ss01";
+    font-feature-settings: "kern", "liga";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     height: 100%;
@@ -365,7 +365,7 @@
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.01em;
     font-weight: 700;
   }
 

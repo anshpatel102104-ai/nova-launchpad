@@ -480,14 +480,24 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
             >
               {slideNarrative.map((s, i) => {
                 const slide =
-                  typeof s === "object" && s ? (s as Record<string, unknown>) : { content: String(s) };
+                  typeof s === "object" && s
+                    ? (s as Record<string, unknown>)
+                    : { content: String(s) };
                 const title = str(slide.title ?? slide.slide ?? slide.name ?? `Slide ${i + 1}`);
-                const content = str(slide.content ?? slide.description ?? slide.body ?? slide.key_insight ?? slide.key_stat);
+                const content = str(
+                  slide.content ??
+                    slide.description ??
+                    slide.body ??
+                    slide.key_insight ??
+                    slide.key_stat,
+                );
                 return (
                   <li key={i} className="flex gap-3 px-4 py-3">
                     <span
                       className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                      style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+                      style={{
+                        background: "linear-gradient(135deg, var(--primary), var(--accent))",
+                      }}
                     >
                       {i + 1}
                     </span>
@@ -496,7 +506,10 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
                         {title}
                       </div>
                       {content && (
-                        <div className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+                        <div
+                          className="mt-0.5 text-[13px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
                           {content}
                         </div>
                       )}

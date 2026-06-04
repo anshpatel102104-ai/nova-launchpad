@@ -14,9 +14,7 @@ import {
   X,
   Settings,
   ScrollText,
-  ChevronRight,
   Loader2,
-  Lock,
   ToggleLeft,
   ToggleRight,
   Clock,
@@ -25,7 +23,6 @@ import {
   AlertCircle,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/automations")({ component: AutomationsPage });
 
@@ -57,7 +54,6 @@ const AUTOMATIONS = [
     description: "Automatically schedule calls and appointments with qualified leads 24/7.",
     icon: Phone,
     metric: "calls booked",
-    color: "#4B8BF4",
     configFields: [
       {
         key: "calendar_url",
@@ -83,7 +79,6 @@ const AUTOMATIONS = [
     description: "Send intelligent follow-up messages that adapt to prospect behavior.",
     icon: Mail,
     metric: "emails sent",
-    color: "#8B5CF6",
     configFields: [
       { key: "sequence_name", label: "Sequence Name", placeholder: "Cold Lead Nurture" },
       { key: "from_email", label: "From Email", placeholder: "you@yourdomain.com" },
@@ -98,7 +93,6 @@ const AUTOMATIONS = [
     description: "Auto-update deal stages, add notes, and notify your team on pipeline changes.",
     icon: Workflow,
     metric: "deals updated",
-    color: "#F97316",
     configFields: [
       { key: "pipeline_webhook", label: "Webhook URL (optional)", placeholder: "https://..." },
       { key: "notify_email", label: "Notification Email", placeholder: "team@company.com" },
@@ -113,7 +107,6 @@ const AUTOMATIONS = [
       "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
     icon: UserCheck,
     metric: "leads qualified",
-    color: "var(--success)",
     configFields: [
       { key: "score_threshold", label: "Minimum Qualification Score (0-100)", placeholder: "65" },
       {
@@ -136,7 +129,6 @@ const AUTOMATIONS = [
       "Automated SMS sequences for lead nurture, appointment reminders, and re-engagement.",
     icon: MessageSquare,
     metric: "SMS sent",
-    color: "#EC4899",
     configFields: [
       { key: "twilio_sid", label: "Twilio Account SID", placeholder: "ACxxxxxxxxxxxxxxxx" },
       { key: "twilio_token", label: "Twilio Auth Token", placeholder: "••••••••••••••••" },
@@ -150,7 +142,6 @@ const AUTOMATIONS = [
     description: "AI-powered outbound calls that qualify leads and set appointments automatically.",
     icon: Star,
     metric: "calls made",
-    color: "#FBBF24",
     configFields: [
       {
         key: "voice_agent_id",
@@ -241,51 +232,40 @@ function AutomationsPage() {
 
   if (!currentOrgId) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-center">
-        <p style={{ color: "var(--muted-foreground)" }}>Loading workspace…</p>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+          Loading workspace…
+        </p>
       </div>
     );
   }
 
-  /* Plan gate */
   if (automationGate.isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--primary)" }} />
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--muted-foreground)" }} />
       </div>
     );
   }
+
+  const activeCount = AUTOMATIONS.filter((a) => isActive(a.slug)).length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{
-              background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
-              boxShadow: "0 0 20px rgba(75,139,244,0.3)",
-            }}
-          >
-            <Zap className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1
-              className="font-display text-2xl font-bold tracking-tight"
-              style={{ color: "var(--foreground)" }}
-            >
-              Automation Systems
-            </h1>
-            <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-              6 AI-powered systems running 24/7
-            </p>
-          </div>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            Automations
+          </h1>
+          <p className="text-[13px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            {activeCount} of {AUTOMATIONS.length} systems active
+          </p>
         </div>
       </div>
 
       {/* Automation cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {AUTOMATIONS.map((automation) => {
           const active = isActive(automation.slug);
           const cfg = getConfig(automation.slug);
@@ -293,185 +273,152 @@ function AutomationsPage() {
           const toggling =
             toggleMutation.isPending && toggleMutation.variables?.slug === automation.slug;
 
-          /* Simple metric placeholder — real metrics would come from logs */
           const metricValue = active ? Math.floor(Math.random() * 50 + 5) : 0;
 
           return (
             <div
               key={automation.slug}
-              className="relative overflow-hidden rounded-2xl transition-all duration-200"
+              className="relative rounded-xl p-4 transition-colors"
               style={{
                 background: "var(--surface)",
-                border: `1px solid ${active ? automation.color + "30" : "var(--border)"}`,
-                boxShadow: active
-                  ? `0 0 0 1px ${automation.color}10, 0 4px 20px rgba(0,0,0,0.3)`
-                  : "0 1px 3px rgba(0,0,0,0.3)",
+                border: `1px solid ${active ? "color-mix(in oklab, var(--primary) 30%, transparent)" : "var(--border)"}`,
               }}
             >
-              {/* Top accent */}
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0"
+                    style={{
+                      background: active ? "var(--primary-soft)" : "var(--surface-2)",
+                    }}
+                  >
+                    <Icon
+                      className="h-4 w-4"
+                      style={{ color: active ? "var(--primary)" : "var(--muted-foreground)" }}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div
+                      className="font-semibold text-[13px] truncate"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {automation.name}
+                    </div>
+                    <span
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium mt-0.5"
+                      style={
+                        active
+                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                          : cfg
+                            ? {
+                                background: "var(--surface-2)",
+                                color: "var(--muted-foreground)",
+                                border: "1px solid var(--border)",
+                              }
+                            : {
+                                background: "var(--surface-2)",
+                                color: "var(--muted-foreground)",
+                                border: "1px solid var(--border)",
+                              }
+                      }
+                    >
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ background: "currentColor" }}
+                      />
+                      {active ? "Active" : cfg ? "Paused" : "Not configured"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => toggleMutation.mutate({ slug: automation.slug, active: !active })}
+                  disabled={toggling}
+                  className="shrink-0 transition-colors"
+                  style={{ color: active ? "var(--primary)" : "var(--muted-foreground)" }}
+                  title={active ? "Pause" : "Activate"}
+                >
+                  {toggling ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : active ? (
+                    <ToggleRight className="h-5 w-5" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+
+              <p
+                className="text-[12px] leading-relaxed mb-3"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {automation.description}
+              </p>
+
               {active && (
                 <div
-                  className="absolute top-0 left-0 right-0 h-px"
+                  className="rounded-lg px-3 py-2 mb-3 flex items-center gap-2"
                   style={{
-                    background: `linear-gradient(90deg, transparent, ${automation.color}70, transparent)`,
+                    background: "var(--primary-soft)",
                   }}
-                />
+                >
+                  <span
+                    className="font-mono font-bold text-[15px]"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {metricValue}
+                  </span>
+                  <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                    {automation.metric} this week
+                  </span>
+                </div>
               )}
 
-              <div className="p-5">
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-xl"
-                      style={{
-                        background: active
-                          ? `${automation.color}18`
-                          : "var(--surface-elevated, #16161F)",
-                        border: `1px solid ${active ? automation.color + "30" : "var(--surface-2)"}`,
-                      }}
-                    >
-                      <Icon
-                        className="h-5 w-5"
-                        style={{ color: active ? automation.color : "var(--muted-foreground)" }}
-                      />
-                    </div>
-                    <div>
-                      <div
-                        className="font-semibold text-[14px]"
-                        style={{ color: "var(--foreground)" }}
-                      >
-                        {automation.name}
-                      </div>
-                      {/* Status badge */}
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium mt-0.5"
-                        style={
-                          active
-                            ? {
-                                background: `${automation.color}15`,
-                                color: automation.color,
-                                border: `1px solid ${automation.color}25`,
-                              }
-                            : cfg
-                              ? {
-                                  background: "rgba(251,191,36,0.1)",
-                                  color: "#FBBF24",
-                                  border: "1px solid rgba(251,191,36,0.2)",
-                                }
-                              : {
-                                  background: "var(--surface-2)",
-                                  color: "var(--muted-foreground)",
-                                  border: "1px solid var(--border)",
-                                }
-                        }
-                      >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full"
-                          style={{ background: "currentColor" }}
-                        />
-                        {active ? "Active" : cfg ? "Paused" : "Not Configured"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Toggle */}
-                  <button
-                    onClick={() =>
-                      toggleMutation.mutate({ slug: automation.slug, active: !active })
-                    }
-                    disabled={toggling}
-                    className="shrink-0 transition-all"
-                    style={{ color: active ? automation.color : "var(--muted-foreground)" }}
-                    title={active ? "Pause automation" : "Activate automation"}
-                  >
-                    {toggling ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : active ? (
-                      <ToggleRight className="h-6 w-6" />
-                    ) : (
-                      <ToggleLeft className="h-6 w-6" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Description */}
-                <p
-                  className="text-[12.5px] leading-relaxed mb-4"
-                  style={{ color: "var(--muted-foreground)" }}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setConfigSlug(automation.slug)}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      "color-mix(in oklab, var(--primary) 40%, transparent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                  }}
                 >
-                  {automation.description}
-                </p>
-
-                {/* Live metric */}
-                {active && (
-                  <div
-                    className="rounded-lg px-3 py-2 mb-4 flex items-center gap-2"
-                    style={{
-                      background: `${automation.color}08`,
-                      border: `1px solid ${automation.color}15`,
-                    }}
-                  >
-                    <span
-                      className="font-mono font-bold text-[16px]"
-                      style={{ color: automation.color }}
-                    >
-                      {metricValue}
-                    </span>
-                    <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                      {automation.metric} this week
-                    </span>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setConfigSlug(automation.slug)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
-                    style={{
-                      background: "var(--surface-2)",
-                      border: "1px solid var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = `${automation.color}40`;
-                      (e.currentTarget as HTMLElement).style.background = `${automation.color}08`;
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                    }}
-                  >
-                    <Settings className="h-3.5 w-3.5" />
-                    Configure
-                  </button>
-                  <button
-                    onClick={() => setLogsSlug(automation.slug)}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all"
-                    style={{
-                      background: "var(--surface-2)",
-                      border: "1px solid var(--border)",
-                      color: "var(--muted-foreground)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                    }}
-                  >
-                    <ScrollText className="h-3.5 w-3.5" />
-                    Logs
-                  </button>
-                </div>
+                  <Settings className="h-3.5 w-3.5" />
+                  Configure
+                </button>
+                <button
+                  onClick={() => setLogsSlug(automation.slug)}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    color: "var(--muted-foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                  }}
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  Logs
+                </button>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Config slide-over */}
       {configSlug && (
         <ConfigPanel
           slug={configSlug}
@@ -485,7 +432,6 @@ function AutomationsPage() {
         />
       )}
 
-      {/* Logs slide-over */}
       {logsSlug && (
         <LogsPanel
           slug={logsSlug}
@@ -539,41 +485,26 @@ function ConfigPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
-
-      {/* Panel */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative ml-auto flex h-full w-full max-w-md flex-col"
         style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
-        {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{
-                background: `${automation.color}15`,
-                border: `1px solid ${automation.color}25`,
-              }}
-            >
-              <Settings className="h-4 w-4" style={{ color: automation.color }} />
+          <div>
+            <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
+              Configure
             </div>
-            <div>
-              <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
-                Configure
-              </div>
-              <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-                {automation.name}
-              </div>
+            <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+              {automation.name}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) =>
               ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
@@ -586,13 +517,12 @@ function ConfigPanel({
           </button>
         </div>
 
-        {/* Form */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
           {automation.configFields.map((field) => (
             <div key={field.key}>
               <label
                 className="block text-[12px] font-medium mb-1.5"
-                style={{ color: "var(--foreground)" }}
+                style={{ color: "var(--muted-foreground)" }}
               >
                 {field.label}
               </label>
@@ -612,13 +542,11 @@ function ConfigPanel({
                   color: "var(--foreground)",
                 }}
                 onFocus={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = `${automation.color}60`;
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    `0 0 0 3px ${automation.color}12`;
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "color-mix(in oklab, var(--primary) 50%, transparent)";
                 }}
                 onBlur={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
                 }}
               />
             </div>
@@ -628,9 +556,9 @@ function ConfigPanel({
             <div
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]"
               style={{
-                background: "color-mix(in oklab, var(--destructive) 10%, transparent)",
-                border: "1px solid rgba(239,68,68,0.2)",
-                color: "var(--destructive)",
+                background: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
+                border: "1px solid color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
+                color: "var(--foreground)",
               }}
             >
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -639,14 +567,13 @@ function ConfigPanel({
           )}
         </div>
 
-        {/* Footer */}
         <div
-          className="flex items-center justify-end gap-3 px-6 py-4"
+          className="flex items-center justify-end gap-2 px-5 py-4 shrink-0"
           style={{ borderTop: "1px solid var(--border)" }}
         >
           <button
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all"
+            className="rounded-lg px-4 py-2 text-[13px] font-medium"
             style={{
               background: "var(--surface-2)",
               border: "1px solid var(--border)",
@@ -658,14 +585,11 @@ function ConfigPanel({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium text-white transition-all"
-            style={{
-              background: `linear-gradient(135deg, ${automation.color}, ${automation.color}cc)`,
-              boxShadow: `0 4px 15px ${automation.color}30`,
-            }}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity hover:opacity-80 disabled:opacity-60"
+            style={{ background: "var(--primary)", color: "#fff" }}
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Save Configuration
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            Save
           </button>
         </div>
       </div>
@@ -694,18 +618,18 @@ function LogsPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative ml-auto flex h-full w-full max-w-lg flex-col"
         style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div>
             <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
-              Recent Logs
+              Logs
             </div>
             <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
               {automationName}
@@ -713,7 +637,7 @@ function LogsPanel({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) =>
               ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
@@ -726,19 +650,19 @@ function LogsPanel({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-5 py-5">
           {logsQ.isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2
-                className="h-5 w-5 animate-spin"
+                className="h-4 w-4 animate-spin"
                 style={{ color: "var(--muted-foreground)" }}
               />
             </div>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <ScrollText
-                className="h-8 w-8 mb-3"
-                style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+                className="h-7 w-7 mb-3"
+                style={{ color: "var(--muted-foreground)", opacity: 0.3 }}
               />
               <p className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>
                 No logs yet
@@ -756,22 +680,27 @@ function LogsPanel({
                     : log.status === "error"
                       ? XCircle
                       : Clock;
-                const color =
-                  log.status === "success"
-                    ? "var(--success)"
-                    : log.status === "error"
-                      ? "var(--destructive)"
-                      : "#FBBF24";
+                const isSuccess = log.status === "success";
+                const isError = log.status === "error";
                 return (
                   <div
                     key={log.id}
                     className="flex items-start gap-3 rounded-lg px-3 py-2.5"
                     style={{
-                      background: "var(--surface)",
-                      border: "1px solid var(--surface-2)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--border)",
                     }}
                   >
-                    <Icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color }} />
+                    <Icon
+                      className="h-4 w-4 mt-0.5 shrink-0"
+                      style={{
+                        color: isSuccess
+                          ? "var(--primary)"
+                          : isError
+                            ? "var(--muted-foreground)"
+                            : "var(--muted-foreground)",
+                      }}
+                    />
                     <div className="min-w-0 flex-1">
                       <div
                         className="text-[12.5px] font-medium"
@@ -792,8 +721,16 @@ function LogsPanel({
                       </div>
                     </div>
                     <span
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shrink-0"
-                      style={{ background: `${color}12`, color, border: `1px solid ${color}20` }}
+                      className="rounded-md px-2 py-0.5 text-[10px] font-medium capitalize shrink-0"
+                      style={
+                        isSuccess
+                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                          : {
+                              background: "var(--surface-2)",
+                              color: "var(--muted-foreground)",
+                              border: "1px solid var(--border)",
+                            }
+                      }
                     >
                       {log.status}
                     </span>

@@ -307,6 +307,99 @@ export async function disconnectIntegration(userId: string, integrationKey: stri
   if (error) throw error;
 }
 
+// ── Company Memory ────────────────────────────────────────────────────────────
+
+export type MemorySource = {
+  id: string;
+  org_id: string;
+  user_id: string;
+  source_type: string;
+  source_label: string | null;
+  source_url: string | null;
+  status: "pending" | "indexing" | "indexed" | "error";
+  error_message: string | null;
+  artifact_count: number;
+  last_synced_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MemoryArtifact = {
+  id: string;
+  org_id: string;
+  user_id: string;
+  source_id: string | null;
+  source_type: string;
+  source_label: string | null;
+  title: string;
+  content_preview: string | null;
+  content_hash: string | null;
+  token_count: number | null;
+  status: "indexed" | "stale" | "error";
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export const memorySourcesQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["memory_sources", orgId],
+    queryFn: async (): Promise<MemorySource[]> => {
+      if (isGuest()) return [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data, error } = await db
+        .from("memory_sources")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as MemorySource[];
+    },
+  });
+
+export const memoryArtifactsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["memory_artifacts", orgId],
+    queryFn: async (): Promise<MemoryArtifact[]> => {
+      if (isGuest()) return [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data, error } = await db
+        .from("memory_artifacts")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as unknown as MemoryArtifact[];
+    },
+  });
+
+export async function addMemorySource(
+  orgId: string,
+  userId: string,
+  payload: Pick<MemorySource, "source_type" | "source_label" | "source_url">,
+) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+  const { data, error } = await db
+    .from("memory_sources")
+    .insert({ org_id: orgId, user_id: userId, ...payload })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as unknown as MemorySource;
+}
+
+export async function deleteMemorySource(sourceId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+  const { error } = await db.from("memory_sources").delete().eq("id", sourceId);
+  if (error) throw error;
+}
+
 // ── AI Dashboard ─────────────────────────────────────────────────────────────
 
 export type GenerateDashboardInput = {

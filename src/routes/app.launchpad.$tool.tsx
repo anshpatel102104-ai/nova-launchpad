@@ -1104,26 +1104,17 @@ function ToolPage() {
         {/* LEFT — inputs */}
         <div className="space-y-4 lg:col-span-3">
           <div
-            className="overflow-hidden rounded-2xl"
+            className="overflow-hidden rounded-xl"
             style={{
               background: "var(--surface)",
-              border: "1px solid color-mix(in oklab, var(--primary) 18%, transparent)",
-              boxShadow:
-                "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px color-mix(in oklab, var(--primary) 6%, transparent)",
+              border: "1px solid var(--border)",
             }}
           >
             <div
-              className="h-px"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 55%, transparent), color-mix(in oklab, var(--accent) 30%, transparent), transparent)",
-              }}
-            />
-            <div
               className="flex items-center justify-between px-5 py-3"
               style={{
-                borderBottom: "1px solid color-mix(in oklab, var(--primary) 10%, transparent)",
-                background: "color-mix(in oklab, var(--primary) 3%, transparent)",
+                borderBottom: "1px solid var(--border)",
+                background: "var(--surface-2)",
               }}
             >
               <div
@@ -1284,22 +1275,8 @@ function ToolPage() {
                   (generating || !formValid || !effectiveWired) && "cursor-not-allowed opacity-50",
                 )}
                 style={{
-                  background: "linear-gradient(135deg, var(--primary), var(--accent))",
+                  background: "var(--primary)",
                   color: "white",
-                  boxShadow:
-                    "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
-                onMouseEnter={(e: React.MouseEvent) => {
-                  if (!generating && formValid && effectiveWired) {
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                    (e.currentTarget as HTMLElement).style.boxShadow =
-                      "0 6px 24px color-mix(in oklab, var(--primary) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
-                  }
-                }}
-                onMouseLeave={(e: React.MouseEvent) => {
-                  (e.currentTarget as HTMLElement).style.transform = "none";
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 4px 20px color-mix(in oklab, var(--primary) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
                 }}
               >
                 {generating ? (
@@ -1362,8 +1339,7 @@ function ToolPage() {
               className="overflow-hidden rounded-2xl"
               style={{
                 background: "var(--surface)",
-                border: "1px solid color-mix(in oklab, var(--border) 80%, transparent)",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                border: "1px solid var(--border)",
               }}
             >
               <div
@@ -1458,27 +1434,18 @@ function ToolPage() {
         {/* RIGHT — output */}
         <div className="lg:col-span-2">
           <div
-            className="sticky overflow-hidden rounded-2xl"
+            className="sticky overflow-hidden rounded-xl"
             style={{
               top: "72px",
               background: "var(--surface)",
-              border: "1px solid color-mix(in oklab, var(--accent) 18%, transparent)",
-              boxShadow:
-                "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px color-mix(in oklab, var(--accent) 6%, transparent)",
+              border: "1px solid var(--border)",
             }}
           >
             <div
-              className="h-px"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 55%, transparent), color-mix(in oklab, var(--primary) 30%, transparent), transparent)",
-              }}
-            />
-            <div
               className="px-5 py-4"
               style={{
-                borderBottom: "1px solid color-mix(in oklab, var(--accent) 10%, transparent)",
-                background: "color-mix(in oklab, var(--accent) 3%, transparent)",
+                borderBottom: "1px solid var(--border)",
+                background: "var(--surface-2)",
               }}
             >
               <OutputHeader
