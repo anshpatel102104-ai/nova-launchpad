@@ -7,23 +7,17 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ALLOWED_FLAT = new Set([
-  "stripe",
-  "gohighlevel",
-  "airtable",
-  "zapier",
-  "slack",
-  "google_calendar",
-  "gmail",
-  "anthropic",
-  "openai",
-]);
-// Nova module webhooks use the "nova:webhook:<module>" prefix.
+// Accept any lowercase-alpha-start key with letters/digits/underscores/dashes (2-64 chars).
+// This covers all catalog keys and user-defined custom integration keys.
+const SAFE_KEY_RE = /^[a-z][a-z0-9_-]{1,63}$/;
+// Nova module webhooks keep their own prefix format.
 const NOVA_WEBHOOK_RE = /^nova:webhook:[a-z0-9_-]{1,64}$/;
-function isAllowedKey(k: string) {
-  return ALLOWED_FLAT.has(k) || NOVA_WEBHOOK_RE.test(k);
+
+function isAllowedKey(k: string): boolean {
+  return SAFE_KEY_RE.test(k) || NOVA_WEBHOOK_RE.test(k);
 }
 
+// Per-key validation for well-known integrations with strict formats.
 function validateValue(integrationKey: string, value: string): string | null {
   if (!value) return null; // clearing is always allowed
 
@@ -41,23 +35,37 @@ function validateValue(integrationKey: string, value: string): string | null {
       if (value.length < 10) return "API key is too short";
       return null;
 
-    case "zapier":
+    case "zapier": {
+      let url: URL;
+      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
+      if (url.protocol !== "https:") return "URL must use https://";
+      if (!url.hostname.includes("zapier.com")) return "Must be a hooks.zapier.com URL";
+      return null;
+    }
+
     case "slack": {
       let url: URL;
-      try {
-        url = new URL(value);
-      } catch {
-        return "Must be a valid https:// URL";
-      }
+      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
       if (url.protocol !== "https:") return "URL must use https://";
-      if (integrationKey === "zapier" && !url.hostname.includes("zapier.com"))
-        return "Must be a hooks.zapier.com URL";
-      if (integrationKey === "slack" && !url.hostname.includes("slack.com"))
-        return "Must be a hooks.slack.com URL";
+      if (!url.hostname.includes("slack.com")) return "Must be a hooks.slack.com URL";
+      return null;
+    }
+
+    case "discord":
+    case "msteams":
+    case "make":
+    case "n8n":
+    case "pipedream":
+    case "workato": {
+      // Require HTTPS URL for all webhook-type integrations
+      let url: URL;
+      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
+      if (url.protocol !== "https:") return "URL must use https://";
       return null;
     }
 
     default:
+      // All other integrations: accept any non-empty string value
       return null;
   }
 }
@@ -84,7 +92,6 @@ Deno.serve(async (req) => {
     const token = auth?.replace("Bearer ", "");
     if (!token) return json({ error: "Unauthorized" }, 401);
 
-    // User-context client to authenticate the caller
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -101,14 +108,13 @@ Deno.serve(async (req) => {
     const value = body.value == null ? "" : String(body.value);
 
     if (!isAllowedKey(integrationKey)) {
-      return json({ error: "Unknown integration_key" }, 400);
+      return json({ error: "Invalid integration_key — must be lowercase letters, digits, underscores, or dashes" }, 400);
     }
     if (value.length > 4096) return json({ error: "Value too long" }, 400);
 
     const formatError = validateValue(integrationKey, value);
     if (formatError) return json({ error: formatError }, 400);
 
-    // Service-role client to call the SECURITY DEFINER function
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
