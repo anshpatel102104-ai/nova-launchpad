@@ -7,8 +7,7 @@ const TABS = [
     to: "/app/mission-control",
     label: "Mission",
     icon: LayoutDashboard,
-    match: (p: string) =>
-      p.startsWith("/app/mission-control") || p === "/app/dashboard",
+    match: (p: string) => p.startsWith("/app/mission-control") || p === "/app/dashboard",
   },
   {
     to: "/app/academy",
@@ -27,9 +26,7 @@ const TABS = [
     label: "Scale",
     icon: TrendingUp,
     match: (p: string) =>
-      p.startsWith("/app/scale") ||
-      p.startsWith("/app/nova") ||
-      p.startsWith("/app/automations"),
+      p.startsWith("/app/scale") || p.startsWith("/app/nova") || p.startsWith("/app/automations"),
   },
   {
     to: "/app/settings",

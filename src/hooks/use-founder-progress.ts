@@ -26,8 +26,16 @@ export interface FounderProgress {
 const LEVEL_THRESHOLDS = [0, 200, 500, 1000, 2000, 3500, 5500, 8000, 11000, 15000];
 
 export const LEVEL_LABELS: string[] = [
-  "Spark", "Explorer", "Validator", "Builder",
-  "Operator", "Commander", "Strategist", "Architect", "Visionary", "Legend",
+  "Spark",
+  "Explorer",
+  "Validator",
+  "Builder",
+  "Operator",
+  "Commander",
+  "Strategist",
+  "Architect",
+  "Visionary",
+  "Legend",
 ];
 
 // XP awarded per tool_key value stored in tool_runs.
@@ -58,11 +66,11 @@ const XP_BY_TOOL: Record<string, number> = {
   "business-plan-generator": 150,
   "analyze-website": 60,
   "competitor-analysis": 80,
-  "competitor": 80,
+  competitor: 80,
   "pricing-strategy": 70,
-  "pricing": 70,
+  pricing: 70,
   "revenue-projector": 80,
-  "blog": 50,
+  blog: 50,
   "blog-generator": 50,
 };
 
@@ -142,9 +150,7 @@ export function useFounderProgress(): FounderProgress {
 
   // Next milestone
   const nextMilestone =
-    level < 10
-      ? `Level ${level + 1} — ${LEVEL_LABELS[level]}`
-      : "You've reached Legend status";
+    level < 10 ? `Level ${level + 1} — ${LEVEL_LABELS[level]}` : "You've reached Legend status";
 
   return {
     totalXP,

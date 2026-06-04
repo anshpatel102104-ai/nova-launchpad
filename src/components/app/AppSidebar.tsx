@@ -30,7 +30,7 @@ type ProgressionMode = {
   to: string;
   label: string;
   sublabel: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   color: string;
   match: (p: string) => boolean;
 };
@@ -67,9 +67,7 @@ const PROGRESSION_MODES: ProgressionMode[] = [
     icon: LayoutDashboard,
     color: "#34D399",
     match: (p) =>
-      p.startsWith("/app/mission-control") ||
-      p === "/app/dashboard" ||
-      p === "/app/ai-dashboard",
+      p.startsWith("/app/mission-control") || p === "/app/dashboard" || p === "/app/ai-dashboard",
   },
   {
     to: "/app/scale",
@@ -163,8 +161,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
       <div
         className="absolute top-0 left-0 right-0 h-px z-10"
         style={{
-          background:
-            "linear-gradient(90deg, transparent, rgba(249,115,22,0.35), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(249,115,22,0.35), transparent)",
         }}
       />
 
@@ -237,8 +234,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
                 }
                 onMouseEnter={(e: MouseEvent) => {
                   if (!active) {
-                    (e.currentTarget as HTMLElement).style.background =
-                      "rgba(249,115,22,0.05)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
                     (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.75)";
                   }
                 }}
@@ -315,9 +311,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
               </div>
             </div>
           )}
-          {!collapsed && (
-            <ChevronRight className="h-3 w-3 shrink-0 opacity-40" />
-          )}
+          {!collapsed && <ChevronRight className="h-3 w-3 shrink-0 opacity-40" />}
         </button>
 
         {/* XP Progress strip (visible when expanded) */}
@@ -335,10 +329,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
                 levelLabel={progress.levelLabel}
                 size="sm"
               />
-              <span
-                className="text-[9px] font-mono"
-                style={{ color: "var(--muted-foreground)" }}
-              >
+              <span className="text-[9px] font-mono" style={{ color: "var(--muted-foreground)" }}>
                 {progress.totalXP.toLocaleString()} XP
               </span>
             </div>
@@ -349,10 +340,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
               animate={false}
               height={3}
             />
-            <div
-              className="mt-1.5 text-[9px] truncate"
-              style={{ color: "rgba(237,232,223,0.22)" }}
-            >
+            <div className="mt-1.5 text-[9px] truncate" style={{ color: "rgba(237,232,223,0.22)" }}>
               Next: {progress.nextMilestone}
             </div>
           </div>
@@ -360,10 +348,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div
-        className="relative z-10 p-2"
-        style={{ borderTop: "1px solid var(--sidebar-border)" }}
-      >
+      <div className="relative z-10 p-2" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
         {isGuest && (
           <button
             onClick={exitDemo}
@@ -404,8 +389,7 @@ export function AppSidebar({ onOpenRail }: AppSidebarProps) {
                 }
                 onMouseEnter={(e: MouseEvent) => {
                   if (!active) {
-                    (e.currentTarget as HTMLElement).style.background =
-                      "rgba(249,115,22,0.05)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.05)";
                     (e.currentTarget as HTMLElement).style.color = "rgba(237,232,223,0.72)";
                   }
                 }}

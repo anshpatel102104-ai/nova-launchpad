@@ -148,8 +148,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                 className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700"
                 style={{
                   width: `${progress.xpProgressInLevel}%`,
-                  background:
-                    "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)",
+                  background: "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)",
                   boxShadow: "0 0 8px rgba(249,115,22,0.55)",
                 }}
               />
@@ -163,11 +162,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           </div>
 
           {!progress.isLoading && (
-            <FounderLevelBadge
-              level={progress.level}
-              levelLabel={progress.levelLabel}
-              size="sm"
-            />
+            <FounderLevelBadge level={progress.level} levelLabel={progress.levelLabel} size="sm" />
           )}
 
           {/* Next Action CTA */}

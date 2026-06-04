@@ -17,17 +17,13 @@ export function MissionStatusPill({
   className,
 }: MissionStatusPillProps) {
   const displayTitle = title ?? "No active mission";
-  const truncated = displayTitle.length > (compact ? 28 : 40)
-    ? displayTitle.slice(0, compact ? 28 : 40) + "…"
-    : displayTitle;
+  const truncated =
+    displayTitle.length > (compact ? 28 : 40)
+      ? displayTitle.slice(0, compact ? 28 : 40) + "…"
+      : displayTitle;
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 min-w-0",
-        className,
-      )}
-    >
+    <div className={cn("flex items-center gap-2 min-w-0", className)}>
       {/* Live dot */}
       <span
         className="nova-live-dot h-1.5 w-1.5 shrink-0 rounded-full"

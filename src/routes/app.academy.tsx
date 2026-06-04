@@ -49,15 +49,14 @@ function AcademyLayout() {
     state: getModuleState(m, completedSlugs, orgStage),
   }));
 
-  const completedCount = moduleStates.filter((ms) => ms.state === "complete" || ms.state === "mastered").length;
+  const completedCount = moduleStates.filter(
+    (ms) => ms.state === "complete" || ms.state === "mastered",
+  ).length;
 
   return (
     <div className="flex gap-6 min-h-[calc(100vh-7rem)]">
       {/* LEFT: Campaign map */}
-      <aside
-        className="hidden md:flex flex-col shrink-0 gap-1.5"
-        style={{ width: 220 }}
-      >
+      <aside className="hidden md:flex flex-col shrink-0 gap-1.5" style={{ width: 220 }}>
         <div className="mb-3">
           <div
             className="text-[9px] font-bold uppercase tracking-widest mb-1"
@@ -79,7 +78,10 @@ function AcademyLayout() {
                 }}
               />
             </div>
-            <span className="text-[10px] font-mono shrink-0" style={{ color: "var(--muted-foreground)" }}>
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {completedCount}/{ACADEMY_MODULES.length}
             </span>
           </div>
@@ -96,19 +98,23 @@ function AcademyLayout() {
                 "flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all module-reveal",
                 state === "locked" && "pointer-events-none opacity-50",
               )}
-              style={{
-                background: isActive
-                  ? `color-mix(in oklab, ${STATE_COLORS[state]} 12%, var(--surface))`
-                  : STATE_BG[state],
-                border: `1px solid ${isActive ? `color-mix(in oklab, ${STATE_COLORS[state]} 35%, transparent)` : "var(--border)"}`,
-                ["--i" as string]: i,
-              } as React.CSSProperties}
+              style={
+                {
+                  background: isActive
+                    ? `color-mix(in oklab, ${STATE_COLORS[state]} 12%, var(--surface))`
+                    : STATE_BG[state],
+                  border: `1px solid ${isActive ? `color-mix(in oklab, ${STATE_COLORS[state]} 35%, transparent)` : "var(--border)"}`,
+                  ["--i" as string]: i,
+                } as React.CSSProperties
+              }
             >
               <span className="text-[16px] shrink-0">{module.emoji}</span>
               <div className="min-w-0 flex-1">
                 <div
                   className="text-[11.5px] font-semibold truncate leading-tight"
-                  style={{ color: state === "locked" ? "var(--muted-foreground)" : "var(--foreground)" }}
+                  style={{
+                    color: state === "locked" ? "var(--muted-foreground)" : "var(--foreground)",
+                  }}
                 >
                   {module.title}
                 </div>
@@ -116,7 +122,13 @@ function AcademyLayout() {
                   className="text-[9px] font-bold uppercase tracking-wide mt-0.5"
                   style={{ color: STATE_COLORS[state] }}
                 >
-                  {state === "locked" ? "Locked" : state === "complete" ? "✓ Complete" : state === "active" ? "In Progress" : "Available"}
+                  {state === "locked"
+                    ? "Locked"
+                    : state === "complete"
+                      ? "✓ Complete"
+                      : state === "active"
+                        ? "In Progress"
+                        : "Available"}
                 </div>
               </div>
               {state === "locked" ? (
@@ -131,11 +143,7 @@ function AcademyLayout() {
 
       {/* RIGHT: Module content or index */}
       <div className="flex-1 min-w-0">
-        {isIndex ? (
-          <AcademyIndex moduleStates={moduleStates} progress={progress} />
-        ) : (
-          <Outlet />
-        )}
+        {isIndex ? <AcademyIndex moduleStates={moduleStates} progress={progress} /> : <Outlet />}
       </div>
     </div>
   );
@@ -156,7 +164,8 @@ function AcademyIndex({
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, rgba(125,211,252,0.08) 0%, rgba(167,139,250,0.04) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(125,211,252,0.08) 0%, rgba(167,139,250,0.04) 100%)",
           border: "1px solid rgba(125,211,252,0.14)",
         }}
       >
@@ -173,7 +182,8 @@ function AcademyIndex({
           Business-Building Campaign
         </h1>
         <p className="text-[13px] mb-4" style={{ color: "var(--muted-foreground)" }}>
-          Complete each module to unlock the next. Every lesson has a task, every task earns XP, every module unlocks new capabilities.
+          Complete each module to unlock the next. Every lesson has a task, every task earns XP,
+          every module unlocks new capabilities.
         </p>
 
         {nextModule && (
@@ -200,13 +210,16 @@ function AcademyIndex({
               "rounded-xl p-4 nova-card transition-all module-reveal",
               state === "locked" ? "pointer-events-none opacity-50" : "nova-card-hover",
             )}
-            style={{
-              background: STATE_BG[state],
-              borderColor: state !== "locked"
-                ? `color-mix(in oklab, ${STATE_COLORS[state]} 25%, transparent)`
-                : undefined,
-              ["--i" as string]: i,
-            } as React.CSSProperties}
+            style={
+              {
+                background: STATE_BG[state],
+                borderColor:
+                  state !== "locked"
+                    ? `color-mix(in oklab, ${STATE_COLORS[state]} 25%, transparent)`
+                    : undefined,
+                ["--i" as string]: i,
+              } as React.CSSProperties
+            }
           >
             <div className="flex items-start justify-between mb-3">
               <span className="text-[28px]">{module.emoji}</span>
@@ -218,7 +231,13 @@ function AcademyIndex({
                   border: `1px solid color-mix(in oklab, ${STATE_COLORS[state]} 28%, transparent)`,
                 }}
               >
-                {state === "locked" ? "Locked" : state === "complete" ? "Complete" : state === "active" ? "In Progress" : "Available"}
+                {state === "locked"
+                  ? "Locked"
+                  : state === "complete"
+                    ? "Complete"
+                    : state === "active"
+                      ? "In Progress"
+                      : "Available"}
               </div>
             </div>
 
@@ -238,7 +257,10 @@ function AcademyIndex({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Zap className="h-3 w-3" style={{ color: STATE_COLORS[state] }} />
-                <span className="text-[11px] font-mono font-bold" style={{ color: STATE_COLORS[state] }}>
+                <span
+                  className="text-[11px] font-mono font-bold"
+                  style={{ color: STATE_COLORS[state] }}
+                >
                   {module.xpReward} XP
                 </span>
               </div>

@@ -39,9 +39,7 @@ function ScalePipeline() {
     leads: leads.filter((l) => (l.stage ?? "New") === s),
   }));
 
-  const totalValue = buckets
-    .filter((b) => b.stage === "Won")
-    .flatMap((b) => b.leads).length;
+  const totalValue = buckets.filter((b) => b.stage === "Won").flatMap((b) => b.leads).length;
 
   return (
     <div className="space-y-5">
@@ -87,11 +85,7 @@ function ScalePipeline() {
       {q.isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {STAGES.map((s) => (
-            <div
-              key={s}
-              className="rounded-xl p-3 nova-card"
-              style={{ minHeight: 120 }}
-            >
+            <div key={s} className="rounded-xl p-3 nova-card" style={{ minHeight: 120 }}>
               <div
                 className="text-[10px] font-bold uppercase tracking-wide mb-2"
                 style={{ color: "var(--muted-foreground)" }}

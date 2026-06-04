@@ -83,7 +83,8 @@ function MissionBriefingPage() {
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, rgba(255,107,26,0.10) 0%, rgba(245,166,35,0.05) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(255,107,26,0.10) 0%, rgba(245,166,35,0.05) 100%)",
           border: "1px solid rgba(249,115,22,0.20)",
         }}
       >
@@ -107,7 +108,8 @@ function MissionBriefingPage() {
             Your Founder Mission
           </h1>
           <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-            Your AI-powered strategy overview. Update your mission parameters and launch your next campaign.
+            Your AI-powered strategy overview. Update your mission parameters and launch your next
+            campaign.
           </p>
         </div>
       </div>
@@ -125,7 +127,10 @@ function MissionBriefingPage() {
 
           <div className="space-y-3">
             <div>
-              <div className="text-[10.5px] font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
+              <div
+                className="text-[10.5px] font-semibold mb-1"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Company
               </div>
               <div className="text-[15px] font-bold" style={{ color: "var(--foreground)" }}>
@@ -134,7 +139,10 @@ function MissionBriefingPage() {
             </div>
 
             <div>
-              <div className="text-[10.5px] font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
+              <div
+                className="text-[10.5px] font-semibold mb-1"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Mission
               </div>
               <div className="text-[13.5px]" style={{ color: "var(--foreground)" }}>
@@ -144,7 +152,10 @@ function MissionBriefingPage() {
 
             {org?.niche && (
               <div>
-                <div className="text-[10.5px] font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
+                <div
+                  className="text-[10.5px] font-semibold mb-1"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Market / Niche
                 </div>
                 <div className="text-[13.5px]" style={{ color: "var(--foreground)" }}>
@@ -155,7 +166,10 @@ function MissionBriefingPage() {
 
             {org?.target_customer && (
               <div>
-                <div className="text-[10.5px] font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
+                <div
+                  className="text-[10.5px] font-semibold mb-1"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Target Customer
                 </div>
                 <div className="text-[13.5px]" style={{ color: "var(--foreground)" }}>
@@ -318,7 +332,9 @@ function MissionBriefingPage() {
                   <div className="flex items-center justify-between gap-2">
                     <span
                       className="text-[12px] font-medium truncate"
-                      style={{ color: state === "locked" ? "var(--muted-foreground)" : "var(--foreground)" }}
+                      style={{
+                        color: state === "locked" ? "var(--muted-foreground)" : "var(--foreground)",
+                      }}
                     >
                       {module.title}
                     </span>

@@ -50,10 +50,7 @@ export function XPProgressBar({
           >
             XP
           </span>
-          <span
-            className="text-[9px] font-mono"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <span className="text-[9px] font-mono" style={{ color: "var(--muted-foreground)" }}>
             {currentXP.toLocaleString()} / {xpForNextLevel.toLocaleString()}
           </span>
         </div>

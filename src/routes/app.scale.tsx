@@ -147,13 +147,7 @@ function ScaleLayout() {
   );
 }
 
-function ScaleIndex({
-  orgStage,
-  stageIdx,
-}: {
-  orgStage: string;
-  stageIdx: number;
-}) {
+function ScaleIndex({ orgStage, stageIdx }: { orgStage: string; stageIdx: number }) {
   const isScaleReady = stageIdx >= STAGE_ORDER.indexOf("Launch");
 
   return (
@@ -162,7 +156,8 @@ function ScaleIndex({
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(255,107,26,0.04) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(255,107,26,0.04) 100%)",
           border: "1px solid rgba(245,166,35,0.18)",
         }}
       >
@@ -265,7 +260,10 @@ function ScaleIndex({
           }}
         >
           <Rocket className="h-8 w-8 mx-auto mb-3" style={{ color: "#F5A623", opacity: 0.7 }} />
-          <h3 className="font-display text-[15px] font-bold mb-1" style={{ color: "var(--foreground)" }}>
+          <h3
+            className="font-display text-[15px] font-bold mb-1"
+            style={{ color: "var(--foreground)" }}
+          >
             Reach Launch Stage to unlock Scale Mode
           </h3>
           <p className="text-[12.5px] mb-4" style={{ color: "var(--muted-foreground)" }}>

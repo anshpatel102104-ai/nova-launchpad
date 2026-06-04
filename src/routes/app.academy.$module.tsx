@@ -125,7 +125,12 @@ function ModuleWorkspace() {
                 className="text-[10px] font-mono font-bold uppercase tracking-widest mb-1"
                 style={{ color: stateColor }}
               >
-                ● {state === "complete" ? "Complete" : state === "active" ? "In Progress" : "Available"}
+                ●{" "}
+                {state === "complete"
+                  ? "Complete"
+                  : state === "active"
+                    ? "In Progress"
+                    : "Available"}
               </div>
               <h1
                 className="font-display text-[22px] font-bold leading-tight"
@@ -158,7 +163,10 @@ function ModuleWorkspace() {
         {module.tools.length > 0 && (
           <div className="mt-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
+              <span
+                className="text-[10px] font-bold uppercase tracking-wide"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Task Progress
               </span>
               <span className="text-[10px] font-mono" style={{ color: stateColor }}>
@@ -186,9 +194,7 @@ function ModuleWorkspace() {
         {/* LEFT: Learn content */}
         <div className="lg:col-span-2 space-y-5">
           {/* Lesson */}
-          <div
-            className="rounded-xl p-5 nova-card"
-          >
+          <div className="rounded-xl p-5 nova-card">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4" style={{ color: "var(--primary)" }} />
               <span
@@ -214,7 +220,9 @@ function ModuleWorkspace() {
             <div className="space-y-3">
               {module.tools.map((toolKey, i) => {
                 const isDone = completedSlugs.has(toolKey);
-                const label = TOOL_LABELS[toolKey] ?? toolKey.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                const label =
+                  TOOL_LABELS[toolKey] ??
+                  toolKey.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
                 return (
                   <div
@@ -249,7 +257,9 @@ function ModuleWorkspace() {
                         {label}
                       </div>
                       <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                        {isDone ? "Completed — you can run it again anytime" : "Run this tool to complete the task"}
+                        {isDone
+                          ? "Completed — you can run it again anytime"
+                          : "Run this tool to complete the task"}
                       </div>
                     </div>
 
@@ -258,9 +268,7 @@ function ModuleWorkspace() {
                       params={{ tool: toolKey }}
                       className={cn(
                         "flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-semibold transition-all shrink-0",
-                        isDone
-                          ? "nova-card nova-card-hover"
-                          : "btn-execute",
+                        isDone ? "nova-card nova-card-hover" : "btn-execute",
                       )}
                     >
                       {isDone ? (
@@ -296,7 +304,9 @@ function ModuleWorkspace() {
             <div className="space-y-2.5">
               {module.tools.map((toolKey) => {
                 const isDone = completedSlugs.has(toolKey);
-                const label = TOOL_LABELS[toolKey] ?? toolKey.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                const label =
+                  TOOL_LABELS[toolKey] ??
+                  toolKey.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                 return (
                   <div key={toolKey} className="flex items-center gap-2.5">
                     <div
@@ -310,7 +320,10 @@ function ModuleWorkspace() {
                       {label}
                     </span>
                     {isDone && (
-                      <CheckCircle2 className="h-3 w-3 shrink-0 ml-auto" style={{ color: "#34D399" }} />
+                      <CheckCircle2
+                        className="h-3 w-3 shrink-0 ml-auto"
+                        style={{ color: "#34D399" }}
+                      />
                     )}
                   </div>
                 );

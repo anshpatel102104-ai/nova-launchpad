@@ -19,7 +19,6 @@ function ScaleTeam() {
         email: user.email ?? "",
         full_name: profile?.full_name ?? user.email ?? "You",
         role: "owner" as const,
-        avatar_url: profile?.avatar_url,
       }
     : null;
 
@@ -70,29 +69,18 @@ function ScaleTeam() {
               border: "1px solid color-mix(in oklab, #A78BFA 20%, transparent)",
             }}
           >
-            {currentUserEntry.avatar_url ? (
-              <img
-                src={currentUserEntry.avatar_url}
-                alt={currentUserEntry.full_name}
-                className="h-9 w-9 rounded-full shrink-0 object-cover"
-              />
-            ) : (
-              <div
-                className="h-9 w-9 rounded-full shrink-0 flex items-center justify-center font-bold text-[14px]"
-                style={{
-                  background: "linear-gradient(135deg, #A78BFA, #FF6B1A)",
-                  color: "white",
-                }}
-              >
-                {currentUserEntry.full_name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <div
+              className="h-9 w-9 rounded-full shrink-0 flex items-center justify-center font-bold text-[14px]"
+              style={{
+                background: "linear-gradient(135deg, #A78BFA, #FF6B1A)",
+                color: "white",
+              }}
+            >
+              {currentUserEntry.full_name.charAt(0).toUpperCase()}
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span
-                  className="text-[13px] font-semibold"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
                   {currentUserEntry.full_name}
                 </span>
                 <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
@@ -129,20 +117,11 @@ function ScaleTeam() {
             border: "1px dashed rgba(245,200,140,0.12)",
           }}
         >
-          <Users
-            className="h-8 w-8 mx-auto mb-3"
-            style={{ color: "#A78BFA", opacity: 0.5 }}
-          />
-          <div
-            className="text-[13px] font-semibold mb-1"
-            style={{ color: "var(--foreground)" }}
-          >
+          <Users className="h-8 w-8 mx-auto mb-3" style={{ color: "#A78BFA", opacity: 0.5 }} />
+          <div className="text-[13px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>
             Team invitations coming soon
           </div>
-          <p
-            className="text-[12px] max-w-xs mx-auto"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <p className="text-[12px] max-w-xs mx-auto" style={{ color: "var(--muted-foreground)" }}>
             Invite collaborators to your workspace when team features launch.
           </p>
         </div>
@@ -164,7 +143,11 @@ function ScaleTeam() {
             { label: "Edit Settings", access: "Owner only", icon: Crown, color: "#F5A623" },
             { label: "Manage Billing", access: "Owner only", icon: Crown, color: "#FF6B1A" },
           ].map((perm) => (
-            <div key={perm.label} className="flex items-center justify-between py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+            <div
+              key={perm.label}
+              className="flex items-center justify-between py-2 border-b last:border-0"
+              style={{ borderColor: "var(--border)" }}
+            >
               <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
                 {perm.label}
               </span>

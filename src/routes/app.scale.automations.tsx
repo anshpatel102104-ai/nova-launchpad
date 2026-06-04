@@ -67,9 +67,10 @@ function ScaleAutomations() {
         <div
           className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11.5px] font-medium"
           style={{
-            background: onlineCount > 0
-              ? "color-mix(in oklab, var(--success) 12%, transparent)"
-              : "var(--surface)",
+            background:
+              onlineCount > 0
+                ? "color-mix(in oklab, var(--success) 12%, transparent)"
+                : "var(--surface)",
             border: `1px solid ${onlineCount > 0 ? "color-mix(in oklab, var(--success) 30%, transparent)" : "var(--border)"}`,
             color: onlineCount > 0 ? "var(--success)" : "var(--muted-foreground)",
           }}

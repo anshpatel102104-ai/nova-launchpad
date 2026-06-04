@@ -27,7 +27,10 @@ function categoryColor(category: string): string {
 
 function ScaleCampaigns() {
   const { currentOrgId } = useAuth();
-  const assetsQ = useQuery({ ...generatedAssetsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const assetsQ = useQuery({
+    ...generatedAssetsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
 
   const assets = (assetsQ.data ?? []) as Array<{
     id: string;
@@ -141,7 +144,8 @@ function ScaleCampaigns() {
             className="text-[13px] mb-6 max-w-sm mx-auto"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Run marketing tools to generate landing pages, blog posts, pitch decks, and email sequences.
+            Run marketing tools to generate landing pages, blog posts, pitch decks, and email
+            sequences.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             {[
@@ -168,7 +172,9 @@ function ScaleCampaigns() {
             const color = categoryColor(asset.category ?? asset.tool_key ?? "");
             const label =
               asset.title ??
-              (asset.tool_key ?? "Content").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+              (asset.tool_key ?? "Content")
+                .replace(/-/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase());
             const preview = asset.content ? asset.content.slice(0, 120) + "…" : null;
 
             return (

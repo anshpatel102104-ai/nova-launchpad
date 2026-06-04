@@ -1,18 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import {
-  organizationQuery,
-  toolRunsQuery,
-  leadsQuery,
-  mentorKPIsQuery,
-} from "@/lib/queries";
+import { organizationQuery, toolRunsQuery, leadsQuery, mentorKPIsQuery } from "@/lib/queries";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { FounderLevelBadge } from "@/components/app/gamification/FounderLevelBadge";
 import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
-import { WhatNextCard } from "@/components/app/dashboard/WhatNextCard";
 import { AutomationStatusCard } from "@/components/app/dashboard/AutomationStatusCard";
 import { ApprovedOfferCard } from "@/components/app/dashboard/ApprovedOfferCard";
+import { ACADEMY_MODULES, getModuleState } from "@/lib/academy-modules";
 import {
   Target,
   Zap,
@@ -24,6 +19,7 @@ import {
   Rocket,
   Crosshair,
   Activity,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
@@ -37,12 +33,32 @@ function MissionControlPage() {
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const kpisQ = useQuery({ ...mentorKPIsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 10), enabled: !!currentOrgId });
+  const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 500), enabled: !!currentOrgId });
 
   const org = orgQ.data as { name?: string; stage?: string; goal?: string } | null;
   const kpis = kpisQ.data;
   const leads = leadsQ.data ?? [];
-  const recentRuns = runsQ.data ?? [];
+  const allRuns = (runsQ.data ?? []) as Array<{
+    id: string;
+    tool_key?: string;
+    status: string;
+    created_at: string;
+  }>;
+  const recentRuns = allRuns.slice(0, 10);
+
+  const completedSlugs = new Set(
+    allRuns.filter((r) => r.status === "succeeded").map((r) => r.tool_key ?? ""),
+  );
+  const orgStage = org?.stage ?? "Idea";
+
+  const moduleStates = ACADEMY_MODULES.map((m) => ({
+    module: m,
+    state: getModuleState(m, completedSlugs, orgStage),
+  }));
+  const nextModule = moduleStates.find((ms) => ms.state === "available" || ms.state === "active");
+  const completedModules = moduleStates.filter(
+    (ms) => ms.state === "complete" || ms.state === "mastered",
+  ).length;
 
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -95,7 +111,14 @@ function MissionControlPage() {
           <div className="flex items-center gap-4">
             <div className="relative flex items-center justify-center">
               <svg width="80" height="80" className="shrink-0 -rotate-90">
-                <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(245,200,140,0.08)" strokeWidth="6" />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  fill="none"
+                  stroke="rgba(245,200,140,0.08)"
+                  strokeWidth="6"
+                />
                 <circle
                   cx="40"
                   cy="40"
@@ -121,7 +144,10 @@ function MissionControlPage() {
                 >
                   {progress.founderScore}
                 </span>
-                <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+                <span
+                  className="text-[8px] font-bold uppercase tracking-wider"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   Score
                 </span>
               </div>
@@ -181,10 +207,7 @@ function MissionControlPage() {
             action: "Run a tool",
           },
         ].map((kpi) => (
-          <div
-            key={kpi.label}
-            className="rounded-xl p-4 nova-card nova-card-hover"
-          >
+          <div key={kpi.label} className="rounded-xl p-4 nova-card nova-card-hover">
             <div className="flex items-center justify-between mb-3">
               <span
                 className="text-[9px] font-bold uppercase tracking-widest"
@@ -192,10 +215,7 @@ function MissionControlPage() {
               >
                 {kpi.label}
               </span>
-              <kpi.icon
-                className="h-3.5 w-3.5"
-                style={{ color: kpi.color, opacity: 0.7 }}
-              />
+              <kpi.icon className="h-3.5 w-3.5" style={{ color: kpi.color, opacity: 0.7 }} />
             </div>
             <div
               className="font-mono font-black text-[24px] leading-none"
@@ -203,15 +223,15 @@ function MissionControlPage() {
             >
               {kpi.value}
               {kpi.suffix && (
-                <span className="text-[13px] font-medium" style={{ color: "var(--muted-foreground)" }}>
+                <span
+                  className="text-[13px] font-medium"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {kpi.suffix}
                 </span>
               )}
             </div>
-            <div
-              className="mt-2 text-[10px]"
-              style={{ color: "rgba(237,232,223,0.30)" }}
-            >
+            <div className="mt-2 text-[10px]" style={{ color: "rgba(237,232,223,0.30)" }}>
               {kpi.action} →
             </div>
           </div>
@@ -221,15 +241,90 @@ function MissionControlPage() {
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Current Mission — spans 2 cols */}
-        <div className="lg:col-span-2">
-          {user?.id && <CurrentMissionCard userId={user.id} />}
-        </div>
+        <div className="lg:col-span-2">{user?.id && <CurrentMissionCard userId={user.id} />}</div>
 
-        {/* What Next panel */}
-        <div>
-          {currentOrgId && user?.id && (
-            <WhatNextCard orgId={currentOrgId} userId={user.id} />
+        {/* Next Academy module panel */}
+        <div className="rounded-xl p-5 nova-card flex flex-col gap-4">
+          <div
+            className="text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            Academy Progress
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div
+              className="flex-1 overflow-hidden rounded-full"
+              style={{ height: 3, background: "rgba(245,200,140,0.08)" }}
+            >
+              <div
+                className="h-full rounded-full transition-[width] duration-700"
+                style={{
+                  width: `${(completedModules / ACADEMY_MODULES.length) * 100}%`,
+                  background: "linear-gradient(90deg, var(--primary), var(--accent))",
+                }}
+              />
+            </div>
+            <span
+              className="text-[10px] font-mono shrink-0"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              {completedModules}/{ACADEMY_MODULES.length}
+            </span>
+          </div>
+
+          {nextModule ? (
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[28px]">{nextModule.module.emoji}</span>
+                <div>
+                  <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+                    {nextModule.module.title}
+                  </div>
+                  <div
+                    className="text-[10.5px]"
+                    style={{
+                      color: nextModule.state === "active" ? "#FF6B1A" : "var(--muted-foreground)",
+                    }}
+                  >
+                    {nextModule.state === "active" ? "In Progress" : "Up Next"} ·{" "}
+                    {nextModule.module.xpReward} XP
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/app/academy/$module"
+                params={{ module: nextModule.module.id }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[12.5px] font-semibold btn-execute"
+              >
+                {nextModule.state === "active" ? "Continue" : "Start"} Module
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-2 text-center">
+              <CheckCircle2 className="h-8 w-8 mb-2" style={{ color: "#34D399" }} />
+              <div className="text-[13px] font-semibold" style={{ color: "#34D399" }}>
+                All modules complete!
+              </div>
+              <Link
+                to="/app/scale"
+                className="mt-3 flex items-center gap-1.5 text-[12px] font-medium"
+                style={{ color: "var(--primary)" }}
+              >
+                Enter Scale Mode <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           )}
+
+          <Link
+            to="/app/academy"
+            className="flex items-center gap-1.5 text-[11.5px] font-medium mt-auto"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            View all modules
+          </Link>
         </div>
       </div>
 
@@ -253,10 +348,34 @@ function MissionControlPage() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { to: "/app/mission-briefing", label: "Mission Briefing", icon: Crosshair, color: "#FF6B1A", desc: "Plan strategy" },
-            { to: "/app/academy", label: "Academy", icon: BookOpen, color: "#7DD3FC", desc: "Learn & execute" },
-            { to: "/app/galaxy", label: "Galaxy Map", icon: Map, color: "#A78BFA", desc: "View progress" },
-            { to: "/app/scale", label: "Scale Mode", icon: Rocket, color: "#F5A623", desc: "CRM & automation" },
+            {
+              to: "/app/mission-briefing",
+              label: "Mission Briefing",
+              icon: Crosshair,
+              color: "#FF6B1A",
+              desc: "Plan strategy",
+            },
+            {
+              to: "/app/academy",
+              label: "Academy",
+              icon: BookOpen,
+              color: "#7DD3FC",
+              desc: "Learn & execute",
+            },
+            {
+              to: "/app/galaxy",
+              label: "Galaxy Map",
+              icon: Map,
+              color: "#A78BFA",
+              desc: "View progress",
+            },
+            {
+              to: "/app/scale",
+              label: "Scale Mode",
+              icon: Rocket,
+              color: "#F5A623",
+              desc: "CRM & automation",
+            },
           ].map((item) => (
             <Link
               key={item.to}
@@ -273,14 +392,20 @@ function MissionControlPage() {
                 <item.icon className="h-4 w-4" style={{ color: item.color }} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                <div
+                  className="text-[12px] font-semibold truncate"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {item.label}
                 </div>
                 <div className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
                   {item.desc}
                 </div>
               </div>
-              <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: item.color }} />
+              <ArrowRight
+                className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-60 transition-opacity"
+                style={{ color: item.color }}
+              />
             </Link>
           ))}
         </div>
@@ -305,16 +430,8 @@ function MissionControlPage() {
             </Link>
           </div>
           <div className="space-y-1.5">
-            {recentRuns.slice(0, 5).map((run: {
-              id: string;
-              tool_key?: string;
-              status: string;
-              created_at: string;
-            }) => (
-              <div
-                key={run.id}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 nova-card"
-              >
+            {recentRuns.slice(0, 5).map((run) => (
+              <div key={run.id} className="flex items-center gap-3 rounded-lg px-3 py-2 nova-card">
                 <div
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{
@@ -330,7 +447,9 @@ function MissionControlPage() {
                   className="flex-1 text-[12px] font-medium truncate"
                   style={{ color: "var(--foreground)" }}
                 >
-                  {(run.tool_key ?? "tool").replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                  {(run.tool_key ?? "tool")
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (c: string) => c.toUpperCase())}
                 </span>
                 <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
                   {new Date(run.created_at).toLocaleDateString()}

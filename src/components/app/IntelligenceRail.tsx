@@ -22,31 +22,94 @@ interface IntelligenceRailProps {
   onClose: () => void;
 }
 
-const NEXT_ACTION_MAP: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; to: string; color: string }[]> = {
+const NEXT_ACTION_MAP: Record<
+  string,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    to: string;
+    color: string;
+  }[]
+> = {
   Idea: [
-    { label: "Validate your idea", icon: Target, to: "/app/academy/idea-validation", color: "#7DD3FC" },
-    { label: "Run Idea Validator", icon: Zap, to: "/app/launchpad/idea-validator", color: "#FF6B1A" },
-    { label: "Kill My Idea test", icon: Sparkles, to: "/app/launchpad/kill-my-idea", color: "#A78BFA" },
+    {
+      label: "Validate your idea",
+      icon: Target,
+      to: "/app/academy/idea-validation",
+      color: "#7DD3FC",
+    },
+    {
+      label: "Run Idea Validator",
+      icon: Zap,
+      to: "/app/launchpad/idea-validator",
+      color: "#FF6B1A",
+    },
+    {
+      label: "Kill My Idea test",
+      icon: Sparkles,
+      to: "/app/launchpad/kill-my-idea",
+      color: "#A78BFA",
+    },
   ],
   Validate: [
-    { label: "Build your offer", icon: BookOpen, to: "/app/academy/offer-creation", color: "#34D399" },
-    { label: "Create GTM Strategy", icon: Target, to: "/app/launchpad/gtm-strategy", color: "#F5A623" },
-    { label: "Generate pitch deck", icon: Zap, to: "/app/launchpad/pitch-generator", color: "#FF6B1A" },
+    {
+      label: "Build your offer",
+      icon: BookOpen,
+      to: "/app/academy/offer-creation",
+      color: "#34D399",
+    },
+    {
+      label: "Create GTM Strategy",
+      icon: Target,
+      to: "/app/launchpad/gtm-strategy",
+      color: "#F5A623",
+    },
+    {
+      label: "Generate pitch deck",
+      icon: Zap,
+      to: "/app/launchpad/pitch-generator",
+      color: "#FF6B1A",
+    },
   ],
   Launch: [
-    { label: "Find first customers", icon: TrendingUp, to: "/app/launchpad/first-10-customers", color: "#34D399" },
+    {
+      label: "Find first customers",
+      icon: TrendingUp,
+      to: "/app/launchpad/first-10-customers",
+      color: "#34D399",
+    },
     { label: "Set up lead capture", icon: Target, to: "/app/nova/leads", color: "#7DD3FC" },
-    { label: "Create landing page", icon: Rocket, to: "/app/launchpad/landing-page", color: "#F5A623" },
+    {
+      label: "Create landing page",
+      icon: Rocket,
+      to: "/app/launchpad/landing-page",
+      color: "#F5A623",
+    },
   ],
   Operate: [
     { label: "Automate follow-ups", icon: Zap, to: "/app/nova/workflows", color: "#5EEAD4" },
     { label: "Review CRM pipeline", icon: TrendingUp, to: "/app/scale/pipeline", color: "#F5A623" },
-    { label: "Generate business plan", icon: BookOpen, to: "/app/launchpad/business-plan", color: "#A78BFA" },
+    {
+      label: "Generate business plan",
+      icon: BookOpen,
+      to: "/app/launchpad/business-plan",
+      color: "#A78BFA",
+    },
   ],
   Scale: [
-    { label: "Revenue projections", icon: TrendingUp, to: "/app/launchpad/revenue-projector", color: "#34D399" },
+    {
+      label: "Revenue projections",
+      icon: TrendingUp,
+      to: "/app/launchpad/revenue-projector",
+      color: "#34D399",
+    },
     { label: "Activate Scale Mode", icon: Rocket, to: "/app/scale", color: "#F5A623" },
-    { label: "Funding readiness", icon: Target, to: "/app/launchpad/funding-score", color: "#7DD3FC" },
+    {
+      label: "Funding readiness",
+      icon: Target,
+      to: "/app/launchpad/funding-score",
+      color: "#7DD3FC",
+    },
   ],
 };
 
@@ -82,7 +145,10 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
           <div className="flex items-center gap-2">
             <Zap
               className="h-4 w-4"
-              style={{ color: "var(--mentor-accent)", filter: "drop-shadow(0 0 6px rgba(125,211,252,0.5))" }}
+              style={{
+                color: "var(--mentor-accent)",
+                filter: "drop-shadow(0 0 6px rgba(125,211,252,0.5))",
+              }}
             />
             <span
               className="text-[12.5px] font-bold tracking-tight"
@@ -139,15 +205,9 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {tab === "next-steps" && (
-            <NextStepsPanel
-              progress={progress}
-              nextActions={nextActions}
-              stage={stage}
-            />
+            <NextStepsPanel progress={progress} nextActions={nextActions} stage={stage} />
           )}
-          {tab === "nova" && (
-            <NovaPanel onOpenChat={() => setChatOpen(true)} />
-          )}
+          {tab === "nova" && <NovaPanel onOpenChat={() => setChatOpen(true)} />}
         </div>
 
         {/* Footer */}
@@ -190,7 +250,12 @@ function NextStepsPanel({
   stage,
 }: {
   progress: ReturnType<typeof useFounderProgress>;
-  nextActions: { label: string; icon: React.ComponentType<{ className?: string }>; to: string; color: string }[];
+  nextActions: {
+    label: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    to: string;
+    color: string;
+  }[];
   stage: string;
 }) {
   return (
@@ -210,10 +275,7 @@ function NextStepsPanel({
           >
             Founder Score
           </span>
-          <span
-            className="text-[18px] font-black font-mono"
-            style={{ color: "var(--primary)" }}
-          >
+          <span className="text-[18px] font-black font-mono" style={{ color: "var(--primary)" }}>
             {progress.founderScore}
           </span>
         </div>
@@ -231,10 +293,7 @@ function NextStepsPanel({
             }}
           />
         </div>
-        <div
-          className="mt-1.5 text-[10px]"
-          style={{ color: "var(--muted-foreground)" }}
-        >
+        <div className="mt-1.5 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
           Stage: <span style={{ color: "var(--foreground)" }}>{stage}</span>
           {" · "}
           {progress.currentMissionStepsCompleted}/{progress.currentMissionStepsTotal} steps
@@ -255,11 +314,13 @@ function NextStepsPanel({
               key={i}
               to={action.to}
               className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all module-reveal"
-              style={{
-                background: "rgba(245,200,140,0.04)",
-                border: "1px solid var(--border)",
-                ["--i" as string]: i,
-              } as React.CSSProperties}
+              style={
+                {
+                  background: "rgba(245,200,140,0.04)",
+                  border: "1px solid var(--border)",
+                  ["--i" as string]: i,
+                } as React.CSSProperties
+              }
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background =
                   `color-mix(in oklab, ${action.color} 8%, transparent)`;
@@ -271,10 +332,7 @@ function NextStepsPanel({
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
               }}
             >
-              <action.icon
-                className="h-3.5 w-3.5 shrink-0"
-                style={{ color: action.color }}
-              />
+              <action.icon className="h-3.5 w-3.5 shrink-0" style={{ color: action.color }} />
               <span
                 className="flex-1 text-[11.5px] font-medium truncate"
                 style={{ color: "var(--foreground)" }}
@@ -322,16 +380,10 @@ function NextStepsPanel({
             <span className="text-[16px]">🌌</span>
           </div>
           <div className="min-w-0 flex-1">
-            <div
-              className="text-[11.5px] font-semibold"
-              style={{ color: "var(--foreground)" }}
-            >
+            <div className="text-[11.5px] font-semibold" style={{ color: "var(--foreground)" }}>
               Galaxy Map
             </div>
-            <div
-              className="text-[10px] truncate"
-              style={{ color: "var(--muted-foreground)" }}
-            >
+            <div className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
               {progress.nextMilestone}
             </div>
           </div>
@@ -362,20 +414,11 @@ function NovaPanel({ onOpenChat }: { onOpenChat: () => void }) {
           border: "1px solid rgba(125,211,252,0.12)",
         }}
       >
-        <Sparkles
-          className="h-8 w-8 mx-auto mb-2"
-          style={{ color: "var(--mentor-accent)" }}
-        />
-        <div
-          className="text-[13px] font-semibold mb-1"
-          style={{ color: "var(--foreground)" }}
-        >
+        <Sparkles className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--mentor-accent)" }} />
+        <div className="text-[13px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>
           Nova AI Operator
         </div>
-        <div
-          className="text-[11px] mb-3"
-          style={{ color: "var(--muted-foreground)" }}
-        >
+        <div className="text-[11px] mb-3" style={{ color: "var(--muted-foreground)" }}>
           Your AI strategist, mentor, and guide
         </div>
         <button
@@ -406,14 +449,11 @@ function NovaPanel({ onOpenChat }: { onOpenChat: () => void }) {
                 color: "var(--foreground)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(125,211,252,0.06)";
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  "rgba(125,211,252,0.22)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(125,211,252,0.06)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(125,211,252,0.22)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(245,200,140,0.04)";
+                (e.currentTarget as HTMLElement).style.background = "rgba(245,200,140,0.04)";
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
               }}
             >

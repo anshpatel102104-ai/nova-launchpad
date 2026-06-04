@@ -16,7 +16,7 @@ export const Route = createFileRoute("/app/galaxy")({
 
 // Planet orbital layout — radii in % of container, angle in degrees
 const PLANET_LAYOUT = [
-  { moduleIndex: 0, orbitRadiusX: 16, orbitRadiusY: 8,  startAngle: 30 },
+  { moduleIndex: 0, orbitRadiusX: 16, orbitRadiusY: 8, startAngle: 30 },
   { moduleIndex: 1, orbitRadiusX: 24, orbitRadiusY: 12, startAngle: 110 },
   { moduleIndex: 2, orbitRadiusX: 30, orbitRadiusY: 14, startAngle: 220 },
   { moduleIndex: 3, orbitRadiusX: 36, orbitRadiusY: 17, startAngle: 310 },
@@ -35,7 +35,13 @@ const STATE_COLORS: Record<ModuleState, string> = {
 };
 
 function stateLabel(s: ModuleState): string {
-  return { locked: "Locked", available: "Available", active: "In Progress", complete: "Complete", mastered: "Mastered" }[s];
+  return {
+    locked: "Locked",
+    available: "Available",
+    active: "In Progress",
+    complete: "Complete",
+    mastered: "Mastered",
+  }[s];
 }
 
 function GalaxyMapPage() {
@@ -153,7 +159,10 @@ function GalaxyMapPage() {
               }
             >
               <div className="text-[20px] mb-2">{module.emoji}</div>
-              <div className="text-[11.5px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+              <div
+                className="text-[11.5px] font-semibold truncate"
+                style={{ color: "var(--foreground)" }}
+              >
                 {module.title}
               </div>
               <div
@@ -200,8 +209,10 @@ function GalaxyMapPage() {
             width: 80,
             height: 80,
             borderRadius: "50%",
-            background: "radial-gradient(circle at 35% 35%, #FFF7ED 0%, #FF6B1A 40%, #EA580C 80%, #9A3412 100%)",
-            boxShadow: "0 0 40px rgba(249,115,22,0.55), 0 0 80px rgba(249,115,22,0.22), 0 0 120px rgba(249,115,22,0.08)",
+            background:
+              "radial-gradient(circle at 35% 35%, #FFF7ED 0%, #FF6B1A 40%, #EA580C 80%, #9A3412 100%)",
+            boxShadow:
+              "0 0 40px rgba(249,115,22,0.55), 0 0 80px rgba(249,115,22,0.22), 0 0 120px rgba(249,115,22,0.08)",
             cursor: "pointer",
             zIndex: 20,
           }}
@@ -212,7 +223,9 @@ function GalaxyMapPage() {
             className="absolute inset-0 flex flex-col items-center justify-center text-center"
             style={{ color: "white" }}
           >
-            <span className="text-[8px] font-bold uppercase tracking-widest opacity-80">Vision</span>
+            <span className="text-[8px] font-bold uppercase tracking-widest opacity-80">
+              Vision
+            </span>
             <span className="text-[20px]">⭐</span>
           </div>
         </div>
@@ -234,10 +247,18 @@ function GalaxyMapPage() {
           return (
             <div
               key={module.id}
-              ref={(el) => { planetRefs.current[i] = el; }}
+              ref={(el) => {
+                planetRefs.current[i] = el;
+              }}
               className={cn(
                 "absolute z-10 cursor-pointer transition-transform duration-200",
-                isLocked ? "planet-locked" : isActive ? "planet-active" : isComplete ? "planet-completed" : "planet-completed",
+                isLocked
+                  ? "planet-locked"
+                  : isActive
+                    ? "planet-active"
+                    : isComplete
+                      ? "planet-completed"
+                      : "planet-completed",
                 !isLocked && "hover:scale-110",
                 isActive && "planet-active-pulse",
               )}
@@ -252,22 +273,23 @@ function GalaxyMapPage() {
                   ? "radial-gradient(circle at 35% 35%, rgba(107,114,128,0.3) 0%, rgba(55,65,81,0.4) 100%)"
                   : `radial-gradient(circle at 35% 35%, ${color}40 0%, ${color}80 50%, ${color} 100%)`,
                 border: `2px solid ${isLocked ? "rgba(107,114,128,0.3)" : color}`,
-                boxShadow: isLocked
-                  ? "none"
-                  : `0 0 16px ${color}50, 0 0 32px ${color}20`,
+                boxShadow: isLocked ? "none" : `0 0 16px ${color}50, 0 0 32px ${color}20`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "column",
               }}
-              onClick={() => !isLocked && setSelectedModule(
-                module.id === selectedModule ? null : module.id,
-              )}
+              onClick={() =>
+                !isLocked && setSelectedModule(module.id === selectedModule ? null : module.id)
+              }
               title={isLocked ? `Locked — reach ${module.requiredStage} stage` : module.title}
             >
               <span className="text-[18px]">{module.emoji}</span>
               {isComplete && (
-                <CheckCircle2 className="absolute -top-1 -right-1 h-4 w-4" style={{ color: "#34D399", background: "var(--background)", borderRadius: "50%" }} />
+                <CheckCircle2
+                  className="absolute -top-1 -right-1 h-4 w-4"
+                  style={{ color: "#34D399", background: "var(--background)", borderRadius: "50%" }}
+                />
               )}
               {isLocked && (
                 <Lock className="absolute -top-1 -right-1 h-3 w-3" style={{ color: "#6B7280" }} />
@@ -372,10 +394,7 @@ function GalaxyMapPage() {
       >
         {(["available", "active", "complete", "locked"] as ModuleState[]).map((s) => (
           <div key={s} className="flex items-center gap-1.5">
-            <div
-              className="h-2 w-2 rounded-full"
-              style={{ background: STATE_COLORS[s] }}
-            />
+            <div className="h-2 w-2 rounded-full" style={{ background: STATE_COLORS[s] }} />
             <span
               className="text-[9px] font-medium capitalize"
               style={{ color: "rgba(237,232,223,0.45)" }}

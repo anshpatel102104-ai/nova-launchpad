@@ -41,10 +41,7 @@ export function FounderLevelBadge({
 
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
-      <span
-        className={cn("level-badge shrink-0", SIZE_CLASSES[size])}
-        style={{ color }}
-      >
+      <span className={cn("level-badge shrink-0", SIZE_CLASSES[size])} style={{ color }}>
         <span
           className="font-mono font-black"
           style={{

@@ -127,10 +127,7 @@ function ScaleReports() {
                     boxShadow: day.count > 0 ? "0 0 8px rgba(249,115,22,0.35)" : "none",
                   }}
                 />
-                <span
-                  className="text-[9px]"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
+                <span className="text-[9px]" style={{ color: "var(--muted-foreground)" }}>
                   {day.label.split(" ")[1]}
                 </span>
               </div>
@@ -159,14 +156,15 @@ function ScaleReports() {
           ) : (
             <div className="space-y-2.5">
               {topTools.map(([toolKey, count]) => {
-                const label = toolKey
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase());
+                const label = toolKey.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                 const pct = (count / (topTools[0]?.[1] ?? 1)) * 100;
                 return (
                   <div key={toolKey}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[12px] font-medium" style={{ color: "var(--foreground)" }}>
+                      <span
+                        className="text-[12px] font-medium"
+                        style={{ color: "var(--foreground)" }}
+                      >
                         {label}
                       </span>
                       <span className="text-[11px] font-mono" style={{ color: "#7DD3FC" }}>
@@ -204,7 +202,11 @@ function ScaleReports() {
           </div>
           <div className="space-y-2">
             {runs.slice(0, 10).map((run) => (
-              <div key={run.id} className="flex items-center gap-3 py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+              <div
+                key={run.id}
+                className="flex items-center gap-3 py-2 border-b last:border-0"
+                style={{ borderColor: "var(--border)" }}
+              >
                 <div
                   className="h-2 w-2 rounded-full shrink-0"
                   style={{
@@ -216,8 +218,13 @@ function ScaleReports() {
                           : "var(--warning)",
                   }}
                 />
-                <span className="flex-1 text-[12px] font-medium truncate" style={{ color: "var(--foreground)" }}>
-                  {(run.tool_key ?? "tool").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                <span
+                  className="flex-1 text-[12px] font-medium truncate"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {(run.tool_key ?? "tool")
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase())}
                 </span>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full capitalize"
