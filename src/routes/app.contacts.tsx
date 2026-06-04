@@ -18,13 +18,11 @@ import {
   Filter,
   MoreHorizontal,
   Activity,
-  ArrowRight,
   AlertCircle,
   CheckSquare,
   Square,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
 
@@ -71,34 +69,6 @@ const STATUS_OPTIONS: ContactStatus[] = [
   "archived",
 ];
 
-const STATUS_COLORS: Record<ContactStatus, { bg: string; text: string; border: string }> = {
-  new: { bg: "rgba(75,139,244,0.12)", text: "#4B8BF4", border: "rgba(75,139,244,0.25)" },
-  contacted: { bg: "rgba(251,191,36,0.12)", text: "#FBBF24", border: "rgba(251,191,36,0.25)" },
-  qualified: { bg: "rgba(34,197,94,0.12)", text: "#22C55E", border: "rgba(34,197,94,0.25)" },
-  engaged: { bg: "rgba(139,92,246,0.12)", text: "#8B5CF6", border: "rgba(139,92,246,0.25)" },
-  nurture: { bg: "rgba(249,115,22,0.12)", text: "#F97316", border: "rgba(249,115,22,0.25)" },
-  cold: { bg: "rgba(136,136,170,0.12)", text: "#8888AA", border: "rgba(136,136,170,0.25)" },
-  archived: {
-    bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
-    text: "var(--muted-foreground)",
-    border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
-  },
-};
-
-function leadScoreColor(score: number | null) {
-  if (!score)
-    return {
-      bg: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
-      text: "var(--muted-foreground)",
-      border: "color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
-    };
-  if (score >= 70)
-    return { bg: "rgba(34,197,94,0.12)", text: "#22C55E", border: "rgba(34,197,94,0.25)" };
-  if (score >= 40)
-    return { bg: "rgba(251,191,36,0.12)", text: "#FBBF24", border: "rgba(251,191,36,0.25)" };
-  return { bg: "rgba(239,68,68,0.12)", text: "#EF4444", border: "rgba(239,68,68,0.25)" };
-}
-
 const PAGE_SIZE = 25;
 
 /* ─── Supabase helpers ─── */
@@ -129,7 +99,6 @@ async function fetchContactLogs(contactId: string): Promise<Record<string, unkno
     .select("*")
     .order("created_at", { ascending: false })
     .limit(20);
-  // Filter client-side to match contact references in trigger_payload
   return ((data ?? []) as Record<string, unknown>[]).filter((log) => {
     const payload = log.trigger_payload as Record<string, unknown> | null;
     return payload && (payload.contact_id === contactId || payload.email === contactId);
@@ -159,7 +128,6 @@ function ContactsPage() {
 
   const allContacts = contactsQ.data ?? [];
 
-  /* Filter + sort */
   const filtered = useMemo(() => {
     let arr = allContacts;
     if (statusFilter !== "all") arr = arr.filter((c) => c.status === statusFilter);
@@ -253,52 +221,30 @@ function ContactsPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{
-              background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
-              boxShadow: "0 0 20px rgba(75,139,244,0.3)",
-            }}
-          >
-            <Users className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1
-              className="font-display text-2xl font-bold tracking-tight"
-              style={{ color: "var(--foreground)" }}
-            >
-              Contacts
-            </h1>
-            <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-              {allContacts.length} contact{allContacts.length !== 1 ? "s" : ""} in your CRM
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            Contacts
+          </h1>
+          <p className="text-[13px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            {allContacts.length} contact{allContacts.length !== 1 ? "s" : ""} in your CRM
+          </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold text-white transition-all"
-          style={{
-            background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)",
-            boxShadow: "0 4px 15px rgba(75,139,244,0.3)",
-          }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.transform = "translateY(-1px)")
-          }
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = "none")}
+          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-opacity hover:opacity-80"
+          style={{ background: "var(--primary)", color: "#fff" }}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           Add Contact
         </button>
       </div>
 
       {/* Filters */}
       <div
-        className="rounded-2xl p-4 space-y-3"
+        className="rounded-xl p-4 space-y-3"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          {/* Search */}
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none"
@@ -318,7 +264,8 @@ function ContactsPage() {
                 color: "var(--foreground)",
               }}
               onFocus={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(75,139,244,0.4)";
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "color-mix(in oklab, var(--primary) 50%, transparent)";
               }}
               onBlur={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
@@ -326,7 +273,6 @@ function ContactsPage() {
             />
           </div>
 
-          {/* Status filter */}
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -349,7 +295,6 @@ function ContactsPage() {
           </select>
         </div>
 
-        {/* Score slider */}
         <div className="flex items-center gap-3">
           <Filter className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
           <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
@@ -364,7 +309,8 @@ function ContactsPage() {
               setMinScore(Number(e.target.value));
               setPage(1);
             }}
-            className="flex-1 accent-blue-500"
+            className="flex-1"
+            style={{ accentColor: "var(--primary)" }}
           />
           <span
             className="text-[12px] font-mono w-6 text-right"
@@ -379,9 +325,12 @@ function ContactsPage() {
       {selected.size > 0 && (
         <div
           className="flex items-center gap-3 rounded-xl px-4 py-2.5"
-          style={{ background: "rgba(75,139,244,0.08)", border: "1px solid rgba(75,139,244,0.2)" }}
+          style={{
+            background: "var(--primary-soft)",
+            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
+          }}
         >
-          <span className="text-[12px] font-medium" style={{ color: "#4B8BF4" }}>
+          <span className="text-[12px] font-medium" style={{ color: "var(--primary)" }}>
             {selected.size} selected
           </span>
           <div className="flex items-center gap-2 ml-auto">
@@ -391,7 +340,7 @@ function ContactsPage() {
               className="rounded-lg px-3 py-1.5 text-[12px] outline-none"
               style={{
                 background: "var(--surface-2)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
             >
@@ -411,7 +360,7 @@ function ContactsPage() {
                 className="rounded-lg px-3 py-1.5 text-[12px] outline-none"
                 style={{
                   background: "var(--surface-2)",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  border: "1px solid var(--border)",
                   color: "var(--foreground)",
                 }}
               >
@@ -441,17 +390,14 @@ function ContactsPage() {
                   setSelected(new Set());
                   setBulkAction("");
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-white"
-                style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium"
+                style={{ background: "var(--primary)", color: "#fff" }}
               >
                 <Zap className="h-3.5 w-3.5" />
                 Trigger
               </button>
             )}
-            <button
-              onClick={() => setSelected(new Set())}
-              style={{ color: "var(--muted-foreground)" }}
-            >
+            <button onClick={() => setSelected(new Set())} style={{ color: "var(--muted-foreground)" }}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -460,25 +406,25 @@ function ContactsPage() {
 
       {/* Table */}
       <div
-        className="overflow-hidden rounded-2xl"
+        className="overflow-hidden rounded-xl"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         {contactsQ.isLoading ? (
           <div className="flex justify-center py-16">
             <Loader2
-              className="h-6 w-6 animate-spin"
+              className="h-5 w-5 animate-spin"
               style={{ color: "var(--muted-foreground)" }}
             />
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead style={{ borderBottom: "1px solid var(--surface-2)" }}>
-                <tr>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
                   <th className="px-4 py-3 w-10">
                     <button onClick={selectAll}>
                       {selected.size === paginated.length && paginated.length > 0 ? (
-                        <CheckSquare className="h-4 w-4" style={{ color: "#4B8BF4" }} />
+                        <CheckSquare className="h-4 w-4" style={{ color: "var(--primary)" }} />
                       ) : (
                         <Square className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                       )}
@@ -502,7 +448,7 @@ function ContactsPage() {
                     onClick={() => handleSort("lead_score")}
                   >
                     <span className="flex items-center gap-1">
-                      Lead Score <SortIcon field="lead_score" />
+                      Score <SortIcon field="lead_score" />
                     </span>
                   </th>
                   <th
@@ -532,7 +478,7 @@ function ContactsPage() {
                     <td colSpan={7} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Users
-                          className="h-8 w-8"
+                          className="h-7 w-7"
                           style={{ color: "var(--muted-foreground)", opacity: 0.3 }}
                         />
                         <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
@@ -543,8 +489,8 @@ function ContactsPage() {
                         {!search && statusFilter === "all" && minScore === 0 && (
                           <button
                             onClick={() => setShowAddModal(true)}
-                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-white"
-                            style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium"
+                            style={{ background: "var(--primary)", color: "#fff" }}
                           >
                             <Plus className="h-3.5 w-3.5" /> Add your first contact
                           </button>
@@ -554,18 +500,18 @@ function ContactsPage() {
                   </tr>
                 ) : (
                   paginated.map((contact) => {
-                    const scoreColors = leadScoreColor(contact.lead_score);
-                    const statusColors = STATUS_COLORS[contact.status];
+                    const score = contact.lead_score;
                     const fullName =
                       [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "—";
+                    const isActive = contact.status === "qualified" || contact.status === "engaged";
 
                     return (
                       <tr
                         key={contact.id}
-                        className="transition-all cursor-pointer"
-                        style={{ borderBottom: "1px solid var(--surface-2)" }}
+                        className="transition-colors cursor-pointer"
+                        style={{ borderBottom: "1px solid var(--border)" }}
                         onMouseEnter={(e) =>
-                          ((e.currentTarget as HTMLElement).style.background = "var(--surface)")
+                          ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
                         }
                         onMouseLeave={(e) =>
                           ((e.currentTarget as HTMLElement).style.background = "transparent")
@@ -575,7 +521,7 @@ function ContactsPage() {
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => toggleSelect(contact.id)}>
                             {selected.has(contact.id) ? (
-                              <CheckSquare className="h-4 w-4" style={{ color: "#4B8BF4" }} />
+                              <CheckSquare className="h-4 w-4" style={{ color: "var(--primary)" }} />
                             ) : (
                               <Square
                                 className="h-4 w-4"
@@ -593,7 +539,7 @@ function ContactsPage() {
                           </div>
                           {contact.email && (
                             <div
-                              className="text-[11px]"
+                              className="text-[11px] mt-0.5"
                               style={{ color: "var(--muted-foreground)" }}
                             >
                               {contact.email}
@@ -601,42 +547,44 @@ function ContactsPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className="text-[13px]"
-                            style={{ color: "var(--muted-foreground)" }}
-                          >
+                          <span className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
                             {contact.company ?? "—"}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          {contact.lead_score != null ? (
+                          {score != null ? (
                             <span
-                              className="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-bold min-w-[36px]"
-                              style={{
-                                background: scoreColors.bg,
-                                color: scoreColors.text,
-                                border: `1px solid ${scoreColors.border}`,
-                              }}
+                              className="inline-flex items-center justify-center rounded-md px-2 py-0.5 text-[11px] font-bold tabular-nums min-w-[32px]"
+                              style={
+                                score >= 70
+                                  ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                                  : {
+                                      background: "var(--surface-2)",
+                                      color: "var(--muted-foreground)",
+                                      border: "1px solid var(--border)",
+                                    }
+                              }
                             >
-                              {contact.lead_score}
+                              {score}
                             </span>
                           ) : (
-                            <span
-                              className="text-[12px]"
-                              style={{ color: "var(--muted-foreground)" }}
-                            >
+                            <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
                               —
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
-                            style={{
-                              background: statusColors.bg,
-                              color: statusColors.text,
-                              border: `1px solid ${statusColors.border}`,
-                            }}
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium capitalize"
+                            style={
+                              isActive
+                                ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                                : {
+                                    background: "var(--surface-2)",
+                                    color: "var(--muted-foreground)",
+                                    border: "1px solid var(--border)",
+                                  }
+                            }
                           >
                             {contact.status}
                           </span>
@@ -653,11 +601,10 @@ function ContactsPage() {
                         </td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <button
-                            className="flex h-7 w-7 items-center justify-center rounded-lg transition-all"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
                             style={{ color: "var(--muted-foreground)" }}
                             onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.background =
-                                "var(--surface-2)";
+                              (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                               (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                             }}
                             onMouseLeave={(e) => {
@@ -679,11 +626,10 @@ function ContactsPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ borderTop: "1px solid var(--surface-2)" }}
+            style={{ borderTop: "1px solid var(--border)" }}
           >
             <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
               Page {page} of {totalPages} · {filtered.length} results
@@ -718,7 +664,6 @@ function ContactsPage() {
         )}
       </div>
 
-      {/* Add Contact Modal */}
       {showAddModal && (
         <AddContactModal
           userId={user.id}
@@ -730,7 +675,6 @@ function ContactsPage() {
         />
       )}
 
-      {/* Contact Detail Slide-over */}
       {detailContact && (
         <ContactDetail
           contact={detailContact}
@@ -797,15 +741,21 @@ function AddContactModal({
     }
   };
 
+  const inputStyle = {
+    background: "var(--surface-2)",
+    border: "1px solid var(--border)",
+    color: "var(--foreground)",
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
-        className="relative w-full max-w-lg rounded-2xl"
-        style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.1)" }}
+        className="relative w-full max-w-lg rounded-xl"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="font-semibold text-[15px]" style={{ color: "var(--foreground)" }}>
@@ -815,17 +765,14 @@ function AddContactModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-5 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             {[
               { key: "first_name", label: "First Name", placeholder: "Jane" },
               { key: "last_name", label: "Last Name", placeholder: "Doe" },
             ].map((f) => (
               <div key={f.key}>
-                <label
-                  className="block text-[12px] font-medium mb-1.5"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
                   {f.label}
                 </label>
                 <input
@@ -833,11 +780,7 @@ function AddContactModal({
                   onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
                   placeholder={f.placeholder}
                   className="w-full rounded-lg px-3 py-2 text-[13px] outline-none"
-                  style={{
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--border)",
-                    color: "var(--foreground)",
-                  }}
+                  style={inputStyle}
                 />
               </div>
             ))}
@@ -846,18 +789,10 @@ function AddContactModal({
             { key: "email", label: "Email", placeholder: "jane@example.com", type: "email" },
             { key: "phone", label: "Phone", placeholder: "+1 555 000 0000", type: "tel" },
             { key: "company", label: "Company", placeholder: "Acme Corp", type: "text" },
-            {
-              key: "source",
-              label: "Source",
-              placeholder: "LinkedIn, referral, ad…",
-              type: "text",
-            },
+            { key: "source", label: "Source", placeholder: "LinkedIn, referral, ad…", type: "text" },
           ].map((f) => (
             <div key={f.key}>
-              <label
-                className="block text-[12px] font-medium mb-1.5"
-                style={{ color: "var(--foreground)" }}
-              >
+              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
                 {f.label}
               </label>
               <input
@@ -866,19 +801,12 @@ function AddContactModal({
                 onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
                 placeholder={f.placeholder}
                 className="w-full rounded-lg px-3 py-2 text-[13px] outline-none"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  color: "var(--foreground)",
-                }}
+                style={inputStyle}
               />
             </div>
           ))}
           <div>
-            <label
-              className="block text-[12px] font-medium mb-1.5"
-              style={{ color: "var(--foreground)" }}
-            >
+            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
               Notes
             </label>
             <textarea
@@ -887,27 +815,23 @@ function AddContactModal({
               placeholder="Any notes about this contact…"
               rows={3}
               className="w-full rounded-lg px-3 py-2 text-[13px] outline-none resize-none"
-              style={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                color: "var(--foreground)",
-              }}
+              style={inputStyle}
             />
           </div>
           {error && (
             <div
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px]"
               style={{
-                background: "rgba(239,68,68,0.1)",
-                border: "1px solid rgba(239,68,68,0.2)",
-                color: "#EF4444",
+                background: "color-mix(in oklab, var(--muted-foreground) 8%, transparent)",
+                border: "1px solid color-mix(in oklab, var(--muted-foreground) 15%, transparent)",
+                color: "var(--foreground)",
               }}
             >
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
             </div>
           )}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
@@ -923,10 +847,10 @@ function AddContactModal({
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium text-white"
-              style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-opacity hover:opacity-80 disabled:opacity-60"
+              style={{ background: "var(--primary)", color: "#fff" }}
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Add Contact
             </button>
           </div>
@@ -953,10 +877,10 @@ function ContactDetail({
     queryFn: () => fetchContactLogs(contact.id),
   });
 
-  const scoreColors = leadScoreColor(contact.lead_score);
-  const statusColors = STATUS_COLORS[contact.status];
   const fullName =
     [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "Unnamed Contact";
+  const isActive = contact.status === "qualified" || contact.status === "engaged";
+  const score = contact.lead_score;
 
   const triggerAutomation = async () => {
     const {
@@ -972,17 +896,31 @@ function ContactDetail({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-modal-overlay backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
         className="relative ml-auto flex h-full w-full max-w-md flex-col"
         style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
+        {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-4"
+          className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <div className="font-semibold text-[15px]" style={{ color: "var(--foreground)" }}>
-            {fullName}
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-lg font-bold text-[14px]"
+              style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+            >
+              {fullName[0]?.toUpperCase() ?? "?"}
+            </div>
+            <div>
+              <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
+                {fullName}
+              </div>
+              <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+                {contact.company ?? "No company"}
+              </div>
+            </div>
           </div>
           <button onClick={onClose} style={{ color: "var(--muted-foreground)" }}>
             <X className="h-4 w-4" />
@@ -990,38 +928,40 @@ function ContactDetail({
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {/* Profile */}
-          <div
-            className="px-6 py-5 space-y-4"
-            style={{ borderBottom: "1px solid var(--surface-2)" }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl text-white font-bold text-[16px]"
-                style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
-              >
-                {fullName[0]?.toUpperCase() ?? "?"}
-              </div>
-              <div>
-                <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
-                  {fullName}
-                </div>
-                <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-                  {contact.company ?? "No company"}
-                </div>
-              </div>
-              {contact.lead_score != null && (
+          {/* Profile info */}
+          <div className="px-5 py-5 space-y-4" style={{ borderBottom: "1px solid var(--border)" }}>
+            {/* Score + status row */}
+            <div className="flex items-center gap-2">
+              {score != null && (
                 <span
-                  className="ml-auto rounded-full px-2.5 py-1 text-[12px] font-bold"
-                  style={{
-                    background: scoreColors.bg,
-                    color: scoreColors.text,
-                    border: `1px solid ${scoreColors.border}`,
-                  }}
+                  className="rounded-md px-2.5 py-1 text-[12px] font-bold"
+                  style={
+                    score >= 70
+                      ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                      : {
+                          background: "var(--surface-2)",
+                          color: "var(--muted-foreground)",
+                          border: "1px solid var(--border)",
+                        }
+                  }
                 >
-                  {contact.lead_score}
+                  {score} pts
                 </span>
               )}
+              <span
+                className="rounded-md px-2.5 py-1 text-[11px] font-medium capitalize"
+                style={
+                  isActive
+                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                    : {
+                        background: "var(--surface-2)",
+                        color: "var(--muted-foreground)",
+                        border: "1px solid var(--border)",
+                      }
+                }
+              >
+                {contact.status}
+              </span>
             </div>
 
             {/* Info rows */}
@@ -1034,7 +974,7 @@ function ContactDetail({
               .filter((r) => r.value)
               .map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
                   <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
                     {value}
                   </span>
@@ -1044,23 +984,22 @@ function ContactDetail({
             {/* Status change */}
             <div>
               <label
-                className="block text-[11px] font-medium mb-1.5 uppercase tracking-wider"
+                className="block text-[11px] font-semibold mb-2 uppercase tracking-wider"
                 style={{ color: "var(--muted-foreground)" }}
               >
-                Status
+                Change Status
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {STATUS_OPTIONS.map((s) => {
-                  const sc = STATUS_COLORS[s];
                   const active = contact.status === s;
                   return (
                     <button
                       key={s}
                       onClick={() => onStatusChange(contact.id, s)}
-                      className="rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize transition-all"
+                      className="rounded-md px-2.5 py-1 text-[11px] font-medium capitalize transition-colors"
                       style={
                         active
-                          ? { background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }
+                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
                           : {
                               background: "var(--surface-2)",
                               color: "var(--muted-foreground)",
@@ -1075,11 +1014,10 @@ function ContactDetail({
               </div>
             </div>
 
-            {/* Notes */}
             {contact.notes && (
               <div>
                 <label
-                  className="block text-[11px] font-medium mb-1.5 uppercase tracking-wider"
+                  className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider"
                   style={{ color: "var(--muted-foreground)" }}
                 >
                   Notes
@@ -1090,22 +1028,27 @@ function ContactDetail({
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={triggerAutomation}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium text-white"
-                style={{ background: "linear-gradient(135deg, #4B8BF4, #8B5CF6)" }}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-opacity hover:opacity-80"
+                style={{ background: "var(--primary)", color: "#fff" }}
               >
                 <Zap className="h-3.5 w-3.5" /> Trigger Automation
               </button>
               <button
                 onClick={() => onDelete(contact.id)}
-                className="rounded-lg px-3 py-2 text-[12px] font-medium transition-all"
+                className="rounded-lg px-3 py-2 text-[12px] font-medium transition-colors"
                 style={{
-                  background: "rgba(239,68,68,0.08)",
-                  border: "1px solid rgba(239,68,68,0.15)",
-                  color: "#EF4444",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
+                  color: "var(--muted-foreground)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                 }}
               >
                 Delete
@@ -1114,20 +1057,20 @@ function ContactDetail({
           </div>
 
           {/* Activity timeline */}
-          <div className="px-6 py-5">
+          <div className="px-5 py-5">
             <div className="flex items-center gap-2 mb-4">
-              <Activity className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
+              <Activity className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />
               <span
-                className="text-[12px] font-semibold uppercase tracking-wider"
+                className="text-[11px] font-semibold uppercase tracking-wider"
                 style={{ color: "var(--muted-foreground)" }}
               >
-                Activity Timeline
+                Activity
               </span>
             </div>
             {logsQ.isLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2
-                  className="h-5 w-5 animate-spin"
+                  className="h-4 w-4 animate-spin"
                   style={{ color: "var(--muted-foreground)" }}
                 />
               </div>
@@ -1136,8 +1079,8 @@ function ContactDetail({
                 {logsQ.data.map((log, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div
-                      className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
-                      style={{ background: "#4B8BF4" }}
+                      className="w-1 h-1 rounded-full mt-2 shrink-0"
+                      style={{ background: "var(--primary)" }}
                     />
                     <div>
                       <div className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
