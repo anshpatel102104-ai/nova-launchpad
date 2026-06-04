@@ -475,6 +475,43 @@ export async function markInsightsRead(orgId: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Current active mission for the user's workspace — shared query key with CurrentMissionCard. */
+export const currentMissionQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["current-mission", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return null;
+      const { data: ws } = await supabase
+        .from("workspaces")
+        .select("id, name, lane, stage, current_mission_id")
+        .eq("owner_id", userId)
+        .maybeSingle();
+      if (!ws) return null;
+
+      const { data: mission } = await supabase
+        .from("missions")
+        .select("id, title, description, lane, status")
+        .eq("workspace_id", ws.id)
+        .eq("status", "active")
+        .order("sort_order")
+        .limit(1)
+        .maybeSingle();
+
+      if (!mission) return { workspace: ws, mission: null, steps: [] };
+
+      const { data: steps } = await supabase
+        .from("mission_steps")
+        .select("id, title, description, tool_key, status, sort_order")
+        .eq("mission_id", mission.id)
+        .order("sort_order");
+
+      return { workspace: ws, mission, steps: steps ?? [] };
+    },
+    staleTime: 30_000,
+    retry: 4,
+    retryDelay: 5_000,
+  });
+
 /** Derive live KPI metrics from existing tables (no new DB tables needed). */
 export const mentorKPIsQuery = (orgId: string) =>
   queryOptions({

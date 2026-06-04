@@ -6,56 +6,31 @@ import {
   Moon,
   Monitor,
   ChevronDown,
-  Search,
   Bell,
-  ChevronRight,
   User as UserIcon,
   Settings as SettingsIcon,
   Check,
-  Rocket,
+  ArrowRight,
   Zap,
-  Command,
+  Target,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useGuest } from "@/lib/guest";
-import { useQuery } from "@tanstack/react-query";
-import { subscriptionQuery } from "@/lib/queries";
-import { AiOperator } from "@/components/app/AiOperator";
 import { NovaChatModal } from "@/components/app/NovaChatModal";
 import { StagePill } from "@/components/app/StagePill";
+import { MissionStatusPill } from "@/components/app/gamification/MissionStatusPill";
+import { FounderLevelBadge } from "@/components/app/gamification/FounderLevelBadge";
 import { cn } from "@/lib/utils";
 import { useOwnerMode, useOwnerModeShortcut, toggleOwnerMode } from "@/lib/ownerMode";
+import { useFounderProgress } from "@/hooks/use-founder-progress";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/app/dashboard": "Dashboard",
-  "/app/launchpad": "Launchpad",
-  "/app/launchpad/history": "Run history",
-  "/app/nova": "Nova OS",
-  "/app/nova/crm": "CRM Pipeline",
-  "/app/nova/leads": "Lead Capture",
-  "/app/nova/workflows": "Automation Workflows",
-  "/app/nova/clients": "Client Onboarding",
-  "/app/nova/reports": "Reporting",
-  "/app/leads": "Leads",
-  "/app/assets": "Assets",
-  "/app/billing": "Billing",
-  "/app/settings": "Settings",
-};
-
-function crumbsFor(path: string): { label: string; to?: string }[] {
-  if (path.startsWith("/app/launchpad/") && path !== "/app/launchpad/history") {
-    const slug = path.split("/").pop() ?? "";
-    const tool = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-    return [{ label: "Launchpad", to: "/app/launchpad" }, { label: tool }];
-  }
-  if (path.startsWith("/app/nova/") && PAGE_TITLES[path]) {
-    return [{ label: "Nova OS", to: "/app/nova" }, { label: PAGE_TITLES[path] }];
-  }
-  return [{ label: PAGE_TITLES[path] ?? "LaunchpadNOVA" }];
+interface AppTopbarProps {
+  onToggleRail?: () => void;
+  railOpen?: boolean;
 }
 
-export function AppTopbar() {
+export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user, profile, currentOrgId, signOut } = useAuth();
@@ -65,20 +40,18 @@ export function AppTopbar() {
   const isOwner = useOwnerMode();
   useOwnerModeShortcut();
 
+  const progress = useFounderProgress();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
-  const [opOpen, setOpOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const themeRef = useRef<HTMLDivElement | null>(null);
 
-  const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const plan = subQ.data?.plan ?? "starter";
-
   const initials = (profile?.full_name || user?.email || "U")
     .split(/[\s@]/)
     .filter(Boolean)
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
@@ -104,26 +77,25 @@ export function AppTopbar() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        if (e.shiftKey) {
-          setChatOpen((o) => !o);
-        } else {
-          setOpOpen((o) => !o);
-        }
+        setChatOpen((o) => !o);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const crumbs = crumbsFor(path);
-  const workspace: "launchpad" | "nova" = path.startsWith("/app/nova") ? "nova" : "launchpad";
+  // Derive next action destination based on mission progress
+  const nextActionTo = progress.currentMissionTitle
+    ? "/app/mission-control"
+    : "/app/mission-briefing";
+  const nextActionLabel = progress.currentMissionTitle ? "Continue Mission" : "Start Mission";
 
   return (
     <>
       <header
-        className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b px-4 md:px-6"
+        className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b px-4 md:px-5"
         style={{
           background: "color-mix(in oklab, var(--background) 85%, transparent)",
           backdropFilter: "blur(20px) saturate(1.8)",
@@ -133,90 +105,79 @@ export function AppTopbar() {
         }}
       >
         {/* Mobile brand */}
-        <Link to="/app/dashboard" className="flex items-center gap-2 lg:hidden">
+        <Link to="/app/mission-control" className="flex items-center gap-2 lg:hidden">
           <div
             className="relative flex h-7 w-7 items-center justify-center rounded-lg text-white text-[11px] font-bold tracking-tight"
             style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)" }}
           >
             LN
-            <span
-              className="absolute inset-0 rounded-lg"
-              style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)" }}
-            />
           </div>
           <span className="font-display text-[13px] font-semibold">LaunchpadNOVA</span>
         </Link>
 
-        {/* Breadcrumb */}
-        <nav className="hidden lg:flex items-center gap-1.5 text-[13px] min-w-0">
-          {crumbs.map((c, i) => (
-            <span key={i} className="flex items-center gap-1.5 min-w-0">
-              {i > 0 && (
-                <ChevronRight
-                  className="h-3.5 w-3.5 shrink-0"
-                  style={{ color: "var(--muted-foreground)", opacity: 0.5 }}
-                />
-              )}
-              {c.to ? (
-                <Link
-                  to={c.to}
-                  className="transition-colors truncate"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {c.label}
-                </Link>
-              ) : (
-                <span
-                  className="font-display font-semibold truncate"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {c.label}
-                </span>
-              )}
-            </span>
-          ))}
-        </nav>
-
-        {/* Center search pill */}
-        <div className="flex flex-1 justify-center">
-          <button
-            onClick={() => setChatOpen(true)}
-            className="hidden md:flex items-center gap-2.5 rounded-xl px-3.5 py-2 text-[12.5px] transition w-full max-w-md"
-            style={{
-              background: "color-mix(in oklab, var(--surface-2) 90%, transparent)",
-              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-              color: "var(--muted-foreground)",
-            }}
-            onMouseEnter={(e: React.MouseEvent) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--primary) 40%, transparent)";
-              (e.currentTarget as HTMLElement).style.background =
-                "color-mix(in oklab, var(--surface-2) 100%, transparent)";
-            }}
-            onMouseLeave={(e: React.MouseEvent) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--border) 70%, transparent)";
-              (e.currentTarget as HTMLElement).style.background =
-                "color-mix(in oklab, var(--surface-2) 90%, transparent)";
-            }}
-          >
-            <Search className="h-3.5 w-3.5 shrink-0 opacity-60" />
-            <span className="flex-1 text-left truncate opacity-60">Ask Nova AI anything…</span>
-            <kbd
-              className="hidden sm:inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-mono text-[10px]"
-              style={{
-                background: "var(--surface-offset)",
-                border: "1px solid var(--border)",
-                color: "var(--muted-foreground)",
-              }}
-            >
-              <Command className="h-2.5 w-2.5" />
-              ⇧K
-            </kbd>
-          </button>
+        {/* LEFT: Current mission + stage */}
+        <div className="hidden lg:flex items-center gap-3 min-w-0 flex-shrink-0 max-w-xs">
+          <MissionStatusPill
+            title={progress.currentMissionTitle}
+            stepsCompleted={progress.currentMissionStepsCompleted}
+            stepsTotal={progress.currentMissionStepsTotal}
+            compact
+          />
+          <StagePill />
         </div>
 
-        <div className="flex items-center gap-1.5">
+        {/* CENTER: XP bar + level badge */}
+        <div className="hidden md:flex flex-1 items-center justify-center gap-3 min-w-0">
+          {/* XP progress */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <span
+              className="text-[9px] font-mono font-bold uppercase tracking-widest shrink-0"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              XP
+            </span>
+            <div
+              className="relative overflow-hidden rounded-full shrink-0"
+              style={{
+                width: 100,
+                height: 4,
+                background: "rgba(245,200,140,0.08)",
+              }}
+            >
+              <div
+                className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700"
+                style={{
+                  width: `${progress.xpProgressInLevel}%`,
+                  background: "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)",
+                  boxShadow: "0 0 8px rgba(249,115,22,0.55)",
+                }}
+              />
+            </div>
+            <span
+              className="text-[9px] font-mono shrink-0"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              {progress.totalXP.toLocaleString()}
+            </span>
+          </div>
+
+          {!progress.isLoading && (
+            <FounderLevelBadge level={progress.level} levelLabel={progress.levelLabel} size="sm" />
+          )}
+
+          {/* Next Action CTA */}
+          <Link
+            to={nextActionTo}
+            className="hidden xl:inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11.5px] font-semibold transition-all btn-execute shrink-0"
+            style={{ borderRadius: 8 }}
+          >
+            <Target className="h-3 w-3" />
+            {nextActionLabel}
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-1.5 ml-auto">
           {isGuest && (
             <span
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-medium"
@@ -230,74 +191,6 @@ export function AppTopbar() {
               Demo
             </span>
           )}
-
-          {/* Workspace switcher */}
-          <div
-            className="hidden lg:flex items-center rounded-xl p-0.5"
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <Link
-              to="/app/launchpad"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-medium transition"
-              style={
-                workspace === "launchpad"
-                  ? {
-                      background: "color-mix(in oklab, var(--primary) 12%, var(--surface))",
-                      color: "var(--primary)",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-                    }
-                  : {
-                      color: "var(--muted-foreground)",
-                    }
-              }
-            >
-              <Rocket className="h-3 w-3" /> Launchpad
-            </Link>
-            <Link
-              to="/app/nova"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-medium transition"
-              style={
-                workspace === "nova"
-                  ? {
-                      background: "color-mix(in oklab, var(--accent) 12%, var(--surface))",
-                      color: "var(--accent)",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-                    }
-                  : {
-                      color: "var(--muted-foreground)",
-                    }
-              }
-            >
-              <Zap className="h-3 w-3" /> Nova OS
-            </Link>
-          </div>
-
-          <StagePill />
-
-          {/* Plan badge */}
-          <Link
-            to="/app/billing"
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-medium transition"
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-              opacity: 0.8,
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--primary) 40%, transparent)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-            }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--primary)" }} />
-            <span className="capitalize">{plan}</span>
-          </Link>
 
           {/* Owner mode crown badge */}
           {isOwner && (
@@ -315,6 +208,35 @@ export function AppTopbar() {
             >
               <span style={{ fontSize: "12px", lineHeight: 1 }}>👑</span>
               <span className="hidden sm:inline">Owner</span>
+            </button>
+          )}
+
+          {/* Nova Operator rail toggle */}
+          {onToggleRail && (
+            <button
+              onClick={onToggleRail}
+              className="hidden xl:flex h-8 w-8 items-center justify-center rounded-lg transition"
+              style={{
+                color: railOpen ? "var(--mentor-accent)" : "var(--muted-foreground)",
+                background: railOpen
+                  ? "color-mix(in oklab, var(--mentor-accent) 10%, transparent)"
+                  : "transparent",
+              }}
+              title="Nova Intelligence Rail"
+              onMouseEnter={(e) => {
+                if (!railOpen) {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!railOpen) {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                }
+              }}
+            >
+              <Zap className="h-4 w-4" />
             </button>
           )}
 
@@ -447,6 +369,17 @@ export function AppTopbar() {
                   >
                     {user?.email}
                   </div>
+                  {!progress.isLoading && (
+                    <div className="mt-1.5">
+                      <FounderLevelBadge
+                        level={progress.level}
+                        levelLabel={progress.levelLabel}
+                        size="sm"
+                        showProgress
+                        xpProgressInLevel={progress.xpProgressInLevel}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="p-1">
                   <MenuItem
@@ -477,7 +410,6 @@ export function AppTopbar() {
           </div>
         </div>
       </header>
-      <AiOperator open={opOpen} onOpenChange={setOpOpen} />
       <NovaChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
     </>
   );

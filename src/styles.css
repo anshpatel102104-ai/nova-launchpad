@@ -1347,3 +1347,179 @@ button, a, [role="button"] {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .dock-in { animation: dockIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ─────────────────────────── Founder OS — Gamification Tokens ─────────────────────────── */
+
+:root, .dark {
+  /* Founder level colors */
+  --level-1-color:  #6B7280;
+  --level-2-color:  #8B5CF6;
+  --level-3-color:  #3B82F6;
+  --level-4-color:  #06B6D4;
+  --level-5-color:  #10B981;
+  --level-6-color:  #F59E0B;
+  --level-7-color:  #F97316;
+  --level-8-color:  #EF4444;
+  --level-9-color:  #EC4899;
+  --level-10-color: #FBBF24;
+
+  /* Galaxy Map planet states */
+  --planet-locked:    rgba(245,200,140,0.08);
+  --planet-active:    #FF6B1A;
+  --planet-completed: #34D399;
+  --planet-mastered:  #FBBF24;
+
+  /* Academy module states */
+  --module-locked:    rgba(245,200,140,0.05);
+  --module-available: rgba(255,107,26,0.07);
+  --module-active:    rgba(255,107,26,0.13);
+  --module-complete:  rgba(52,211,153,0.10);
+  --module-mastered:  rgba(251,191,36,0.12);
+
+  /* Intelligence Rail */
+  --intel-rail-bg:      #120D06;
+  --intel-rail-border:  rgba(245,200,140,0.09);
+}
+
+.light {
+  --level-1-color:  #9CA3AF;
+  --level-2-color:  #7C3AED;
+  --level-3-color:  #2563EB;
+  --level-4-color:  #0284C7;
+  --level-5-color:  #16A34A;
+  --level-6-color:  #D97706;
+  --level-7-color:  #EA580C;
+  --level-8-color:  #DC2626;
+  --level-9-color:  #DB2777;
+  --level-10-color: #B45309;
+
+  --planet-locked:    rgba(160,100,40,0.06);
+  --planet-active:    #E8500A;
+  --planet-completed: #16A34A;
+  --planet-mastered:  #C27A1A;
+
+  --module-locked:    rgba(160,100,40,0.04);
+  --module-available: rgba(232,80,10,0.06);
+  --module-active:    rgba(232,80,10,0.11);
+  --module-complete:  rgba(22,163,74,0.09);
+  --module-mastered:  rgba(180,83,9,0.10);
+
+  --intel-rail-bg:     #F5EFE4;
+  --intel-rail-border: rgba(160,100,40,0.12);
+}
+
+@layer utilities {
+  /* ── Level badge base ── */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    border: 1px solid currentColor;
+    background: color-mix(in oklab, currentColor 10%, transparent);
+    transition: box-shadow 200ms, transform 180ms;
+  }
+  .level-badge:hover { box-shadow: 0 0 12px color-mix(in oklab, currentColor 40%, transparent); }
+
+  /* ── Planet state classes ── */
+  .planet-locked    { opacity: 0.4; filter: grayscale(0.8); }
+  .planet-active    { filter: drop-shadow(0 0 8px color-mix(in oklab, var(--planet-active) 60%, transparent)); }
+  .planet-completed { filter: drop-shadow(0 0 6px color-mix(in oklab, var(--planet-completed) 50%, transparent)); }
+  .planet-mastered  { filter: drop-shadow(0 0 10px color-mix(in oklab, var(--planet-mastered) 65%, transparent)); }
+
+  /* ── Academy module state cards ── */
+  .module-card-locked    { background: var(--module-locked); }
+  .module-card-available { background: var(--module-available); }
+  .module-card-active    { background: var(--module-active); border-color: color-mix(in oklab, var(--primary) 35%, transparent) !important; }
+  .module-card-complete  { background: var(--module-complete); border-color: color-mix(in oklab, var(--planet-completed) 30%, transparent) !important; }
+  .module-card-mastered  { background: var(--module-mastered); border-color: color-mix(in oklab, var(--planet-mastered) 30%, transparent) !important; }
+
+  /* ── Intelligence Rail ── */
+  .intel-rail {
+    background: var(--intel-rail-bg);
+    border-left: 1px solid var(--intel-rail-border);
+  }
+
+  /* ── Progression nav item ── */
+  .mode-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+    text-decoration: none;
+  }
+  .mode-nav-item.active {
+    background: rgba(249,115,22,0.09);
+  }
+  .mode-nav-item:not(.active):hover {
+    background: rgba(249,115,22,0.05);
+  }
+}
+
+/* ── XP gain burst animation ── */
+@keyframes xpBurst {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(1.18); }
+  65%  { transform: scale(0.96); }
+  100% { transform: scale(1);    }
+}
+.xp-burst { animation: xpBurst 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Planet pulse (active state) ── */
+@keyframes planetActive {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.72; }
+}
+.planet-active-pulse { animation: planetActive 2.8s ease-in-out infinite; }
+
+/* ── Level-up flare ── */
+@keyframes levelUpFlare {
+  0%   { transform: scale(1); filter: brightness(1); }
+  25%  { transform: scale(1.22); filter: brightness(1.6); }
+  60%  { transform: scale(0.96); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.level-up { animation: levelUpFlare 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Module reveal entrance ── */
+@keyframes moduleReveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.module-reveal {
+  animation: moduleReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* ── Context bar progress bar (topbar) ── */
+.context-xp-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(245,200,140,0.10);
+}
+.context-xp-bar > .fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  box-shadow: 0 0 8px rgba(249,115,22,0.55);
+  transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ── Intelligence Rail slide animation ── */
+@keyframes railSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.rail-slide-in { animation: railSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }

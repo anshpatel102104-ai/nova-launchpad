@@ -23,12 +23,16 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-passw
 import { Route as AuthInviteRouteImport } from './routes/auth.invite'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppScaleRouteImport } from './routes/app.scale'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
 import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
+import { Route as AppMissionControlRouteImport } from './routes/app.mission-control'
+import { Route as AppMissionBriefingRouteImport } from './routes/app.mission-briefing'
 import { Route as AppMentorRouteImport } from './routes/app.mentor'
 import { Route as AppLeadsRouteImport } from './routes/app.leads'
 import { Route as AppLaunchpadPathRouteImport } from './routes/app.launchpad-path'
 import { Route as AppIntegrationsRouteImport } from './routes/app.integrations'
+import { Route as AppGalaxyRouteImport } from './routes/app.galaxy'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
@@ -37,9 +41,15 @@ import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as AppAcademyRouteImport } from './routes/app.academy'
 import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
 import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
 import { Route as AppBlogIndexRouteImport } from './routes/app.blog.index'
+import { Route as AppScaleTeamRouteImport } from './routes/app.scale.team'
+import { Route as AppScaleReportsRouteImport } from './routes/app.scale.reports'
+import { Route as AppScalePipelineRouteImport } from './routes/app.scale.pipeline'
+import { Route as AppScaleCampaignsRouteImport } from './routes/app.scale.campaigns'
+import { Route as AppScaleAutomationsRouteImport } from './routes/app.scale.automations'
 import { Route as AppNovaWorkflowsRouteImport } from './routes/app.nova.workflows'
 import { Route as AppNovaReportsRouteImport } from './routes/app.nova.reports'
 import { Route as AppNovaLeadsRouteImport } from './routes/app.nova.leads'
@@ -50,6 +60,7 @@ import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
+import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -121,6 +132,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppScaleRoute = AppScaleRouteImport.update({
+  id: '/scale',
+  path: '/scale',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNovaOsRoute = AppNovaOsRouteImport.update({
   id: '/nova-os',
   path: '/nova-os',
@@ -129,6 +145,16 @@ const AppNovaOsRoute = AppNovaOsRouteImport.update({
 const AppNovaFullRoute = AppNovaFullRouteImport.update({
   id: '/nova-full',
   path: '/nova-full',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMissionControlRoute = AppMissionControlRouteImport.update({
+  id: '/mission-control',
+  path: '/mission-control',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMissionBriefingRoute = AppMissionBriefingRouteImport.update({
+  id: '/mission-briefing',
+  path: '/mission-briefing',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMentorRoute = AppMentorRouteImport.update({
@@ -149,6 +175,11 @@ const AppLaunchpadPathRoute = AppLaunchpadPathRouteImport.update({
 const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
   id: '/integrations',
   path: '/integrations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGalaxyRoute = AppGalaxyRouteImport.update({
+  id: '/galaxy',
+  path: '/galaxy',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -191,6 +222,11 @@ const AppActivityRoute = AppActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAcademyRoute = AppAcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
   id: '/nova/',
   path: '/nova/',
@@ -205,6 +241,31 @@ const AppBlogIndexRoute = AppBlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
   getParentRoute: () => AppRoute,
+} as any)
+const AppScaleTeamRoute = AppScaleTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AppScaleRoute,
+} as any)
+const AppScaleReportsRoute = AppScaleReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppScaleRoute,
+} as any)
+const AppScalePipelineRoute = AppScalePipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
+  getParentRoute: () => AppScaleRoute,
+} as any)
+const AppScaleCampaignsRoute = AppScaleCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AppScaleRoute,
+} as any)
+const AppScaleAutomationsRoute = AppScaleAutomationsRouteImport.update({
+  id: '/automations',
+  path: '/automations',
+  getParentRoute: () => AppScaleRoute,
 } as any)
 const AppNovaWorkflowsRoute = AppNovaWorkflowsRouteImport.update({
   id: '/nova/workflows',
@@ -256,6 +317,11 @@ const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => AppBillingRoute,
 } as any)
+const AppAcademyModuleRoute = AppAcademyModuleRouteImport.update({
+  id: '/$module',
+  path: '/$module',
+  getParentRoute: () => AppAcademyRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -265,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
+  '/app/academy': typeof AppAcademyRouteWithChildren
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
@@ -273,12 +340,16 @@ export interface FileRoutesByFullPath {
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/galaxy': typeof AppGalaxyRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/mentor': typeof AppMentorRoute
+  '/app/mission-briefing': typeof AppMissionBriefingRoute
+  '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
@@ -286,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
@@ -296,6 +368,11 @@ export interface FileRoutesByFullPath {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/scale/automations': typeof AppScaleAutomationsRoute
+  '/app/scale/campaigns': typeof AppScaleCampaignsRoute
+  '/app/scale/pipeline': typeof AppScalePipelineRoute
+  '/app/scale/reports': typeof AppScaleReportsRoute
+  '/app/scale/team': typeof AppScaleTeamRoute
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
@@ -307,6 +384,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
+  '/app/academy': typeof AppAcademyRouteWithChildren
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
@@ -315,12 +393,16 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/galaxy': typeof AppGalaxyRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/mentor': typeof AppMentorRoute
+  '/app/mission-briefing': typeof AppMissionBriefingRoute
+  '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
@@ -328,6 +410,7 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app': typeof AppIndexRoute
+  '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
@@ -338,6 +421,11 @@ export interface FileRoutesByTo {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/scale/automations': typeof AppScaleAutomationsRoute
+  '/app/scale/campaigns': typeof AppScaleCampaignsRoute
+  '/app/scale/pipeline': typeof AppScalePipelineRoute
+  '/app/scale/reports': typeof AppScaleReportsRoute
+  '/app/scale/team': typeof AppScaleTeamRoute
   '/app/blog': typeof AppBlogIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
@@ -351,6 +439,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
+  '/app/academy': typeof AppAcademyRouteWithChildren
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
@@ -359,12 +448,16 @@ export interface FileRoutesById {
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/galaxy': typeof AppGalaxyRoute
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
   '/app/mentor': typeof AppMentorRoute
+  '/app/mission-briefing': typeof AppMissionBriefingRoute
+  '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
@@ -372,6 +465,7 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
@@ -382,6 +476,11 @@ export interface FileRoutesById {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/scale/automations': typeof AppScaleAutomationsRoute
+  '/app/scale/campaigns': typeof AppScaleCampaignsRoute
+  '/app/scale/pipeline': typeof AppScalePipelineRoute
+  '/app/scale/reports': typeof AppScaleReportsRoute
+  '/app/scale/team': typeof AppScaleTeamRoute
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
@@ -396,6 +495,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/signup'
+    | '/app/academy'
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
@@ -404,12 +504,16 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/contacts'
     | '/app/dashboard'
+    | '/app/galaxy'
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
     | '/app/mentor'
+    | '/app/mission-briefing'
+    | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
     | '/auth/invite'
@@ -417,6 +521,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/launchpad/$tool'
@@ -427,6 +532,11 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/scale/automations'
+    | '/app/scale/campaigns'
+    | '/app/scale/pipeline'
+    | '/app/scale/reports'
+    | '/app/scale/team'
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
@@ -438,6 +548,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/signup'
+    | '/app/academy'
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
@@ -446,12 +557,16 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/contacts'
     | '/app/dashboard'
+    | '/app/galaxy'
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
     | '/app/mentor'
+    | '/app/mission-briefing'
+    | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
     | '/auth/invite'
@@ -459,6 +574,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app'
+    | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/launchpad/$tool'
@@ -469,6 +585,11 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/scale/automations'
+    | '/app/scale/campaigns'
+    | '/app/scale/pipeline'
+    | '/app/scale/reports'
+    | '/app/scale/team'
     | '/app/blog'
     | '/app/launchpad'
     | '/app/nova'
@@ -481,6 +602,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/signup'
+    | '/app/academy'
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
@@ -489,12 +611,16 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/contacts'
     | '/app/dashboard'
+    | '/app/galaxy'
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
     | '/app/mentor'
+    | '/app/mission-briefing'
+    | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
     | '/auth/invite'
@@ -502,6 +628,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/launchpad/$tool'
@@ -512,6 +639,11 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/scale/automations'
+    | '/app/scale/campaigns'
+    | '/app/scale/pipeline'
+    | '/app/scale/reports'
+    | '/app/scale/team'
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
@@ -632,6 +764,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/scale': {
+      id: '/app/scale'
+      path: '/scale'
+      fullPath: '/app/scale'
+      preLoaderRoute: typeof AppScaleRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova-os': {
       id: '/app/nova-os'
       path: '/nova-os'
@@ -644,6 +783,20 @@ declare module '@tanstack/react-router' {
       path: '/nova-full'
       fullPath: '/app/nova-full'
       preLoaderRoute: typeof AppNovaFullRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/mission-control': {
+      id: '/app/mission-control'
+      path: '/mission-control'
+      fullPath: '/app/mission-control'
+      preLoaderRoute: typeof AppMissionControlRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/mission-briefing': {
+      id: '/app/mission-briefing'
+      path: '/mission-briefing'
+      fullPath: '/app/mission-briefing'
+      preLoaderRoute: typeof AppMissionBriefingRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/mentor': {
@@ -672,6 +825,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/app/integrations'
       preLoaderRoute: typeof AppIntegrationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/galaxy': {
+      id: '/app/galaxy'
+      path: '/galaxy'
+      fullPath: '/app/galaxy'
+      preLoaderRoute: typeof AppGalaxyRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/dashboard': {
@@ -730,6 +890,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/academy': {
+      id: '/app/academy'
+      path: '/academy'
+      fullPath: '/app/academy'
+      preLoaderRoute: typeof AppAcademyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova/': {
       id: '/app/nova/'
       path: '/nova'
@@ -750,6 +917,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/blog/'
       preLoaderRoute: typeof AppBlogIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/scale/team': {
+      id: '/app/scale/team'
+      path: '/team'
+      fullPath: '/app/scale/team'
+      preLoaderRoute: typeof AppScaleTeamRouteImport
+      parentRoute: typeof AppScaleRoute
+    }
+    '/app/scale/reports': {
+      id: '/app/scale/reports'
+      path: '/reports'
+      fullPath: '/app/scale/reports'
+      preLoaderRoute: typeof AppScaleReportsRouteImport
+      parentRoute: typeof AppScaleRoute
+    }
+    '/app/scale/pipeline': {
+      id: '/app/scale/pipeline'
+      path: '/pipeline'
+      fullPath: '/app/scale/pipeline'
+      preLoaderRoute: typeof AppScalePipelineRouteImport
+      parentRoute: typeof AppScaleRoute
+    }
+    '/app/scale/campaigns': {
+      id: '/app/scale/campaigns'
+      path: '/campaigns'
+      fullPath: '/app/scale/campaigns'
+      preLoaderRoute: typeof AppScaleCampaignsRouteImport
+      parentRoute: typeof AppScaleRoute
+    }
+    '/app/scale/automations': {
+      id: '/app/scale/automations'
+      path: '/automations'
+      fullPath: '/app/scale/automations'
+      preLoaderRoute: typeof AppScaleAutomationsRouteImport
+      parentRoute: typeof AppScaleRoute
     }
     '/app/nova/workflows': {
       id: '/app/nova/workflows'
@@ -821,8 +1023,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingReturnRouteImport
       parentRoute: typeof AppBillingRoute
     }
+    '/app/academy/$module': {
+      id: '/app/academy/$module'
+      path: '/$module'
+      fullPath: '/app/academy/$module'
+      preLoaderRoute: typeof AppAcademyModuleRouteImport
+      parentRoute: typeof AppAcademyRoute
+    }
   }
 }
+
+interface AppAcademyRouteChildren {
+  AppAcademyModuleRoute: typeof AppAcademyModuleRoute
+}
+
+const AppAcademyRouteChildren: AppAcademyRouteChildren = {
+  AppAcademyModuleRoute: AppAcademyModuleRoute,
+}
+
+const AppAcademyRouteWithChildren = AppAcademyRoute._addFileChildren(
+  AppAcademyRouteChildren,
+)
 
 interface AppBillingRouteChildren {
   AppBillingReturnRoute: typeof AppBillingReturnRoute
@@ -848,7 +1069,28 @@ const AppNovaOsRouteWithChildren = AppNovaOsRoute._addFileChildren(
   AppNovaOsRouteChildren,
 )
 
+interface AppScaleRouteChildren {
+  AppScaleAutomationsRoute: typeof AppScaleAutomationsRoute
+  AppScaleCampaignsRoute: typeof AppScaleCampaignsRoute
+  AppScalePipelineRoute: typeof AppScalePipelineRoute
+  AppScaleReportsRoute: typeof AppScaleReportsRoute
+  AppScaleTeamRoute: typeof AppScaleTeamRoute
+}
+
+const AppScaleRouteChildren: AppScaleRouteChildren = {
+  AppScaleAutomationsRoute: AppScaleAutomationsRoute,
+  AppScaleCampaignsRoute: AppScaleCampaignsRoute,
+  AppScalePipelineRoute: AppScalePipelineRoute,
+  AppScaleReportsRoute: AppScaleReportsRoute,
+  AppScaleTeamRoute: AppScaleTeamRoute,
+}
+
+const AppScaleRouteWithChildren = AppScaleRoute._addFileChildren(
+  AppScaleRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAcademyRoute: typeof AppAcademyRouteWithChildren
   AppActivityRoute: typeof AppActivityRoute
   AppAdminRoute: typeof AppAdminRoute
   AppAiDashboardRoute: typeof AppAiDashboardRoute
@@ -857,12 +1099,16 @@ interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppGalaxyRoute: typeof AppGalaxyRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLaunchpadPathRoute: typeof AppLaunchpadPathRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppMentorRoute: typeof AppMentorRoute
+  AppMissionBriefingRoute: typeof AppMissionBriefingRoute
+  AppMissionControlRoute: typeof AppMissionControlRoute
   AppNovaFullRoute: typeof AppNovaFullRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
+  AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBlogIdRoute: typeof AppBlogIdRoute
@@ -879,6 +1125,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAcademyRoute: AppAcademyRouteWithChildren,
   AppActivityRoute: AppActivityRoute,
   AppAdminRoute: AppAdminRoute,
   AppAiDashboardRoute: AppAiDashboardRoute,
@@ -887,12 +1134,16 @@ const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRouteWithChildren,
   AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppGalaxyRoute: AppGalaxyRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLaunchpadPathRoute: AppLaunchpadPathRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppMentorRoute: AppMentorRoute,
+  AppMissionBriefingRoute: AppMissionBriefingRoute,
+  AppMissionControlRoute: AppMissionControlRoute,
   AppNovaFullRoute: AppNovaFullRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
+  AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppBlogIdRoute: AppBlogIdRoute,
@@ -927,12 +1178,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
