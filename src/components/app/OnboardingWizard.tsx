@@ -185,7 +185,7 @@ function ProgressBar({ step }: { step: number }) {
                 : i === step
                   ? "linear-gradient(90deg, var(--primary), var(--accent))"
                   : "var(--border)",
-            boxShadow: i === step ? "0 0 10px rgba(249,115,22,0.6)" : "none",
+            boxShadow: "none",
           }}
         />
       ))}
@@ -213,12 +213,12 @@ function OptionCard({
         gap: 12,
         padding: "13px 15px",
         borderRadius: 13,
-        border: selected ? "1.5px solid rgba(249,115,22,0.5)" : "1.5px solid var(--border-subtle)",
-        background: selected ? "rgba(249,115,22,0.09)" : "var(--surface)",
+        border: selected ? "1.5px solid color-mix(in oklab, var(--primary) 40%, transparent)" : "1.5px solid var(--border-subtle)",
+        background: selected ? "var(--primary-soft)" : "var(--surface)",
         cursor: "pointer",
         textAlign: "left",
         transition: "all 0.18s",
-        boxShadow: selected ? "0 0 20px rgba(249,115,22,0.18)" : "none",
+        boxShadow: "none",
         fontFamily: "inherit",
         width: "100%",
       }}
@@ -241,7 +241,7 @@ function IconBox({ Icon, selected }: { Icon: React.ElementType; selected: boolea
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: selected ? "rgba(249,115,22,0.2)" : "var(--border-subtle)",
+        background: selected ? "var(--primary-soft)" : "var(--border-subtle)",
         transition: "background 0.18s",
       }}
     >
@@ -453,7 +453,7 @@ export function OnboardingWizard({ onComplete }: Props) {
               rows={4}
               style={{
                 background: "var(--surface-2)",
-                border: "1px solid rgba(249,115,22,0.2)",
+                border: "1px solid var(--border)",
                 color: "var(--foreground)",
                 fontSize: 14,
                 outline: "none",
@@ -464,15 +464,13 @@ export function OnboardingWizard({ onComplete }: Props) {
                 lineHeight: 1.6,
                 fontFamily: "inherit",
                 boxSizing: "border-box",
-                transition: "border-color 0.2s, box-shadow 0.2s",
+                transition: "border-color 0.2s",
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = "rgba(249,115,22,0.55)";
-                e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.1)";
+                e.target.style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)";
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = "rgba(249,115,22,0.2)";
-                e.target.style.boxShadow = "none";
+                e.target.style.borderColor = "var(--border)";
               }}
             />
             <div style={{ fontSize: 10.5, color: "var(--muted-foreground)", marginTop: 6 }}>
