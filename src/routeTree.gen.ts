@@ -39,6 +39,7 @@ import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
+import { Route as AppMemoryRouteImport } from './routes/app.memory'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppAcademyRouteImport } from './routes/app.academy'
@@ -212,6 +213,11 @@ const AppAiDashboardRoute = AppAiDashboardRouteImport.update({
   path: '/ai-dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMemoryRoute = AppMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
+  '/app/memory': typeof AppMemoryRoute
   '/app/mentor': typeof AppMentorRoute
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
+  '/app/memory': typeof AppMemoryRoute
   '/app/mentor': typeof AppMentorRoute
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
@@ -452,6 +460,7 @@ export interface FileRoutesById {
   '/app/integrations': typeof AppIntegrationsRoute
   '/app/launchpad-path': typeof AppLaunchpadPathRoute
   '/app/leads': typeof AppLeadsRoute
+  '/app/memory': typeof AppMemoryRoute
   '/app/mentor': typeof AppMentorRoute
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
@@ -508,6 +517,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
+    | '/app/memory'
     | '/app/mentor'
     | '/app/mission-briefing'
     | '/app/mission-control'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
+    | '/app/memory'
     | '/app/mentor'
     | '/app/mission-briefing'
     | '/app/mission-control'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/app/integrations'
     | '/app/launchpad-path'
     | '/app/leads'
+    | '/app/memory'
     | '/app/mentor'
     | '/app/mission-briefing'
     | '/app/mission-control'
@@ -811,6 +823,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/app/leads'
       preLoaderRoute: typeof AppLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/memory': {
+      id: '/app/memory'
+      path: '/memory'
+      fullPath: '/app/memory'
+      preLoaderRoute: typeof AppMemoryRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/launchpad-path': {
@@ -1103,6 +1122,7 @@ interface AppRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLaunchpadPathRoute: typeof AppLaunchpadPathRoute
   AppLeadsRoute: typeof AppLeadsRoute
+  AppMemoryRoute: typeof AppMemoryRoute
   AppMentorRoute: typeof AppMentorRoute
   AppMissionBriefingRoute: typeof AppMissionBriefingRoute
   AppMissionControlRoute: typeof AppMissionControlRoute
@@ -1138,6 +1158,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLaunchpadPathRoute: AppLaunchpadPathRoute,
   AppLeadsRoute: AppLeadsRoute,
+  AppMemoryRoute: AppMemoryRoute,
   AppMentorRoute: AppMentorRoute,
   AppMissionBriefingRoute: AppMissionBriefingRoute,
   AppMissionControlRoute: AppMissionControlRoute,
