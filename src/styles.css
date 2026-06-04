@@ -235,9 +235,9 @@
   --bg-elevated:   #FFFFFF;
   --bg-panel:      #F5EFE4;
 
-  /* ── Surfaces — white cards on tan field ── */
-  --surface:           #FFFFFF;
-  --surface-2:         #FAF5EC;
+  /* ── Surfaces — warm off-white cards on white field ── */
+  --surface:           #F9F6F1;
+  --surface-2:         #F0EAE0;
   --surface-offset:    #F0E6D2;
   --surface-secondary: #FAF5EC;
   --surface-tertiary:  #F0E6D2;
@@ -245,8 +245,8 @@
   /* ── Text — near-black on white, crisp legibility ── */
   --foreground:        #18100A;
   --text-inverse:      #FFFFFF;
-  --muted-foreground:  #8C6240;
-  --text-faint:        #C4976A;
+  --muted-foreground:  #6B4020;
+  --text-faint:        #A07040;
 
   /* ── Card / Popover ── */
   --card:              var(--surface);
@@ -291,11 +291,11 @@
   --info-foreground:   #FFFFFF;
 
   /* ── Borders — tan structural, orange accent ── */
-  --border:        rgba(160,100,40,0.12);
-  --border-subtle: rgba(160,100,40,0.07);
-  --border-strong: rgba(232,80,10,0.24);
-  --border-neon:   rgba(232,80,10,0.36);
-  --input:         rgba(24,16,10,0.09);
+  --border:        rgba(120,72,20,0.22);
+  --border-subtle: rgba(120,72,20,0.13);
+  --border-strong: rgba(232,80,10,0.30);
+  --border-neon:   rgba(232,80,10,0.42);
+  --input:         rgba(24,16,10,0.13);
   --ring:          #E8500A;
   --focus-ring:    rgba(232,80,10,0.42);
 
@@ -328,7 +328,7 @@
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent:             rgba(232,80,10,0.08);
   --sidebar-accent-foreground:  #18100A;
-  --sidebar-border:             rgba(160,100,40,0.12);
+  --sidebar-border:             rgba(120,72,20,0.22);
   --sidebar-ring:               #E8500A;
 
   /* ── Modal overlay ── */
@@ -469,11 +469,11 @@
     background: color-mix(in oklab, var(--surface) 82%, transparent);
     backdrop-filter: blur(32px) saturate(160%);
     -webkit-backdrop-filter: blur(32px) saturate(160%);
-    border: 1px solid rgba(120,70,20,0.12);
+    border: 1px solid rgba(120,72,20,0.22);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.90),
-      0 1px 3px rgba(100,50,10,0.08),
-      0 8px 32px rgba(100,50,10,0.06);
+      inset 0 1px 0 rgba(255,255,255,0.80),
+      0 1px 3px rgba(100,50,10,0.10),
+      0 8px 32px rgba(100,50,10,0.08);
   }
 
   /* ── Orbital card — the primary dark UI card ── */
@@ -496,23 +496,21 @@
       0 0 24px rgba(249,115,22,0.08);
   }
 
-  /* Light-mode card — warm parchment with subtle drop shadow */
+  /* Light-mode card — warm parchment with visible drop shadow */
   .light .neon-card {
     background: var(--surface);
-    border: 1px solid rgba(120,70,20,0.12);
+    border: 1px solid rgba(120,72,20,0.22);
     box-shadow:
-      0 1px 0 rgba(255,255,255,1),
-      0 1px 3px rgba(100,50,10,0.07),
-      0 4px 16px rgba(100,50,10,0.05);
+      0 1px 3px rgba(100,50,10,0.10),
+      0 4px 16px rgba(100,50,10,0.08);
   }
 
   .light .neon-card:hover {
-    border-color: rgba(194,65,12,0.22);
+    border-color: rgba(194,65,12,0.30);
     box-shadow:
-      0 1px 0 rgba(255,255,255,1),
-      0 1px 3px rgba(100,50,10,0.09),
-      0 8px 24px rgba(194,65,12,0.07),
-      0 0 0 1px rgba(194,65,12,0.08);
+      0 1px 3px rgba(100,50,10,0.12),
+      0 8px 24px rgba(194,65,12,0.10),
+      0 0 0 1px rgba(194,65,12,0.12);
   }
 
   /* Inner top highlight */
@@ -1132,10 +1130,10 @@
       0 6px 20px -16px rgba(0,0,0,0.38);
   }
   .light .nova-card {
+    border-color: rgba(120,72,20,0.18);
     box-shadow:
-      0 1px 0 0 rgba(255,255,255,1),
-      0 2px 8px rgba(100,50,10,0.06),
-      0 6px 20px -16px rgba(100,50,10,0.05);
+      0 1px 3px rgba(100,50,10,0.10),
+      0 4px 16px rgba(100,50,10,0.08);
   }
   .nova-card-hover {
     transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease, transform .15s ease;
@@ -1393,19 +1391,19 @@ button, a, [role="button"] {
   --level-9-color:  #DB2777;
   --level-10-color: #B45309;
 
-  --planet-locked:    rgba(160,100,40,0.06);
+  --planet-locked:    rgba(120,72,20,0.10);
   --planet-active:    #E8500A;
   --planet-completed: #16A34A;
   --planet-mastered:  #C27A1A;
 
-  --module-locked:    rgba(160,100,40,0.04);
-  --module-available: rgba(232,80,10,0.06);
-  --module-active:    rgba(232,80,10,0.11);
-  --module-complete:  rgba(22,163,74,0.09);
-  --module-mastered:  rgba(180,83,9,0.10);
+  --module-locked:    rgba(120,72,20,0.07);
+  --module-available: rgba(232,80,10,0.09);
+  --module-active:    rgba(232,80,10,0.14);
+  --module-complete:  rgba(22,163,74,0.11);
+  --module-mastered:  rgba(180,83,9,0.12);
 
-  --intel-rail-bg:     #F5EFE4;
-  --intel-rail-border: rgba(160,100,40,0.12);
+  --intel-rail-bg:     #EDE5D8;
+  --intel-rail-border: rgba(120,72,20,0.22);
 }
 
 @layer utilities {
@@ -1509,12 +1507,18 @@ button, a, [role="button"] {
   overflow: hidden;
   background: rgba(245,200,140,0.10);
 }
+.light .context-xp-bar {
+  background: rgba(120,72,20,0.15);
+}
 .context-xp-bar > .fill {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
   box-shadow: 0 0 8px rgba(249,115,22,0.55);
   transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.light .context-xp-bar > .fill {
+  box-shadow: 0 0 6px rgba(232,80,10,0.40);
 }
 
 /* ── Intelligence Rail slide animation ── */
