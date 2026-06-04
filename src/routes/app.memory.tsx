@@ -35,13 +35,13 @@ import {
 export const Route = createFileRoute("/app/memory")({ component: MemoryPage });
 
 /* ── Source type config ── */
-const SOURCE_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color: string; desc: string }> = {
-  github: { label: "GitHub", icon: Github, color: "#6366f1", desc: "Repos, issues, PRs, wikis" },
-  notion: { label: "Notion", icon: BookOpen, color: "#F97316", desc: "Docs, databases, wikis" },
-  "google-drive": { label: "Google Drive", icon: FileText, color: "#10b981", desc: "Docs, sheets, slides" },
-  slack: { label: "Slack", icon: FileText, color: "#ec4899", desc: "Messages and threads" },
-  url: { label: "Website / URL", icon: Globe, color: "#3b82f6", desc: "Any public page or doc" },
-  upload: { label: "File Upload", icon: Upload, color: "#8b5cf6", desc: "PDFs, text, markdown, CSV" },
+const SOURCE_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; desc: string }> = {
+  github: { label: "GitHub", icon: Github, desc: "Repos, issues, PRs, wikis" },
+  notion: { label: "Notion", icon: BookOpen, desc: "Docs, databases, wikis" },
+  "google-drive": { label: "Google Drive", icon: FileText, desc: "Docs, sheets, slides" },
+  slack: { label: "Slack", icon: FileText, desc: "Messages and threads" },
+  url: { label: "Website / URL", icon: Globe, desc: "Any public page or doc" },
+  upload: { label: "File Upload", icon: Upload, desc: "PDFs, text, markdown, CSV" },
 };
 
 const SOURCE_TYPES = Object.keys(SOURCE_CONFIG);
@@ -56,20 +56,24 @@ const SUGGESTED_QUERIES = [
 
 /* ── Helpers ── */
 function StatusBadge({ status }: { status: MemorySource["status"] }) {
-  const config = {
-    indexed: { label: "Indexed", color: "var(--success)", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)" },
-    indexing: { label: "Indexing…", color: "var(--primary)", bg: "rgba(249,115,22,0.08)", border: "rgba(249,115,22,0.2)" },
-    pending: { label: "Pending", color: "var(--muted-foreground)", bg: "var(--surface-2)", border: "var(--border)" },
-    error: { label: "Error", color: "var(--destructive)", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.2)" },
-  }[status];
+  const isActive = status === "indexed";
+  const label = { indexed: "Indexed", indexing: "Indexing…", pending: "Pending", error: "Error" }[status];
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium"
-      style={{ background: config.bg, color: config.color, border: `1px solid ${config.border}` }}
+      className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-medium"
+      style={
+        isActive
+          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+          : {
+              background: "var(--surface-2)",
+              color: "var(--muted-foreground)",
+              border: "1px solid var(--border)",
+            }
+      }
     >
       {status === "indexing" && <Loader2 className="h-2.5 w-2.5 animate-spin" />}
       {status === "indexed" && <span className="h-1.5 w-1.5 rounded-full bg-current" />}
-      {config.label}
+      {label}
     </span>
   );
 }
@@ -253,8 +257,8 @@ function MemoryPage() {
                   const Icon = cfg?.icon ?? FileText;
                   return (
                     <li key={src.id} className="flex items-center gap-3 px-5 py-3.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: (cfg?.color ?? "#666") + "12" }}>
-                        <Icon className="h-4 w-4" style={{ color: cfg?.color ?? "var(--muted-foreground)" }} />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                        <Icon className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-[13px] font-medium truncate" style={{ color: "var(--foreground)" }}>
@@ -311,11 +315,15 @@ function MemoryPage() {
                     disabled={alreadyAdded || addSourceMutation.isPending}
                     className="flex items-center gap-3 rounded-xl p-4 text-left transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-                    onMouseEnter={(e) => { if (!alreadyAdded) (e.currentTarget as HTMLElement).style.borderColor = cfg.color + "40"; }}
+                    onMouseEnter={(e) => {
+                      if (!alreadyAdded)
+                        (e.currentTarget as HTMLElement).style.borderColor =
+                          "color-mix(in oklab, var(--primary) 35%, transparent)";
+                    }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: cfg.color + "12" }}>
-                      <Icon className="h-4 w-4" style={{ color: cfg.color }} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                      <Icon className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -357,7 +365,7 @@ function MemoryPage() {
                 placeholder="https://notion.so/your-doc or any public URL…"
                 className="flex-1 rounded-lg px-3.5 py-2 text-[13px] outline-none transition"
                 style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-                onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.4)"; }}
+                onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
                 onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
               />
               <button
@@ -386,7 +394,7 @@ function MemoryPage() {
               placeholder="Search artifacts…"
               className="w-full rounded-lg py-2 pl-9 pr-4 text-[13px] outline-none transition"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.4)"; }}
+              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
               onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
             />
           </div>
@@ -415,12 +423,12 @@ function MemoryPage() {
                     <li
                       key={art.id}
                       className="grid grid-cols-12 items-center gap-3 px-5 py-3 transition-colors"
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(249,115,22,0.025)"; }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                     >
                       <div className="col-span-5 flex items-center gap-2.5 min-w-0">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: (cfg?.color ?? "#666") + "12" }}>
-                          <Icon className="h-3.5 w-3.5" style={{ color: cfg?.color ?? "var(--muted-foreground)" }} />
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                          <Icon className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />
                         </div>
                         <span className="text-[13px] font-medium truncate" style={{ color: "var(--foreground)" }}>
                           {art.title}
@@ -471,7 +479,7 @@ function MemoryPage() {
               rows={4}
               className="w-full resize-none rounded-lg px-3.5 py-3 text-[13px] outline-none transition"
               style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.4)"; }}
+              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
               onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
             />
             <div className="mt-3 flex items-center justify-between gap-3">
@@ -504,7 +512,7 @@ function MemoryPage() {
                   onClick={() => setQueryText(q)}
                   className="rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors"
                   style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(249,115,22,0.3)"; }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 35%, transparent)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
                 >
                   {q}
