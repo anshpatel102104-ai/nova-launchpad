@@ -279,9 +279,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
       >
         <div
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white text-[10px] font-bold tracking-tight"
-          style={{
-            background: "linear-gradient(135deg, var(--primary) 0%, #EA580C 100%)",
-          }}
+          style={{ background: "var(--primary)" }}
         >
           LN
         </div>
@@ -297,7 +295,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
               <span
                 className="inline-flex items-center rounded px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider"
                 style={{
-                  background: "rgba(249,115,22,0.12)",
+                  background: "var(--primary-soft)",
                   color: "var(--primary)",
                 }}
               >
@@ -347,7 +345,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                       style={
                         isActive
                           ? {
-                              background: "rgba(249,115,22,0.06)",
+                              background: "var(--primary-soft)",
                               color: "var(--foreground)",
                             }
                           : { color: "var(--muted-foreground)" }
@@ -378,7 +376,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                       style={
                         isActive
                           ? {
-                              background: "rgba(249,115,22,0.08)",
+                              background: "var(--primary-soft)",
                               color: "var(--foreground)",
                             }
                           : { color: "var(--muted-foreground)" }
@@ -393,7 +391,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                         <span
                           className="rounded px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
                           style={{
-                            background: "rgba(249,115,22,0.15)",
+                            background: "var(--primary-soft)",
                             color: "var(--primary)",
                           }}
                         >
@@ -418,7 +416,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                         style={
                           childActive
                             ? {
-                                background: "rgba(249,115,22,0.08)",
+                                background: "var(--primary-soft)",
                                 color: "var(--foreground)",
                               }
                             : { color: "var(--muted-foreground)" }
@@ -449,8 +447,8 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
               collapsed && "justify-center px-0",
             )}
             style={{
-              background: "rgba(249,115,22,0.08)",
-              border: "1px solid rgba(249,115,22,0.2)",
+              background: "var(--primary-soft)",
+              border: "1px solid var(--primary-soft)",
               color: "var(--primary)",
             }}
             title={collapsed ? "Exit demo" : undefined}
@@ -472,7 +470,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
               )}
               style={
                 active
-                  ? { background: "rgba(249,115,22,0.06)", color: "var(--foreground)" }
+                  ? { background: "var(--primary-soft)", color: "var(--foreground)" }
                   : { color: "var(--muted-foreground)" }
               }
               title={collapsed ? item.label : undefined}
@@ -498,7 +496,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         >
           <span
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
-            style={{ background: "linear-gradient(135deg, #F97316, #EA580C)" }}
+            style={{ background: "var(--primary)" }}
           >
             {initials}
           </span>

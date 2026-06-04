@@ -1,165 +1,407 @@
-import { useState } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  X,
-  Zap,
-  ArrowRight,
-  Target,
-  BookOpen,
-  TrendingUp,
-  Rocket,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
+import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { X, Send, RotateCcw, ArrowUpRight, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { buildAgentContext } from "@/lib/agent-context";
 import { cn } from "@/lib/utils";
-import { useFounderProgress } from "@/hooks/use-founder-progress";
-import { NovaChatModal } from "@/components/app/NovaChatModal";
 
-type Tab = "next-steps" | "nova";
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  pending?: boolean;
+};
+
+// Page-context greetings Nova sends on first open
+const PAGE_GREETINGS: Record<string, string> = {
+  "/app/dashboard":
+    "Hey — looking at your command center. What stage are you focused on today, and what's the highest-leverage thing I can help you move forward?",
+  "/app/launchpad":
+    "You're in the Launchpad — 18 AI-powered tools to take your idea from concept to traction. Which phase are you in: validating, planning, or acquiring customers?",
+  "/app/contacts":
+    "Your CRM. A clean contact list is the backbone of revenue. Need help with outreach strategy, lead scoring, or following up on cold contacts?",
+  "/app/memory":
+    "Company Memory is where your business knowledge lives. Connect your docs, URLs, or Notion workspace and I'll use it to give you sharper advice.",
+  "/app/automations":
+    "Automations run your business while you sleep. What do you want to automate first — lead follow-up, appointment setting, or CRM updates?",
+  "/app/integrations":
+    "Integrations connect your stack. The more data sources you connect to Memory, the smarter my answers get. What tools are you using?",
+  "/app/settings":
+    "Settings — if you need to update your workspace, plan, or profile, I can help you figure out what's worth changing.",
+  "/app/billing":
+    "Billing. If you're thinking about upgrading, tell me what you're trying to unlock and I'll tell you if it's worth it for your stage.",
+};
+
+const DEFAULT_GREETING =
+  "What are you working on? I have context on your workspace and can give you a specific recommendation.";
+
+const QUICK_PROMPTS = [
+  "What should I do next?",
+  "What's my highest-leverage move?",
+  "How do I get my first 10 customers?",
+  "Analyse my progress so far",
+];
+
+function renderText(text: string): React.ReactNode {
+  return text.split("\n").map((line, j, arr) => {
+    const isBullet = line.startsWith("- ") || line.startsWith("• ");
+    const content = isBullet ? line.slice(2) : line;
+    const boldParts = content.split(/(\*\*[^*]+\*\*)/g);
+    const rendered = boldParts.map((bp, k) => {
+      const bold = bp.match(/\*\*([^*]+)\*\*/);
+      return bold ? <strong key={k}>{bold[1]}</strong> : <span key={k}>{bp}</span>;
+    });
+    return (
+      <span key={j}>
+        {isBullet && (
+          <span style={{ display: "inline-block", width: 12, color: "var(--primary)", opacity: 0.8 }}>›</span>
+        )}
+        {rendered}
+        {j < arr.length - 1 && <br />}
+      </span>
+    );
+  });
+}
+
+function renderContent(text: string, onNavigate: (path: string) => void): React.ReactNode[] {
+  const ALL_RE = /(\[→\s*TOOL:\s*([^|]+)\|\s*([^\]]+)\])|(\*\*\[(.+?)\]\((.+?)\)\*\*)/g;
+  const segments: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = ALL_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push(
+        <span key={`t-${match.index}`}>{renderText(text.slice(lastIndex, match.index))}</span>,
+      );
+    }
+    if (match[1]) {
+      const toolKey = match[2].trim();
+      const label = match[3].trim();
+      segments.push(
+        <button
+          key={`chip-${match.index}`}
+          onClick={() => onNavigate(`/app/launchpad/${toolKey}`)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "3px 9px",
+            borderRadius: 20,
+            border: "1px solid rgba(255,107,26,0.4)",
+            background: "rgba(255,107,26,0.08)",
+            color: "var(--primary)",
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            margin: "1px 2px",
+            transition: "all 0.1s",
+            verticalAlign: "middle",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,107,26,0.14)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,107,26,0.08)";
+          }}
+        >
+          <Zap style={{ width: 9, height: 9 }} />
+          {label}
+        </button>,
+      );
+    } else if (match[4]) {
+      const label = match[5];
+      const path = match[6];
+      segments.push(
+        <button
+          key={`link-${match.index}`}
+          onClick={() => onNavigate(path)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 3,
+            fontWeight: 600,
+            color: "var(--primary)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontFamily: "inherit",
+            fontSize: "inherit",
+            padding: 0,
+            verticalAlign: "middle",
+          }}
+        >
+          {label}
+          <ArrowUpRight style={{ width: 10, height: 10 }} />
+        </button>,
+      );
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    segments.push(<span key="tail">{renderText(text.slice(lastIndex))}</span>);
+  }
+  return segments;
+}
 
 interface IntelligenceRailProps {
   open: boolean;
   onClose: () => void;
 }
 
-const NEXT_ACTION_MAP: Record<
-  string,
-  {
-    label: string;
-    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-    to: string;
-    color: string;
-  }[]
-> = {
-  Idea: [
-    {
-      label: "Validate your idea",
-      icon: Target,
-      to: "/app/academy/idea-validation",
-      color: "#7DD3FC",
-    },
-    {
-      label: "Run Idea Validator",
-      icon: Zap,
-      to: "/app/launchpad/idea-validator",
-      color: "#FF6B1A",
-    },
-    {
-      label: "Kill My Idea test",
-      icon: Sparkles,
-      to: "/app/launchpad/kill-my-idea",
-      color: "#A78BFA",
-    },
-  ],
-  Validate: [
-    {
-      label: "Build your offer",
-      icon: BookOpen,
-      to: "/app/academy/offer-creation",
-      color: "#34D399",
-    },
-    {
-      label: "Create GTM Strategy",
-      icon: Target,
-      to: "/app/launchpad/gtm-strategy",
-      color: "#F5A623",
-    },
-    {
-      label: "Generate pitch deck",
-      icon: Zap,
-      to: "/app/launchpad/pitch-generator",
-      color: "#FF6B1A",
-    },
-  ],
-  Launch: [
-    {
-      label: "Find first customers",
-      icon: TrendingUp,
-      to: "/app/launchpad/first-10-customers",
-      color: "#34D399",
-    },
-    { label: "Set up lead capture", icon: Target, to: "/app/nova/leads", color: "#7DD3FC" },
-    {
-      label: "Create landing page",
-      icon: Rocket,
-      to: "/app/launchpad/landing-page",
-      color: "#F5A623",
-    },
-  ],
-  Operate: [
-    { label: "Automate follow-ups", icon: Zap, to: "/app/nova/workflows", color: "#5EEAD4" },
-    { label: "Review CRM pipeline", icon: TrendingUp, to: "/app/scale/pipeline", color: "#F5A623" },
-    {
-      label: "Generate business plan",
-      icon: BookOpen,
-      to: "/app/launchpad/business-plan",
-      color: "#A78BFA",
-    },
-  ],
-  Scale: [
-    {
-      label: "Revenue projections",
-      icon: TrendingUp,
-      to: "/app/launchpad/revenue-projector",
-      color: "#34D399",
-    },
-    { label: "Activate Scale Mode", icon: Rocket, to: "/app/scale", color: "#F5A623" },
-    {
-      label: "Funding readiness",
-      icon: Target,
-      to: "/app/launchpad/funding-score",
-      color: "#7DD3FC",
-    },
-  ],
-};
-
 export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
-  const [tab, setTab] = useState<Tab>("next-steps");
-  const [chatOpen, setChatOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const progress = useFounderProgress();
 
-  const stage = progress.orgStage || "Idea";
-  const nextActions = NEXT_ACTION_MAP[stage] ?? NEXT_ACTION_MAP["Idea"];
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const [context, setContext] = useState<Record<string, unknown>>({});
+  const [greeted, setGreeted] = useState(false);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Load workspace context once
+  useEffect(() => {
+    if (!user?.id) return;
+    buildAgentContext(user.id).then((ctx) =>
+      setContext(ctx as unknown as Record<string, unknown>),
+    );
+  }, [user?.id]);
+
+  // Send Nova's opening greeting when rail first opens
+  useEffect(() => {
+    if (!open || greeted) return;
+    setGreeted(true);
+    const greeting =
+      Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ??
+      DEFAULT_GREETING;
+    setMessages([
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: greeting,
+      },
+    ]);
+  }, [open, greeted, path]);
+
+  // When page changes while rail is open, add a context note
+  const prevPath = useRef(path);
+  useEffect(() => {
+    if (!open || prevPath.current === path) return;
+    prevPath.current = path;
+    const greeting =
+      Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ?? null;
+    if (greeting) {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", content: greeting },
+      ]);
+    }
+  }, [path, open]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open]);
+
+  const handleNavigate = useCallback(
+    (navPath: string) => {
+      navigate({ to: navPath as never });
+    },
+    [navigate],
+  );
+
+  const sendMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || streaming) return;
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: trimmed };
+    const assistantMsg: Message = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: "",
+      pending: true,
+    };
+
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setInput("");
+    setStreaming(true);
+
+    const history = [...messages, userMsg];
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const abort = new AbortController();
+      abortRef.current = abort;
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nova-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: history.map((m) => ({ role: m.role, content: m.content })),
+            context,
+          }),
+          signal: abort.signal,
+        },
+      );
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(err.error || `HTTP ${resp.status}`);
+      }
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (
+              parsed.type === "content_block_delta" &&
+              parsed.delta?.type === "text_delta"
+            ) {
+              accumulated += parsed.delta.text;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsg.id
+                    ? { ...m, content: accumulated, pending: false }
+                    : m,
+                ),
+              );
+            }
+          } catch {
+            // skip non-JSON SSE lines
+          }
+        }
+      }
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsg.id
+            ? { ...m, content: accumulated || "No response generated.", pending: false }
+            : m,
+        ),
+      );
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      if (!isAbort) {
+        const errText =
+          err instanceof Error ? err.message : "Something went wrong.";
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsg.id
+              ? { ...m, content: `Error: ${errText}`, pending: false }
+              : m,
+          ),
+        );
+      } else {
+        setMessages((prev) => prev.filter((m) => m.id !== assistantMsg.id));
+      }
+    } finally {
+      setStreaming(false);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input);
+    }
+  };
+
+  const resetChat = () => {
+    abortRef.current?.abort();
+    setStreaming(false);
+    setInput("");
+    setGreeted(false);
+    setMessages([]);
+  };
 
   if (!open) return null;
 
   return (
-    <>
-      <aside
-        className={cn(
-          "hidden xl:flex shrink-0 flex-col intel-rail rail-slide-in",
-          "transition-[width] duration-200 ease-in-out",
-          "w-[300px]",
-        )}
-        style={{
-          background: "var(--intel-rail-bg)",
-          borderLeft: "1px solid var(--intel-rail-border)",
-        }}
+    <aside
+      className={cn("hidden xl:flex shrink-0 flex-col w-[300px] h-full")}
+      style={{
+        background: "var(--background)",
+        borderLeft: "1px solid var(--border)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex h-12 items-center justify-between px-4 shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
-        {/* Header */}
-        <div
-          className="flex h-14 items-center justify-between px-4 shrink-0"
-          style={{ borderBottom: "1px solid var(--intel-rail-border)" }}
-        >
-          <div className="flex items-center gap-2">
-            <Zap
-              className="h-4 w-4"
-              style={{
-                color: "var(--mentor-accent)",
-                filter: "drop-shadow(0 0 6px rgba(125,211,252,0.5))",
-              }}
-            />
-            <span
-              className="text-[12.5px] font-bold tracking-tight"
-              style={{ color: "var(--foreground)" }}
-            >
-              Nova Intelligence
-            </span>
+        <div className="flex items-center gap-2">
+          <div
+            className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "var(--primary)" }}
+          >
+            <Zap className="h-3 w-3 text-white" />
           </div>
+          <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+            Nova
+          </span>
+          {streaming && (
+            <span
+              className="text-[9px] font-semibold tracking-widest uppercase"
+              style={{ color: "var(--primary)" }}
+            >
+              thinking
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {messages.length > 1 && (
+            <button
+              onClick={resetChat}
+              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+              style={{ color: "var(--muted-foreground)" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+              }}
+              title="New conversation"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition"
+            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
             style={{ color: "var(--muted-foreground)" }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
@@ -173,295 +415,156 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-
-        {/* Tabs */}
-        <div
-          className="flex items-center gap-1 px-3 py-2 shrink-0"
-          style={{ borderBottom: "1px solid var(--intel-rail-border)" }}
-        >
-          {(["next-steps", "nova"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className="rounded-lg px-3 py-1 text-[11px] font-semibold transition capitalize"
-              style={
-                tab === t
-                  ? {
-                      background: "rgba(125,211,252,0.10)",
-                      color: "var(--mentor-accent)",
-                      border: "1px solid rgba(125,211,252,0.20)",
-                    }
-                  : {
-                      color: "var(--muted-foreground)",
-                      border: "1px solid transparent",
-                    }
-              }
-            >
-              {t === "next-steps" ? "Next Steps" : "Nova AI"}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          {tab === "next-steps" && (
-            <NextStepsPanel progress={progress} nextActions={nextActions} stage={stage} />
-          )}
-          {tab === "nova" && <NovaPanel onOpenChat={() => setChatOpen(true)} />}
-        </div>
-
-        {/* Footer */}
-        <div
-          className="px-3 py-3 shrink-0"
-          style={{ borderTop: "1px solid var(--intel-rail-border)" }}
-        >
-          <Link
-            to="/app/mentor"
-            className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[12px] font-semibold transition"
-            style={{
-              background: "rgba(125,211,252,0.06)",
-              border: "1px solid rgba(125,211,252,0.16)",
-              color: "var(--mentor-accent)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(125,211,252,0.12)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(125,211,252,0.06)";
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5" />
-              Open AI Operators
-            </span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </aside>
-
-      <NovaChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
-    </>
-  );
-}
-
-function NextStepsPanel({
-  progress,
-  nextActions,
-  stage,
-}: {
-  progress: ReturnType<typeof useFounderProgress>;
-  nextActions: {
-    label: string;
-    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-    to: string;
-    color: string;
-  }[];
-  stage: string;
-}) {
-  return (
-    <div className="p-3 space-y-4">
-      {/* Founder score */}
-      <div
-        className="rounded-xl p-3"
-        style={{
-          background: "rgba(249,115,22,0.06)",
-          border: "1px solid rgba(249,115,22,0.14)",
-        }}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span
-            className="text-[9px] font-bold uppercase tracking-widest"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Founder Score
-          </span>
-          <span className="text-[18px] font-black font-mono" style={{ color: "var(--primary)" }}>
-            {progress.founderScore}
-          </span>
-        </div>
-        <div
-          className="relative overflow-hidden rounded-full"
-          style={{ height: 3, background: "rgba(245,200,140,0.08)" }}
-        >
-          <div
-            className="absolute inset-y-0 left-0 rounded-full"
-            style={{
-              width: `${progress.founderScore}%`,
-              background: "linear-gradient(90deg, var(--primary), var(--accent))",
-              boxShadow: "0 0 8px rgba(249,115,22,0.55)",
-              transition: "width 0.8s ease",
-            }}
-          />
-        </div>
-        <div className="mt-1.5 text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-          Stage: <span style={{ color: "var(--foreground)" }}>{stage}</span>
-          {" · "}
-          {progress.currentMissionStepsCompleted}/{progress.currentMissionStepsTotal} steps
-        </div>
       </div>
 
-      {/* Recommended actions */}
-      <div>
-        <div
-          className="mb-2 text-[9px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          Recommended Actions
-        </div>
-        <div className="space-y-1.5">
-          {nextActions.map((action, i) => (
-            <Link
-              key={i}
-              to={action.to}
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all module-reveal"
-              style={
-                {
-                  background: "rgba(245,200,140,0.04)",
-                  border: "1px solid var(--border)",
-                  ["--i" as string]: i,
-                } as React.CSSProperties
-              }
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  `color-mix(in oklab, ${action.color} 8%, transparent)`;
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  `color-mix(in oklab, ${action.color} 30%, transparent)`;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(245,200,140,0.04)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-              }}
-            >
-              <action.icon className="h-3.5 w-3.5 shrink-0" style={{ color: action.color }} />
-              <span
-                className="flex-1 text-[11.5px] font-medium truncate"
-                style={{ color: "var(--foreground)" }}
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={cn(
+              "flex gap-2 items-start",
+              msg.role === "user" && "flex-row-reverse",
+            )}
+          >
+            {msg.role === "assistant" && (
+              <div
+                className="h-5 w-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: "var(--primary)" }}
               >
-                {action.label}
-              </span>
-              <ChevronRight
-                className="h-3 w-3 shrink-0"
-                style={{ color: "var(--muted-foreground)" }}
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Galaxy Map shortcut */}
-      <div>
-        <div
-          className="mb-2 text-[9px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          Mission Progress
-        </div>
-        <Link
-          to="/app/galaxy"
-          className="flex items-center gap-3 rounded-xl p-3 transition-all"
-          style={{
-            background: "rgba(167,139,250,0.06)",
-            border: "1px solid rgba(167,139,250,0.14)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(167,139,250,0.12)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(167,139,250,0.06)";
-          }}
-        >
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-            style={{
-              background: "rgba(167,139,250,0.15)",
-              border: "1px solid rgba(167,139,250,0.30)",
-            }}
-          >
-            <span className="text-[16px]">🌌</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-[11.5px] font-semibold" style={{ color: "var(--foreground)" }}>
-              Galaxy Map
-            </div>
-            <div className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
-              {progress.nextMilestone}
-            </div>
-          </div>
-          <ArrowRight
-            className="h-3.5 w-3.5 shrink-0"
-            style={{ color: "rgba(167,139,250,0.60)" }}
-          />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function NovaPanel({ onOpenChat }: { onOpenChat: () => void }) {
-  const prompts = [
-    "What should I work on next?",
-    "Analyze my startup progress",
-    "What's my highest-leverage move?",
-    "How do I get my first 10 customers?",
-  ];
-
-  return (
-    <div className="p-3 space-y-3">
-      <div
-        className="rounded-xl p-4 text-center"
-        style={{
-          background: "rgba(125,211,252,0.05)",
-          border: "1px solid rgba(125,211,252,0.12)",
-        }}
-      >
-        <Sparkles className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--mentor-accent)" }} />
-        <div className="text-[13px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-          Nova AI Operator
-        </div>
-        <div className="text-[11px] mb-3" style={{ color: "var(--muted-foreground)" }}>
-          Your AI strategist, mentor, and guide
-        </div>
-        <button
-          onClick={onOpenChat}
-          className="btn-execute w-full rounded-lg py-2 text-[12px] font-semibold flex items-center justify-center gap-2"
-        >
-          <Zap className="h-3.5 w-3.5" />
-          Open Nova Chat
-        </button>
-      </div>
-
-      <div>
-        <div
-          className="mb-2 text-[9px] font-bold uppercase tracking-widest"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          Quick Prompts
-        </div>
-        <div className="space-y-1.5">
-          {prompts.map((prompt, i) => (
-            <button
-              key={i}
-              onClick={onOpenChat}
-              className="w-full text-left rounded-lg px-3 py-2.5 text-[11.5px] transition-all"
+                <Zap className="h-3 w-3 text-white" />
+              </div>
+            )}
+            <div
+              className="rounded-xl px-3 py-2 text-[12.5px] leading-relaxed"
               style={{
-                background: "rgba(245,200,140,0.04)",
-                border: "1px solid var(--border)",
-                color: "var(--foreground)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(125,211,252,0.06)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(125,211,252,0.22)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(245,200,140,0.04)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                maxWidth: "calc(100% - 36px)",
+                background:
+                  msg.role === "user"
+                    ? "var(--primary)"
+                    : "var(--surface-2)",
+                color:
+                  msg.role === "user" ? "#fff" : "var(--foreground)",
+                border:
+                  msg.role === "assistant"
+                    ? "1px solid var(--border)"
+                    : "none",
+                borderRadius:
+                  msg.role === "user"
+                    ? "12px 12px 4px 12px"
+                    : "4px 12px 12px 12px",
               }}
             >
-              {prompt}
-            </button>
-          ))}
-        </div>
+              {msg.pending && !msg.content ? (
+                <span className="flex gap-1 items-center" style={{ color: "var(--primary)" }}>
+                  <span style={{ animation: "pulse 1.2s ease-in-out infinite" }}>●</span>
+                  <span style={{ animation: "pulse 1.2s ease-in-out 0.2s infinite" }}>●</span>
+                  <span style={{ animation: "pulse 1.2s ease-in-out 0.4s infinite" }}>●</span>
+                </span>
+              ) : msg.role === "assistant" ? (
+                renderContent(msg.content, handleNavigate)
+              ) : (
+                msg.content
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Quick prompts when chat is fresh */}
+        {messages.length <= 1 && !streaming && (
+          <div className="pt-1 space-y-1.5">
+            {QUICK_PROMPTS.map((p) => (
+              <button
+                key={p}
+                onClick={() => sendMessage(p)}
+                className="w-full text-left rounded-lg px-3 py-2 text-[11.5px] transition-colors"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--muted-foreground)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div ref={bottomRef} />
       </div>
-    </div>
+
+      {/* Input */}
+      <div
+        className="px-3 pb-3 shrink-0"
+        style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}
+      >
+        <div
+          className="flex items-end gap-2 rounded-xl px-3 py-2"
+          style={{
+            border: "1px solid var(--border)",
+            background: "var(--surface-2)",
+          }}
+          onFocusCapture={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor =
+              "rgba(255,107,26,0.35)";
+          }}
+          onBlurCapture={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+          }}
+        >
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask Nova..."
+            rows={1}
+            disabled={streaming}
+            className="flex-1 bg-transparent text-[12.5px] outline-none resize-none"
+            style={{
+              color: "var(--foreground)",
+              maxHeight: 100,
+              overflowY: "auto",
+              lineHeight: 1.5,
+              caretColor: "var(--primary)",
+            }}
+            onInput={(e) => {
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
+            }}
+          />
+          <button
+            onClick={() => sendMessage(input)}
+            disabled={!input.trim() || streaming}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
+            style={{
+              background: input.trim() && !streaming ? "var(--primary)" : "transparent",
+              color:
+                input.trim() && !streaming
+                  ? "#fff"
+                  : "var(--muted-foreground)",
+              cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
+            }}
+          >
+            <Send className="h-3 w-3" />
+          </button>
+        </div>
+        <p
+          className="mt-1.5 text-center text-[10px]"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          Nova AI · verify critical decisions
+        </p>
+      </div>
+    </aside>
   );
 }

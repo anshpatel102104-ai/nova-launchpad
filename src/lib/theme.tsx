@@ -22,18 +22,19 @@ function systemPref(): ResolvedTheme {
 function applyTheme(t: ResolvedTheme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
+  // :root is light by default; add .dark for dark mode only
   root.classList.remove("dark", "light");
-  if (t === "light") root.classList.add("light");
+  if (t === "dark") root.classList.add("dark");
   root.style.colorScheme = t;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   // Initial sync from localStorage (client only)
   useEffect(() => {
-    let initial: Theme = "dark";
+    let initial: Theme = "light";
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === "light" || stored === "dark" || stored === "system") initial = stored;

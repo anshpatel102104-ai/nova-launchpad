@@ -1,32 +1,32 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, BookOpen, Map, TrendingUp, Settings } from "lucide-react";
+import { LayoutDashboard, Zap, Users, Activity, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   {
-    to: "/app/mission-control",
-    label: "Mission",
+    to: "/app/dashboard",
+    label: "Home",
     icon: LayoutDashboard,
-    match: (p: string) => p.startsWith("/app/mission-control") || p === "/app/dashboard",
+    match: (p: string) => p === "/app/dashboard" || p === "/app/",
   },
   {
-    to: "/app/academy",
-    label: "Academy",
-    icon: BookOpen,
-    match: (p: string) => p.startsWith("/app/academy"),
+    to: "/app/launchpad/",
+    label: "Launchpad",
+    icon: Zap,
+    match: (p: string) => p.startsWith("/app/launchpad"),
   },
   {
-    to: "/app/galaxy",
-    label: "Galaxy",
-    icon: Map,
-    match: (p: string) => p === "/app/galaxy",
+    to: "/app/contacts",
+    label: "Contacts",
+    icon: Users,
+    match: (p: string) => p.startsWith("/app/contacts") || p.startsWith("/app/leads"),
   },
   {
-    to: "/app/scale",
-    label: "Scale",
-    icon: TrendingUp,
+    to: "/app/automations",
+    label: "Automate",
+    icon: Activity,
     match: (p: string) =>
-      p.startsWith("/app/scale") || p.startsWith("/app/nova") || p.startsWith("/app/automations"),
+      p.startsWith("/app/automations") || p.startsWith("/app/scale"),
   },
   {
     to: "/app/settings",
@@ -39,7 +39,10 @@ const TABS = [
 export function MobileTabBar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+    <nav
+      className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)]"
+      style={{ background: "var(--background)", borderColor: "var(--border)" }}
+    >
       <ul className="grid grid-cols-5">
         {TABS.map((t) => {
           const active = t.match ? t.match(path) : path === t.to;
@@ -48,17 +51,13 @@ export function MobileTabBar() {
               <Link
                 to={t.to}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition",
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
                 )}
+                style={{
+                  color: active ? "var(--primary)" : "var(--muted-foreground)",
+                }}
               >
-                <t.icon
-                  className={cn(
-                    "h-5 w-5",
-                    active &&
-                      "drop-shadow-[0_0_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]",
-                  )}
-                />
+                <t.icon className="h-5 w-5" />
                 {t.label}
               </Link>
             </li>
