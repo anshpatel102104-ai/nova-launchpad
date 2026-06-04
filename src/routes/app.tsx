@@ -82,18 +82,16 @@ function AppLayout() {
                 <Outlet />
               </div>
             ) : (
-              <div key={path} className="page-in mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
+              <div
+                key={path}
+                className="page-in mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8"
+              >
                 <Outlet />
               </div>
             )}
           </main>
 
-          {!hideRail && (
-            <IntelligenceRail
-              open={railOpen}
-              onClose={() => setRailOpen(false)}
-            />
-          )}
+          {!hideRail && <IntelligenceRail open={railOpen} onClose={() => setRailOpen(false)} />}
         </div>
       </div>
 
