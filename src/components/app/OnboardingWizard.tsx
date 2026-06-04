@@ -213,7 +213,9 @@ function OptionCard({
         gap: 12,
         padding: "13px 15px",
         borderRadius: 13,
-        border: selected ? "1.5px solid color-mix(in oklab, var(--primary) 40%, transparent)" : "1.5px solid var(--border-subtle)",
+        border: selected
+          ? "1.5px solid color-mix(in oklab, var(--primary) 40%, transparent)"
+          : "1.5px solid var(--border-subtle)",
         background: selected ? "var(--primary-soft)" : "var(--surface)",
         cursor: "pointer",
         textAlign: "left",

@@ -47,10 +47,7 @@ export function NovaThinking({ streamText, toolName }: Props) {
           <Zap className="h-4 w-4" style={{ color: "var(--primary)" }} />
         </div>
         <div>
-          <div
-            className="text-[13px] font-semibold"
-            style={{ color: "var(--foreground)" }}
-          >
+          <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
             {toolName ? `Nova — ${toolName}` : "Nova AI"}
           </div>
           <div

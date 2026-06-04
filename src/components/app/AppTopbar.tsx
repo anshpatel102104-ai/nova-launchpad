@@ -63,8 +63,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
     .join("")
     .toUpperCase();
 
-  const pageTitle =
-    Object.entries(PAGE_TITLES).find(([p]) => path.startsWith(p))?.[1] ?? "";
+  const pageTitle = Object.entries(PAGE_TITLES).find(([p]) => path.startsWith(p))?.[1] ?? "";
 
   const handleSignOut = async () => {
     if (isGuest) {
@@ -149,11 +148,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           >
             <Search className="h-3.5 w-3.5" />
             <span className="hidden md:inline">Search...</span>
-            <kbd
-              className="hidden md:inline text-[10px] font-mono opacity-60 ml-1"
-            >
-              ⌘K
-            </kbd>
+            <kbd className="hidden md:inline text-[10px] font-mono opacity-60 ml-1">⌘K</kbd>
           </button>
 
           {/* Nova AI toggle */}
@@ -167,9 +162,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
               style={{
                 background: railOpen ? "rgba(255,107,26,0.08)" : "transparent",
                 color: railOpen ? "var(--primary)" : "var(--muted-foreground)",
-                border: railOpen
-                  ? "1px solid rgba(255,107,26,0.18)"
-                  : "1px solid transparent",
+                border: railOpen ? "1px solid rgba(255,107,26,0.18)" : "1px solid transparent",
               }}
               onMouseEnter={(e) => {
                 if (!railOpen) {
@@ -238,8 +231,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                     }}
                     className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] transition-colors"
                     style={{
-                      color:
-                        theme === id ? "var(--foreground)" : "var(--muted-foreground)",
+                      color: theme === id ? "var(--foreground)" : "var(--muted-foreground)",
                     }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
@@ -251,10 +243,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                     <Icon className="h-3.5 w-3.5" />
                     <span className="flex-1 text-left">{label}</span>
                     {theme === id && (
-                      <Check
-                        className="h-3.5 w-3.5"
-                        style={{ color: "var(--primary)" }}
-                      />
+                      <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
                     )}
                   </button>
                 ))}
@@ -296,10 +285,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                   zIndex: 50,
                 }}
               >
-                <div
-                  className="border-b p-3"
-                  style={{ borderColor: "var(--border)" }}
-                >
+                <div className="border-b p-3" style={{ borderColor: "var(--border)" }}>
                   <div
                     className="text-[13px] font-medium truncate"
                     style={{ color: "var(--foreground)" }}
@@ -340,15 +326,8 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                   >
                     Settings
                   </TopbarMenuItem>
-                  <div
-                    className="my-1 h-px"
-                    style={{ background: "var(--border)" }}
-                  />
-                  <TopbarMenuItem
-                    onClick={handleSignOut}
-                    icon={LogOut}
-                    destructive
-                  >
+                  <div className="my-1 h-px" style={{ background: "var(--border)" }} />
+                  <TopbarMenuItem onClick={handleSignOut} icon={LogOut} destructive>
                     {isGuest ? "Exit demo" : "Sign out"}
                   </TopbarMenuItem>
                 </div>

@@ -4,15 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery } from "@/lib/queries";
-import {
-  Lock,
-  Zap,
-  Search,
-  History,
-  ChevronRight,
-  Clock,
-  Check,
-} from "lucide-react";
+import { Lock, Zap, Search, History, ChevronRight, Clock, Check } from "lucide-react";
 import { useOwnerMode } from "@/lib/ownerMode";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
@@ -93,10 +85,7 @@ function LaunchpadOverview() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: "var(--foreground)" }}
-          >
+          <h1 className="text-3xl font-bold" style={{ color: "var(--foreground)" }}>
             Launchpad
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
@@ -129,7 +118,6 @@ function LaunchpadOverview() {
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          divideColor: "var(--border)",
         }}
       >
         {[
@@ -137,7 +125,11 @@ function LaunchpadOverview() {
           { label: "Available now", value: availableCount },
           { label: "Completed", value: totalCompleted },
         ].map(({ label, value }, i) => (
-          <div key={label} className="px-5 py-4" style={{ borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+          <div
+            key={label}
+            className="px-5 py-4"
+            style={{ borderRight: i < 2 ? "1px solid var(--border)" : "none" }}
+          >
             <div
               className="text-2xl font-bold font-mono tabular-nums"
               style={{ color: i === 0 ? "var(--primary)" : "var(--foreground)" }}
@@ -308,16 +300,12 @@ function ToolCard({
   available: boolean;
   runCount: number;
   estimatedMinutes: number;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 }) {
   const hasRuns = runCount > 0;
 
   return (
-    <Link
-      to="/app/launchpad/$tool"
-      params={{ tool: slug }}
-      className="group block"
-    >
+    <Link to="/app/launchpad/$tool" params={{ tool: slug }} className="group block">
       <div
         className="relative h-full rounded-xl p-4 transition-colors"
         style={{
@@ -343,10 +331,7 @@ function ToolCard({
             }}
           >
             {available ? (
-              <Icon
-                className="h-4 w-4"
-                style={{ color: "var(--primary)" }}
-              />
+              <Icon className="h-4 w-4" style={{ color: "var(--primary)" }} />
             ) : (
               <Lock className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
             )}
@@ -405,7 +390,10 @@ function ToolCard({
               <ChevronRight className="h-3.5 w-3.5" />
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            <span
+              className="inline-flex items-center gap-1 text-[11px]"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Upgrade to unlock
             </span>
           )}

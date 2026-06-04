@@ -39,16 +39,10 @@ export function EmptyState({
           border: "1px solid var(--border)",
         }}
       >
-        <Icon
-          className="h-5 w-5"
-          style={{ color: "var(--muted-foreground)", opacity: 0.6 }}
-        />
+        <Icon className="h-5 w-5" style={{ color: "var(--muted-foreground)", opacity: 0.6 }} />
       </span>
 
-      <h3
-        className="text-[15px] font-semibold"
-        style={{ color: "var(--foreground)" }}
-      >
+      <h3 className="text-[15px] font-semibold" style={{ color: "var(--foreground)" }}>
         {title}
       </h3>
       {description && (

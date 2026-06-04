@@ -42,7 +42,12 @@ type Stage = (typeof STAGES)[number];
 // Blueprint: stage → recommended steps with tool links
 const BLUEPRINT: Record<
   Stage,
-  { title: string; desc: string; path: string; icon: React.ComponentType<{ className?: string }> }[]
+  {
+    title: string;
+    desc: string;
+    path: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  }[]
 > = {
   Idea: [
     {
@@ -189,8 +194,7 @@ function Dashboard() {
     enabled: !!currentOrgId,
   });
 
-  const name =
-    profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const name = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const org = orgQ.data;
   const stage: Stage = (org?.stage as Stage) ?? "Idea";
   const stageIdx = STAGES.indexOf(stage);
@@ -200,9 +204,8 @@ function Dashboard() {
   const runCount = runsQ.data?.length ?? 0;
   const leadCount = leadsQ.data?.length ?? 0;
   const activeAuto =
-    (autoQ.data as Array<{ status?: string }> | null)?.filter(
-      (a) => a.status === "active",
-    ).length ?? 0;
+    (autoQ.data as Array<{ status?: string }> | null)?.filter((a) => a.status === "active")
+      .length ?? 0;
 
   const date = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -287,7 +290,12 @@ function Dashboard() {
         {[
           { label: "Tools Run", value: runCount, icon: Zap, path: "/app/launchpad/" },
           { label: "Contacts", value: leadCount, icon: Users, path: "/app/contacts" },
-          { label: "Active Automations", value: activeAuto, icon: Activity, path: "/app/automations" },
+          {
+            label: "Active Automations",
+            value: activeAuto,
+            icon: Activity,
+            path: "/app/automations",
+          },
           {
             label: "Current Stage",
             value: `${stageIdx + 1} / 5`,
@@ -314,10 +322,7 @@ function Dashboard() {
             >
               <Icon className="h-4 w-4" style={{ color: "var(--primary)" }} />
             </div>
-            <div
-              className="text-2xl font-bold font-mono"
-              style={{ color: "var(--foreground)" }}
-            >
+            <div className="text-2xl font-bold font-mono" style={{ color: "var(--foreground)" }}>
               {value}
             </div>
             <div className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
@@ -350,12 +355,11 @@ function Dashboard() {
                     <div
                       className="h-1.5 w-full transition-colors"
                       style={{
-                        background:
-                          isDone
+                        background: isDone
+                          ? "var(--primary)"
+                          : isActive
                             ? "var(--primary)"
-                            : isActive
-                              ? "var(--primary)"
-                              : "var(--border)",
+                            : "var(--border)",
                         opacity: isActive ? 1 : isDone ? 0.7 : 0.4,
                       }}
                     />
@@ -480,10 +484,7 @@ function Dashboard() {
               style={{ color: "var(--muted-foreground)" }}
             >
               No tool runs yet.{" "}
-              <Link
-                to="/app/launchpad/"
-                style={{ color: "var(--primary)" }}
-              >
+              <Link to="/app/launchpad/" style={{ color: "var(--primary)" }}>
                 Open Launchpad →
               </Link>
             </div>
@@ -495,10 +496,7 @@ function Dashboard() {
                   className="flex items-center gap-3 rounded-lg px-3 py-2"
                   style={{ background: "var(--surface-2)" }}
                 >
-                  <Zap
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: "var(--primary)" }}
-                  />
+                  <Zap className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
                   <span
                     className="flex-1 text-[12px] truncate font-medium"
                     style={{ color: "var(--foreground)" }}
@@ -509,9 +507,7 @@ function Dashboard() {
                     className="text-[11px] shrink-0"
                     style={{ color: "var(--muted-foreground)" }}
                   >
-                    {run.created_at
-                      ? new Date(run.created_at as string).toLocaleDateString()
-                      : ""}
+                    {run.created_at ? new Date(run.created_at as string).toLocaleDateString() : ""}
                   </span>
                 </div>
               ))}
@@ -532,10 +528,7 @@ function Dashboard() {
               <Zap className="h-3.5 w-3.5 text-white" />
             </div>
             <div>
-              <div
-                className="text-[13px] font-semibold"
-                style={{ color: "var(--foreground)" }}
-              >
+              <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
                 Ask Nova
               </div>
               <div className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
@@ -547,14 +540,11 @@ function Dashboard() {
             className="text-[12.5px] leading-relaxed flex-1"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Nova has full context of your workspace — your stage, tools run, contacts,
-            and automations. Ask anything about your business.
+            Nova has full context of your workspace — your stage, tools run, contacts, and
+            automations. Ask anything about your business.
           </p>
           <div className="mt-3 space-y-1.5">
-            {[
-              "What should I focus on this week?",
-              "How do I get to the next stage?",
-            ].map((p) => (
+            {["What should I focus on this week?", "How do I get to the next stage?"].map((p) => (
               <div
                 key={p}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] cursor-default"

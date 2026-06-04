@@ -19,7 +19,10 @@ export function WorkspaceHeader({
 }) {
   return (
     <header
-      className={cn("flex flex-col gap-3 md:flex-row md:items-center md:justify-between", className)}
+      className={cn(
+        "flex flex-col gap-3 md:flex-row md:items-center md:justify-between",
+        className,
+      )}
     >
       <div className="flex min-w-0 items-start gap-3">
         {Icon && (

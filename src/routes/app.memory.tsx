@@ -35,7 +35,14 @@ import {
 export const Route = createFileRoute("/app/memory")({ component: MemoryPage });
 
 /* ── Source type config ── */
-const SOURCE_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; desc: string }> = {
+const SOURCE_CONFIG: Record<
+  string,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    desc: string;
+  }
+> = {
   github: { label: "GitHub", icon: Github, desc: "Repos, issues, PRs, wikis" },
   notion: { label: "Notion", icon: BookOpen, desc: "Docs, databases, wikis" },
   "google-drive": { label: "Google Drive", icon: FileText, desc: "Docs, sheets, slides" },
@@ -57,7 +64,9 @@ const SUGGESTED_QUERIES = [
 /* ── Helpers ── */
 function StatusBadge({ status }: { status: MemorySource["status"] }) {
   const isActive = status === "indexed";
-  const label = { indexed: "Indexed", indexing: "Indexing…", pending: "Pending", error: "Error" }[status];
+  const label = { indexed: "Indexed", indexing: "Indexing…", pending: "Pending", error: "Error" }[
+    status
+  ];
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-medium"
@@ -83,7 +92,10 @@ function MemoryPage() {
   const queryClient = useQueryClient();
 
   const sourcesQ = useQuery({ ...memorySourcesQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const artifactsQ = useQuery({ ...memoryArtifactsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const artifactsQ = useQuery({
+    ...memoryArtifactsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
 
   const sources = sourcesQ.data ?? [];
   const artifacts = artifactsQ.data ?? [];
@@ -94,8 +106,11 @@ function MemoryPage() {
   const [searchArtifacts, setSearchArtifacts] = useState("");
 
   const addSourceMutation = useMutation({
-    mutationFn: (payload: { source_type: string; source_label: string | null; source_url: string | null }) =>
-      addMemorySource(currentOrgId!, user!.id, payload),
+    mutationFn: (payload: {
+      source_type: string;
+      source_label: string | null;
+      source_url: string | null;
+    }) => addMemorySource(currentOrgId!, user!.id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["memory_sources", currentOrgId] });
       toast.success("Source added — indexing will begin shortly.");
@@ -152,7 +167,10 @@ function MemoryPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: "var(--primary)" }}
+            >
               Company Memory
             </span>
           </div>
@@ -174,19 +192,40 @@ function MemoryPage() {
         style={{ border: "1px solid var(--border)", background: "var(--border)" }}
       >
         {[
-          { label: "Sources", value: isLoading ? "—" : String(indexedSources.length), sub: "indexed" },
+          {
+            label: "Sources",
+            value: isLoading ? "—" : String(indexedSources.length),
+            sub: "indexed",
+          },
           { label: "Artifacts", value: isLoading ? "—" : String(totalArtifacts), sub: "documents" },
           {
             label: "Last synced",
-            value: isLoading ? "—" : lastSynced ? new Date(lastSynced).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "—",
+            value: isLoading
+              ? "—"
+              : lastSynced
+                ? new Date(lastSynced).toLocaleTimeString(undefined, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—",
             sub: "auto-updates",
           },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="flex flex-col px-5 py-4" style={{ background: "var(--surface)" }}>
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+          <div
+            key={label}
+            className="flex flex-col px-5 py-4"
+            style={{ background: "var(--surface)" }}
+          >
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {label}
             </span>
-            <span className="mt-1 font-mono font-bold text-xl tabular-nums" style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}>
+            <span
+              className="mt-1 font-mono font-bold text-xl tabular-nums"
+              style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+            >
               {value}
             </span>
             <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
@@ -199,7 +238,11 @@ function MemoryPage() {
       {/* Tabs */}
       <div
         className="flex gap-1 rounded-lg p-1"
-        style={{ background: "var(--surface-2)", border: "1px solid var(--border)", width: "fit-content" }}
+        style={{
+          background: "var(--surface-2)",
+          border: "1px solid var(--border)",
+          width: "fit-content",
+        }}
       >
         {(["sources", "artifacts", "query"] as const).map((tab) => (
           <button
@@ -208,18 +251,28 @@ function MemoryPage() {
             className="rounded-md px-4 py-1.5 text-[12.5px] font-medium transition-colors"
             style={
               activeTab === tab
-                ? { background: "var(--surface)", color: "var(--foreground)", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }
+                ? {
+                    background: "var(--surface)",
+                    color: "var(--foreground)",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                  }
                 : { color: "var(--muted-foreground)" }
             }
           >
             {tab === "query" ? "Ask AI" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === "sources" && sources.length > 0 && (
-              <span className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold" style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}>
+              <span
+                className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold"
+                style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+              >
                 {sources.length}
               </span>
             )}
             {tab === "artifacts" && artifacts.length > 0 && (
-              <span className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold" style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}>
+              <span
+                className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold"
+                style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+              >
                 {artifacts.length}
               </span>
             )}
@@ -232,8 +285,14 @@ function MemoryPage() {
         <div className="space-y-4">
           {/* Empty state */}
           {!isLoading && sources.length === 0 && (
-            <div className="rounded-xl p-8 text-center" style={{ background: "var(--surface)", border: "1px dashed var(--border)" }}>
-              <Inbox className="h-7 w-7 mx-auto mb-3" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
+            <div
+              className="rounded-xl p-8 text-center"
+              style={{ background: "var(--surface)", border: "1px dashed var(--border)" }}
+            >
+              <Inbox
+                className="h-7 w-7 mx-auto mb-3"
+                style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+              />
               <p className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
                 No sources connected
               </p>
@@ -245,9 +304,18 @@ function MemoryPage() {
 
           {/* Connected sources list */}
           {sources.length > 0 && (
-            <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <div className="px-5 py-3 flex items-center" style={{ borderBottom: "1px solid var(--border)" }}>
-                <span className="text-[11px] font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              <div
+                className="px-5 py-3 flex items-center"
+                style={{ borderBottom: "1px solid var(--border)" }}
+              >
+                <span
+                  className="text-[11px] font-semibold"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   CONNECTED SOURCES
                 </span>
               </div>
@@ -257,21 +325,36 @@ function MemoryPage() {
                   const Icon = cfg?.icon ?? FileText;
                   return (
                     <li key={src.id} className="flex items-center gap-3 px-5 py-3.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                      <div
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                        style={{
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                        }}
+                      >
                         <Icon className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[13px] font-medium truncate" style={{ color: "var(--foreground)" }}>
+                        <div
+                          className="text-[13px] font-medium truncate"
+                          style={{ color: "var(--foreground)" }}
+                        >
                           {src.source_label ?? cfg?.label ?? src.source_type}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                          <span
+                            className="text-[11px]"
+                            style={{ color: "var(--muted-foreground)" }}
+                          >
                             {src.artifact_count} artifact{src.artifact_count !== 1 ? "s" : ""}
                           </span>
                           {src.last_synced_at && (
                             <>
                               <span style={{ color: "var(--border)" }}>·</span>
-                              <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                              <span
+                                className="flex items-center gap-1 text-[11px]"
+                                style={{ color: "var(--muted-foreground)" }}
+                              >
                                 <Clock className="h-3 w-3" />
                                 {new Date(src.last_synced_at).toLocaleDateString()}
                               </span>
@@ -285,8 +368,12 @@ function MemoryPage() {
                         disabled={deleteSourceMutation.isPending}
                         className="ml-2 rounded-md p-1.5 transition-colors"
                         style={{ color: "var(--muted-foreground)" }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--destructive)"; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)"; }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.color = "var(--destructive)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                        }}
                         title="Remove source"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -300,7 +387,10 @@ function MemoryPage() {
 
           {/* Add source grid */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--muted-foreground)" }}>
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wider mb-2"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Add a source
             </p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -320,24 +410,40 @@ function MemoryPage() {
                         (e.currentTarget as HTMLElement).style.borderColor =
                           "color-mix(in oklab, var(--primary) 35%, transparent)";
                     }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                    }}
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+                    >
                       <Icon className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+                        <span
+                          className="text-[13px] font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
                           {cfg.label}
                         </span>
-                        {alreadyAdded && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--success)" }} />}
+                        {alreadyAdded && (
+                          <CheckCircle2
+                            className="h-3.5 w-3.5 shrink-0"
+                            style={{ color: "var(--success)" }}
+                          />
+                        )}
                       </div>
                       <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                         {cfg.desc}
                       </span>
                     </div>
                     {!alreadyAdded && (
-                      <Plus className="h-4 w-4 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                      <Plus
+                        className="h-4 w-4 shrink-0"
+                        style={{ color: "var(--muted-foreground)" }}
+                      />
                     )}
                   </button>
                 );
@@ -346,7 +452,10 @@ function MemoryPage() {
           </div>
 
           {/* URL ingest */}
-          <div className="rounded-xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+          <div
+            className="rounded-xl p-5"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <Link2 className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
               <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
@@ -364,19 +473,37 @@ function MemoryPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleIngestUrl()}
                 placeholder="https://notion.so/your-doc or any public URL…"
                 className="flex-1 rounded-lg px-3.5 py-2 text-[13px] outline-none transition"
-                style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-                onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
-                onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+                style={{
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
+                onFocus={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "color-mix(in oklab, var(--primary) 50%, transparent)";
+                }}
+                onBlur={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                }}
               />
               <button
                 onClick={handleIngestUrl}
                 disabled={!urlInput.trim() || addSourceMutation.isPending}
                 className="rounded-lg px-4 py-2 text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary)" }}
-                onMouseEnter={(e) => { if (!e.currentTarget.disabled) (e.currentTarget as HTMLElement).style.opacity = "0.9"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled)
+                    (e.currentTarget as HTMLElement).style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "1";
+                }}
               >
-                {addSourceMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ingest"}
+                {addSourceMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Ingest"
+                )}
               </button>
             </div>
           </div>
@@ -387,30 +514,57 @@ function MemoryPage() {
       {activeTab === "artifacts" && (
         <div className="space-y-4">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 pointer-events-none" style={{ color: "var(--muted-foreground)" }} />
+            <Search
+              className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 pointer-events-none"
+              style={{ color: "var(--muted-foreground)" }}
+            />
             <input
               value={searchArtifacts}
               onChange={(e) => setSearchArtifacts(e.target.value)}
               placeholder="Search artifacts…"
               className="w-full rounded-lg py-2 pl-9 pr-4 text-[13px] outline-none transition"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
-              onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+              onFocus={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "color-mix(in oklab, var(--primary) 50%, transparent)";
+              }}
+              onBlur={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              }}
             />
           </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+              <Loader2
+                className="h-5 w-5 animate-spin"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </div>
           ) : filteredArtifacts.length > 0 ? (
-            <div className="rounded-xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
               <div
                 className="grid grid-cols-12 px-5 py-2.5"
                 style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-2)" }}
               >
-                {[["ARTIFACT", "col-span-5"], ["SOURCE", "col-span-2"], ["UPDATED", "col-span-3"], ["STATUS", "col-span-2 text-right"]].map(([h, cls]) => (
-                  <span key={h} className={`text-[10px] font-semibold ${cls}`} style={{ color: "var(--muted-foreground)" }}>
+                {[
+                  ["ARTIFACT", "col-span-5"],
+                  ["SOURCE", "col-span-2"],
+                  ["UPDATED", "col-span-3"],
+                  ["STATUS", "col-span-2 text-right"],
+                ].map(([h, cls]) => (
+                  <span
+                    key={h}
+                    className={`text-[10px] font-semibold ${cls}`}
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     {h}
                   </span>
                 ))}
@@ -423,22 +577,47 @@ function MemoryPage() {
                     <li
                       key={art.id}
                       className="grid grid-cols-12 items-center gap-3 px-5 py-3 transition-colors"
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background = "transparent";
+                      }}
                     >
                       <div className="col-span-5 flex items-center gap-2.5 min-w-0">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                          <Icon className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />
+                        <div
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                          style={{
+                            background: "var(--surface-2)",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          <Icon
+                            className="h-3.5 w-3.5"
+                            style={{ color: "var(--muted-foreground)" }}
+                          />
                         </div>
-                        <span className="text-[13px] font-medium truncate" style={{ color: "var(--foreground)" }}>
+                        <span
+                          className="text-[13px] font-medium truncate"
+                          style={{ color: "var(--foreground)" }}
+                        >
                           {art.title}
                         </span>
                       </div>
-                      <span className="col-span-2 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                      <span
+                        className="col-span-2 text-[11.5px]"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
                         {art.source_label ?? cfg?.label ?? art.source_type}
                       </span>
-                      <span className="col-span-3 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
-                        {new Date(art.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      <span
+                        className="col-span-3 text-[11.5px]"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {new Date(art.updated_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                       <div className="col-span-2 flex justify-end">
                         <StatusBadge status={art.status as MemorySource["status"]} />
@@ -449,13 +628,21 @@ function MemoryPage() {
               </ul>
             </div>
           ) : (
-            <div className="rounded-xl p-8 text-center" style={{ background: "var(--surface)", border: "1px dashed var(--border)" }}>
-              <Database className="h-7 w-7 mx-auto mb-3" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
+            <div
+              className="rounded-xl p-8 text-center"
+              style={{ background: "var(--surface)", border: "1px dashed var(--border)" }}
+            >
+              <Database
+                className="h-7 w-7 mx-auto mb-3"
+                style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+              />
               <p className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
                 {searchArtifacts ? "No matches" : "No artifacts indexed yet"}
               </p>
               <p className="mt-1 text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-                {searchArtifacts ? "Try a different search term." : "Add a source on the Sources tab to begin indexing."}
+                {searchArtifacts
+                  ? "Try a different search term."
+                  : "Add a source on the Sources tab to begin indexing."}
               </p>
             </div>
           )}
@@ -465,7 +652,10 @@ function MemoryPage() {
       {/* ── ASK AI TAB ── */}
       {activeTab === "query" && (
         <div className="space-y-4">
-          <div className="rounded-xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+          <div
+            className="rounded-xl p-5"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <Brain className="h-4 w-4" style={{ color: "var(--primary)" }} />
               <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
@@ -478,9 +668,18 @@ function MemoryPage() {
               placeholder="What is our ICP? Summarize our Q1 strategy. What was decided in the pricing meeting?"
               rows={4}
               className="w-full resize-none rounded-lg px-3.5 py-3 text-[13px] outline-none transition"
-              style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-              onFocus={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 50%, transparent)"; }}
-              onBlur={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+              onFocus={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor =
+                  "color-mix(in oklab, var(--primary) 50%, transparent)";
+              }}
+              onBlur={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              }}
             />
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
@@ -492,8 +691,13 @@ function MemoryPage() {
                 disabled={indexedSources.length === 0 || !queryText.trim()}
                 className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary)" }}
-                onMouseEnter={(e) => { if (!e.currentTarget.disabled) (e.currentTarget as HTMLElement).style.opacity = "0.9"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                onMouseEnter={(e) => {
+                  if (!e.currentTarget.disabled)
+                    (e.currentTarget as HTMLElement).style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "1";
+                }}
               >
                 Ask <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -502,7 +706,10 @@ function MemoryPage() {
 
           {/* Suggested queries */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--muted-foreground)" }}>
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wider mb-2"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Suggested questions
             </p>
             <div className="flex flex-wrap gap-2">
@@ -511,9 +718,18 @@ function MemoryPage() {
                   key={q}
                   onClick={() => setQueryText(q)}
                   className="rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors"
-                  style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "color-mix(in oklab, var(--primary) 35%, transparent)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      "color-mix(in oklab, var(--primary) 35%, transparent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                  }}
                 >
                   {q}
                 </button>
@@ -527,7 +743,10 @@ function MemoryPage() {
               className="flex items-center gap-4 rounded-xl p-5"
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
-              <AlertCircle className="h-5 w-5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+              <AlertCircle
+                className="h-5 w-5 shrink-0"
+                style={{ color: "var(--muted-foreground)" }}
+              />
               <div className="flex-1">
                 <p className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
                   {sources.length === 0 ? "No sources connected" : "Sources not yet indexed"}
@@ -542,16 +761,26 @@ function MemoryPage() {
                 <button
                   onClick={() => setActiveTab("sources")}
                   className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-semibold shrink-0 transition-colors"
-                  style={{ background: "var(--surface-2)", color: "var(--foreground)", border: "1px solid var(--border)" }}
+                  style={{
+                    background: "var(--surface-2)",
+                    color: "var(--foreground)",
+                    border: "1px solid var(--border)",
+                  }}
                 >
                   Add source <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               )}
               {sources.length > 0 && indexedSources.length === 0 && (
                 <button
-                  onClick={() => queryClient.invalidateQueries({ queryKey: ["memory_sources", currentOrgId] })}
+                  onClick={() =>
+                    queryClient.invalidateQueries({ queryKey: ["memory_sources", currentOrgId] })
+                  }
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold shrink-0 transition-colors"
-                  style={{ background: "var(--surface-2)", color: "var(--foreground)", border: "1px solid var(--border)" }}
+                  style={{
+                    background: "var(--surface-2)",
+                    color: "var(--foreground)",
+                    border: "1px solid var(--border)",
+                  }}
                 >
                   <RefreshCw className="h-3.5 w-3.5" /> Refresh
                 </button>

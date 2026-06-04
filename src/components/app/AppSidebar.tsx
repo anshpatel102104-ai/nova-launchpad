@@ -405,7 +405,10 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
 
               {/* Sub-items */}
               {!collapsed && hasChildren && isExpanded && (
-                <div className="mt-0.5 ml-3 space-y-0.5 pl-3" style={{ borderLeft: "1px solid var(--sidebar-border)" }}>
+                <div
+                  className="mt-0.5 ml-3 space-y-0.5 pl-3"
+                  style={{ borderLeft: "1px solid var(--sidebar-border)" }}
+                >
                   {group.children!.map((child) => {
                     const childActive = child.match(path);
                     return (
@@ -492,7 +495,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
             background: "var(--surface-2)",
             border: "1px solid var(--sidebar-border)",
           }}
-          title={collapsed ? (profile?.full_name || "Account") : undefined}
+          title={collapsed ? profile?.full_name || "Account" : undefined}
         >
           <span
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"

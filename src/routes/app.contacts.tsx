@@ -397,7 +397,10 @@ function ContactsPage() {
                 Trigger
               </button>
             )}
-            <button onClick={() => setSelected(new Set())} style={{ color: "var(--muted-foreground)" }}>
+            <button
+              onClick={() => setSelected(new Set())}
+              style={{ color: "var(--muted-foreground)" }}
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -521,7 +524,10 @@ function ContactsPage() {
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => toggleSelect(contact.id)}>
                             {selected.has(contact.id) ? (
-                              <CheckSquare className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                              <CheckSquare
+                                className="h-4 w-4"
+                                style={{ color: "var(--primary)" }}
+                              />
                             ) : (
                               <Square
                                 className="h-4 w-4"
@@ -547,7 +553,10 @@ function ContactsPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+                          <span
+                            className="text-[13px]"
+                            style={{ color: "var(--muted-foreground)" }}
+                          >
                             {contact.company ?? "—"}
                           </span>
                         </td>
@@ -568,7 +577,10 @@ function ContactsPage() {
                               {score}
                             </span>
                           ) : (
-                            <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+                            <span
+                              className="text-[12px]"
+                              style={{ color: "var(--muted-foreground)" }}
+                            >
                               —
                             </span>
                           )}
@@ -604,7 +616,8 @@ function ContactsPage() {
                             className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
                             style={{ color: "var(--muted-foreground)" }}
                             onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                              (e.currentTarget as HTMLElement).style.background =
+                                "var(--surface-2)";
                               (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                             }}
                             onMouseLeave={(e) => {
@@ -772,7 +785,10 @@ function AddContactModal({
               { key: "last_name", label: "Last Name", placeholder: "Doe" },
             ].map((f) => (
               <div key={f.key}>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+                <label
+                  className="block text-[12px] font-medium mb-1.5"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {f.label}
                 </label>
                 <input
@@ -789,10 +805,18 @@ function AddContactModal({
             { key: "email", label: "Email", placeholder: "jane@example.com", type: "email" },
             { key: "phone", label: "Phone", placeholder: "+1 555 000 0000", type: "tel" },
             { key: "company", label: "Company", placeholder: "Acme Corp", type: "text" },
-            { key: "source", label: "Source", placeholder: "LinkedIn, referral, ad…", type: "text" },
+            {
+              key: "source",
+              label: "Source",
+              placeholder: "LinkedIn, referral, ad…",
+              type: "text",
+            },
           ].map((f) => (
             <div key={f.key}>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+              <label
+                className="block text-[12px] font-medium mb-1.5"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 {f.label}
               </label>
               <input
@@ -806,7 +830,10 @@ function AddContactModal({
             </div>
           ))}
           <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+            <label
+              className="block text-[12px] font-medium mb-1.5"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               Notes
             </label>
             <textarea
@@ -974,7 +1001,10 @@ function ContactDetail({
               .filter((r) => r.value)
               .map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                  <Icon
+                    className="h-3.5 w-3.5 shrink-0"
+                    style={{ color: "var(--muted-foreground)" }}
+                  />
                   <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
                     {value}
                   </span>

@@ -347,13 +347,15 @@ export const memorySourcesQuery = (orgId: string) =>
     queryKey: ["memory_sources", orgId],
     queryFn: async (): Promise<MemorySource[]> => {
       if (isGuest()) return [];
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data, error } = await db
         .from("memory_sources")
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as MemorySource[];
+      return (data ?? []) as unknown as MemorySource[];
     },
   });
 
@@ -362,14 +364,16 @@ export const memoryArtifactsQuery = (orgId: string) =>
     queryKey: ["memory_artifacts", orgId],
     queryFn: async (): Promise<MemoryArtifact[]> => {
       if (isGuest()) return [];
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data, error } = await db
         .from("memory_artifacts")
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data ?? []) as MemoryArtifact[];
+      return (data ?? []) as unknown as MemoryArtifact[];
     },
   });
 
@@ -378,17 +382,21 @@ export async function addMemorySource(
   userId: string,
   payload: Pick<MemorySource, "source_type" | "source_label" | "source_url">,
 ) {
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+  const { data, error } = await db
     .from("memory_sources")
     .insert({ org_id: orgId, user_id: userId, ...payload })
     .select()
     .single();
   if (error) throw error;
-  return data as MemorySource;
+  return data as unknown as MemorySource;
 }
 
 export async function deleteMemorySource(sourceId: string) {
-  const { error } = await supabase.from("memory_sources").delete().eq("id", sourceId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+  const { error } = await db.from("memory_sources").delete().eq("id", sourceId);
   if (error) throw error;
 }
 

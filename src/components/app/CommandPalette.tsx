@@ -147,8 +147,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                         onMouseEnter={() => setSelected(globalIdx)}
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
                         style={{
-                          background:
-                            globalIdx === selected ? "var(--surface-2)" : "transparent",
+                          background: globalIdx === selected ? "var(--surface-2)" : "transparent",
                           color: "var(--foreground)",
                         }}
                       >
@@ -190,8 +189,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                         onMouseEnter={() => setSelected(globalIdx)}
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
                         style={{
-                          background:
-                            globalIdx === selected ? "var(--surface-2)" : "transparent",
+                          background: globalIdx === selected ? "var(--surface-2)" : "transparent",
                           color: "var(--foreground)",
                         }}
                       >

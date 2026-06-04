@@ -119,7 +119,14 @@ export function ErrorState({
         }}
       >
         <Icon
-          style={{ width: 14, height: 14, color: "var(--muted-foreground)", flexShrink: 0 } as React.CSSProperties}
+          style={
+            {
+              width: 14,
+              height: 14,
+              color: "var(--muted-foreground)",
+              flexShrink: 0,
+            } as React.CSSProperties
+          }
         />
         <div style={{ flex: 1 }}>
           <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--foreground)" }}>
@@ -166,7 +173,9 @@ export function ErrorState({
           marginBottom: 16,
         }}
       >
-        <Icon style={{ width: 20, height: 20, color: "var(--muted-foreground)" } as React.CSSProperties} />
+        <Icon
+          style={{ width: 20, height: 20, color: "var(--muted-foreground)" } as React.CSSProperties}
+        />
       </div>
 
       <div
@@ -197,8 +206,12 @@ export function ErrorState({
           <button
             onClick={onRetry}
             style={neutralBtn}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = "0.8";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = "1";
+            }}
           >
             <RefreshCw style={{ width: 12, height: 12 } as React.CSSProperties} />
             {retryLabel}

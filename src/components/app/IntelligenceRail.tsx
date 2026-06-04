@@ -55,7 +55,11 @@ function renderText(text: string): React.ReactNode {
     return (
       <span key={j}>
         {isBullet && (
-          <span style={{ display: "inline-block", width: 12, color: "var(--primary)", opacity: 0.8 }}>›</span>
+          <span
+            style={{ display: "inline-block", width: 12, color: "var(--primary)", opacity: 0.8 }}
+          >
+            ›
+          </span>
         )}
         {rendered}
         {j < arr.length - 1 && <br />}
@@ -169,9 +173,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   // Load workspace context once
   useEffect(() => {
     if (!user?.id) return;
-    buildAgentContext(user.id).then((ctx) =>
-      setContext(ctx as unknown as Record<string, unknown>),
-    );
+    buildAgentContext(user.id).then((ctx) => setContext(ctx as unknown as Record<string, unknown>));
   }, [user?.id]);
 
   // Send Nova's opening greeting when rail first opens
@@ -179,8 +181,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     if (!open || greeted) return;
     setGreeted(true);
     const greeting =
-      Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ??
-      DEFAULT_GREETING;
+      Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ?? DEFAULT_GREETING;
     setMessages([
       {
         id: crypto.randomUUID(),
@@ -195,8 +196,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   useEffect(() => {
     if (!open || prevPath.current === path) return;
     prevPath.current = path;
-    const greeting =
-      Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ?? null;
+    const greeting = Object.entries(PAGE_GREETINGS).find(([p]) => path.startsWith(p))?.[1] ?? null;
     if (greeting) {
       setMessages((prev) => [
         ...prev,
@@ -247,21 +247,18 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
       const abort = new AbortController();
       abortRef.current = abort;
 
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nova-chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            messages: history.map((m) => ({ role: m.role, content: m.content })),
-            context,
-          }),
-          signal: abort.signal,
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nova-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
-      );
+        body: JSON.stringify({
+          messages: history.map((m) => ({ role: m.role, content: m.content })),
+          context,
+        }),
+        signal: abort.signal,
+      });
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: "Unknown error" }));
@@ -285,16 +282,11 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            if (
-              parsed.type === "content_block_delta" &&
-              parsed.delta?.type === "text_delta"
-            ) {
+            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
               accumulated += parsed.delta.text;
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsg.id
-                    ? { ...m, content: accumulated, pending: false }
-                    : m,
+                  m.id === assistantMsg.id ? { ...m, content: accumulated, pending: false } : m,
                 ),
               );
             }
@@ -314,13 +306,10 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       if (!isAbort) {
-        const errText =
-          err instanceof Error ? err.message : "Something went wrong.";
+        const errText = err instanceof Error ? err.message : "Something went wrong.";
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantMsg.id
-              ? { ...m, content: `Error: ${errText}`, pending: false }
-              : m,
+            m.id === assistantMsg.id ? { ...m, content: `Error: ${errText}`, pending: false } : m,
           ),
         );
       } else {
@@ -422,10 +411,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={cn(
-              "flex gap-2 items-start",
-              msg.role === "user" && "flex-row-reverse",
-            )}
+            className={cn("flex gap-2 items-start", msg.role === "user" && "flex-row-reverse")}
           >
             {msg.role === "assistant" && (
               <div
@@ -439,20 +425,10 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
               className="rounded-xl px-3 py-2 text-[12.5px] leading-relaxed"
               style={{
                 maxWidth: "calc(100% - 36px)",
-                background:
-                  msg.role === "user"
-                    ? "var(--primary)"
-                    : "var(--surface-2)",
-                color:
-                  msg.role === "user" ? "#fff" : "var(--foreground)",
-                border:
-                  msg.role === "assistant"
-                    ? "1px solid var(--border)"
-                    : "none",
-                borderRadius:
-                  msg.role === "user"
-                    ? "12px 12px 4px 12px"
-                    : "4px 12px 12px 12px",
+                background: msg.role === "user" ? "var(--primary)" : "var(--surface-2)",
+                color: msg.role === "user" ? "#fff" : "var(--foreground)",
+                border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
+                borderRadius: msg.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
               }}
             >
               {msg.pending && !msg.content ? (
@@ -513,8 +489,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
             background: "var(--surface-2)",
           }}
           onFocusCapture={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor =
-              "rgba(255,107,26,0.35)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,107,26,0.35)";
           }}
           onBlurCapture={(e) => {
             (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
@@ -548,20 +523,14 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
             style={{
               background: input.trim() && !streaming ? "var(--primary)" : "transparent",
-              color:
-                input.trim() && !streaming
-                  ? "#fff"
-                  : "var(--muted-foreground)",
+              color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
               cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
             }}
           >
             <Send className="h-3 w-3" />
           </button>
         </div>
-        <p
-          className="mt-1.5 text-center text-[10px]"
-          style={{ color: "var(--muted-foreground)" }}
-        >
+        <p className="mt-1.5 text-center text-[10px]" style={{ color: "var(--muted-foreground)" }}>
           Nova AI · verify critical decisions
         </p>
       </div>

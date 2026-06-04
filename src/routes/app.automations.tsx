@@ -55,9 +55,21 @@ const AUTOMATIONS = [
     icon: Phone,
     metric: "calls booked",
     configFields: [
-      { key: "calendar_url", label: "Calendar Link (Cal.com / Calendly)", placeholder: "https://cal.com/you" },
-      { key: "qualification_prompt", label: "Lead Qualification Criteria", placeholder: "Must be a business owner with..." },
-      { key: "sms_template", label: "SMS Booking Message", placeholder: "Hey {name}, ready to book your call?" },
+      {
+        key: "calendar_url",
+        label: "Calendar Link (Cal.com / Calendly)",
+        placeholder: "https://cal.com/you",
+      },
+      {
+        key: "qualification_prompt",
+        label: "Lead Qualification Criteria",
+        placeholder: "Must be a business owner with...",
+      },
+      {
+        key: "sms_template",
+        label: "SMS Booking Message",
+        placeholder: "Hey {name}, ready to book your call?",
+      },
     ],
     requiredFeature: "automations" as const,
   },
@@ -91,20 +103,30 @@ const AUTOMATIONS = [
   {
     slug: "lead-qualification",
     name: "Lead Qualification",
-    description: "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
+    description:
+      "AI scores and qualifies inbound leads automatically, routing high-value leads first.",
     icon: UserCheck,
     metric: "leads qualified",
     configFields: [
       { key: "score_threshold", label: "Minimum Qualification Score (0-100)", placeholder: "65" },
-      { key: "icp_description", label: "Ideal Customer Profile", placeholder: "B2B SaaS companies 10-200 employees..." },
-      { key: "disqualify_keywords", label: "Disqualify Keywords (comma-separated)", placeholder: "student, freelancer" },
+      {
+        key: "icp_description",
+        label: "Ideal Customer Profile",
+        placeholder: "B2B SaaS companies 10-200 employees...",
+      },
+      {
+        key: "disqualify_keywords",
+        label: "Disqualify Keywords (comma-separated)",
+        placeholder: "student, freelancer",
+      },
     ],
     requiredFeature: "lead_qualification" as const,
   },
   {
     slug: "sms-automation",
     name: "SMS Automation",
-    description: "Automated SMS sequences for lead nurture, appointment reminders, and re-engagement.",
+    description:
+      "Automated SMS sequences for lead nurture, appointment reminders, and re-engagement.",
     icon: MessageSquare,
     metric: "SMS sent",
     configFields: [
@@ -121,8 +143,16 @@ const AUTOMATIONS = [
     icon: Star,
     metric: "calls made",
     configFields: [
-      { key: "voice_agent_id", label: "Voice Agent ID", placeholder: "From your voice AI platform" },
-      { key: "script_context", label: "Call Script Context", placeholder: "You are calling on behalf of..." },
+      {
+        key: "voice_agent_id",
+        label: "Voice Agent ID",
+        placeholder: "From your voice AI platform",
+      },
+      {
+        key: "script_context",
+        label: "Call Script Context",
+        placeholder: "You are calling on behalf of...",
+      },
       { key: "call_hours_start", label: "Call Window Start (24h)", placeholder: "9" },
       { key: "call_hours_end", label: "Call Window End (24h)", placeholder: "18" },
     ],
@@ -303,9 +333,7 @@ function AutomationsPage() {
                 </div>
 
                 <button
-                  onClick={() =>
-                    toggleMutation.mutate({ slug: automation.slug, active: !active })
-                  }
+                  onClick={() => toggleMutation.mutate({ slug: automation.slug, active: !active })}
                   disabled={toggling}
                   className="shrink-0 transition-colors"
                   style={{ color: active ? "var(--primary)" : "var(--muted-foreground)" }}
@@ -625,7 +653,10 @@ function LogsPanel({
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {logsQ.isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--muted-foreground)" }} />
+              <Loader2
+                className="h-4 w-4 animate-spin"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </div>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">

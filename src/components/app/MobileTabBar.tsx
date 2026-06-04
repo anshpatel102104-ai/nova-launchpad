@@ -25,8 +25,7 @@ const TABS = [
     to: "/app/automations",
     label: "Automate",
     icon: Activity,
-    match: (p: string) =>
-      p.startsWith("/app/automations") || p.startsWith("/app/scale"),
+    match: (p: string) => p.startsWith("/app/automations") || p.startsWith("/app/scale"),
   },
   {
     to: "/app/settings",
