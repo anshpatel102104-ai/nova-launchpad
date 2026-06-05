@@ -64,7 +64,8 @@ const PLAYBOOK: Record<Stage, Phase[]> = {
         {
           id: "idea-validator",
           title: "Idea Validation",
-          description: "Score your concept across 8 dimensions and get a GO / ITERATE / KILL verdict.",
+          description:
+            "Score your concept across 8 dimensions and get a GO / ITERATE / KILL verdict.",
           icon: Lightbulb,
           path: "/app/launchpad/idea-validator",
           effort: "30 min",
@@ -825,9 +826,7 @@ function PlaybookPage() {
     (runsQ.data ?? []).map((r: Record<string, unknown>) => r.tool_key as string),
   );
 
-  const completedCount = phases
-    .flatMap((p) => p.modules)
-    .filter((m) => runKeys.has(m.id)).length;
+  const completedCount = phases.flatMap((p) => p.modules).filter((m) => runKeys.has(m.id)).length;
   const totalCount = phases.flatMap((p) => p.modules).length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -851,10 +850,7 @@ function PlaybookPage() {
           >
             Stage {stageIdx + 1} of 5 — {stage}
           </div>
-          <h1
-            className="text-2xl font-bold tracking-tight"
-            style={{ color: "var(--foreground)" }}
-          >
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
             Your Playbook
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
@@ -949,7 +945,10 @@ function PlaybookPage() {
               }}
             >
               {locked ? (
-                <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                <Lock
+                  className="h-3.5 w-3.5 shrink-0"
+                  style={{ color: "var(--muted-foreground)" }}
+                />
               ) : done ? (
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "#22c55e" }} />
               ) : (
@@ -1051,9 +1050,7 @@ function PlaybookPage() {
                       <div
                         className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
                         style={{
-                          background: done
-                            ? "rgba(34,197,94,0.15)"
-                            : "var(--surface-2)",
+                          background: done ? "rgba(34,197,94,0.15)" : "var(--surface-2)",
                           color: done ? "#22c55e" : "var(--muted-foreground)",
                           border: `1px solid ${done ? "rgba(34,197,94,0.3)" : "var(--border)"}`,
                         }}

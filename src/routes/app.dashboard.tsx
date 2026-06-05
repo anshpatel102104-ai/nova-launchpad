@@ -487,7 +487,11 @@ function Dashboard() {
   const activePhase = phases[Math.max(0, activePhaseIdx)];
 
   // What to improve
-  type Improvement = { icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; text: string; path: string };
+  type Improvement = {
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    text: string;
+    path: string;
+  };
   const improvements: Improvement[] = [];
   if (runCount === 0)
     improvements.push({ icon: Zap, text: "Run your first Launchpad tool", path: "/app/launchpad" });
@@ -508,10 +512,7 @@ function Dashboard() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1
-            className="text-3xl font-bold tracking-tight"
-            style={{ color: "var(--foreground)" }}
-          >
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
             {greeting()}, {name}.
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
@@ -669,10 +670,7 @@ function Dashboard() {
               >
                 Your Playbook
               </div>
-              <h2
-                className="text-base font-bold mt-0.5"
-                style={{ color: "var(--foreground)" }}
-              >
+              <h2 className="text-base font-bold mt-0.5" style={{ color: "var(--foreground)" }}>
                 Phase {activePhase.phase}: {activePhase.title}
               </h2>
             </div>
@@ -829,10 +827,7 @@ function Dashboard() {
                         {s}
                       </span>
                       {isCurrent && (
-                        <span
-                          className="text-[10px] font-mono"
-                          style={{ color: "var(--primary)" }}
-                        >
+                        <span className="text-[10px] font-mono" style={{ color: "var(--primary)" }}>
                           active
                         </span>
                       )}
@@ -884,10 +879,7 @@ function Dashboard() {
                     ((e.currentTarget as HTMLElement).style.borderColor = "transparent")
                   }
                 >
-                  <Icon
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: "var(--primary)" }}
-                  />
+                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
                   <span
                     className="flex-1 text-[12px] font-medium leading-tight"
                     style={{ color: "var(--foreground)" }}
@@ -956,9 +948,7 @@ function Dashboard() {
                     className="text-[11px] shrink-0"
                     style={{ color: "var(--muted-foreground)" }}
                   >
-                    {run.created_at
-                      ? new Date(run.created_at as string).toLocaleDateString()
-                      : ""}
+                    {run.created_at ? new Date(run.created_at as string).toLocaleDateString() : ""}
                   </span>
                 </div>
               ))}
@@ -995,8 +985,8 @@ function Dashboard() {
             className="text-[12.5px] leading-relaxed flex-1"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Nova knows your stage, your goals, your tools run, and your pipeline. Ask it
-            anything — strategy, execution, analysis, or what to do next.
+            Nova knows your stage, your goals, your tools run, and your pipeline. Ask it anything —
+            strategy, execution, analysis, or what to do next.
           </p>
           <div className="mt-4 space-y-1.5">
             {[

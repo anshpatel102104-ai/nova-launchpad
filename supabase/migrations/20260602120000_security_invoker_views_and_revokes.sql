@@ -32,5 +32,5 @@ begin
 end $$;
 
 -- ── Revoke anon EXECUTE on internal trigger functions (idempotent) ──────────
-revoke execute on function public.populate_onboarding_org_id() from anon;
-revoke execute on function public.update_users_view_fn() from anon;
+do $$ begin revoke execute on function public.populate_onboarding_org_id() from anon; exception when undefined_function then null; end $$;
+do $$ begin revoke execute on function public.update_users_view_fn() from anon; exception when undefined_function then null; end $$;

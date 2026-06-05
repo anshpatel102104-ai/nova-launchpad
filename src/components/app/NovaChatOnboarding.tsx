@@ -141,9 +141,7 @@ const QUESTIONS: Question[] = [
 
 // ── Message types ─────────────────────────────────────────────────────────────
 
-type Msg =
-  | { id: string; from: "nova"; text: string }
-  | { id: string; from: "user"; text: string };
+type Msg = { id: string; from: "nova"; text: string } | { id: string; from: "user"; text: string };
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -186,7 +184,6 @@ export function NovaChatOnboarding({ onComplete }: Props) {
   // kick off first question on mount
   useEffect(() => {
     deliverNovaMessage(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function deliverNovaMessage(qIdx: number) {
@@ -197,10 +194,7 @@ export function NovaChatOnboarding({ onComplete }: Props) {
     setTimeout(() => {
       setTyping(false);
       const q = QUESTIONS[qIdx];
-      setMessages((prev) => [
-        ...prev,
-        { id: `nova-${qIdx}`, from: "nova", text: q.novaText },
-      ]);
+      setMessages((prev) => [...prev, { id: `nova-${qIdx}`, from: "nova", text: q.novaText }]);
       setTimeout(() => setInputReady(true), 220);
     }, delay + 600);
   }
@@ -209,9 +203,7 @@ export function NovaChatOnboarding({ onComplete }: Props) {
     if (!value.trim() || submitting) return;
     const q = QUESTIONS[step];
     const label =
-      q.type === "chips"
-        ? (q.options.find((o) => o.id === value)?.label ?? value)
-        : value.trim();
+      q.type === "chips" ? (q.options.find((o) => o.id === value)?.label ?? value) : value.trim();
 
     const newAnswers = { ...answers, [q.key]: value.trim() };
     setAnswers(newAnswers);
@@ -446,7 +438,7 @@ function TextInput({
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -485,7 +477,6 @@ function TextInput({
           fontSize: 14,
           lineHeight: 1.6,
           fontFamily: "inherit",
-          placeholderColor: "rgba(247,240,232,0.3)",
         }}
       />
       <button
@@ -544,10 +535,7 @@ function ChipGrid({
           style={{
             padding: "12px 14px",
             borderRadius: 12,
-            background:
-              selected === opt.id
-                ? "rgba(249,115,22,0.18)"
-                : "rgba(255,255,255,0.04)",
+            background: selected === opt.id ? "rgba(249,115,22,0.18)" : "rgba(255,255,255,0.04)",
             border: `1px solid ${selected === opt.id ? "rgba(249,115,22,0.6)" : "rgba(255,255,255,0.08)"}`,
             cursor: selected ? "default" : "pointer",
             textAlign: "left",

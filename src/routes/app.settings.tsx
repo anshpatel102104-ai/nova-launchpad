@@ -44,7 +44,6 @@ import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
-
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
   { key: "organization", label: "Organization", icon: Building2 },
@@ -509,8 +508,16 @@ function PlanTab() {
 
 // ── Icon for connectors tab ───────────────────────────────────────────────────
 const LETTER_COLORS_SETTINGS = [
-  "#6366f1","#8b5cf6","#ec4899","#06b6d4","#10b981",
-  "#f59e0b","#ef4444","#14b8a6","#f97316","#84cc16",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#06b6d4",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#14b8a6",
+  "#f97316",
+  "#84cc16",
 ];
 
 function ConnectorIcon({ slug, name }: { slug?: string; name: string }) {
@@ -763,7 +770,10 @@ function ConnectorRow({
             <Input
               placeholder={`New ${inputType === "url" ? "URL" : "API key / token"}`}
               value={val}
-              onChange={(e) => { setVal(e.target.value); setErr(null); }}
+              onChange={(e) => {
+                setVal(e.target.value);
+                setErr(null);
+              }}
               type={inputType === "url" ? "text" : "password"}
               className="rounded-xl text-[12.5px]"
               style={{ background: "var(--surface-2)" }}
@@ -780,8 +790,12 @@ function ConnectorRow({
             </button>
           </div>
           {err && (
-            <div className="flex items-center gap-1 text-[11.5px]" style={{ color: "var(--destructive)" }}>
-              <AlertTriangle className="h-3 w-3 shrink-0" />{err}
+            <div
+              className="flex items-center gap-1 text-[11.5px]"
+              style={{ color: "var(--destructive)" }}
+            >
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              {err}
             </div>
           )}
         </div>

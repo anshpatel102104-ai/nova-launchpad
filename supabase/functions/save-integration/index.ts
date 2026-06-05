@@ -37,7 +37,11 @@ function validateValue(integrationKey: string, value: string): string | null {
 
     case "zapier": {
       let url: URL;
-      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
+      try {
+        url = new URL(value);
+      } catch {
+        return "Must be a valid https:// URL";
+      }
       if (url.protocol !== "https:") return "URL must use https://";
       if (!url.hostname.includes("zapier.com")) return "Must be a hooks.zapier.com URL";
       return null;
@@ -45,7 +49,11 @@ function validateValue(integrationKey: string, value: string): string | null {
 
     case "slack": {
       let url: URL;
-      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
+      try {
+        url = new URL(value);
+      } catch {
+        return "Must be a valid https:// URL";
+      }
       if (url.protocol !== "https:") return "URL must use https://";
       if (!url.hostname.includes("slack.com")) return "Must be a hooks.slack.com URL";
       return null;
@@ -59,7 +67,11 @@ function validateValue(integrationKey: string, value: string): string | null {
     case "workato": {
       // Require HTTPS URL for all webhook-type integrations
       let url: URL;
-      try { url = new URL(value); } catch { return "Must be a valid https:// URL"; }
+      try {
+        url = new URL(value);
+      } catch {
+        return "Must be a valid https:// URL";
+      }
       if (url.protocol !== "https:") return "URL must use https://";
       return null;
     }
@@ -108,7 +120,13 @@ Deno.serve(async (req) => {
     const value = body.value == null ? "" : String(body.value);
 
     if (!isAllowedKey(integrationKey)) {
-      return json({ error: "Invalid integration_key — must be lowercase letters, digits, underscores, or dashes" }, 400);
+      return json(
+        {
+          error:
+            "Invalid integration_key — must be lowercase letters, digits, underscores, or dashes",
+        },
+        400,
+      );
     }
     if (value.length > 4096) return json({ error: "Value too long" }, 400);
 

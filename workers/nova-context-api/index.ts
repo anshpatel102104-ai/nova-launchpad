@@ -18,8 +18,7 @@ const N8N_BASE = "https://launchpad-novaops.app.n8n.cloud/webhook";
 // ---------------------------------------------------------------------------
 
 function corsHeaders(origin: string | null): Record<string, string> {
-  const allowed =
-    origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
@@ -27,11 +26,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-function json(
-  data: unknown,
-  status = 200,
-  origin: string | null = null
-): Response {
+function json(data: unknown, status = 200, origin: string | null = null): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
@@ -42,10 +37,7 @@ function json(
 // Auth
 // ---------------------------------------------------------------------------
 
-async function validateJWT(
-  request: Request,
-  env: Env
-): Promise<{ userId: string } | null> {
+async function validateJWT(request: Request, env: Env): Promise<{ userId: string } | null> {
   const auth = request.headers.get("Authorization");
   if (!auth?.startsWith("Bearer ")) return null;
   const token = auth.slice(7);
@@ -89,7 +81,7 @@ async function sbGet<T>(url: string, env: Env): Promise<T | null> {
 async function sbInsert<T>(
   table: string,
   body: Record<string, unknown>,
-  env: Env
+  env: Env,
 ): Promise<{ data: T | null; error: string | null }> {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}`, {
     method: "POST",
@@ -108,7 +100,7 @@ async function sbPatch<T>(
   table: string,
   filter: string,
   body: Record<string, unknown>,
-  env: Env
+  env: Env,
 ): Promise<{ data: T | null; error: string | null }> {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?${filter}`, {
     method: "PATCH",
@@ -123,11 +115,7 @@ async function sbPatch<T>(
   return { data: rows[0] ?? null, error: null };
 }
 
-async function sbRpc<T>(
-  fn: string,
-  body: Record<string, unknown>,
-  env: Env
-): Promise<T | null> {
+async function sbRpc<T>(fn: string, body: Record<string, unknown>, env: Env): Promise<T | null> {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
     method: "POST",
     headers: { ...sbH(env), Prefer: "" },
@@ -208,7 +196,7 @@ export default {
           source_url: body.source_url ?? null,
           name: body.name,
         },
-        env
+        env,
       );
 
       if (error || !source) return json({ error: error ?? "Insert failed" }, 400, origin);
@@ -237,7 +225,7 @@ export default {
 
       const data = await sbGet<unknown[]>(
         `${env.SUPABASE_URL}/rest/v1/context_sources?org_id=eq.${auth.userId}&order=created_at.desc`,
-        env
+        env,
       );
       return json(data ?? [], 200, origin);
     }
@@ -252,7 +240,7 @@ export default {
         "context_sources",
         `id=eq.${deleteSourceM[1]}&org_id=eq.${auth.userId}`,
         { status: "inactive" },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json({ status: "inactive" }, 200, origin);
@@ -272,7 +260,7 @@ export default {
       const results = await sbRpc<unknown[]>(
         "match_documents",
         { query_embedding: embedding, match_count: 10, filter_org_id: auth.userId },
-        env
+        env,
       );
       return json(results ?? [], 200, origin);
     }
@@ -304,7 +292,7 @@ export default {
           session_id: body.session_id ?? null,
           status: body.status ?? "open",
         },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -317,7 +305,7 @@ export default {
 
       const data = await sbGet<unknown[]>(
         `${env.SUPABASE_URL}/rest/v1/decisions?org_id=eq.${auth.userId}&order=created_at.desc&limit=50`,
-        env
+        env,
       );
       return json(data ?? [], 200, origin);
     }
@@ -349,7 +337,7 @@ export default {
           spec_type: body.spec_type ?? null,
           executable: body.executable ?? false,
         },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -363,10 +351,7 @@ export default {
       let qs = `org_id=eq.${auth.userId}&order=created_at.desc`;
       if (searchParams.get("executable") === "true") qs += "&executable=eq.true";
 
-      const data = await sbGet<unknown[]>(
-        `${env.SUPABASE_URL}/rest/v1/strategies?${qs}`,
-        env
-      );
+      const data = await sbGet<unknown[]>(`${env.SUPABASE_URL}/rest/v1/strategies?${qs}`, env);
       return json(data ?? [], 200, origin);
     }
 
@@ -393,7 +378,7 @@ export default {
           strategy_id: body.strategy_id ?? null,
           decision_id: body.decision_id ?? null,
         },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -422,7 +407,7 @@ export default {
           linked_decision_id: body.linked_decision_id ?? null,
           linked_strategy_id: body.linked_strategy_id ?? null,
         },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -437,10 +422,7 @@ export default {
       const statusF = searchParams.get("status");
       if (statusF) qs += `&status=eq.${statusF}`;
 
-      const data = await sbGet<unknown[]>(
-        `${env.SUPABASE_URL}/rest/v1/open_loops?${qs}`,
-        env
-      );
+      const data = await sbGet<unknown[]>(`${env.SUPABASE_URL}/rest/v1/open_loops?${qs}`, env);
       return json(data ?? [], 200, origin);
     }
 
@@ -452,25 +434,24 @@ export default {
       const uid = auth.userId;
       const sevenDays = new Date(Date.now() + 7 * 864e5).toISOString();
 
-      const [recentDecisions, activeStrategies, openLoops, pendingOutcomes] =
-        await Promise.all([
-          sbGet<unknown[]>(
-            `${env.SUPABASE_URL}/rest/v1/decisions?org_id=eq.${uid}&order=created_at.desc&limit=5`,
-            env
-          ),
-          sbGet<unknown[]>(
-            `${env.SUPABASE_URL}/rest/v1/strategies?org_id=eq.${uid}&status=eq.active`,
-            env
-          ),
-          sbGet<unknown[]>(
-            `${env.SUPABASE_URL}/rest/v1/open_loops?org_id=eq.${uid}&status=in.(open,in_progress)`,
-            env
-          ),
-          sbGet<unknown[]>(
-            `${env.SUPABASE_URL}/rest/v1/outcomes?org_id=eq.${uid}&status=eq.pending&due_date=lte.${sevenDays}`,
-            env
-          ),
-        ]);
+      const [recentDecisions, activeStrategies, openLoops, pendingOutcomes] = await Promise.all([
+        sbGet<unknown[]>(
+          `${env.SUPABASE_URL}/rest/v1/decisions?org_id=eq.${uid}&order=created_at.desc&limit=5`,
+          env,
+        ),
+        sbGet<unknown[]>(
+          `${env.SUPABASE_URL}/rest/v1/strategies?org_id=eq.${uid}&status=eq.active`,
+          env,
+        ),
+        sbGet<unknown[]>(
+          `${env.SUPABASE_URL}/rest/v1/open_loops?org_id=eq.${uid}&status=in.(open,in_progress)`,
+          env,
+        ),
+        sbGet<unknown[]>(
+          `${env.SUPABASE_URL}/rest/v1/outcomes?org_id=eq.${uid}&status=eq.pending&due_date=lte.${sevenDays}`,
+          env,
+        ),
+      ]);
 
       return json(
         {
@@ -480,7 +461,7 @@ export default {
           pending_outcomes: pendingOutcomes ?? [],
         },
         200,
-        origin
+        origin,
       );
     }
 
@@ -513,7 +494,7 @@ export default {
           tolerance_pct: body.tolerance_pct ?? 20,
           strategy_id: body.strategy_id ?? null,
         },
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -540,7 +521,7 @@ export default {
           source: body.source ?? null,
           expected_outcome_id: body.expected_outcome_id ?? null,
         },
-        env
+        env,
       );
       if (obsErr || !observed) return json({ error: obsErr ?? "Insert failed" }, 400, origin);
 
@@ -553,15 +534,13 @@ export default {
           Array<{ target_value: number; tolerance_pct: number; metric_name: string }>
         >(
           `${env.SUPABASE_URL}/rest/v1/expected_outcomes?id=eq.${body.expected_outcome_id}&org_id=eq.${auth.userId}`,
-          env
+          env,
         );
         const expected = rows?.[0];
 
         if (expected) {
           deviationPct =
-            (Math.abs(body.observed_value - expected.target_value) /
-              expected.target_value) *
-            100;
+            (Math.abs(body.observed_value - expected.target_value) / expected.target_value) * 100;
           const tolerance = expected.tolerance_pct ?? 20;
 
           if (deviationPct > tolerance) {
@@ -581,7 +560,7 @@ export default {
                 title: `Deviation on ${body.metric_name}`,
                 diagnosis: `Observed ${body.observed_value} vs target ${expected.target_value} — ${deviationPct.toFixed(1)}% deviation (tolerance ${tolerance}%)`,
               },
-              env
+              env,
             );
             if (alert) {
               alertCreated = true;
@@ -594,7 +573,7 @@ export default {
       return json(
         { deviation_pct: deviationPct, alert_created: alertCreated, alert_id: alertId },
         200,
-        origin
+        origin,
       );
     }
 
@@ -611,7 +590,7 @@ export default {
 
       const data = await sbGet<unknown[]>(
         `${env.SUPABASE_URL}/rest/v1/deviation_alerts?${qs}`,
-        env
+        env,
       );
       return json(data ?? [], 200, origin);
     }
@@ -630,7 +609,7 @@ export default {
         "deviation_alerts",
         `id=eq.${patchAlertM[1]}&org_id=eq.${auth.userId}`,
         update,
-        env
+        env,
       );
       if (error) return json({ error }, 400, origin);
       return json(data, 200, origin);
@@ -644,25 +623,24 @@ export default {
       const uid = auth.userId;
       const now = new Date().toISOString();
 
-      const [openAlerts, recentAlerts, overdueExpected, allOutcomes] =
-        await Promise.all([
-          sbGet<Array<{ severity: string }>>(
-            `${env.SUPABASE_URL}/rest/v1/deviation_alerts?org_id=eq.${uid}&status=eq.open&select=severity`,
-            env
-          ),
-          sbGet<unknown[]>(
-            `${env.SUPABASE_URL}/rest/v1/deviation_alerts?org_id=eq.${uid}&order=triggered_at.desc&limit=10`,
-            env
-          ),
-          sbGet<Array<{ id: string }>>(
-            `${env.SUPABASE_URL}/rest/v1/expected_outcomes?org_id=eq.${uid}&check_date=lt.${now}`,
-            env
-          ),
-          sbGet<Array<{ strategy_id: string | null; status: string }>>(
-            `${env.SUPABASE_URL}/rest/v1/outcomes?org_id=eq.${uid}&select=strategy_id,status`,
-            env
-          ),
-        ]);
+      const [openAlerts, recentAlerts, overdueExpected, allOutcomes] = await Promise.all([
+        sbGet<Array<{ severity: string }>>(
+          `${env.SUPABASE_URL}/rest/v1/deviation_alerts?org_id=eq.${uid}&status=eq.open&select=severity`,
+          env,
+        ),
+        sbGet<unknown[]>(
+          `${env.SUPABASE_URL}/rest/v1/deviation_alerts?org_id=eq.${uid}&order=triggered_at.desc&limit=10`,
+          env,
+        ),
+        sbGet<Array<{ id: string }>>(
+          `${env.SUPABASE_URL}/rest/v1/expected_outcomes?org_id=eq.${uid}&check_date=lt.${now}`,
+          env,
+        ),
+        sbGet<Array<{ strategy_id: string | null; status: string }>>(
+          `${env.SUPABASE_URL}/rest/v1/outcomes?org_id=eq.${uid}&select=strategy_id,status`,
+          env,
+        ),
+      ]);
 
       // Open alerts count by severity
       const alertCounts: Record<string, number> = {
@@ -680,7 +658,7 @@ export default {
       for (const eo of overdueExpected ?? []) {
         const obs = await sbGet<unknown[]>(
           `${env.SUPABASE_URL}/rest/v1/observed_metrics?expected_outcome_id=eq.${eo.id}&limit=1`,
-          env
+          env,
         );
         if (!obs || obs.length === 0) overdueWithNoObs.push(eo);
       }
@@ -702,7 +680,7 @@ export default {
       if (misalignedIds.length > 0) {
         const strats = await sbGet<unknown[]>(
           `${env.SUPABASE_URL}/rest/v1/strategies?id=in.(${misalignedIds.join(",")})`,
-          env
+          env,
         );
         misalignedStrategies = strats ?? [];
       }
@@ -715,7 +693,7 @@ export default {
           misaligned_strategies: misalignedStrategies,
         },
         200,
-        origin
+        origin,
       );
     }
 

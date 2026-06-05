@@ -32,11 +32,7 @@ async function sbGet<T>(url: string, env: Env): Promise<T | null> {
   }
 }
 
-async function sbInsert(
-  table: string,
-  body: Record<string, unknown>,
-  env: Env
-): Promise<void> {
+async function sbInsert(table: string, body: Record<string, unknown>, env: Env): Promise<void> {
   await fetch(`${env.SUPABASE_URL}/rest/v1/${table}`, {
     method: "POST",
     headers: { ...sbH(env), Prefer: "return=minimal" },
@@ -55,11 +51,9 @@ const SEVERITY_RANK: Record<string, number> = {
   low: 1,
 };
 
-function topBySeverity<T extends { severity: string }>(
-  items: T[]
-): T | undefined {
+function topBySeverity<T extends { severity: string }>(items: T[]): T | undefined {
   return [...items].sort(
-    (a, b) => (SEVERITY_RANK[b.severity] ?? 0) - (SEVERITY_RANK[a.severity] ?? 0)
+    (a, b) => (SEVERITY_RANK[b.severity] ?? 0) - (SEVERITY_RANK[a.severity] ?? 0),
   )[0];
 }
 
@@ -71,7 +65,7 @@ async function runPulse(env: Env): Promise<void> {
   // 1. Distinct orgs with open deviation alerts
   const alertRows = await sbGet<Array<{ org_id: string }>>(
     `${env.SUPABASE_URL}/rest/v1/deviation_alerts?status=eq.open&select=org_id`,
-    env
+    env,
   );
   if (!alertRows) return;
 
@@ -82,30 +76,22 @@ async function runPulse(env: Env): Promise<void> {
 
   for (const orgId of orgIds) {
     // 2a. Memory snapshot
-    const [
-      openAlerts,
-      openLoops,
-      pendingOutcomes,
-    ] = await Promise.all([
-      sbGet<
-        Array<{ id: string; severity: string; title: string; diagnosis: string | null }>
-      >(
+    const [openAlerts, openLoops, pendingOutcomes] = await Promise.all([
+      sbGet<Array<{ id: string; severity: string; title: string; diagnosis: string | null }>>(
         `${env.SUPABASE_URL}/rest/v1/deviation_alerts?org_id=eq.${orgId}&status=eq.open`,
-        env
+        env,
       ),
       sbGet<Array<{ priority: string; title: string }>>(
         `${env.SUPABASE_URL}/rest/v1/open_loops?org_id=eq.${orgId}&status=in.(open,in_progress)`,
-        env
+        env,
       ),
       sbGet<unknown[]>(
         `${env.SUPABASE_URL}/rest/v1/outcomes?org_id=eq.${orgId}&status=eq.pending&due_date=lte.${sevenDays}`,
-        env
+        env,
       ),
     ]);
 
-    const criticalLoops = (openLoops ?? []).filter(
-      (l) => l.priority === "critical"
-    );
+    const criticalLoops = (openLoops ?? []).filter((l) => l.priority === "critical");
     const topAlert = topBySeverity(openAlerts ?? []);
     const overdueCount = pendingOutcomes?.length ?? 0;
     const alertCount = openAlerts?.length ?? 0;
@@ -137,7 +123,7 @@ async function runPulse(env: Env): Promise<void> {
       lines.push(
         ``,
         `Top Alert [${topAlert.severity.toUpperCase()}]: ${topAlert.title}`,
-        topAlert.diagnosis ?? ""
+        topAlert.diagnosis ?? "",
       );
     }
 
@@ -160,7 +146,7 @@ async function runPulse(env: Env): Promise<void> {
       alerts_sent: alertsSent,
       metadata: { triggered_by: "cron" },
     },
-    env
+    env,
   );
 }
 
@@ -170,11 +156,7 @@ async function runPulse(env: Env): Promise<void> {
 
 export default {
   // Cron trigger
-  async scheduled(
-    _event: ScheduledEvent,
-    env: Env,
-    ctx: ExecutionContext
-  ): Promise<void> {
+  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(runPulse(env));
   },
 
@@ -203,7 +185,7 @@ export default {
     if (path === "/pulse/logs" && method === "GET") {
       const data = await sbGet<unknown[]>(
         `${env.SUPABASE_URL}/rest/v1/pulse_logs?order=ran_at.desc&limit=10`,
-        env
+        env,
       );
       return new Response(JSON.stringify(data ?? []), {
         headers: { "Content-Type": "application/json" },
