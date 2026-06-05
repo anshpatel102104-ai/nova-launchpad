@@ -36,3 +36,13 @@ verify_jwt = true
 [functions.payments-webhook]
 verify_jwt = false
 
+# Memory query — answers questions against the org's indexed artifacts
+[functions.memory-query]
+verify_jwt = true
+
+# Feedback loop — scheduled every 30 minutes to detect repeated tool runs
+# and generate prompt improvement suggestions.
+[functions.feedback-loop]
+verify_jwt = false
+schedule = "*/30 * * * *"
+
