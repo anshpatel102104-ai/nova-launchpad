@@ -36,3 +36,13 @@ verify_jwt = true
 [functions.payments-webhook]
 verify_jwt = false
 
+# Memory query — answers questions against the org's indexed artifacts
+[functions.memory-query]
+verify_jwt = true
+
+# Feedback loop — detects repeated tool runs and generates prompt improvement
+# suggestions. Invoked every 30 minutes via the pg_cron job defined in
+# supabase/migrations/20260606000002_feedback_loop_cron.sql
+[functions.feedback-loop]
+verify_jwt = false
+

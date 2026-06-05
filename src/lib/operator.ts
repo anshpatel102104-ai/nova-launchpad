@@ -5,6 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { saveToMemory } from "./saveToMemory";
 
 // ─── Operator state machine ──────────────────────────────────────────────────
 
@@ -413,7 +414,7 @@ export type MentorAgentResult = {
 export const MENTOR_CREDIT_COST = 3;
 
 export async function runMentorAgent(
-  _user_id: string,
+  user_id: string,
   params: MentorAgentParams,
   _accessToken?: string,
   session_id?: string,
@@ -432,5 +433,17 @@ export async function runMentorAgent(
     return { success: false, error: error.message ?? "Mentor agent error" };
   }
 
-  return (data ?? { success: false, error: "No response" }) as MentorAgentResult;
+  const result = (data ?? { success: false, error: "No response" }) as MentorAgentResult;
+
+  if (result.success && result.response && user_id && params.org_id) {
+    saveToMemory({
+      orgId: params.org_id,
+      userId: user_id,
+      toolName: `mentor-${params.agent_id}`,
+      input: params.message,
+      output: result.response,
+    });
+  }
+
+  return result;
 }

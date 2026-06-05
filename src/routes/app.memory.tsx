@@ -9,6 +9,7 @@ import {
   deleteMemorySource,
   type MemorySource,
 } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Brain,
@@ -101,6 +102,7 @@ function MemoryPage() {
   const artifacts = artifactsQ.data ?? [];
 
   const [queryText, setQueryText] = useState("");
+  const [queryAnswer, setQueryAnswer] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"sources" | "artifacts" | "query">("sources");
   const [urlInput, setUrlInput] = useState("");
   const [searchArtifacts, setSearchArtifacts] = useState("");
@@ -127,6 +129,19 @@ function MemoryPage() {
       toast.success("Source removed.");
     },
     onError: () => toast.error("Failed to remove source."),
+  });
+
+  const queryMutation = useMutation({
+    mutationFn: async ({ query, orgId }: { query: string; orgId: string }) => {
+      const { data, error } = await supabase.functions.invoke("memory-query", {
+        body: { query, orgId },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      return data as { answer: string; sources_searched?: number };
+    },
+    onSuccess: (data) => setQueryAnswer(data.answer),
+    onError: () => toast.error("Failed to query memory. Please try again."),
   });
 
   const handleIngestUrl = () => {
@@ -688,7 +703,15 @@ function MemoryPage() {
                   : "Connect and index sources to enable querying"}
               </span>
               <button
-                disabled={indexedSources.length === 0 || !queryText.trim()}
+                onClick={() => {
+                  if (currentOrgId && queryText.trim()) {
+                    setQueryAnswer(null);
+                    queryMutation.mutate({ query: queryText, orgId: currentOrgId });
+                  }
+                }}
+                disabled={
+                  indexedSources.length === 0 || !queryText.trim() || queryMutation.isPending
+                }
                 className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary)" }}
                 onMouseEnter={(e) => {
@@ -699,7 +722,13 @@ function MemoryPage() {
                   (e.currentTarget as HTMLElement).style.opacity = "1";
                 }}
               >
-                Ask <ChevronRight className="h-3.5 w-3.5" />
+                {queryMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    Ask <ChevronRight className="h-3.5 w-3.5" />
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -736,6 +765,42 @@ function MemoryPage() {
               ))}
             </div>
           </div>
+
+          {/* Answer block */}
+          {queryMutation.isPending && (
+            <div
+              className="flex items-center gap-3 rounded-xl p-5"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              <Loader2
+                className="h-4 w-4 animate-spin shrink-0"
+                style={{ color: "var(--primary)" }}
+              />
+              <span className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+                Searching memory…
+              </span>
+            </div>
+          )}
+
+          {queryAnswer && !queryMutation.isPending && (
+            <div
+              className="rounded-xl p-5 space-y-3"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              <div className="flex items-center gap-2">
+                <Brain className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
+                <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
+                  Answer
+                </span>
+              </div>
+              <div
+                className="text-[13px] leading-relaxed whitespace-pre-wrap"
+                style={{ color: "var(--foreground)" }}
+              >
+                {queryAnswer}
+              </div>
+            </div>
+          )}
 
           {/* No sources callout */}
           {indexedSources.length === 0 && (

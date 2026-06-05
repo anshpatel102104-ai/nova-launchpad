@@ -5,6 +5,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { saveToMemory } from "./saveToMemory";
 
 export async function runTool(
   toolKey: string,
@@ -13,6 +14,21 @@ export async function runTool(
   _onChunk?: (chunk: string) => void,
 ): Promise<{ output: Record<string, unknown>; run_id?: string }> {
   if (!context.orgId) throw new Error("Not signed in to an organization.");
+
+  // Derive the primary user input for memory indexing
+  const primaryInput = (
+    (input.idea ||
+      input.product ||
+      input.topic ||
+      input.context ||
+      input.niche_idea ||
+      input.process_description ||
+      input.product_summary ||
+      input.business_description ||
+      input.business ||
+      input.url ||
+      "") as string
+  ).slice(0, 500);
 
   // analyze-website has a dedicated function with live URL fetching — route it directly.
   if (toolKey === "analyze-website") {
@@ -23,10 +39,20 @@ export async function runTool(
     if (error) throw new Error(error.message);
     if (data?.error) throw new Error(data.error);
     if (!data?.output) throw new Error("No output returned from AI. Please try again.");
-    return {
+    const result = {
       output: data.output as Record<string, unknown>,
       run_id: data.run_id as string | undefined,
     };
+    if (context.orgId && context.userId) {
+      saveToMemory({
+        orgId: context.orgId,
+        userId: context.userId,
+        toolName: toolKey,
+        input: primaryInput,
+        output: JSON.stringify(result.output, null, 2),
+      });
+    }
+    return result;
   }
 
   const { data, error } = await supabase.functions.invoke("run-tool", {
@@ -41,10 +67,22 @@ export async function runTool(
   if (data?.error) throw new Error(data.error);
   if (!data?.output) throw new Error("No output returned from AI. Please try again.");
 
-  return {
+  const result = {
     output: data.output as Record<string, unknown>,
     run_id: data.run_id as string | undefined,
   };
+
+  if (context.orgId && context.userId) {
+    saveToMemory({
+      orgId: context.orgId,
+      userId: context.userId,
+      toolName: toolKey,
+      input: primaryInput,
+      output: JSON.stringify(result.output, null, 2),
+    });
+  }
+
+  return result;
 }
 
 /**
