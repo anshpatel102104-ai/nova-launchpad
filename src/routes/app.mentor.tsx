@@ -17,6 +17,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useId } from "react";
+import { NovaAvatar } from "@/components/nova/NovaAvatar";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -68,13 +69,13 @@ export const Route = createFileRoute("/app/mentor")({ component: MentorPage });
 
 /* ─────────────────────────── BRAND TOKENS ─────────────────────────── */
 const C = {
-  blue: "#3b82f6",
+  blue:   "#3b82f6",
   violet: "#8b5cf6",
-  cyan: "#06b6d4",
-  orange: "#f97316",
-  green: "#10b981",
-  amber: "#f59e0b",
-  red: "#f87171",
+  cyan:   "#06b6d4",
+  orange: "#E8530A",
+  green:  "#16a34a",
+  amber:  "#d97706",
+  red:    "#dc2626",
 } as const;
 
 /* ─────────────────────────── AGENT DEFINITIONS ─────────────────────── */
@@ -299,10 +300,18 @@ function OrbitalCanvas() {
 
       ctx.clearRect(0, 0, W, H);
 
+      const isDark = document.documentElement.classList.contains("dark") ||
+        (!document.documentElement.classList.contains("light"));
+      const starAlpha = isDark ? 1 : 0.35;
+      const orbColor  = isDark ? "232,83,10" : "232,83,10";
+      const ringAlpha = isDark ? 0.07 : 0.05;
+
       STARS.forEach((s) => {
         ctx.beginPath();
         ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(240,244,255,${s.a})`;
+        ctx.fillStyle = isDark
+          ? `rgba(240,237,232,${s.a * starAlpha})`
+          : `rgba(26,23,20,${s.a * starAlpha})`;
         ctx.fill();
       });
 
@@ -310,7 +319,7 @@ function OrbitalCanvas() {
         const R = Math.min(W, H) * frac;
         ctx.beginPath();
         ctx.arc(cx, cy, R, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(59,130,246,${0.07 - i * 0.015})`;
+        ctx.strokeStyle = `rgba(${orbColor},${ringAlpha - i * 0.012})`;
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 10]);
         ctx.stroke();
@@ -326,7 +335,7 @@ function OrbitalCanvas() {
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, Math.min(W, H) * 0.6, -0.25, 0);
       ctx.closePath();
-      ctx.fillStyle = "rgba(59,130,246,0.022)";
+      ctx.fillStyle = `rgba(${orbColor},0.018)`;
       ctx.fill();
       ctx.restore();
 
@@ -425,7 +434,7 @@ function StatusBadge({ status }: { status: AgentStatus }) {
   const cfg = {
     active: { label: "ACTIVE", color: C.green, pulse: true },
     analyzing: { label: "ANALYZING", color: C.blue, pulse: false },
-    standby: { label: "STANDBY", color: "rgba(240,244,255,0.3)", pulse: false },
+    standby: { label: "STANDBY", color: "var(--text-faint)", pulse: false },
   }[status];
   return (
     <span
@@ -589,7 +598,7 @@ function AgentCard({
 
         <div
           className="text-[11.5px] leading-snug mb-3 line-clamp-2"
-          style={{ color: "rgba(240,244,255,0.5)" }}
+          style={{ color: "var(--muted-foreground)" }}
         >
           {agent.objective}
         </div>
@@ -606,7 +615,7 @@ function AgentCard({
           </div>
           <div
             className="text-[11px] leading-snug line-clamp-2"
-            style={{ color: "rgba(240,244,255,0.75)" }}
+            style={{ color: "var(--foreground)" }}
           >
             {agent.lastRec}
           </div>
@@ -615,7 +624,7 @@ function AgentCard({
         <div className="flex items-center justify-between">
           <div
             className="flex items-center gap-1.5 text-[10.5px] truncate"
-            style={{ color: "rgba(240,244,255,0.4)" }}
+            style={{ color: "var(--muted-foreground)" }}
           >
             <ArrowRight className="h-3 w-3 shrink-0" style={{ color: agent.color }} />
             <span className="truncate">{agent.nextMove}</span>
@@ -721,7 +730,7 @@ function MissionBriefPanel({
     <>
       <div
         className="fixed inset-0 z-40"
-        style={{ background: "rgba(8,8,16,0.65)", backdropFilter: "blur(3px)" }}
+        style={{ background: "color-mix(in oklab, var(--background) 65%, transparent)", backdropFilter: "blur(3px)" }}
         onClick={onClose}
       />
       <div
@@ -773,12 +782,12 @@ function MissionBriefPanel({
           <button
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
-            style={{ color: "rgba(240,244,255,0.3)" }}
+            style={{ color: "var(--text-faint)" }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.3)";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-faint)";
             }}
           >
             <X className="h-4 w-4" />
@@ -828,7 +837,7 @@ function MissionBriefPanel({
               >
                 EXECUTION SEQUENCE
               </span>
-              <span className="font-mono text-[9px]" style={{ color: "rgba(240,244,255,0.3)" }}>
+              <span className="font-mono text-[9px]" style={{ color: "var(--text-faint)" }}>
                 {done.size}/{agent.brief.length} COMPLETE
               </span>
             </div>
@@ -882,7 +891,7 @@ function MissionBriefPanel({
                         </span>
                         <span
                           className="flex items-center gap-1 text-[10px]"
-                          style={{ color: "rgba(240,244,255,0.3)" }}
+                          style={{ color: "var(--text-faint)" }}
                         >
                           <Clock className="h-2.5 w-2.5" />
                           {step.time}
@@ -890,7 +899,7 @@ function MissionBriefPanel({
                       </div>
                       <p
                         className="text-[11.5px] leading-relaxed mb-2"
-                        style={{ color: "rgba(240,244,255,0.5)" }}
+                        style={{ color: "var(--muted-foreground)" }}
                       >
                         {step.detail}
                       </p>
@@ -958,7 +967,7 @@ function MissionBriefPanel({
                         : {
                             background: "var(--surface-2)",
                             border: "1px solid var(--border-subtle)",
-                            color: "rgba(240,244,255,0.8)",
+                            color: "var(--foreground)",
                           }
                     }
                   >
@@ -976,7 +985,7 @@ function MissionBriefPanel({
                     }}
                   >
                     <Loader2 className="h-3 w-3 animate-spin" style={{ color: agent.color }} />
-                    <span className="text-[11px]" style={{ color: "rgba(240,244,255,0.4)" }}>
+                    <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                       {agent.codename} thinking…
                     </span>
                   </div>
@@ -1109,7 +1118,7 @@ function CommandCenter({
     <>
       <div
         className="fixed inset-0 z-40"
-        style={{ background: "rgba(8,8,16,0.85)", backdropFilter: "blur(8px)" }}
+        style={{ background: "color-mix(in oklab, var(--background) 85%, transparent)", backdropFilter: "blur(8px)" }}
         onClick={onClose}
       />
       <div
@@ -1117,18 +1126,18 @@ function CommandCenter({
         style={{
           maxWidth: "840px",
           background: "var(--surface)",
-          border: "1px solid rgba(59,130,246,0.25)",
-          boxShadow: "0 0 0 1px rgba(59,130,246,0.1), 0 32px 80px rgba(0,0,0,0.8)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* Header */}
         <div
           className="flex items-center gap-3 px-6 py-4 shrink-0"
-          style={{ borderBottom: "1px solid rgba(59,130,246,0.12)" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
+            style={{ background: "var(--primary-soft)", border: "1px solid var(--primary-border)" }}
           >
             <Command className="h-4 w-4" style={{ color: C.blue }} />
           </div>
@@ -1139,14 +1148,14 @@ function CommandCenter({
             >
               Command Center
             </div>
-            <div className="text-[11px]" style={{ color: "rgba(240,244,255,0.4)" }}>
+            <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
               {activeAgents.length} agents online · Multi-agent collaborative analysis
             </div>
           </div>
           <button
             onClick={onClose}
             className="ml-auto flex h-7 w-7 items-center justify-center rounded-lg"
-            style={{ color: "rgba(240,244,255,0.3)" }}
+            style={{ color: "var(--text-faint)" }}
           >
             <X className="h-4 w-4" />
           </button>
@@ -1155,7 +1164,7 @@ function CommandCenter({
         {/* Agent pills */}
         <div
           className="flex gap-2 px-6 py-3 overflow-x-auto shrink-0"
-          style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+          style={{ borderBottom: "1px solid var(--divider)" }}
         >
           {activeAgents.map((a) => (
             <div
@@ -1164,7 +1173,7 @@ function CommandCenter({
               style={{ background: `${a.color}10`, border: `1px solid ${a.color}25` }}
             >
               <a.Icon className="h-3 w-3" style={{ color: a.color }} />
-              <span className="text-[11px] font-medium" style={{ color: "rgba(240,244,255,0.8)" }}>
+              <span className="text-[11px] font-medium" style={{ color: "var(--foreground)" }}>
                 {a.role}
               </span>
               <span
@@ -1181,7 +1190,7 @@ function CommandCenter({
             <div>
               <div
                 className="font-mono mb-4"
-                style={{ fontSize: "9px", color: "rgba(59,130,246,0.7)", letterSpacing: "0.14em" }}
+                style={{ fontSize: "9px", color: "var(--primary)", letterSpacing: "0.14em" }}
               >
                 MULTI-AGENT ANALYSIS REQUEST
               </div>
@@ -1193,16 +1202,16 @@ function CommandCenter({
                     className="w-full text-left rounded-xl px-4 py-3 text-[12.5px] transition-all duration-150"
                     style={{
                       background: "var(--surface-2)",
-                      border: "1px solid rgba(59,130,246,0.1)",
-                      color: "rgba(240,244,255,0.65)",
+                      border: "1px solid var(--border)",
+                      color: "var(--muted-foreground)",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.3)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
                       (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.1)";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(240,244,255,0.65)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                     }}
                   >
                     {s}
@@ -1215,8 +1224,8 @@ function CommandCenter({
               <div
                 className="rounded-xl px-4 py-3 text-[13px]"
                 style={{
-                  background: "rgba(59,130,246,0.08)",
-                  border: "1px solid rgba(59,130,246,0.2)",
+                  background: "var(--primary-soft)",
+                  border: "1px solid var(--primary-border)",
                   color: "var(--foreground)",
                 }}
               >
@@ -1258,7 +1267,7 @@ function CommandCenter({
                   ) : (
                     <p
                       className="text-[12.5px] leading-relaxed"
-                      style={{ color: "rgba(240,244,255,0.75)" }}
+                      style={{ color: "var(--foreground)" }}
                     >
                       {r.text}
                     </p>
@@ -1270,7 +1279,7 @@ function CommandCenter({
         </div>
 
         {/* Input */}
-        <div className="shrink-0 p-4" style={{ borderTop: "1px solid rgba(59,130,246,0.1)" }}>
+        <div className="shrink-0 p-4" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="flex gap-2">
             <input
               type="text"
@@ -1559,7 +1568,7 @@ function MentorPage() {
         <div>
           <div
             className="font-mono text-[10px] mb-2"
-            style={{ color: "rgba(59,130,246,0.6)", letterSpacing: "0.2em" }}
+            style={{ color: "var(--primary)", letterSpacing: "0.2em" }}
           >
             MISSION CONTROL
           </div>
@@ -1585,9 +1594,8 @@ function MentorPage() {
           ["--i" as string]: 0,
           minHeight: 180,
           background: "var(--surface)",
-          border: "1px solid rgba(59,130,246,0.14)",
-          boxShadow:
-            "0 0 0 1px rgba(59,130,246,0.06), 0 1px 3px rgba(0,0,0,0.6), 0 8px 40px rgba(0,0,0,0.45)",
+          border: "1px solid var(--primary-border)",
+          boxShadow: "var(--shadow-md)",
         }}
       >
         <OrbitalCanvas />
@@ -1595,61 +1603,59 @@ function MentorPage() {
           className="absolute inset-0 z-[1]"
           style={{
             background:
-              "linear-gradient(135deg, rgba(8,8,16,0.88) 0%, rgba(13,13,30,0.72) 55%, rgba(8,8,16,0.82) 100%)",
+              "linear-gradient(135deg, color-mix(in oklab, var(--surface) 90%, transparent) 0%, color-mix(in oklab, var(--surface) 75%, transparent) 55%, color-mix(in oklab, var(--surface) 88%, transparent) 100%)",
           }}
         />
         <div
           className="absolute top-0 left-0 right-0 h-px z-[2]"
           style={{
             background:
-              "linear-gradient(90deg, transparent, color-mix(in oklab, var(--info) 50%, transparent), rgba(139,92,246,0.35), transparent)",
+              "linear-gradient(90deg, transparent, var(--primary-border), color-mix(in oklab, var(--primary) 35%, transparent), transparent)",
           }}
         />
-        <div className="absolute inset-0 z-[1] nova-grid-bg opacity-25" />
+        <div className="absolute inset-0 z-[1] nova-grid-bg" style={{ opacity: 0.15 }} />
 
         <div className="relative z-[3] flex flex-col gap-4 p-5 md:flex-row md:items-center md:p-7">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-3">
-              <span
-                className="font-mono"
-                style={{
-                  fontSize: "9.5px",
-                  fontWeight: 700,
-                  letterSpacing: "0.2em",
-                  color: "rgba(59,130,246,0.8)",
-                }}
-              >
-                MISSION CONTROL · {profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "COMMANDER"}
-              </span>
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                style={{
-                  background: "rgba(16,185,129,0.1)",
-                  border: "1px solid rgba(16,185,129,0.25)",
-                  color: C.green,
-                }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-current nova-live-dot" />
-                {activeCount} AGENTS ACTIVE
-              </span>
+              <NovaAvatar size="md" mood={activeCount > 3 ? "active" : "thinking"} />
+              <div>
+                <span
+                  className="font-mono block"
+                  style={{
+                    fontSize: "9.5px",
+                    fontWeight: 700,
+                    letterSpacing: "0.18em",
+                    color: "var(--primary)",
+                  }}
+                >
+                  MISSION CONTROL · {profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "COMMANDER"}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1.5 mt-0.5"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    color: "var(--success)",
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-current nova-live-dot" />
+                  {activeCount} AGENTS ACTIVE
+                </span>
+              </div>
             </div>
             <h1
               className="font-display font-black leading-none mb-2"
               style={{
                 fontSize: "clamp(1.5rem, 2.5vw + 0.5rem, 2.2rem)",
                 letterSpacing: "-0.04em",
-                background:
-                  "linear-gradient(125deg, #ffffff 0%, rgba(255,255,255,0.82) 45%, #60a5fa 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
+                color: "var(--foreground)",
               }}
             >
               Business Mission Control
             </h1>
-            <p style={{ fontSize: "13px", color: "rgba(240,244,255,0.5)", lineHeight: 1.6 }}>
-              {liveAgents.length} AI mentors monitoring your business. {allInsights.length} signals
-              loaded.
+            <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
+              {liveAgents.length} AI specialists monitoring your business. {allInsights.length} signals loaded.
             </p>
           </div>
 
@@ -1657,17 +1663,21 @@ function MentorPage() {
             <div className="flex gap-3 flex-wrap">
               {[
                 { label: "FLEET", value: `${activeCount}/${liveAgents.length}`, color: C.green },
-                { label: "CONFIDENCE", value: `${avgConf}%`, color: C.blue },
+                { label: "CONFIDENCE", value: `${avgConf}%`, color: "var(--primary)" },
                 { label: "SIGNALS", value: `${allInsights.length}`, color: C.violet },
               ].map(({ label, value, color }) => (
                 <div
                   key={label}
                   className="rounded-xl px-3 py-2 text-center"
-                  style={{ background: `${color}08`, border: `1px solid ${color}20`, minWidth: 72 }}
+                  style={{
+                    background: "var(--surface-offset)",
+                    border: "1px solid var(--border)",
+                    minWidth: 72,
+                  }}
                 >
                   <div
                     className="font-mono"
-                    style={{ fontSize: "8px", color: `${color}aa`, letterSpacing: "0.1em" }}
+                    style={{ fontSize: "8px", color: "var(--muted-foreground)", letterSpacing: "0.1em" }}
                   >
                     {label}
                   </div>
@@ -1682,22 +1692,7 @@ function MentorPage() {
             </div>
             <button
               onClick={() => setShowCC(true)}
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all duration-200"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                boxShadow:
-                  "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 8px 24px color-mix(in oklab, var(--info) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "none";
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 4px 16px color-mix(in oklab, var(--info) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)";
-              }}
+              className="btn-execute inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all duration-200"
             >
               <Command className="h-3.5 w-3.5" /> Command Center
             </button>
@@ -1723,7 +1718,7 @@ function MentorPage() {
                   fontSize: "8.5px",
                   fontWeight: 700,
                   letterSpacing: "0.14em",
-                  color: "rgba(240,244,255,0.4)",
+                  color: "var(--muted-foreground)",
                 }}
               >
                 {kpi.label.toUpperCase()}
@@ -1755,7 +1750,7 @@ function MentorPage() {
                 >
                   {kpi.change}
                 </span>
-                <span style={{ fontSize: "10.5px", color: "rgba(240,244,255,0.35)" }}>
+                <span style={{ fontSize: "10.5px", color: "var(--muted-foreground)" }}>
                   {kpi.sub}
                 </span>
               </div>
@@ -1774,13 +1769,13 @@ function MentorPage() {
                 fontSize: "9px",
                 fontWeight: 700,
                 letterSpacing: "0.18em",
-                color: "rgba(59,130,246,0.7)",
+                color: "var(--primary)",
               }}
             >
               AGENT FLEET
             </div>
-            <div className="h-px w-8" style={{ background: "rgba(59,130,246,0.2)" }} />
-            <span style={{ fontSize: "11px", color: "rgba(240,244,255,0.3)" }}>
+            <div className="h-px w-8" style={{ background: "var(--divider)" }} />
+            <span style={{ fontSize: "11px", color: "var(--text-faint)" }}>
               {activeCount} active · click agent for mission brief
             </span>
           </div>
@@ -1788,7 +1783,7 @@ function MentorPage() {
             {(["active", "analyzing", "standby"] as const).map((s) => {
               const cnt = liveAgents.filter((a) => a.status === s).length;
               const clr =
-                s === "active" ? C.green : s === "analyzing" ? C.blue : "rgba(240,244,255,0.2)";
+                s === "active" ? C.green : s === "analyzing" ? C.blue : "var(--text-faint)";
               return (
                 <span
                   key={s}
@@ -1825,11 +1820,11 @@ function MentorPage() {
         {/* Execution pipeline */}
         <div
           className="lg:col-span-7 overflow-hidden rounded-2xl"
-          style={{ background: "var(--surface)", border: "1px solid rgba(59,130,246,0.1)" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
           <div
             className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+            style={{ borderBottom: "1px solid var(--divider)" }}
           >
             <div>
               <div
@@ -1838,7 +1833,7 @@ function MentorPage() {
                   fontSize: "8.5px",
                   fontWeight: 700,
                   letterSpacing: "0.16em",
-                  color: "rgba(59,130,246,0.6)",
+                  color: "var(--primary)",
                 }}
               >
                 EXECUTION PIPELINE
@@ -1853,7 +1848,7 @@ function MentorPage() {
             <Link
               to="/app/nova/crm"
               className="inline-flex items-center gap-1 text-[11px] transition-colors"
-              style={{ color: "rgba(59,130,246,0.7)" }}
+              style={{ color: "var(--primary)" }}
             >
               Open CRM <ArrowUpRight className="h-3 w-3" />
             </Link>
@@ -1894,7 +1889,7 @@ function MentorPage() {
                       className="mt-1 font-mono text-center"
                       style={{
                         fontSize: "7.5px",
-                        color: stage.active ? stage.color : "rgba(240,244,255,0.3)",
+                        color: stage.active ? stage.color : "var(--text-faint)",
                         letterSpacing: "0.04em",
                         lineHeight: 1.3,
                       }}
@@ -1918,7 +1913,7 @@ function MentorPage() {
                   <div className="font-semibold text-[12px]" style={{ color: "var(--foreground)" }}>
                     {pipelineStages[2].count} proposal{pipelineStages[2].count > 1 ? "s" : ""} live
                   </div>
-                  <div className="text-[11px] mt-0.5" style={{ color: "rgba(240,244,255,0.4)" }}>
+                  <div className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                     Sales Operator recommends same-day follow-up to avoid cold leads
                   </div>
                 </div>
@@ -1939,20 +1934,20 @@ function MentorPage() {
               <div
                 className="rounded-xl px-4 py-3 text-center"
                 style={{
-                  background: "rgba(59,130,246,0.04)",
-                  border: "1px solid rgba(59,130,246,0.1)",
+                  background: "var(--surface-offset)",
+                  border: "1px solid var(--border)",
                 }}
               >
-                <p className="text-[12px]" style={{ color: "rgba(240,244,255,0.4)" }}>
+                <p className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
                   Pipeline empty — capture leads to activate Sales Operator
                 </p>
                 <Link to="/app/nova/leads">
                   <button
                     className="mt-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold"
                     style={{
-                      background: "rgba(59,130,246,0.1)",
-                      border: "1px solid rgba(59,130,246,0.2)",
-                      color: C.blue,
+                      background: "var(--primary-soft)",
+                      border: "1px solid var(--primary-border)",
+                      color: "var(--primary)",
                     }}
                   >
                     Add Leads
@@ -1966,11 +1961,11 @@ function MentorPage() {
         {/* Signal feed */}
         <div
           className="lg:col-span-5 overflow-hidden rounded-2xl flex flex-col"
-          style={{ background: "var(--surface)", border: "1px solid rgba(59,130,246,0.1)" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
           <div
             className="flex items-center justify-between px-5 py-4 shrink-0"
-            style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+            style={{ borderBottom: "1px solid var(--divider)" }}
           >
             <div>
               <div
@@ -1979,7 +1974,7 @@ function MentorPage() {
                   fontSize: "8.5px",
                   fontWeight: 700,
                   letterSpacing: "0.16em",
-                  color: "rgba(59,130,246,0.6)",
+                  color: "var(--primary)",
                 }}
               >
                 SIGNAL FEED
@@ -2000,11 +1995,11 @@ function MentorPage() {
                   style={
                     insightFilter === f
                       ? {
-                          background: "rgba(59,130,246,0.15)",
-                          color: C.blue,
-                          border: "1px solid rgba(59,130,246,0.3)",
+                          background: "var(--primary-soft)",
+                          color: "var(--primary)",
+                          border: "1px solid var(--primary-border)",
                         }
-                      : { color: "rgba(240,244,255,0.35)", border: "1px solid transparent" }
+                      : { color: "var(--muted-foreground)", border: "1px solid transparent" }
                   }
                 >
                   {f}
@@ -2014,12 +2009,12 @@ function MentorPage() {
           </div>
           <ul
             className="divide-y flex-1 overflow-y-auto"
-            style={{ borderColor: "rgba(59,130,246,0.06)" }}
+            style={{ borderColor: "var(--divider)" }}
           >
             {filteredInsights.length === 0 ? (
               <li className="flex flex-col items-center justify-center px-5 py-10 text-center">
-                <Activity className="h-6 w-6 mb-3" style={{ color: "rgba(59,130,246,0.3)" }} />
-                <p className="text-[12px]" style={{ color: "rgba(240,244,255,0.3)" }}>
+                <Activity className="h-6 w-6 mb-3" style={{ color: "var(--text-faint)" }} />
+                <p className="text-[12px]" style={{ color: "var(--text-faint)" }}>
                   No signals yet — agents will surface insights as your data grows.
                 </p>
               </li>
@@ -2043,7 +2038,7 @@ function MentorPage() {
                     key={ins.id}
                     className="flex gap-3 px-5 py-3 transition-all duration-150"
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(59,130,246,0.03)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-offset)";
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -2072,7 +2067,7 @@ function MentorPage() {
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px]" style={{ color: "rgba(240,244,255,0.4)" }}>
+                      <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                         {ins.detail}
                       </div>
                       <div className="flex items-center gap-1.5 mt-1">
@@ -2084,7 +2079,7 @@ function MentorPage() {
                           {ins.agent}
                         </span>
                         {ins.ago && (
-                          <span className="text-[10px]" style={{ color: "rgba(240,244,255,0.2)" }}>
+                          <span className="text-[10px]" style={{ color: "var(--text-faint)" }}>
                             · {ins.ago}
                           </span>
                         )}
@@ -2104,14 +2099,13 @@ function MentorPage() {
           className="lg:col-span-8 relative overflow-hidden rounded-2xl"
           style={{
             background: "var(--surface)",
-            border: "1px solid rgba(139,92,246,0.15)",
-            boxShadow: "0 0 30px rgba(139,92,246,0.05)",
+            border: "1px solid var(--border)",
           }}
         >
           <div
             className="absolute top-0 left-0 right-0 h-px"
             style={{
-              background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent)",
+              background: "linear-gradient(90deg, transparent, var(--primary-border), transparent)",
             }}
           />
           <div className="p-5">
@@ -2123,7 +2117,7 @@ function MentorPage() {
                     fontSize: "8.5px",
                     fontWeight: 700,
                     letterSpacing: "0.16em",
-                    color: "rgba(139,92,246,0.7)",
+                    color: "var(--primary)",
                   }}
                 >
                   WEEKLY MISSION
@@ -2204,7 +2198,7 @@ function MentorPage() {
                 />
                 <span
                   className="flex-1 text-[12px] font-medium"
-                  style={{ color: "rgba(240,244,255,0.75)" }}
+                  style={{ color: "var(--foreground)" }}
                 >
                   {cmd.label}
                 </span>
@@ -2244,8 +2238,8 @@ function MentorPage() {
           onClick={() => setShowCC(true)}
           className="flex h-12 w-12 items-center justify-center rounded-full"
           style={{
-            background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-            boxShadow: "0 4px 20px color-mix(in oklab, var(--info) 50%, transparent)",
+            background: "var(--primary)",
+            boxShadow: "0 4px 20px color-mix(in oklab, var(--primary) 50%, transparent)",
           }}
         >
           <Command className="h-5 w-5 text-white" />

@@ -5,6 +5,7 @@ import { AppTopbar } from "@/components/app/AppTopbar";
 import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { IntelligenceRail } from "@/components/app/IntelligenceRail";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
+import { NovaBar } from "@/components/nova/NovaBar";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore } from "@/lib/guest";
 import { saveLastAppPath } from "@/lib/session-restore";
@@ -73,6 +74,7 @@ function AppLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar onToggleRail={toggleRail} railOpen={railOpen && !hideRail} />
+        <NovaBar />
 
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-x-hidden overflow-y-auto pb-20 lg:pb-0">

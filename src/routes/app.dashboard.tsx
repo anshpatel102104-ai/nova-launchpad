@@ -13,21 +13,17 @@ import {
   Zap,
   Users,
   Activity,
-  TrendingUp,
   CheckCircle2,
   Circle,
-  BookOpen,
   ChevronRight,
-  Target,
+  TrendingUp,
   BarChart3,
-  Lightbulb,
-  AlertCircle,
-  MessageSquare,
+  Settings,
+  BookOpen,
 } from "lucide-react";
+import { NovaAvatar } from "@/components/nova/NovaAvatar";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
-
-// ─── Types & constants ────────────────────────────────────────────────────────
 
 const STAGES = ["Idea", "Validate", "Launch", "Operate", "Scale"] as const;
 type Stage = (typeof STAGES)[number];
@@ -39,7 +35,6 @@ function greeting() {
   return "Good evening";
 }
 
-// Health score: composite of activity signals
 function healthScore(runs: number, leads: number, autos: number, stageIdx: number): number {
   let s = 20;
   if (runs >= 1) s += 15;
@@ -53,25 +48,13 @@ function healthScore(runs: number, leads: number, autos: number, stageIdx: numbe
 }
 
 function scoreLabel(n: number): { text: string; color: string } {
-  if (n >= 75) return { text: "Strong", color: "#22c55e" };
-  if (n >= 50) return { text: "Building", color: "#f97316" };
-  return { text: "Early", color: "#94a3b8" };
+  if (n >= 75) return { text: "Strong", color: "var(--success)" };
+  if (n >= 50) return { text: "Building", color: "var(--primary)" };
+  return { text: "Early", color: "var(--muted-foreground)" };
 }
 
-// ─── Playbook preview data ────────────────────────────────────────────────────
-
-type PlaybookModule = {
-  id: string;
-  title: string;
-  desc: string;
-  path: string;
-};
-
-type PlaybookPhase = {
-  phase: number;
-  title: string;
-  modules: PlaybookModule[];
-};
+type PlaybookModule = { id: string; title: string; desc: string; path: string; time: string };
+type PlaybookPhase  = { phase: number; title: string; modules: PlaybookModule[] };
 
 const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
   Idea: [
@@ -79,72 +62,27 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Validate Your Concept",
       modules: [
-        {
-          id: "idea-validator",
-          title: "Idea Validation",
-          desc: "Score your concept across 8 dimensions",
-          path: "/app/launchpad/idea-validator",
-        },
-        {
-          id: "kill-my-idea",
-          title: "Stress-Test the Idea",
-          desc: "Devil's advocate — find every fatal flaw",
-          path: "/app/launchpad/kill-my-idea",
-        },
-        {
-          id: "competitor-scanner",
-          title: "Competitive Landscape",
-          desc: "Map your moat and positioning gaps",
-          path: "/app/launchpad/competitor-scanner",
-        },
+        { id: "idea-validator", title: "Idea Validation", desc: "Score your concept across 8 dimensions", path: "/app/launchpad/idea-validator", time: "~15 min" },
+        { id: "kill-my-idea", title: "Stress-Test the Idea", desc: "Devil's advocate — find every fatal flaw", path: "/app/launchpad/kill-my-idea", time: "~10 min" },
+        { id: "competitor-scanner", title: "Competitive Landscape", desc: "Map your moat and positioning gaps", path: "/app/launchpad/competitor-scanner", time: "~12 min" },
       ],
     },
     {
       phase: 2,
       title: "Define Your Market",
       modules: [
-        {
-          id: "persona-builder",
-          title: "Customer Personas",
-          desc: "Deep profiles of your first 100 customers",
-          path: "/app/launchpad/persona-builder",
-        },
-        {
-          id: "gtm-strategy-builder",
-          title: "GTM Strategy",
-          desc: "Channels, pricing, ICP — full go-to-market plan",
-          path: "/app/launchpad/gtm-strategy-builder",
-        },
-        {
-          id: "business-plan-generator",
-          title: "Business Plan",
-          desc: "Investor-grade plan tailored to your concept",
-          path: "/app/launchpad/business-plan-generator",
-        },
+        { id: "persona-builder", title: "Customer Personas", desc: "Deep profiles of your first 100 customers", path: "/app/launchpad/persona-builder", time: "~20 min" },
+        { id: "gtm-strategy-builder", title: "GTM Strategy", desc: "Channels, pricing, ICP — full go-to-market", path: "/app/launchpad/gtm-strategy-builder", time: "~25 min" },
+        { id: "business-plan-generator", title: "Business Plan", desc: "Investor-grade plan for your concept", path: "/app/launchpad/business-plan-generator", time: "~30 min" },
       ],
     },
     {
       phase: 3,
       title: "Acquire First Customers",
       modules: [
-        {
-          id: "first-10-customers-finder",
-          title: "First 10 Customers",
-          desc: "Specific tactics for your exact model",
-          path: "/app/launchpad/first-10-customers-finder",
-        },
-        {
-          id: "landing-page-creator",
-          title: "Landing Page Copy",
-          desc: "Conversion-optimised hero & CTA copy",
-          path: "/app/launchpad/landing-page-creator",
-        },
-        {
-          id: "pitch-generator",
-          title: "Pitch Deck",
-          desc: "Slide-by-slide narrative for your raise",
-          path: "/app/launchpad/pitch-generator",
-        },
+        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Specific tactics for your exact model", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
+        { id: "landing-page-creator", title: "Landing Page Copy", desc: "Conversion-optimised hero & CTA copy", path: "/app/launchpad/landing-page-creator", time: "~15 min" },
+        { id: "pitch-generator", title: "Pitch Deck", desc: "Slide-by-slide narrative for your raise", path: "/app/launchpad/pitch-generator", time: "~22 min" },
       ],
     },
   ],
@@ -153,72 +91,27 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Sharpen Your Offer",
       modules: [
-        {
-          id: "persona-builder",
-          title: "Customer Personas",
-          desc: "Who exactly you're building for",
-          path: "/app/launchpad/persona-builder",
-        },
-        {
-          id: "gtm-strategy-builder",
-          title: "GTM Strategy",
-          desc: "Full go-to-market plan",
-          path: "/app/launchpad/gtm-strategy-builder",
-        },
-        {
-          id: "business-plan-generator",
-          title: "Business Plan",
-          desc: "Full investor-grade plan",
-          path: "/app/launchpad/business-plan-generator",
-        },
+        { id: "persona-builder", title: "Customer Personas", desc: "Who exactly you're building for", path: "/app/launchpad/persona-builder", time: "~20 min" },
+        { id: "gtm-strategy-builder", title: "GTM Strategy", desc: "Full go-to-market plan", path: "/app/launchpad/gtm-strategy-builder", time: "~25 min" },
+        { id: "business-plan-generator", title: "Business Plan", desc: "Full investor-grade plan", path: "/app/launchpad/business-plan-generator", time: "~30 min" },
       ],
     },
     {
       phase: 2,
       title: "Land First Customers",
       modules: [
-        {
-          id: "first-10-customers-finder",
-          title: "First 10 Customers",
-          desc: "Outreach tactics for your model",
-          path: "/app/launchpad/first-10-customers-finder",
-        },
-        {
-          id: "landing-page-creator",
-          title: "Landing Page",
-          desc: "Convert visitors into leads",
-          path: "/app/launchpad/landing-page-creator",
-        },
-        {
-          id: "email-sequence-builder",
-          title: "Email Sequence",
-          desc: "Nurture sequence for your list",
-          path: "/app/launchpad/email-sequence-builder",
-        },
+        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Outreach tactics for your model", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
+        { id: "landing-page-creator", title: "Landing Page", desc: "Convert visitors into leads", path: "/app/launchpad/landing-page-creator", time: "~15 min" },
+        { id: "email-sequence-builder", title: "Email Sequence", desc: "Nurture sequence for your list", path: "/app/launchpad/email-sequence-builder", time: "~20 min" },
       ],
     },
     {
       phase: 3,
       title: "Build Infrastructure",
       modules: [
-        {
-          id: "automations",
-          title: "CRM Automations",
-          desc: "Never let a lead fall through",
-          path: "/app/automations",
-        },
-        {
-          id: "contacts",
-          title: "Contact Database",
-          desc: "Organise your pipeline",
-          path: "/app/contacts",
-        },
-        {
-          id: "kpi-dashboard",
-          title: "KPI Dashboard",
-          desc: "Track the metrics that matter",
-          path: "/app/launchpad/kpi-dashboard",
-        },
+        { id: "automations", title: "CRM Automations", desc: "Never let a lead fall through", path: "/app/automations", time: "~10 min" },
+        { id: "contacts", title: "Contact Database", desc: "Organise your pipeline", path: "/app/contacts", time: "~5 min" },
+        { id: "kpi-dashboard", title: "KPI Dashboard", desc: "Track the metrics that matter", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
       ],
     },
   ],
@@ -227,72 +120,27 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Activate Revenue",
       modules: [
-        {
-          id: "first-10-customers-finder",
-          title: "First 10 Customers",
-          desc: "Close your first paying customers",
-          path: "/app/launchpad/first-10-customers-finder",
-        },
-        {
-          id: "pitch-generator",
-          title: "Pitch Deck",
-          desc: "Narrative optimised for your stage",
-          path: "/app/launchpad/pitch-generator",
-        },
-        {
-          id: "nova/crm",
-          title: "Sales Pipeline",
-          desc: "Track every deal from prospect to close",
-          path: "/app/nova/crm",
-        },
+        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Close your first paying customers", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
+        { id: "pitch-generator", title: "Pitch Deck", desc: "Narrative optimised for your stage", path: "/app/launchpad/pitch-generator", time: "~22 min" },
+        { id: "nova/crm", title: "Sales Pipeline", desc: "Track every deal from prospect to close", path: "/app/nova/crm", time: "~5 min" },
       ],
     },
     {
       phase: 2,
       title: "Build Momentum",
       modules: [
-        {
-          id: "automations",
-          title: "Lead Automations",
-          desc: "Automate follow-up and outreach",
-          path: "/app/automations",
-        },
-        {
-          id: "scale/campaigns",
-          title: "Growth Campaigns",
-          desc: "Email, SMS and content campaigns",
-          path: "/app/scale/campaigns",
-        },
-        {
-          id: "kpi-dashboard",
-          title: "Revenue Metrics",
-          desc: "Model your next 12 months",
-          path: "/app/launchpad/kpi-dashboard",
-        },
+        { id: "automations", title: "Lead Automations", desc: "Automate follow-up and outreach", path: "/app/automations", time: "~10 min" },
+        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Email, SMS and content campaigns", path: "/app/scale/campaigns", time: "~15 min" },
+        { id: "kpi-dashboard", title: "Revenue Metrics", desc: "Model your next 12 months", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
       ],
     },
     {
       phase: 3,
       title: "Prepare to Scale",
       modules: [
-        {
-          id: "funding-readiness-score",
-          title: "Funding Readiness",
-          desc: "Score against investor criteria",
-          path: "/app/launchpad/funding-readiness-score",
-        },
-        {
-          id: "investor-email-writer",
-          title: "Investor Outreach",
-          desc: "Personalised emails to target investors",
-          path: "/app/launchpad/investor-email-writer",
-        },
-        {
-          id: "scale",
-          title: "Scale Systems",
-          desc: "Campaign and automation infrastructure",
-          path: "/app/scale",
-        },
+        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Score against investor criteria", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
+        { id: "investor-email-writer", title: "Investor Outreach", desc: "Personalised emails to target investors", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
+        { id: "scale", title: "Scale Systems", desc: "Campaign and automation infrastructure", path: "/app/scale", time: "~10 min" },
       ],
     },
   ],
@@ -301,72 +149,27 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Systemise Operations",
       modules: [
-        {
-          id: "automations",
-          title: "CRM Automations",
-          desc: "Automate every touchpoint",
-          path: "/app/automations",
-        },
-        {
-          id: "scale/pipeline",
-          title: "Pipeline",
-          desc: "Keep deal momentum",
-          path: "/app/scale/pipeline",
-        },
-        {
-          id: "kpi-dashboard",
-          title: "KPI Dashboard",
-          desc: "Revenue projections and metrics",
-          path: "/app/launchpad/kpi-dashboard",
-        },
+        { id: "automations", title: "CRM Automations", desc: "Automate every touchpoint", path: "/app/automations", time: "~10 min" },
+        { id: "scale/pipeline", title: "Pipeline", desc: "Keep deal momentum", path: "/app/scale/pipeline", time: "~5 min" },
+        { id: "kpi-dashboard", title: "KPI Dashboard", desc: "Revenue projections and metrics", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
       ],
     },
     {
       phase: 2,
       title: "Accelerate Growth",
       modules: [
-        {
-          id: "scale/campaigns",
-          title: "Growth Campaigns",
-          desc: "Multi-channel campaign execution",
-          path: "/app/scale/campaigns",
-        },
-        {
-          id: "contacts",
-          title: "Contact Expansion",
-          desc: "Grow and segment your database",
-          path: "/app/contacts",
-        },
-        {
-          id: "funding-readiness-score",
-          title: "Funding Readiness",
-          desc: "Assess readiness to raise",
-          path: "/app/launchpad/funding-readiness-score",
-        },
+        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Multi-channel campaign execution", path: "/app/scale/campaigns", time: "~15 min" },
+        { id: "contacts", title: "Contact Expansion", desc: "Grow and segment your database", path: "/app/contacts", time: "~5 min" },
+        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Assess readiness to raise", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
       ],
     },
     {
       phase: 3,
       title: "Scale the Model",
       modules: [
-        {
-          id: "investor-email-writer",
-          title: "Investor Outreach",
-          desc: "Target the right investors",
-          path: "/app/launchpad/investor-email-writer",
-        },
-        {
-          id: "scale",
-          title: "Scale Infrastructure",
-          desc: "Voice AI, SMS, full automation suite",
-          path: "/app/scale",
-        },
-        {
-          id: "pitch-generator",
-          title: "Series Pitch",
-          desc: "Narrative for your next round",
-          path: "/app/launchpad/pitch-generator",
-        },
+        { id: "investor-email-writer", title: "Investor Outreach", desc: "Target the right investors", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
+        { id: "scale", title: "Scale Infrastructure", desc: "Voice AI, SMS, full automation suite", path: "/app/scale", time: "~10 min" },
+        { id: "pitch-generator", title: "Series Pitch", desc: "Narrative for your next round", path: "/app/launchpad/pitch-generator", time: "~22 min" },
       ],
     },
   ],
@@ -375,645 +178,740 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Secure Capital",
       modules: [
-        {
-          id: "funding-readiness-score",
-          title: "Funding Readiness",
-          desc: "Score against top investor criteria",
-          path: "/app/launchpad/funding-readiness-score",
-        },
-        {
-          id: "investor-email-writer",
-          title: "Investor Emails",
-          desc: "Personalised cold outreach",
-          path: "/app/launchpad/investor-email-writer",
-        },
-        {
-          id: "pitch-generator",
-          title: "Pitch Deck",
-          desc: "Series-ready narrative",
-          path: "/app/launchpad/pitch-generator",
-        },
+        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Score against top investor criteria", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
+        { id: "investor-email-writer", title: "Investor Emails", desc: "Personalised cold outreach", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
+        { id: "pitch-generator", title: "Pitch Deck", desc: "Series-ready narrative", path: "/app/launchpad/pitch-generator", time: "~22 min" },
       ],
     },
     {
       phase: 2,
       title: "Scale Systems",
       modules: [
-        {
-          id: "scale",
-          title: "Scale Automations",
-          desc: "Campaign, voice, and AI systems",
-          path: "/app/scale",
-        },
-        {
-          id: "scale/campaigns",
-          title: "Growth Campaigns",
-          desc: "Multi-channel at scale",
-          path: "/app/scale/campaigns",
-        },
-        {
-          id: "kpi-dashboard",
-          title: "Growth Metrics",
-          desc: "Track what compounds",
-          path: "/app/launchpad/kpi-dashboard",
-        },
+        { id: "scale", title: "Scale Automations", desc: "Campaign, voice, and AI systems", path: "/app/scale", time: "~10 min" },
+        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Multi-channel at scale", path: "/app/scale/campaigns", time: "~15 min" },
+        { id: "kpi-dashboard", title: "Growth Metrics", desc: "Track what compounds", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
       ],
     },
     {
       phase: 3,
       title: "Optimise & Compound",
       modules: [
-        {
-          id: "automations",
-          title: "Advanced Automations",
-          desc: "Full-stack workflow automation",
-          path: "/app/automations",
-        },
-        {
-          id: "contacts",
-          title: "Enterprise Pipeline",
-          desc: "Segment and nurture at scale",
-          path: "/app/contacts",
-        },
-        {
-          id: "nova/reports",
-          title: "Business Intelligence",
-          desc: "Deep analytics and insights",
-          path: "/app/nova/reports",
-        },
+        { id: "automations", title: "Advanced Automations", desc: "Full-stack workflow automation", path: "/app/automations", time: "~10 min" },
+        { id: "contacts", title: "Enterprise Pipeline", desc: "Segment and nurture at scale", path: "/app/contacts", time: "~5 min" },
+        { id: "nova/reports", title: "Business Intelligence", desc: "Deep analytics and insights", path: "/app/nova/reports", time: "~10 min" },
       ],
     },
   ],
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const PRIORITY_ICONS: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
+  launchpad: Zap,
+  contacts:  Users,
+  automations: Activity,
+  playbook: BookOpen,
+  growth: TrendingUp,
+  kpi: BarChart3,
+};
+
+function getIconForPath(path: string) {
+  if (path.includes("launchpad"))  return Zap;
+  if (path.includes("contacts"))   return Users;
+  if (path.includes("automation")) return Activity;
+  if (path.includes("playbook"))   return BookOpen;
+  if (path.includes("mentor"))     return TrendingUp;
+  return Settings;
+}
+
+function HealthRing({ score, color }: { score: number; color: string }) {
+  const R    = 44;
+  const CIRC = 2 * Math.PI * R;
+  const offset = CIRC * (1 - score / 100);
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: 108, height: 108 }}>
+      <svg width="108" height="108" viewBox="0 0 108 108" style={{ position: "absolute", inset: 0 }}>
+        <circle cx="54" cy="54" r={R} fill="none" stroke="var(--border)" strokeWidth="5" />
+        <circle
+          cx="54" cy="54" r={R}
+          fill="none"
+          stroke={color}
+          strokeWidth="5"
+          strokeDasharray={CIRC}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{
+            transform: "rotate(-90deg)",
+            transformOrigin: "54px 54px",
+            transition: "stroke-dashoffset 0.8s cubic-bezier(0.2,0.8,0.2,1)",
+          }}
+        />
+      </svg>
+      <div className="relative flex flex-col items-center">
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "28px",
+            fontWeight: 800,
+            lineHeight: 1,
+            color,
+          }}
+        >
+          {score}
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "9px",
+            fontWeight: 600,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--muted-foreground)",
+            marginTop: "3px",
+          }}
+        >
+          /100
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function StageMapNode({
+  name, idx, stageIdx,
+}: { name: string; idx: number; stageIdx: number }) {
+  const isCurrent = idx === stageIdx;
+  const isDone = idx < stageIdx;
+  return (
+    <div className="flex flex-col items-center gap-1.5" style={{ minWidth: 60 }}>
+      <div className="relative flex items-center justify-center">
+        {isCurrent && (
+          <span
+            className="absolute rounded-full"
+            style={{
+              width: 36, height: 36,
+              background: "var(--primary)",
+              opacity: 0.18,
+              animation: "nova-mid-pulse 2s ease-in-out infinite",
+            }}
+          />
+        )}
+        <div
+          className="relative flex items-center justify-center rounded-full"
+          style={{
+            width: isCurrent ? 28 : 20,
+            height: isCurrent ? 28 : 20,
+            background: isDone
+              ? "var(--primary)"
+              : isCurrent
+                ? "var(--primary)"
+                : "var(--surface-2)",
+            border: isDone || isCurrent
+              ? "2px solid var(--primary)"
+              : "2px solid var(--border)",
+            transition: "all 0.2s ease",
+            flexShrink: 0,
+          }}
+        >
+          {isDone && (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      </div>
+      <span
+        style={{
+          fontFamily: isCurrent ? "var(--font-display)" : "var(--font-body)",
+          fontSize: "11px",
+          fontWeight: isCurrent ? 600 : 400,
+          color: isCurrent
+            ? "var(--primary)"
+            : isDone
+              ? "var(--foreground)"
+              : "var(--muted-foreground)",
+          textAlign: "center",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {name}
+      </span>
+    </div>
+  );
+}
 
 function Dashboard() {
   const { user, profile, currentOrgId } = useAuth();
-  const { workspace } = useWorkspace();
+  useWorkspace();
 
-  const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const orgQ  = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const autoQ = useQuery({
-    ...automationSettingsQuery(currentOrgId ?? ""),
-    enabled: !!currentOrgId,
-  });
+  const autoQ  = useQuery({ ...automationSettingsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
 
-  const name = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const org = orgQ.data;
-  const stage: Stage = (org?.stage as Stage) ?? "Idea";
-  const stageIdx = STAGES.indexOf(stage);
-
-  const runCount = runsQ.data?.length ?? 0;
-  const leadCount = leadsQ.data?.length ?? 0;
+  const name       = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const org        = orgQ.data;
+  const stage      = (org?.stage as Stage) ?? "Idea";
+  const stageIdx   = STAGES.indexOf(stage);
+  const runCount   = runsQ.data?.length ?? 0;
+  const leadCount  = leadsQ.data?.length ?? 0;
   const activeAuto =
-    (autoQ.data as Array<{ status?: string }> | null)?.filter((a) => a.status === "active")
-      .length ?? 0;
+    (autoQ.data as Array<{ status?: string }> | null)?.filter((a) => a.status === "active").length ?? 0;
 
-  const score = healthScore(runCount, leadCount, activeAuto, stageIdx);
+  const score                = healthScore(runCount, leadCount, activeAuto, stageIdx);
   const { text: scoreText, color: scoreColor } = scoreLabel(score);
+  const novaLearnedCount     = runCount * 3;
 
   const runKeys = new Set(
     (runsQ.data ?? []).map((r: Record<string, unknown>) => r.tool_key as string),
   );
 
-  // Active phase = first phase with any incomplete module
-  const phases = PLAYBOOK_DATA[stage];
-  const activePhaseIdx = Math.min(
-    phases.findIndex((ph) => ph.modules.some((m) => !runKeys.has(m.id))),
-    phases.length - 1,
+  const phases       = PLAYBOOK_DATA[stage];
+  const activePhaseIdx = Math.max(
+    0,
+    Math.min(
+      phases.findIndex((ph) => ph.modules.some((m) => !runKeys.has(m.id))),
+      phases.length - 1,
+    ),
   );
-  const activePhase = phases[Math.max(0, activePhaseIdx)];
+  const activePhase = phases[activePhaseIdx];
+  const nextStageName = STAGES[Math.min(stageIdx + 1, STAGES.length - 1)];
+  const tasksLeft = activePhase.modules.filter((m) => !runKeys.has(m.id)).length;
 
-  // What to improve
+  // Quick action chips (contextual)
+  type Chip = { label: string; path: string };
+  const chips: Chip[] = [
+    { label: runCount === 0 ? "Run first tool" : "Open Launchpad", path: "/app/launchpad/" },
+    { label: leadCount === 0 ? "Add a contact" : "View pipeline", path: "/app/contacts" },
+    { label: "Talk to Nova", path: "/app/mentor" },
+  ];
+
+  // Improvements — Nova's voice
   type Improvement = {
-    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
     text: string;
     path: string;
+    time: string;
   };
   const improvements: Improvement[] = [];
   if (runCount === 0)
-    improvements.push({ icon: Zap, text: "Run your first Launchpad tool", path: "/app/launchpad" });
+    improvements.push({ Icon: Zap, text: "I need you to run your first Launchpad tool to start building your foundation.", path: "/app/launchpad/", time: "~15 min" });
   if (leadCount === 0)
-    improvements.push({ icon: Users, text: "Add your first contact", path: "/app/contacts" });
+    improvements.push({ Icon: Users, text: "I need you to add your first contact. Revenue starts with a name in your pipeline.", path: "/app/contacts", time: "~5 min" });
   if (activeAuto === 0)
-    improvements.push({ icon: Activity, text: "Set up an automation", path: "/app/automations" });
-  improvements.push({ icon: BookOpen, text: "Open your Playbook", path: "/app/playbook" });
+    improvements.push({ Icon: Activity, text: "I need you to activate an automation so no lead falls through the cracks.", path: "/app/automations", time: "~10 min" });
+  if (improvements.length < 3)
+    improvements.push({ Icon: TrendingUp, text: "I need you to brief your Growth Commander on your acquisition strategy.", path: "/app/mentor", time: "~20 min" });
+  if (improvements.length < 3)
+    improvements.push({ Icon: BarChart3, text: "I need you to run the KPI Dashboard so we have a single source of truth.", path: "/app/launchpad/kpi-dashboard", time: "~15 min" });
 
-  const date = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const mood: "active" | "thinking" | "alert" =
+    score >= 70 ? "active" : score >= 40 ? "thinking" : "alert";
+
+  const briefText = `Your business is ${scoreText.toLowerCase()} at ${stage} stage. ${runCount} tool${runCount !== 1 ? "s" : ""} complete. Top priority: ${improvements[0]?.text.replace("I need you to ", "").split(".")[0]}.`;
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+    <div className="space-y-5">
+
+      {/* ── Section 1: Nova Brief ── */}
+      <div
+        className="rounded-xl p-5 flex gap-5 items-start"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        <div className="shrink-0 pt-0.5">
+          <NovaAvatar size="lg" mood={mood} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "22px",
+              fontWeight: 700,
+              color: "var(--foreground)",
+              lineHeight: 1.2,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {greeting()}, {name}.
           </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            {date} ·{" "}
-            <span
-              className="inline-flex items-center gap-1 font-medium"
-              style={{ color: "var(--primary)" }}
-            >
-              Stage {stageIdx + 1} of 5 — {stage}
-            </span>
+          <p
+            className="mt-1"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "15px",
+              color: "var(--muted-foreground)",
+              lineHeight: 1.5,
+            }}
+          >
+            {briefText}
           </p>
+          {novaLearnedCount > 0 && (
+            <p
+              className="mt-1"
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "11px",
+                color: "var(--primary)",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Nova has learned {novaLearnedCount} things about your business.
+            </p>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {chips.map((chip) => (
+              <Link
+                key={chip.label}
+                to={chip.path as never}
+                className="inline-flex items-center rounded-full transition-colors"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  padding: "5px 14px",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                  background: "transparent",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--primary)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                }}
+              >
+                {chip.label}
+              </Link>
+            ))}
+          </div>
         </div>
-        <Link
-          to="/app/launchpad/"
-          className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shrink-0"
-          style={{ background: "var(--primary)", color: "#fff" }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = "var(--primary-hover)")
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = "var(--primary)")
-          }
-        >
-          <Zap className="h-3.5 w-3.5" />
-          Open Launchpad
-        </Link>
       </div>
 
-      {/* ── Stat row ── */}
+      {/* ── Section 2: Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Health Score */}
+        {/* Health Score — col-span-2 */}
         <div
-          className="rounded-xl p-4"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          className="md:col-span-2 rounded-xl p-5 flex items-center gap-5"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
         >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-2"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Business Health
-          </div>
-          <div className="flex items-end gap-2">
-            <span className="text-3xl font-bold font-mono" style={{ color: scoreColor }}>
-              {score}
-            </span>
-            <span className="text-sm font-medium mb-0.5" style={{ color: scoreColor }}>
-              {scoreText}
-            </span>
-          </div>
-          <div
-            className="mt-2 h-1.5 rounded-full overflow-hidden"
-            style={{ background: "var(--border)" }}
-          >
+          <HealthRing score={score} color={scoreColor} />
+          <div>
             <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${score}%`, background: scoreColor }}
-            />
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--muted-foreground)",
+                marginBottom: "6px",
+              }}
+            >
+              Business Health
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "22px",
+                fontWeight: 700,
+                color: scoreColor,
+                lineHeight: 1.1,
+              }}
+            >
+              {scoreText}
+            </div>
+            <p
+              className="mt-1"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                color: "var(--muted-foreground)",
+                lineHeight: 1.4,
+              }}
+            >
+              Stage {stageIdx + 1} of 5 — {stage}
+            </p>
           </div>
         </div>
 
         {/* Contacts */}
         <Link
           to="/app/contacts"
-          className="rounded-xl p-4 group"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor =
-              "color-mix(in oklab, var(--primary) 30%, transparent)")
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")
-          }
+          className="rounded-xl p-4 group transition-all"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--surface)";
+          }}
         >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-2"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: "8px" }}>
             Contacts
           </div>
-          <div className="text-3xl font-bold font-mono" style={{ color: "var(--foreground)" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
             {leadCount}
           </div>
-          <div className="text-[11px] mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {leadCount === 0 ? "Add your first contact →" : "in your database"}
+          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--muted-foreground)", marginTop: "4px" }}>
+            {leadCount === 0 ? "None yet" : "in pipeline"}
           </div>
         </Link>
 
-        {/* Tools run */}
+        {/* Tools Run */}
         <Link
           to="/app/launchpad/"
-          className="rounded-xl p-4 group"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor =
-              "color-mix(in oklab, var(--primary) 30%, transparent)")
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")
-          }
+          className="rounded-xl p-4 group transition-all"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+            (e.currentTarget as HTMLElement).style.background = "var(--surface)";
+          }}
         >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-2"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: "8px" }}>
             Tools Run
           </div>
-          <div className="text-3xl font-bold font-mono" style={{ color: "var(--foreground)" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
             {runCount}
           </div>
-          <div className="text-[11px] mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {runCount === 0 ? "Start with Launchpad →" : "executions total"}
-          </div>
-        </Link>
-
-        {/* Automations */}
-        <Link
-          to="/app/automations"
-          className="rounded-xl p-4 group"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor =
-              "color-mix(in oklab, var(--primary) 30%, transparent)")
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")
-          }
-        >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-2"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Automations
-          </div>
-          <div className="text-3xl font-bold font-mono" style={{ color: "var(--foreground)" }}>
-            {activeAuto}
-          </div>
-          <div className="text-[11px] mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {activeAuto === 0 ? "Set up your first →" : "active workflows"}
+          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--muted-foreground)", marginTop: "4px" }}>
+            {runCount === 0 ? "None yet" : "executions"}
           </div>
         </Link>
       </div>
 
-      {/* ── Main 2-col grid ── */}
+      {/* ── Section 3: Stage Map ── */}
+      <div
+        className="rounded-xl p-5"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "10px",
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--muted-foreground)",
+            marginBottom: "20px",
+          }}
+        >
+          Execution Stage
+        </div>
+
+        <div className="relative flex items-start justify-between px-2">
+          {/* Track line */}
+          <div
+            className="absolute"
+            style={{
+              top: "12px",
+              left: "calc(12px + 2%)",
+              right: "calc(12px + 2%)",
+              height: "2px",
+              background: "var(--border)",
+              zIndex: 0,
+            }}
+          />
+          {/* Completed fill */}
+          {stageIdx > 0 && (
+            <div
+              className="absolute"
+              style={{
+                top: "12px",
+                left: "calc(12px + 2%)",
+                width: `${(stageIdx / (STAGES.length - 1)) * 96}%`,
+                height: "2px",
+                background: "var(--primary)",
+                zIndex: 1,
+                transition: "width 0.6s cubic-bezier(0.2,0.8,0.2,1)",
+              }}
+            />
+          )}
+          {STAGES.map((s, i) => (
+            <div key={s} style={{ zIndex: 2, position: "relative" }}>
+              <StageMapNode name={s} idx={i} stageIdx={stageIdx} />
+            </div>
+          ))}
+        </div>
+
+        {stageIdx < STAGES.length - 1 && (
+          <p
+            className="mt-4"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "13px",
+              color: "var(--muted-foreground)",
+              textAlign: "center",
+            }}
+          >
+            Nova:{" "}
+            <span style={{ color: "var(--foreground)", fontWeight: 500 }}>
+              {tasksLeft} task{tasksLeft !== 1 ? "s" : ""} until {nextStageName} unlocks.
+            </span>
+          </p>
+        )}
+      </div>
+
+      {/* ── Main grid: Playbook + Improvements ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* LEFT: Playbook preview */}
+
+        {/* ── Section 4: Active Playbook Phase ── */}
         <div
           className="lg:col-span-2 rounded-xl p-5"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
               <div
-                className="text-[10px] font-semibold uppercase tracking-widest font-mono"
-                style={{ color: "var(--primary)" }}
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--primary)",
+                  marginBottom: "4px",
+                }}
               >
-                Your Playbook
+                Active Playbook
               </div>
-              <h2 className="text-base font-bold mt-0.5" style={{ color: "var(--foreground)" }}>
+              <h2
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "17px",
+                  fontWeight: 700,
+                  color: "var(--foreground)",
+                  letterSpacing: "-0.01em",
+                }}
+              >
                 Phase {activePhase.phase}: {activePhase.title}
               </h2>
             </div>
             <Link
-              to="/app/playbook"
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold rounded-lg px-3 py-1.5"
-              style={{ color: "var(--primary)", border: "1px solid var(--border)" }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = "transparent")
-              }
+              to="/app/launchpad/"
+              className="inline-flex items-center gap-1.5 rounded-lg transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "12px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                color: "var(--primary)",
+                border: "1px solid var(--border)",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--surface-offset)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
             >
-              View full playbook
-              <ArrowRight className="h-3 w-3" />
+              Full Launchpad
+              <ArrowRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
 
-          {/* Phase nav pills */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-            {phases.map((ph, i) => {
-              const isActive = i === Math.max(0, activePhaseIdx);
-              const isDone = i < Math.max(0, activePhaseIdx);
-              return (
-                <div
-                  key={ph.phase}
-                  className="flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold"
-                  style={{
-                    background: isActive
-                      ? "color-mix(in oklab, var(--primary) 12%, transparent)"
-                      : "var(--surface-2)",
-                    border: `1px solid ${isActive ? "color-mix(in oklab, var(--primary) 35%, transparent)" : "var(--border)"}`,
-                    color: isActive
-                      ? "var(--primary)"
-                      : isDone
-                        ? "var(--foreground)"
-                        : "var(--muted-foreground)",
-                  }}
-                >
-                  {isDone ? (
-                    <CheckCircle2 className="h-3 w-3" style={{ color: "#22c55e" }} />
-                  ) : (
-                    <Circle className="h-3 w-3" />
-                  )}
-                  Phase {ph.phase}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Module cards */}
           <div className="space-y-2">
             {activePhase.modules.map((mod, i) => {
               const done = runKeys.has(mod.id);
+              const isRecommended = i === 0 && !done;
               return (
                 <Link
                   key={mod.id}
                   to={mod.path as never}
-                  className="flex items-center gap-3 rounded-lg p-3 group transition-colors"
+                  className="flex items-center gap-3 rounded-xl p-3.5 transition-all group"
                   style={{
-                    background: i === 0 && !done ? "var(--surface-2)" : "transparent",
-                    border: `1px solid ${i === 0 && !done ? "color-mix(in oklab, var(--primary) 20%, transparent)" : "var(--border)"}`,
+                    background: isRecommended ? "var(--primary-soft)" : done ? "transparent" : "var(--surface-offset)",
+                    border: isRecommended
+                      ? "1px solid var(--primary-border)"
+                      : done
+                        ? "1px solid var(--border)"
+                        : "1px solid var(--border)",
+                    opacity: done ? 0.6 : 1,
                   }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background = "var(--surface-2)")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background =
-                      i === 0 && !done ? "var(--surface-2)" : "transparent")
-                  }
+                  onMouseEnter={(e) => {
+                    if (!done) {
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = isRecommended
+                      ? "var(--primary-border)"
+                      : "var(--border)";
+                  }}
                 >
                   <div
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                    className="shrink-0 flex items-center justify-center rounded-lg"
                     style={{
+                      width: 32,
+                      height: 32,
                       background: done
-                        ? "rgba(34,197,94,0.1)"
-                        : i === 0
+                        ? "color-mix(in oklab, var(--success) 10%, transparent)"
+                        : isRecommended
                           ? "color-mix(in oklab, var(--primary) 12%, transparent)"
-                          : "var(--surface-offset)",
+                          : "var(--surface-2)",
                     }}
                   >
                     {done ? (
-                      <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#22c55e" }} />
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "var(--success)" }} />
                     ) : (
                       <Circle
-                        className="h-3.5 w-3.5"
                         style={{
-                          color: i === 0 ? "var(--primary)" : "var(--muted-foreground)",
+                          width: 14,
+                          height: 14,
+                          color: isRecommended ? "var(--primary)" : "var(--muted-foreground)",
                         }}
                       />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div
-                      className="text-[13px] font-semibold leading-tight"
+                    <div className="flex items-center gap-2">
+                      <span
+                        style={{
+                          fontFamily: "var(--font-body)",
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          color: done ? "var(--muted-foreground)" : "var(--foreground)",
+                          textDecoration: done ? "line-through" : "none",
+                        }}
+                      >
+                        {mod.title}
+                      </span>
+                      {isRecommended && (
+                        <span
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: "9px",
+                            fontWeight: 700,
+                            letterSpacing: "0.10em",
+                            textTransform: "uppercase",
+                            color: "var(--primary)",
+                            border: "1px solid var(--primary-border)",
+                            borderRadius: "999px",
+                            padding: "2px 8px",
+                          }}
+                        >
+                          Nova Recommends
+                        </span>
+                      )}
+                    </div>
+                    <p
                       style={{
-                        color: done ? "var(--muted-foreground)" : "var(--foreground)",
-                        textDecoration: done ? "line-through" : "none",
+                        fontFamily: "var(--font-body)",
+                        fontSize: "12px",
+                        color: "var(--muted-foreground)",
+                        marginTop: "1px",
                       }}
                     >
-                      {mod.title}
-                    </div>
-                    <div
-                      className="text-[11px] mt-0.5 truncate"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
                       {mod.desc}
-                    </div>
+                    </p>
                   </div>
-                  {!done && (
-                    <ChevronRight
-                      className="h-4 w-4 shrink-0 opacity-40 group-hover:opacity-80 transition-opacity"
-                      style={{ color: i === 0 ? "var(--primary)" : "var(--muted-foreground)" }}
-                    />
-                  )}
+                  <div className="shrink-0 flex items-center gap-2">
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        color: "var(--text-faint)",
+                      }}
+                    >
+                      {mod.time}
+                    </span>
+                    {!done && (
+                      <ChevronRight
+                        style={{
+                          width: 14,
+                          height: 14,
+                          color: isRecommended ? "var(--primary)" : "var(--muted-foreground)",
+                          opacity: 0.6,
+                        }}
+                        className="group-hover:opacity-100 transition-opacity"
+                      />
+                    )}
+                  </div>
                 </Link>
               );
             })}
           </div>
         </div>
 
-        {/* RIGHT: Intelligence */}
-        <div className="flex flex-col gap-4">
-          {/* Growth trajectory */}
-          <div
-            className="rounded-xl p-4"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <div
-              className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-3"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Growth Trajectory
-            </div>
-            <div className="space-y-2">
-              {STAGES.map((s, i) => {
-                const isCurrent = i === stageIdx;
-                const isDone = i < stageIdx;
-                const pct = isDone ? 100 : isCurrent ? Math.min(90, score) : 0;
-                return (
-                  <div key={s}>
-                    <div className="flex justify-between mb-1">
-                      <span
-                        className="text-[11px] font-medium"
-                        style={{
-                          color: isCurrent
-                            ? "var(--primary)"
-                            : isDone
-                              ? "var(--foreground)"
-                              : "var(--muted-foreground)",
-                        }}
-                      >
-                        {s}
-                      </span>
-                      {isCurrent && (
-                        <span className="text-[10px] font-mono" style={{ color: "var(--primary)" }}>
-                          active
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className="h-1 rounded-full overflow-hidden"
-                      style={{ background: "var(--border)" }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${pct}%`,
-                          background: isDone
-                            ? "rgba(34,197,94,0.6)"
-                            : isCurrent
-                              ? "var(--primary)"
-                              : "transparent",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* What to improve */}
-          <div
-            className="rounded-xl p-4 flex-1"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          >
-            <div
-              className="text-[10px] font-semibold uppercase tracking-widest font-mono mb-3"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Improve Next
-            </div>
-            <div className="space-y-2">
-              {improvements.slice(0, 3).map(({ icon: Icon, text, path }) => (
-                <Link
-                  key={text}
-                  to={path as never}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 group transition-colors"
-                  style={{ background: "var(--surface-2)" }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.borderColor = "var(--primary)")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.borderColor = "transparent")
-                  }
-                >
-                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
-                  <span
-                    className="flex-1 text-[12px] font-medium leading-tight"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {text}
-                  </span>
-                  <ArrowRight
-                    className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-60 transition-opacity"
-                    style={{ color: "var(--primary)" }}
-                  />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bottom row: Recent + Nova ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Recent runs */}
+        {/* ── Section 5: What to Improve ── */}
         <div
-          className="rounded-xl p-4"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          className="rounded-xl p-5 flex flex-col gap-3"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <h3
-              className="text-[11px] font-semibold uppercase tracking-widest font-mono"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Recent Activity
-            </h3>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--muted-foreground)",
+              marginBottom: "4px",
+            }}
+          >
+            Nova's Priorities
+          </div>
+
+          {improvements.slice(0, 3).map(({ Icon, text, path, time }) => (
             <Link
-              to="/app/launchpad/history"
-              className="text-[11px] transition-colors"
-              style={{ color: "var(--primary)" }}
+              key={path + text}
+              to={path as never}
+              className="flex items-start gap-3 rounded-xl p-3.5 group transition-all"
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface-offset)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                (e.currentTarget as HTMLElement).style.background = "var(--surface-offset)";
+              }}
             >
-              View all
-            </Link>
-          </div>
-          {!runsQ.data || runsQ.data.length === 0 ? (
-            <div
-              className="py-6 text-center text-[12px]"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              No tool runs yet.{" "}
-              <Link to="/app/launchpad/" style={{ color: "var(--primary)" }}>
-                Open Launchpad →
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {runsQ.data.slice(0, 5).map((run: Record<string, unknown>, i: number) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2"
-                  style={{ background: "var(--surface-2)" }}
+              <Icon
+                size={15}
+                style={{ color: "var(--primary)", marginTop: "1px", flexShrink: 0 }}
+              />
+              <div className="flex-1 min-w-0">
+                <p
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "var(--foreground)",
+                    lineHeight: 1.4,
+                  }}
                 >
-                  <Zap className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
-                  <span
-                    className="flex-1 text-[12px] truncate font-medium"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {String(run.tool_key ?? run.tool ?? "Tool run").replace(/-/g, " ")}
-                  </span>
-                  <span
-                    className="text-[11px] shrink-0"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {run.created_at ? new Date(run.created_at as string).toLocaleDateString() : ""}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Nova AI CTA */}
-        <div
-          className="rounded-xl p-5 flex flex-col"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderLeft: "3px solid var(--primary)",
-          }}
-        >
-          <div className="flex items-center gap-2.5 mb-3">
-            <div
-              className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ background: "var(--primary)", color: "#fff" }}
-            >
-              N
-            </div>
-            <div>
-              <div className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-                Ask Nova
-              </div>
-              <div className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                Your AI business advisor · full context
-              </div>
-            </div>
-          </div>
-          <p
-            className="text-[12.5px] leading-relaxed flex-1"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Nova knows your stage, your goals, your tools run, and your pipeline. Ask it anything —
-            strategy, execution, analysis, or what to do next.
-          </p>
-          <div className="mt-4 space-y-1.5">
-            {[
-              "What should I focus on this week?",
-              "How do I get to the next stage?",
-              "Analyse my business so far",
-            ].map((prompt) => (
-              <div
-                key={prompt}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] cursor-default"
-                style={{
-                  background: "var(--surface-2)",
-                  color: "var(--muted-foreground)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <MessageSquare className="h-3 w-3 shrink-0" style={{ color: "var(--primary)" }} />
-                <span className="flex-1">{prompt}</span>
+                  {text}
+                </p>
                 <span
-                  className="text-[10px] shrink-0 font-mono"
-                  style={{ color: "var(--primary)" }}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    color: "var(--muted-foreground)",
+                    marginTop: "3px",
+                    display: "block",
+                  }}
                 >
-                  ⌘K
+                  {time}
                 </span>
               </div>
-            ))}
-          </div>
+              <ArrowRight
+                size={12}
+                style={{ color: "var(--primary)", flexShrink: 0, marginTop: "3px", opacity: 0.5 }}
+                className="group-hover:opacity-100 transition-opacity"
+              />
+            </Link>
+          ))}
         </div>
       </div>
     </div>
