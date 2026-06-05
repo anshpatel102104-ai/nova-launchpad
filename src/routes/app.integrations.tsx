@@ -165,6 +165,7 @@ function ConnectModal({
             <>
               <div>
                 <label
+                  htmlFor="integration-credential"
                   className="block mb-1.5 text-[12px] font-medium"
                   style={{ color: "var(--foreground)" }}
                 >
@@ -179,6 +180,8 @@ function ConnectModal({
                   )}
                 </label>
                 <Input
+                  id="integration-credential"
+                  name="integration_credential"
                   placeholder={item.hint}
                   value={val}
                   onChange={(e) => {
@@ -309,12 +312,15 @@ function CustomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
         <div className="space-y-3 pt-1">
           <div>
             <label
+              htmlFor="custom-integration-name"
               className="block mb-1.5 text-[12px] font-medium"
               style={{ color: "var(--foreground)" }}
             >
               Integration name
             </label>
             <Input
+              id="custom-integration-name"
+              name="integration_name"
               placeholder="e.g. My CRM"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -325,6 +331,7 @@ function CustomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 
           <div>
             <label
+              htmlFor="custom-integration-key"
               className="block mb-1.5 text-[12px] font-medium"
               style={{ color: "var(--foreground)" }}
             >
@@ -334,6 +341,8 @@ function CustomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
               </span>
             </label>
             <Input
+              id="custom-integration-key"
+              name="integration_key"
               value={key}
               onChange={(e) => setKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
               className="rounded-xl text-[12.5px] font-mono"
@@ -343,12 +352,15 @@ function CustomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 
           <div>
             <label
+              htmlFor="custom-integration-value"
               className="block mb-1.5 text-[12px] font-medium"
               style={{ color: "var(--foreground)" }}
             >
               API key / token / URL
             </label>
             <Input
+              id="custom-integration-value"
+              name="integration_value"
               placeholder="Paste your credential here"
               value={val}
               onChange={(e) => {
@@ -540,6 +552,8 @@ function IntegrationsPage() {
             style={{ color: "var(--muted-foreground)" }}
           />
           <input
+            id="integrations-search"
+            name="integrations_search"
             type="text"
             placeholder="Search integrations…"
             value={search}
