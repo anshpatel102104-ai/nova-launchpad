@@ -28,39 +28,39 @@ END $$;
 DO $$ BEGIN
   CREATE POLICY "profiles: admins view all"
     ON public.profiles FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "organizations: admins view all"
     ON public.organizations FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "subscriptions: admins view all"
     ON public.subscriptions FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "tool_runs: admins view all"
     ON public.tool_runs FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "user_roles: admins view all"
     ON public.user_roles FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "automation_logs: admins view all"
     ON public.automation_logs FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "nova_conversations: admins view all"
     ON public.nova_conversations FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
 
 DO $$ BEGIN
   CREATE POLICY "credit_ledger: admins view all"
     ON public.credit_ledger FOR SELECT USING (public.is_admin());
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object OR undefined_table THEN NULL; END $$;
