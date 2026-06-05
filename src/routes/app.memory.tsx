@@ -709,7 +709,9 @@ function MemoryPage() {
                     queryMutation.mutate({ query: queryText, orgId: currentOrgId });
                   }
                 }}
-                disabled={indexedSources.length === 0 || !queryText.trim() || queryMutation.isPending}
+                disabled={
+                  indexedSources.length === 0 || !queryText.trim() || queryMutation.isPending
+                }
                 className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary)" }}
                 onMouseEnter={(e) => {
