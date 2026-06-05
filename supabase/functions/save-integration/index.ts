@@ -94,9 +94,13 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
-    const encKey = Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY");
+    // INTEGRATIONS_ENCRYPTION_KEY is preferred. Fall back to SUPABASE_SERVICE_ROLE_KEY which
+    // is always auto-injected by Supabase, so the function works without a manual secret.
+    const encKey =
+      Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY") ||
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!encKey || encKey.length < 16) {
-      console.error("[save-integration] INTEGRATIONS_ENCRYPTION_KEY missing or too short");
+      console.error("[save-integration] No suitable encryption key available");
       return json({ error: "Server misconfigured" }, 500);
     }
 
@@ -148,6 +152,54 @@ Deno.serve(async (req) => {
     if (error) {
       console.error("[save-integration] rpc error", error.message);
       return json({ error: "Failed to save integration" }, 500);
+    }
+
+    // Write a memory artifact so Nova knows what integrations are active for this org.
+    const { data: memberRow } = await admin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    const orgId = memberRow?.organization_id as string | undefined;
+    if (orgId) {
+      const isConnecting = !!value;
+      // Find existing artifact first to decide insert vs update.
+      const { data: existing } = await admin
+        .from("memory_artifacts")
+        .select("id")
+        .eq("org_id", orgId)
+        .eq("source_type", "integration")
+        .eq("source_label", integrationKey)
+        .maybeSingle();
+
+      const artifactPayload = {
+        org_id: orgId,
+        user_id: userId,
+        source_type: "integration",
+        source_label: integrationKey,
+        title: `${integrationKey} integration ${isConnecting ? "connected" : "disconnected"}`,
+        content_preview: isConnecting
+          ? `The user has connected their ${integrationKey} account. Nova can reference and use this integration when helping with related tasks.`
+          : `The user has disconnected their ${integrationKey} account.`,
+        status: isConnecting ? "indexed" : "disabled",
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existing) {
+        const { error: updErr } = await admin
+          .from("memory_artifacts")
+          .update(artifactPayload)
+          .eq("id", (existing as { id: string }).id);
+        if (updErr) console.warn("[save-integration] memory artifact update failed:", updErr.message);
+      } else if (isConnecting) {
+        const { error: insErr } = await admin
+          .from("memory_artifacts")
+          .insert({ ...artifactPayload, created_at: new Date().toISOString() });
+        if (insErr) console.warn("[save-integration] memory artifact insert failed:", insErr.message);
+      }
     }
 
     const row = Array.isArray(data) ? data[0] : data;
