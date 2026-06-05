@@ -1,0 +1,23 @@
+name = "nova-context-api"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[routes]]
+pattern = "api.nova-ops.space/context/*"
+zone_name = "nova-ops.space"
+
+[[routes]]
+pattern = "api.nova-ops.space/memory/*"
+zone_name = "nova-ops.space"
+
+[[routes]]
+pattern = "api.nova-ops.space/monitor/*"
+zone_name = "nova-ops.space"
+
+[vars]
+SUPABASE_URL = "https://snnnbzhopsajrhimhgje.supabase.co"
+SUPABASE_ANON_KEY = "REPLACE_WITH_PRODUCTION_ANON_KEY"
+# Secrets (set via wrangler secret put):
+#   SUPABASE_SERVICE_ROLE_KEY
+#   OPENAI_API_KEY
