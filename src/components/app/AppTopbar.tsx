@@ -160,9 +160,9 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                 "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
               )}
               style={{
-                background: railOpen ? "rgba(255,107,26,0.08)" : "transparent",
+                background: railOpen ? "var(--primary-soft)" : "transparent",
                 color: railOpen ? "var(--primary)" : "var(--muted-foreground)",
-                border: railOpen ? "1px solid rgba(255,107,26,0.18)" : "1px solid transparent",
+                border: railOpen ? "1px solid var(--border-strong)" : "1px solid transparent",
               }}
               onMouseEnter={(e) => {
                 if (!railOpen) {
