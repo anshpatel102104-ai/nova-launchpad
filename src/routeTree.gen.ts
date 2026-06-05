@@ -62,6 +62,7 @@ import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$to
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
+import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -328,6 +329,11 @@ const AppAcademyModuleRoute = AppAcademyModuleRouteImport.update({
   path: '/$module',
   getParentRoute: () => AppAcademyRoute,
 } as any)
+const AppPlaybookRoute = AppPlaybookRouteImport.update({
+  id: '/playbook',
+  path: '/playbook',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/playbook': typeof AppPlaybookRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/playbook': typeof AppPlaybookRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -466,6 +474,7 @@ export interface FileRoutesById {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
+  '/app/playbook': typeof AppPlaybookRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/playbook'
     | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/playbook'
     | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -632,6 +643,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/nova-full'
     | '/app/nova-os'
+    | '/app/playbook'
     | '/app/scale'
     | '/app/settings'
     | '/auth/forgot-password'
@@ -1007,6 +1019,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNovaClientsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/playbook': {
+      id: '/app/playbook'
+      path: '/playbook'
+      fullPath: '/app/playbook'
+      preLoaderRoute: typeof AppPlaybookRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova-os/$slug': {
       id: '/app/nova-os/$slug'
       path: '/$slug'
@@ -1128,6 +1147,7 @@ interface AppRouteChildren {
   AppMissionControlRoute: typeof AppMissionControlRoute
   AppNovaFullRoute: typeof AppNovaFullRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
+  AppPlaybookRoute: typeof AppPlaybookRoute
   AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -1164,6 +1184,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMissionControlRoute: AppMissionControlRoute,
   AppNovaFullRoute: AppNovaFullRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
+  AppPlaybookRoute: AppPlaybookRoute,
   AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,

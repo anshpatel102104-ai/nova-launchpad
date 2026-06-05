@@ -190,7 +190,10 @@ function ConnectModal({
                   style={{
                     background: "var(--surface-2)",
                     ...(err
-                      ? { border: "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)" }
+                      ? {
+                          border:
+                            "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)",
+                        }
                       : {}),
                   }}
                 />
@@ -490,9 +493,7 @@ function IntegrationsPage() {
   const [customOpen, setCustomOpen] = useState(false);
 
   const filtered = searchCatalog(search, category);
-  const popularItems = POPULAR_INTEGRATIONS.filter(
-    (i) => !search && category === "All",
-  );
+  const popularItems = POPULAR_INTEGRATIONS.filter((i) => !search && category === "All");
 
   function isConnected(key: string) {
     return connected.some((c) => c.integration_key === key && c.is_connected);
@@ -681,7 +682,10 @@ function IntegrationsPage() {
               >
                 <Plus className="h-5 w-5" style={{ color: "var(--primary)" }} />
               </div>
-              <div className="text-[13px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>
+              <div
+                className="text-[13px] font-semibold mb-1"
+                style={{ color: "var(--foreground)" }}
+              >
                 Add custom
               </div>
               <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
@@ -703,9 +707,7 @@ function IntegrationsPage() {
         />
       )}
 
-      {customOpen && (
-        <CustomModal onClose={() => setCustomOpen(false)} onSaved={refresh} />
-      )}
+      {customOpen && <CustomModal onClose={() => setCustomOpen(false)} onSaved={refresh} />}
     </>
   );
 }
