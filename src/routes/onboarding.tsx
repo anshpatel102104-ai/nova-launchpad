@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
-import { OnboardingWizard, type OnboardingAnswers } from "@/components/app/OnboardingWizard";
+import { NovaChatOnboarding, type OnboardingAnswers } from "@/components/app/NovaChatOnboarding";
 import { classifyLane } from "@/lib/lane-classifier";
 import { toast } from "sonner";
 
@@ -228,12 +228,53 @@ function Onboarding() {
           position: "relative",
           zIndex: 10,
           width: "100%",
-          padding: "0 20px",
+          maxHeight: "100vh",
+          padding: "24px 20px",
           display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <OnboardingWizard
+        {/* Nova wordmark */}
+        <div
+          style={{
+            marginBottom: 28,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 14,
+              fontWeight: 800,
+              color: "#fff",
+              boxShadow: "0 0 20px rgba(249,115,22,0.4)",
+            }}
+          >
+            N
+          </div>
+          <span
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "rgba(247,240,232,0.7)",
+            }}
+          >
+            Nova
+          </span>
+        </div>
+
+        <NovaChatOnboarding
           onComplete={async (answers) => {
             try {
               await handleComplete(answers);

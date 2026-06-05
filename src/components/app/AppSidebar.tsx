@@ -24,6 +24,7 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -58,6 +59,13 @@ const NAV_GROUPS: NavGroup[] = [
     icon: LayoutDashboard,
     to: "/app/dashboard",
     match: (p) => p === "/app/dashboard",
+  },
+  {
+    id: "playbook",
+    label: "Playbook",
+    icon: BookOpen,
+    to: "/app/playbook",
+    match: (p) => p === "/app/playbook",
   },
   {
     id: "build",
