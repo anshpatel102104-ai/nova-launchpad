@@ -97,8 +97,7 @@ Deno.serve(async (req) => {
     // INTEGRATIONS_ENCRYPTION_KEY is preferred. Fall back to SUPABASE_SERVICE_ROLE_KEY which
     // is always auto-injected by Supabase, so the function works without a manual secret.
     const encKey =
-      Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY") ||
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!encKey || encKey.length < 16) {
       console.error("[save-integration] No suitable encryption key available");
       return json({ error: "Server misconfigured" }, 500);
@@ -193,12 +192,14 @@ Deno.serve(async (req) => {
           .from("memory_artifacts")
           .update(artifactPayload)
           .eq("id", (existing as { id: string }).id);
-        if (updErr) console.warn("[save-integration] memory artifact update failed:", updErr.message);
+        if (updErr)
+          console.warn("[save-integration] memory artifact update failed:", updErr.message);
       } else if (isConnecting) {
         const { error: insErr } = await admin
           .from("memory_artifacts")
           .insert({ ...artifactPayload, created_at: new Date().toISOString() });
-        if (insErr) console.warn("[save-integration] memory artifact insert failed:", insErr.message);
+        if (insErr)
+          console.warn("[save-integration] memory artifact insert failed:", insErr.message);
       }
     }
 
