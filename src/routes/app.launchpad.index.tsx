@@ -3,50 +3,77 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
-import { toolRunsQuery } from "@/lib/queries";
-import { Lock, Zap, Search, History, ChevronRight, Clock, Check } from "lucide-react";
+import { toolRunsQuery, organizationQuery, leadsQuery } from "@/lib/queries";
+import {
+  Lock,
+  Search,
+  History,
+  ChevronRight,
+  Check,
+  MessageSquare,
+  ArrowRight,
+} from "lucide-react";
 import { useOwnerMode } from "@/lib/ownerMode";
+import { NovaAvatar } from "@/components/nova/NovaAvatar";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
 
-const FILTERS = [
+const STAGE_TABS = [
   { key: "all", label: "All" },
-  { key: "active", label: "Available" },
-  { key: "soon", label: "Coming soon" },
-];
+  { key: "validate", label: "Validate" },
+  { key: "plan", label: "Plan" },
+  { key: "customers", label: "Launch" },
+  { key: "launch", label: "Scale" },
+  { key: "funding", label: "Funding" },
+] as const;
 
-const CATEGORIES = [
-  {
-    key: "validate",
-    label: "Validate & Research",
-    desc: "Test your idea before you build",
-  },
-  {
-    key: "plan",
-    label: "Plan & Strategy",
-    desc: "Map the path to product-market fit",
-  },
-  {
-    key: "customers",
-    label: "Launch & Acquire",
-    desc: "Get your first customers",
-  },
-  {
-    key: "launch",
-    label: "Launch & Scale",
-    desc: "Accelerate what's working",
-  },
-  {
-    key: "funding",
-    label: "Funding",
-    desc: "Raise from investors",
-  },
-];
+const CATEGORY_META: Record<string, { label: string; desc: string }> = {
+  validate: { label: "Validate & Research", desc: "Test your idea before you build" },
+  plan: { label: "Plan & Strategy", desc: "Map the path to product-market fit" },
+  customers: { label: "Launch & Acquire", desc: "Get your first customers" },
+  launch: { label: "Launch & Scale", desc: "Accelerate what's working" },
+  funding: { label: "Funding", desc: "Raise from investors" },
+};
+
+const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
+  all: [
+    "Which tool should I run first?",
+    "What's my fastest path to first revenue?",
+    "How do I know when I'm ready to scale?",
+  ],
+  validate: [
+    "How do I validate without a product?",
+    "What's a good validation score?",
+    "How do I find people to interview?",
+  ],
+  plan: [
+    "What's the right GTM for B2B SaaS?",
+    "How detailed should my business plan be?",
+    "How do I identify my ICP?",
+  ],
+  customers: [
+    "How do I get my first 10 paying customers?",
+    "What should my landing page hero say?",
+    "How long is a good email sequence?",
+  ],
+  launch: [
+    "What acquisition channels should I test first?",
+    "How do I build a scalable campaign?",
+    "When should I invest in paid ads?",
+  ],
+  funding: [
+    "What do investors look for at seed stage?",
+    "How do I cold email an investor?",
+    "What's a strong funding readiness score?",
+  ],
+};
 
 function LaunchpadOverview() {
   const { currentOrgId } = useAuth();
   const isOwner = useOwnerMode();
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
+  const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
 
   const runsByTool = useMemo(() => {
     const map = new Map<string, number>();
@@ -55,16 +82,14 @@ function LaunchpadOverview() {
   }, [runsQ.data]);
 
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"category" | "grid">("category");
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [novaSidebarOpen, setNovaSidebarOpen] = useState(true);
 
   const allTools = LAUNCHPAD_TOOLS;
 
   const filtered = useMemo(() => {
     return allTools.filter((t) => {
-      const available = isOwner || t.plan === "0";
-      if (filter === "active" && !available) return false;
-      if (filter === "soon" && available) return false;
+      if (activeTab !== "all" && t.category !== activeTab) return false;
       if (search) {
         const s = search.toLowerCase();
         if (!t.name.toLowerCase().includes(s) && !t.description.toLowerCase().includes(s))
@@ -72,213 +97,369 @@ function LaunchpadOverview() {
       }
       return true;
     });
-  }, [filter, search, isOwner, allTools]);
+  }, [activeTab, search, allTools]);
 
   const totalCompleted = useMemo(
     () => allTools.filter((t) => (runsByTool.get(t.slug) ?? 0) > 0).length,
     [runsByTool, allTools],
   );
-  const availableCount = allTools.filter((t) => isOwner || t.plan === "0").length;
+
+  const stage = (orgQ.data?.stage as string) ?? "Idea";
+  const runCount = runsQ.data?.length ?? 0;
+  const leadCount = leadsQ.data?.length ?? 0;
+
+  const novaAnalysis =
+    runCount === 0
+      ? `You're at ${stage} stage with no tools run yet. I recommend starting with Idea Validation — it scores your concept across 8 critical dimensions and sets the direction for everything that follows.`
+      : `You've completed ${totalCompleted} of ${allTools.length} tools at ${stage} stage. ${leadCount > 0 ? `Your ${leadCount} contacts give me signal to refine your GTM recommendations.` : "Adding contacts to your pipeline will help me personalise your execution path."}`;
+
+  const novaMood: "active" | "thinking" | "alert" =
+    runCount >= 5 ? "active" : runCount >= 1 ? "thinking" : "alert";
+
+  const novaPrompts = NOVA_PROMPTS_BY_STAGE[activeTab] ?? NOVA_PROMPTS_BY_STAGE.all;
+
+  // Group by category (only when not filtering)
+  const showCategorised = activeTab === "all" && !search;
+  const categories = Object.keys(CATEGORY_META).filter((cat) =>
+    filtered.some((t) => t.category === cat),
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-            Launchpad
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            18 AI-powered tools to take your idea from concept to traction.
-          </p>
-        </div>
-        <Link
-          to="/app/launchpad/history"
-          className="hidden sm:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[12.5px] transition-colors"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid var(--border)",
-            color: "var(--muted-foreground)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-          }}
-        >
-          <History className="h-3.5 w-3.5" />
-          History
-        </Link>
-      </div>
-
-      {/* Stats strip */}
-      <div
-        className="grid grid-cols-3 divide-x rounded-xl overflow-hidden"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        {[
-          { label: "Total tools", value: allTools.length },
-          { label: "Available now", value: availableCount },
-          { label: "Completed", value: totalCompleted },
-        ].map(({ label, value }, i) => (
-          <div
-            key={label}
-            className="px-5 py-4"
-            style={{ borderRight: i < 2 ? "1px solid var(--border)" : "none" }}
-          >
-            <div
-              className="text-2xl font-bold font-mono tabular-nums"
-              style={{ color: i === 0 ? "var(--primary)" : "var(--foreground)" }}
+    <div className="flex gap-5 items-start">
+      {/* ── Main content ── */}
+      <div className="flex-1 min-w-0 space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "32px",
+                fontWeight: 800,
+                color: "var(--foreground)",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.1,
+              }}
             >
-              {value}
-            </div>
-            <div className="text-[11.5px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              {label}
-            </div>
+              Launchpad
+            </h1>
+            <p
+              className="mt-1"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "15px",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              Your stage-gated execution engine. Nova sequences every tool in the right order.
+            </p>
           </div>
-        ))}
-      </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/app/launchpad/history"
+              className="hidden sm:inline-flex items-center gap-2 rounded-lg transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                fontWeight: 500,
+                padding: "8px 14px",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--muted-foreground)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              }}
+            >
+              <History style={{ width: 14, height: 14 }} />
+              History
+            </Link>
+            <button
+              onClick={() => setNovaSidebarOpen((o) => !o)}
+              className="hidden lg:inline-flex items-center gap-2 rounded-lg transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                fontWeight: 500,
+                padding: "8px 14px",
+                background: novaSidebarOpen ? "var(--primary-soft)" : "var(--surface)",
+                border: `1px solid ${novaSidebarOpen ? "var(--primary-border)" : "var(--border)"}`,
+                color: novaSidebarOpen ? "var(--primary)" : "var(--muted-foreground)",
+                cursor: "pointer",
+              }}
+            >
+              <MessageSquare style={{ width: 14, height: 14 }} />
+              Nova
+            </button>
+          </div>
+        </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
+        {/* Stage tabs */}
+        <div className="flex items-center gap-0 border-b" style={{ borderColor: "var(--border)" }}>
+          {STAGE_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className="relative px-4 pb-2.5 pt-0.5 transition-colors"
+              style={{
+                fontFamily: activeTab === tab.key ? "var(--font-display)" : "var(--font-body)",
+                fontSize: "14px",
+                fontWeight: activeTab === tab.key ? 600 : 400,
+                color: activeTab === tab.key ? "var(--foreground)" : "var(--muted-foreground)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                borderBottom:
+                  activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
+                marginBottom: "-1px",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 pointer-events-none"
-            style={{ color: "var(--muted-foreground)" }}
+            style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "14px",
+              height: "14px",
+              color: "var(--muted-foreground)",
+              pointerEvents: "none",
+            }}
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tools..."
-            className="w-full rounded-lg py-2 pl-9 pr-4 text-[13px] outline-none transition-colors"
             style={{
+              width: "100%",
+              borderRadius: "8px",
+              padding: "9px 14px 9px 38px",
+              fontFamily: "var(--font-body)",
+              fontSize: "14px",
               background: "var(--surface-2)",
               border: "1px solid var(--border)",
               color: "var(--foreground)",
+              outline: "none",
+              transition: "border-color 160ms",
             }}
-            onFocus={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--primary) 50%, transparent)";
-            }}
-            onBlur={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-            }}
+            onFocus={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--primary)")}
+            onBlur={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")}
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Tools */}
+        {filtered.length === 0 ? (
           <div
-            className="flex rounded-lg p-0.5"
-            style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+            className="rounded-xl p-12 text-center"
+            style={{ border: "1px dashed var(--border)", color: "var(--muted-foreground)" }}
           >
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className="rounded-md px-3 py-1.5 text-[12px] font-medium transition-colors"
-                style={
-                  filter === f.key
-                    ? { background: "var(--surface)", color: "var(--foreground)" }
-                    : { color: "var(--muted-foreground)" }
-                }
-              >
-                {f.label}
-              </button>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>
+              No tools match your search.
+            </p>
+          </div>
+        ) : showCategorised ? (
+          <div className="space-y-8">
+            {categories.map((cat) => {
+              const catTools = filtered.filter((t) => t.category === cat);
+              const meta = CATEGORY_META[cat];
+              if (!catTools.length || !meta) return null;
+              return (
+                <div key={cat}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "var(--muted-foreground)",
+                      }}
+                    >
+                      {meta.label}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: "var(--divider)" }} />
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        color: "var(--text-faint)",
+                      }}
+                    >
+                      {catTools.length}
+                    </span>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {catTools.map((tool, i) => (
+                      <ToolCard
+                        key={tool.slug}
+                        slug={tool.slug}
+                        name={tool.name}
+                        description={tool.description}
+                        available={isOwner || tool.plan === "0"}
+                        runCount={runsByTool.get(tool.slug) ?? 0}
+                        estimatedMinutes={tool.estimatedMinutes}
+                        icon={tool.icon}
+                        isRecommended={runCount === 0 && i === 0 && cat === "validate"}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((tool) => (
+              <ToolCard
+                key={tool.slug}
+                slug={tool.slug}
+                name={tool.name}
+                description={tool.description}
+                available={isOwner || tool.plan === "0"}
+                runCount={runsByTool.get(tool.slug) ?? 0}
+                estimatedMinutes={tool.estimatedMinutes}
+                icon={tool.icon}
+                isRecommended={false}
+              />
             ))}
           </div>
-
-          <div
-            className="flex rounded-lg p-0.5"
-            style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
-          >
-            {(["category", "grid"] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setViewMode(v)}
-                className="rounded-md px-3 py-1.5 text-[12px] font-medium transition-colors capitalize"
-                style={
-                  viewMode === v
-                    ? {
-                        background: "var(--surface)",
-                        color: "var(--primary)",
-                      }
-                    : { color: "var(--muted-foreground)" }
-                }
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Tools */}
-      {viewMode === "category" && !search && filter === "all" ? (
-        <div className="space-y-8">
-          {CATEGORIES.map((cat) => {
-            const catTools = filtered.filter((t) => t.category === cat.key);
-            if (catTools.length === 0) return null;
-            return (
-              <div key={cat.key}>
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className="text-[10px] font-semibold uppercase tracking-widest font-mono"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {cat.label}
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-                  <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                    {catTools.length}
-                  </span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {catTools.map((tool) => (
-                    <ToolCard
-                      key={tool.slug}
-                      slug={tool.slug}
-                      name={tool.name}
-                      description={tool.description}
-                      available={isOwner || tool.plan === "0"}
-                      runCount={runsByTool.get(tool.slug) ?? 0}
-                      estimatedMinutes={tool.estimatedMinutes}
-                      icon={tool.icon}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((tool) => (
-            <ToolCard
-              key={tool.slug}
-              slug={tool.slug}
-              name={tool.name}
-              description={tool.description}
-              available={isOwner || tool.plan === "0"}
-              runCount={runsByTool.get(tool.slug) ?? 0}
-              estimatedMinutes={tool.estimatedMinutes}
-              icon={tool.icon}
-            />
-          ))}
-        </div>
-      )}
-
-      {filtered.length === 0 && (
-        <div
-          className="rounded-xl border-dashed border p-12 text-center"
-          style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}
+      {/* ── Nova Sidebar ── */}
+      {novaSidebarOpen && (
+        <aside
+          className="hidden lg:flex flex-col shrink-0 rounded-xl p-4 gap-4"
+          style={{
+            width: "280px",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            position: "sticky",
+            top: "24px",
+            boxShadow: "var(--shadow-sm)",
+          }}
         >
-          <div className="text-[13px] font-medium">No tools match your filter.</div>
-          <div className="text-[12px] mt-1 opacity-70">Try adjusting your search.</div>
-        </div>
+          <div className="flex items-center gap-2.5">
+            <NovaAvatar size="md" mood={novaMood} />
+            <div>
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: "var(--foreground)",
+                }}
+              >
+                Nova
+              </p>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "10px",
+                  color: "var(--primary)",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                LAUNCHPAD GUIDE
+              </p>
+            </div>
+          </div>
+
+          <div
+            className="rounded-lg p-3"
+            style={{ background: "var(--surface-offset)", border: "1px solid var(--border)" }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                color: "var(--foreground)",
+                lineHeight: 1.5,
+              }}
+            >
+              {novaAnalysis}
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <p
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
+                color: "var(--muted-foreground)",
+                marginBottom: "6px",
+              }}
+            >
+              Ask Nova
+            </p>
+            {novaPrompts.map((prompt) => (
+              <Link
+                key={prompt}
+                to="/app/mentor"
+                className="flex items-center gap-2 rounded-lg transition-colors"
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  fontFamily: "var(--font-body)",
+                  fontSize: "12px",
+                  color: "var(--muted-foreground)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
+              >
+                <span className="flex-1">{prompt}</span>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            to="/app/mentor"
+            className="flex items-center justify-center gap-2 rounded-lg py-2.5 transition-colors"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "13px",
+              fontWeight: 500,
+              border: "1px solid var(--primary-border)",
+              color: "var(--primary)",
+              background: "transparent",
+              marginTop: "auto",
+            }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
+          >
+            Open full chat
+            <ArrowRight style={{ width: 13, height: 13 }} />
+          </Link>
+        </aside>
       )}
     </div>
   );
@@ -293,6 +474,7 @@ function ToolCard({
   runCount,
   estimatedMinutes,
   icon: Icon,
+  isRecommended,
 }: {
   slug: string;
   name: string;
@@ -301,98 +483,172 @@ function ToolCard({
   runCount: number;
   estimatedMinutes: number;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  isRecommended: boolean;
 }) {
   const hasRuns = runCount > 0;
 
+  const cardStyle: React.CSSProperties = {
+    background: isRecommended ? "var(--primary-soft)" : "var(--surface)",
+    border: `1px solid ${isRecommended ? "var(--primary-border)" : "var(--border)"}`,
+    borderRadius: "10px",
+    padding: "16px",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    transition: "border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease",
+    opacity: !available ? 0.45 : 1,
+    cursor: !available ? "not-allowed" : "pointer",
+    position: "relative",
+    boxShadow: "var(--shadow-sm)",
+  };
+
   return (
-    <Link to="/app/launchpad/$tool" params={{ tool: slug }} className="group block">
+    <Link
+      to={available ? "/app/launchpad/$tool" : ("/app/launchpad/" as never)}
+      params={available ? { tool: slug } : undefined}
+      className="group block"
+      style={{ pointerEvents: available ? "auto" : "none" }}
+    >
       <div
-        className="relative h-full rounded-xl p-4 transition-colors"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-        }}
+        style={cardStyle}
         onMouseEnter={(e) => {
           if (available) {
-            (e.currentTarget as HTMLElement).style.borderColor =
-              "color-mix(in oklab, var(--primary) 35%, transparent)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+            (e.currentTarget as HTMLElement).style.background = isRecommended
+              ? "color-mix(in oklab, var(--primary) 8%, var(--surface-2))"
+              : "var(--surface-2)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-md)";
           }
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+          (e.currentTarget as HTMLElement).style.borderColor = isRecommended
+            ? "var(--primary-border)"
+            : "var(--border)";
+          (e.currentTarget as HTMLElement).style.background = isRecommended
+            ? "var(--primary-soft)"
+            : "var(--surface)";
+          (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-sm)";
         }}
       >
-        <div className="flex items-start justify-between gap-3 mb-3">
-          {/* Icon */}
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-2 mb-3">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+            className="flex items-center justify-center rounded-lg shrink-0"
             style={{
-              background: available ? "var(--primary-soft)" : "var(--surface-2)",
+              width: 36,
+              height: 36,
+              background: available
+                ? "color-mix(in oklab, var(--primary) 10%, transparent)"
+                : "var(--surface-offset)",
             }}
           >
             {available ? (
-              <Icon className="h-4 w-4" style={{ color: "var(--primary)" }} />
+              <Icon style={{ width: 16, height: 16, color: "var(--primary)" }} />
             ) : (
-              <Lock className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
+              <Lock style={{ width: 15, height: 15, color: "var(--muted-foreground)" }} />
             )}
           </div>
 
-          {/* Status */}
-          {available ? (
-            hasRuns ? (
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                style={{
-                  background: "var(--surface-2)",
-                  color: "var(--muted-foreground)",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <Check className="h-2.5 w-2.5" style={{ color: "var(--primary)" }} />
-                {runCount} run{runCount !== 1 ? "s" : ""}
-              </span>
-            ) : null
-          ) : (
+          {/* Status badge */}
+          {!available ? (
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] shrink-0"
               style={{
-                background: "var(--surface-2)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.10em",
+                textTransform: "uppercase",
+                padding: "3px 8px",
+                borderRadius: "999px",
+                background: "var(--surface-offset)",
                 color: "var(--muted-foreground)",
                 border: "1px solid var(--border)",
               }}
             >
-              <Clock className="h-2.5 w-2.5" />
-              Soon
+              Locked
             </span>
-          )}
+          ) : hasRuns ? (
+            <span
+              className="inline-flex items-center gap-1"
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "3px 8px",
+                borderRadius: "999px",
+                background: "color-mix(in oklab, var(--success) 10%, transparent)",
+                color: "var(--success)",
+                border: "1px solid color-mix(in oklab, var(--success) 25%, transparent)",
+              }}
+            >
+              <Check style={{ width: 9, height: 9 }} />
+              Done
+            </span>
+          ) : null}
         </div>
 
-        <div className="text-[14px] font-semibold mb-1" style={{ color: "var(--foreground)" }}>
-          {name}
-        </div>
+        {/* Name + desc */}
         <p
-          className="text-[12px] leading-relaxed line-clamp-2"
-          style={{ color: "var(--muted-foreground)" }}
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "var(--foreground)",
+            letterSpacing: "-0.01em",
+            marginBottom: "4px",
+          }}
+        >
+          {name}
+        </p>
+        <p
+          style={{
+            fontFamily: "var(--font-body)",
+            fontSize: "12px",
+            color: "var(--muted-foreground)",
+            lineHeight: 1.4,
+            flex: 1,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
         >
           {description}
         </p>
 
+        {/* Footer */}
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            ~{estimatedMinutes}m
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              color: "var(--text-faint)",
+            }}
+          >
+            ~{estimatedMinutes} min
           </span>
           {available ? (
             <span
-              className="inline-flex items-center gap-1 text-[12px] font-medium transition-all group-hover:translate-x-0.5"
-              style={{ color: "var(--primary)" }}
+              className="inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--primary)",
+              }}
             >
               {hasRuns ? "Run again" : "Launch"}
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight style={{ width: 13, height: 13 }} />
             </span>
           ) : (
             <span
-              className="inline-flex items-center gap-1 text-[11px]"
-              style={{ color: "var(--muted-foreground)" }}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "11px",
+                color: "var(--muted-foreground)",
+              }}
             >
               Upgrade to unlock
             </span>
