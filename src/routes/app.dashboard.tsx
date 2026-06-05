@@ -54,7 +54,7 @@ function scoreLabel(n: number): { text: string; color: string } {
 }
 
 type PlaybookModule = { id: string; title: string; desc: string; path: string; time: string };
-type PlaybookPhase  = { phase: number; title: string; modules: PlaybookModule[] };
+type PlaybookPhase = { phase: number; title: string; modules: PlaybookModule[] };
 
 const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
   Idea: [
@@ -62,27 +62,81 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Validate Your Concept",
       modules: [
-        { id: "idea-validator", title: "Idea Validation", desc: "Score your concept across 8 dimensions", path: "/app/launchpad/idea-validator", time: "~15 min" },
-        { id: "kill-my-idea", title: "Stress-Test the Idea", desc: "Devil's advocate — find every fatal flaw", path: "/app/launchpad/kill-my-idea", time: "~10 min" },
-        { id: "competitor-scanner", title: "Competitive Landscape", desc: "Map your moat and positioning gaps", path: "/app/launchpad/competitor-scanner", time: "~12 min" },
+        {
+          id: "idea-validator",
+          title: "Idea Validation",
+          desc: "Score your concept across 8 dimensions",
+          path: "/app/launchpad/idea-validator",
+          time: "~15 min",
+        },
+        {
+          id: "kill-my-idea",
+          title: "Stress-Test the Idea",
+          desc: "Devil's advocate — find every fatal flaw",
+          path: "/app/launchpad/kill-my-idea",
+          time: "~10 min",
+        },
+        {
+          id: "competitor-scanner",
+          title: "Competitive Landscape",
+          desc: "Map your moat and positioning gaps",
+          path: "/app/launchpad/competitor-scanner",
+          time: "~12 min",
+        },
       ],
     },
     {
       phase: 2,
       title: "Define Your Market",
       modules: [
-        { id: "persona-builder", title: "Customer Personas", desc: "Deep profiles of your first 100 customers", path: "/app/launchpad/persona-builder", time: "~20 min" },
-        { id: "gtm-strategy-builder", title: "GTM Strategy", desc: "Channels, pricing, ICP — full go-to-market", path: "/app/launchpad/gtm-strategy-builder", time: "~25 min" },
-        { id: "business-plan-generator", title: "Business Plan", desc: "Investor-grade plan for your concept", path: "/app/launchpad/business-plan-generator", time: "~30 min" },
+        {
+          id: "persona-builder",
+          title: "Customer Personas",
+          desc: "Deep profiles of your first 100 customers",
+          path: "/app/launchpad/persona-builder",
+          time: "~20 min",
+        },
+        {
+          id: "gtm-strategy-builder",
+          title: "GTM Strategy",
+          desc: "Channels, pricing, ICP — full go-to-market",
+          path: "/app/launchpad/gtm-strategy-builder",
+          time: "~25 min",
+        },
+        {
+          id: "business-plan-generator",
+          title: "Business Plan",
+          desc: "Investor-grade plan for your concept",
+          path: "/app/launchpad/business-plan-generator",
+          time: "~30 min",
+        },
       ],
     },
     {
       phase: 3,
       title: "Acquire First Customers",
       modules: [
-        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Specific tactics for your exact model", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
-        { id: "landing-page-creator", title: "Landing Page Copy", desc: "Conversion-optimised hero & CTA copy", path: "/app/launchpad/landing-page-creator", time: "~15 min" },
-        { id: "pitch-generator", title: "Pitch Deck", desc: "Slide-by-slide narrative for your raise", path: "/app/launchpad/pitch-generator", time: "~22 min" },
+        {
+          id: "first-10-customers-finder",
+          title: "First 10 Customers",
+          desc: "Specific tactics for your exact model",
+          path: "/app/launchpad/first-10-customers-finder",
+          time: "~18 min",
+        },
+        {
+          id: "landing-page-creator",
+          title: "Landing Page Copy",
+          desc: "Conversion-optimised hero & CTA copy",
+          path: "/app/launchpad/landing-page-creator",
+          time: "~15 min",
+        },
+        {
+          id: "pitch-generator",
+          title: "Pitch Deck",
+          desc: "Slide-by-slide narrative for your raise",
+          path: "/app/launchpad/pitch-generator",
+          time: "~22 min",
+        },
       ],
     },
   ],
@@ -91,27 +145,81 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Sharpen Your Offer",
       modules: [
-        { id: "persona-builder", title: "Customer Personas", desc: "Who exactly you're building for", path: "/app/launchpad/persona-builder", time: "~20 min" },
-        { id: "gtm-strategy-builder", title: "GTM Strategy", desc: "Full go-to-market plan", path: "/app/launchpad/gtm-strategy-builder", time: "~25 min" },
-        { id: "business-plan-generator", title: "Business Plan", desc: "Full investor-grade plan", path: "/app/launchpad/business-plan-generator", time: "~30 min" },
+        {
+          id: "persona-builder",
+          title: "Customer Personas",
+          desc: "Who exactly you're building for",
+          path: "/app/launchpad/persona-builder",
+          time: "~20 min",
+        },
+        {
+          id: "gtm-strategy-builder",
+          title: "GTM Strategy",
+          desc: "Full go-to-market plan",
+          path: "/app/launchpad/gtm-strategy-builder",
+          time: "~25 min",
+        },
+        {
+          id: "business-plan-generator",
+          title: "Business Plan",
+          desc: "Full investor-grade plan",
+          path: "/app/launchpad/business-plan-generator",
+          time: "~30 min",
+        },
       ],
     },
     {
       phase: 2,
       title: "Land First Customers",
       modules: [
-        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Outreach tactics for your model", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
-        { id: "landing-page-creator", title: "Landing Page", desc: "Convert visitors into leads", path: "/app/launchpad/landing-page-creator", time: "~15 min" },
-        { id: "email-sequence-builder", title: "Email Sequence", desc: "Nurture sequence for your list", path: "/app/launchpad/email-sequence-builder", time: "~20 min" },
+        {
+          id: "first-10-customers-finder",
+          title: "First 10 Customers",
+          desc: "Outreach tactics for your model",
+          path: "/app/launchpad/first-10-customers-finder",
+          time: "~18 min",
+        },
+        {
+          id: "landing-page-creator",
+          title: "Landing Page",
+          desc: "Convert visitors into leads",
+          path: "/app/launchpad/landing-page-creator",
+          time: "~15 min",
+        },
+        {
+          id: "email-sequence-builder",
+          title: "Email Sequence",
+          desc: "Nurture sequence for your list",
+          path: "/app/launchpad/email-sequence-builder",
+          time: "~20 min",
+        },
       ],
     },
     {
       phase: 3,
       title: "Build Infrastructure",
       modules: [
-        { id: "automations", title: "CRM Automations", desc: "Never let a lead fall through", path: "/app/automations", time: "~10 min" },
-        { id: "contacts", title: "Contact Database", desc: "Organise your pipeline", path: "/app/contacts", time: "~5 min" },
-        { id: "kpi-dashboard", title: "KPI Dashboard", desc: "Track the metrics that matter", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
+        {
+          id: "automations",
+          title: "CRM Automations",
+          desc: "Never let a lead fall through",
+          path: "/app/automations",
+          time: "~10 min",
+        },
+        {
+          id: "contacts",
+          title: "Contact Database",
+          desc: "Organise your pipeline",
+          path: "/app/contacts",
+          time: "~5 min",
+        },
+        {
+          id: "kpi-dashboard",
+          title: "KPI Dashboard",
+          desc: "Track the metrics that matter",
+          path: "/app/launchpad/kpi-dashboard",
+          time: "~15 min",
+        },
       ],
     },
   ],
@@ -120,27 +228,81 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Activate Revenue",
       modules: [
-        { id: "first-10-customers-finder", title: "First 10 Customers", desc: "Close your first paying customers", path: "/app/launchpad/first-10-customers-finder", time: "~18 min" },
-        { id: "pitch-generator", title: "Pitch Deck", desc: "Narrative optimised for your stage", path: "/app/launchpad/pitch-generator", time: "~22 min" },
-        { id: "nova/crm", title: "Sales Pipeline", desc: "Track every deal from prospect to close", path: "/app/nova/crm", time: "~5 min" },
+        {
+          id: "first-10-customers-finder",
+          title: "First 10 Customers",
+          desc: "Close your first paying customers",
+          path: "/app/launchpad/first-10-customers-finder",
+          time: "~18 min",
+        },
+        {
+          id: "pitch-generator",
+          title: "Pitch Deck",
+          desc: "Narrative optimised for your stage",
+          path: "/app/launchpad/pitch-generator",
+          time: "~22 min",
+        },
+        {
+          id: "nova/crm",
+          title: "Sales Pipeline",
+          desc: "Track every deal from prospect to close",
+          path: "/app/nova/crm",
+          time: "~5 min",
+        },
       ],
     },
     {
       phase: 2,
       title: "Build Momentum",
       modules: [
-        { id: "automations", title: "Lead Automations", desc: "Automate follow-up and outreach", path: "/app/automations", time: "~10 min" },
-        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Email, SMS and content campaigns", path: "/app/scale/campaigns", time: "~15 min" },
-        { id: "kpi-dashboard", title: "Revenue Metrics", desc: "Model your next 12 months", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
+        {
+          id: "automations",
+          title: "Lead Automations",
+          desc: "Automate follow-up and outreach",
+          path: "/app/automations",
+          time: "~10 min",
+        },
+        {
+          id: "scale/campaigns",
+          title: "Growth Campaigns",
+          desc: "Email, SMS and content campaigns",
+          path: "/app/scale/campaigns",
+          time: "~15 min",
+        },
+        {
+          id: "kpi-dashboard",
+          title: "Revenue Metrics",
+          desc: "Model your next 12 months",
+          path: "/app/launchpad/kpi-dashboard",
+          time: "~15 min",
+        },
       ],
     },
     {
       phase: 3,
       title: "Prepare to Scale",
       modules: [
-        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Score against investor criteria", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
-        { id: "investor-email-writer", title: "Investor Outreach", desc: "Personalised emails to target investors", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
-        { id: "scale", title: "Scale Systems", desc: "Campaign and automation infrastructure", path: "/app/scale", time: "~10 min" },
+        {
+          id: "funding-readiness-score",
+          title: "Funding Readiness",
+          desc: "Score against investor criteria",
+          path: "/app/launchpad/funding-readiness-score",
+          time: "~20 min",
+        },
+        {
+          id: "investor-email-writer",
+          title: "Investor Outreach",
+          desc: "Personalised emails to target investors",
+          path: "/app/launchpad/investor-email-writer",
+          time: "~15 min",
+        },
+        {
+          id: "scale",
+          title: "Scale Systems",
+          desc: "Campaign and automation infrastructure",
+          path: "/app/scale",
+          time: "~10 min",
+        },
       ],
     },
   ],
@@ -149,27 +311,81 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Systemise Operations",
       modules: [
-        { id: "automations", title: "CRM Automations", desc: "Automate every touchpoint", path: "/app/automations", time: "~10 min" },
-        { id: "scale/pipeline", title: "Pipeline", desc: "Keep deal momentum", path: "/app/scale/pipeline", time: "~5 min" },
-        { id: "kpi-dashboard", title: "KPI Dashboard", desc: "Revenue projections and metrics", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
+        {
+          id: "automations",
+          title: "CRM Automations",
+          desc: "Automate every touchpoint",
+          path: "/app/automations",
+          time: "~10 min",
+        },
+        {
+          id: "scale/pipeline",
+          title: "Pipeline",
+          desc: "Keep deal momentum",
+          path: "/app/scale/pipeline",
+          time: "~5 min",
+        },
+        {
+          id: "kpi-dashboard",
+          title: "KPI Dashboard",
+          desc: "Revenue projections and metrics",
+          path: "/app/launchpad/kpi-dashboard",
+          time: "~15 min",
+        },
       ],
     },
     {
       phase: 2,
       title: "Accelerate Growth",
       modules: [
-        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Multi-channel campaign execution", path: "/app/scale/campaigns", time: "~15 min" },
-        { id: "contacts", title: "Contact Expansion", desc: "Grow and segment your database", path: "/app/contacts", time: "~5 min" },
-        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Assess readiness to raise", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
+        {
+          id: "scale/campaigns",
+          title: "Growth Campaigns",
+          desc: "Multi-channel campaign execution",
+          path: "/app/scale/campaigns",
+          time: "~15 min",
+        },
+        {
+          id: "contacts",
+          title: "Contact Expansion",
+          desc: "Grow and segment your database",
+          path: "/app/contacts",
+          time: "~5 min",
+        },
+        {
+          id: "funding-readiness-score",
+          title: "Funding Readiness",
+          desc: "Assess readiness to raise",
+          path: "/app/launchpad/funding-readiness-score",
+          time: "~20 min",
+        },
       ],
     },
     {
       phase: 3,
       title: "Scale the Model",
       modules: [
-        { id: "investor-email-writer", title: "Investor Outreach", desc: "Target the right investors", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
-        { id: "scale", title: "Scale Infrastructure", desc: "Voice AI, SMS, full automation suite", path: "/app/scale", time: "~10 min" },
-        { id: "pitch-generator", title: "Series Pitch", desc: "Narrative for your next round", path: "/app/launchpad/pitch-generator", time: "~22 min" },
+        {
+          id: "investor-email-writer",
+          title: "Investor Outreach",
+          desc: "Target the right investors",
+          path: "/app/launchpad/investor-email-writer",
+          time: "~15 min",
+        },
+        {
+          id: "scale",
+          title: "Scale Infrastructure",
+          desc: "Voice AI, SMS, full automation suite",
+          path: "/app/scale",
+          time: "~10 min",
+        },
+        {
+          id: "pitch-generator",
+          title: "Series Pitch",
+          desc: "Narrative for your next round",
+          path: "/app/launchpad/pitch-generator",
+          time: "~22 min",
+        },
       ],
     },
   ],
@@ -178,35 +394,92 @@ const PLAYBOOK_DATA: Record<Stage, PlaybookPhase[]> = {
       phase: 1,
       title: "Secure Capital",
       modules: [
-        { id: "funding-readiness-score", title: "Funding Readiness", desc: "Score against top investor criteria", path: "/app/launchpad/funding-readiness-score", time: "~20 min" },
-        { id: "investor-email-writer", title: "Investor Emails", desc: "Personalised cold outreach", path: "/app/launchpad/investor-email-writer", time: "~15 min" },
-        { id: "pitch-generator", title: "Pitch Deck", desc: "Series-ready narrative", path: "/app/launchpad/pitch-generator", time: "~22 min" },
+        {
+          id: "funding-readiness-score",
+          title: "Funding Readiness",
+          desc: "Score against top investor criteria",
+          path: "/app/launchpad/funding-readiness-score",
+          time: "~20 min",
+        },
+        {
+          id: "investor-email-writer",
+          title: "Investor Emails",
+          desc: "Personalised cold outreach",
+          path: "/app/launchpad/investor-email-writer",
+          time: "~15 min",
+        },
+        {
+          id: "pitch-generator",
+          title: "Pitch Deck",
+          desc: "Series-ready narrative",
+          path: "/app/launchpad/pitch-generator",
+          time: "~22 min",
+        },
       ],
     },
     {
       phase: 2,
       title: "Scale Systems",
       modules: [
-        { id: "scale", title: "Scale Automations", desc: "Campaign, voice, and AI systems", path: "/app/scale", time: "~10 min" },
-        { id: "scale/campaigns", title: "Growth Campaigns", desc: "Multi-channel at scale", path: "/app/scale/campaigns", time: "~15 min" },
-        { id: "kpi-dashboard", title: "Growth Metrics", desc: "Track what compounds", path: "/app/launchpad/kpi-dashboard", time: "~15 min" },
+        {
+          id: "scale",
+          title: "Scale Automations",
+          desc: "Campaign, voice, and AI systems",
+          path: "/app/scale",
+          time: "~10 min",
+        },
+        {
+          id: "scale/campaigns",
+          title: "Growth Campaigns",
+          desc: "Multi-channel at scale",
+          path: "/app/scale/campaigns",
+          time: "~15 min",
+        },
+        {
+          id: "kpi-dashboard",
+          title: "Growth Metrics",
+          desc: "Track what compounds",
+          path: "/app/launchpad/kpi-dashboard",
+          time: "~15 min",
+        },
       ],
     },
     {
       phase: 3,
       title: "Optimise & Compound",
       modules: [
-        { id: "automations", title: "Advanced Automations", desc: "Full-stack workflow automation", path: "/app/automations", time: "~10 min" },
-        { id: "contacts", title: "Enterprise Pipeline", desc: "Segment and nurture at scale", path: "/app/contacts", time: "~5 min" },
-        { id: "nova/reports", title: "Business Intelligence", desc: "Deep analytics and insights", path: "/app/nova/reports", time: "~10 min" },
+        {
+          id: "automations",
+          title: "Advanced Automations",
+          desc: "Full-stack workflow automation",
+          path: "/app/automations",
+          time: "~10 min",
+        },
+        {
+          id: "contacts",
+          title: "Enterprise Pipeline",
+          desc: "Segment and nurture at scale",
+          path: "/app/contacts",
+          time: "~5 min",
+        },
+        {
+          id: "nova/reports",
+          title: "Business Intelligence",
+          desc: "Deep analytics and insights",
+          path: "/app/nova/reports",
+          time: "~10 min",
+        },
       ],
     },
   ],
 };
 
-const PRIORITY_ICONS: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
+const PRIORITY_ICONS: Record<
+  string,
+  React.ComponentType<{ size?: number; style?: React.CSSProperties }>
+> = {
   launchpad: Zap,
-  contacts:  Users,
+  contacts: Users,
   automations: Activity,
   playbook: BookOpen,
   growth: TrendingUp,
@@ -214,24 +487,31 @@ const PRIORITY_ICONS: Record<string, React.ComponentType<{ size?: number; style?
 };
 
 function getIconForPath(path: string) {
-  if (path.includes("launchpad"))  return Zap;
-  if (path.includes("contacts"))   return Users;
+  if (path.includes("launchpad")) return Zap;
+  if (path.includes("contacts")) return Users;
   if (path.includes("automation")) return Activity;
-  if (path.includes("playbook"))   return BookOpen;
-  if (path.includes("mentor"))     return TrendingUp;
+  if (path.includes("playbook")) return BookOpen;
+  if (path.includes("mentor")) return TrendingUp;
   return Settings;
 }
 
 function HealthRing({ score, color }: { score: number; color: string }) {
-  const R    = 44;
+  const R = 44;
   const CIRC = 2 * Math.PI * R;
   const offset = CIRC * (1 - score / 100);
   return (
     <div className="relative flex items-center justify-center" style={{ width: 108, height: 108 }}>
-      <svg width="108" height="108" viewBox="0 0 108 108" style={{ position: "absolute", inset: 0 }}>
+      <svg
+        width="108"
+        height="108"
+        viewBox="0 0 108 108"
+        style={{ position: "absolute", inset: 0 }}
+      >
         <circle cx="54" cy="54" r={R} fill="none" stroke="var(--border)" strokeWidth="5" />
         <circle
-          cx="54" cy="54" r={R}
+          cx="54"
+          cy="54"
+          r={R}
           fill="none"
           stroke={color}
           strokeWidth="5"
@@ -275,9 +555,7 @@ function HealthRing({ score, color }: { score: number; color: string }) {
   );
 }
 
-function StageMapNode({
-  name, idx, stageIdx,
-}: { name: string; idx: number; stageIdx: number }) {
+function StageMapNode({ name, idx, stageIdx }: { name: string; idx: number; stageIdx: number }) {
   const isCurrent = idx === stageIdx;
   const isDone = idx < stageIdx;
   return (
@@ -287,7 +565,8 @@ function StageMapNode({
           <span
             className="absolute rounded-full"
             style={{
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               background: "var(--primary)",
               opacity: 0.18,
               animation: "nova-mid-pulse 2s ease-in-out infinite",
@@ -304,16 +583,20 @@ function StageMapNode({
               : isCurrent
                 ? "var(--primary)"
                 : "var(--surface-2)",
-            border: isDone || isCurrent
-              ? "2px solid var(--primary)"
-              : "2px solid var(--border)",
+            border: isDone || isCurrent ? "2px solid var(--primary)" : "2px solid var(--border)",
             transition: "all 0.2s ease",
             flexShrink: 0,
           }}
         >
           {isDone && (
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M2 5l2.5 2.5L8 3"
+                stroke="#fff"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </div>
@@ -342,29 +625,33 @@ function Dashboard() {
   const { user, profile, currentOrgId } = useAuth();
   useWorkspace();
 
-  const orgQ  = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const autoQ  = useQuery({ ...automationSettingsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const autoQ = useQuery({
+    ...automationSettingsQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
 
-  const name       = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const org        = orgQ.data;
-  const stage      = (org?.stage as Stage) ?? "Idea";
-  const stageIdx   = STAGES.indexOf(stage);
-  const runCount   = runsQ.data?.length ?? 0;
-  const leadCount  = leadsQ.data?.length ?? 0;
+  const name = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const org = orgQ.data;
+  const stage = (org?.stage as Stage) ?? "Idea";
+  const stageIdx = STAGES.indexOf(stage);
+  const runCount = runsQ.data?.length ?? 0;
+  const leadCount = leadsQ.data?.length ?? 0;
   const activeAuto =
-    (autoQ.data as Array<{ status?: string }> | null)?.filter((a) => a.status === "active").length ?? 0;
+    (autoQ.data as Array<{ status?: string }> | null)?.filter((a) => a.status === "active")
+      .length ?? 0;
 
-  const score                = healthScore(runCount, leadCount, activeAuto, stageIdx);
+  const score = healthScore(runCount, leadCount, activeAuto, stageIdx);
   const { text: scoreText, color: scoreColor } = scoreLabel(score);
-  const novaLearnedCount     = runCount * 3;
+  const novaLearnedCount = runCount * 3;
 
   const runKeys = new Set(
     (runsQ.data ?? []).map((r: Record<string, unknown>) => r.tool_key as string),
   );
 
-  const phases       = PLAYBOOK_DATA[stage];
+  const phases = PLAYBOOK_DATA[stage];
   const activePhaseIdx = Math.max(
     0,
     Math.min(
@@ -393,15 +680,40 @@ function Dashboard() {
   };
   const improvements: Improvement[] = [];
   if (runCount === 0)
-    improvements.push({ Icon: Zap, text: "I need you to run your first Launchpad tool to start building your foundation.", path: "/app/launchpad/", time: "~15 min" });
+    improvements.push({
+      Icon: Zap,
+      text: "I need you to run your first Launchpad tool to start building your foundation.",
+      path: "/app/launchpad/",
+      time: "~15 min",
+    });
   if (leadCount === 0)
-    improvements.push({ Icon: Users, text: "I need you to add your first contact. Revenue starts with a name in your pipeline.", path: "/app/contacts", time: "~5 min" });
+    improvements.push({
+      Icon: Users,
+      text: "I need you to add your first contact. Revenue starts with a name in your pipeline.",
+      path: "/app/contacts",
+      time: "~5 min",
+    });
   if (activeAuto === 0)
-    improvements.push({ Icon: Activity, text: "I need you to activate an automation so no lead falls through the cracks.", path: "/app/automations", time: "~10 min" });
+    improvements.push({
+      Icon: Activity,
+      text: "I need you to activate an automation so no lead falls through the cracks.",
+      path: "/app/automations",
+      time: "~10 min",
+    });
   if (improvements.length < 3)
-    improvements.push({ Icon: TrendingUp, text: "I need you to brief your Growth Commander on your acquisition strategy.", path: "/app/mentor", time: "~20 min" });
+    improvements.push({
+      Icon: TrendingUp,
+      text: "I need you to brief your Growth Commander on your acquisition strategy.",
+      path: "/app/mentor",
+      time: "~20 min",
+    });
   if (improvements.length < 3)
-    improvements.push({ Icon: BarChart3, text: "I need you to run the KPI Dashboard so we have a single source of truth.", path: "/app/launchpad/kpi-dashboard", time: "~15 min" });
+    improvements.push({
+      Icon: BarChart3,
+      text: "I need you to run the KPI Dashboard so we have a single source of truth.",
+      path: "/app/launchpad/kpi-dashboard",
+      time: "~15 min",
+    });
 
   const mood: "active" | "thinking" | "alert" =
     score >= 70 ? "active" : score >= 40 ? "thinking" : "alert";
@@ -410,7 +722,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
-
       {/* ── Section 1: Nova Brief ── */}
       <div
         className="rounded-xl p-5 flex gap-5 items-start"
@@ -498,7 +809,11 @@ function Dashboard() {
         {/* Health Score — col-span-2 */}
         <div
           className="md:col-span-2 rounded-xl p-5 flex items-center gap-5"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
         >
           <HealthRing score={score} color={scoreColor} />
           <div>
@@ -544,7 +859,11 @@ function Dashboard() {
         <Link
           to="/app/contacts"
           className="rounded-xl p-4 group transition-all"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
             (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
@@ -554,13 +873,38 @@ function Dashboard() {
             (e.currentTarget as HTMLElement).style.background = "var(--surface)";
           }}
         >
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: "8px" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--muted-foreground)",
+              marginBottom: "8px",
+            }}
+          >
             Contacts
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "28px",
+              fontWeight: 700,
+              color: "var(--foreground)",
+              lineHeight: 1,
+            }}
+          >
             {leadCount}
           </div>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--muted-foreground)", marginTop: "4px" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "12px",
+              color: "var(--muted-foreground)",
+              marginTop: "4px",
+            }}
+          >
             {leadCount === 0 ? "None yet" : "in pipeline"}
           </div>
         </Link>
@@ -569,7 +913,11 @@ function Dashboard() {
         <Link
           to="/app/launchpad/"
           className="rounded-xl p-4 group transition-all"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
             (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
@@ -579,13 +927,38 @@ function Dashboard() {
             (e.currentTarget as HTMLElement).style.background = "var(--surface)";
           }}
         >
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: "8px" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--muted-foreground)",
+              marginBottom: "8px",
+            }}
+          >
             Tools Run
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "28px",
+              fontWeight: 700,
+              color: "var(--foreground)",
+              lineHeight: 1,
+            }}
+          >
             {runCount}
           </div>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: "12px", color: "var(--muted-foreground)", marginTop: "4px" }}>
+          <div
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "12px",
+              color: "var(--muted-foreground)",
+              marginTop: "4px",
+            }}
+          >
             {runCount === 0 ? "None yet" : "executions"}
           </div>
         </Link>
@@ -594,7 +967,11 @@ function Dashboard() {
       {/* ── Section 3: Stage Map ── */}
       <div
         className="rounded-xl p-5"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
       >
         <div
           style={{
@@ -665,11 +1042,14 @@ function Dashboard() {
 
       {/* ── Main grid: Playbook + Improvements ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
         {/* ── Section 4: Active Playbook Phase ── */}
         <div
           className="lg:col-span-2 rounded-xl p-5"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -709,8 +1089,12 @@ function Dashboard() {
                 color: "var(--primary)",
                 border: "1px solid var(--border)",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--surface-offset)")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = "var(--surface-offset)")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = "transparent")
+              }
             >
               Full Launchpad
               <ArrowRight style={{ width: 12, height: 12 }} />
@@ -727,7 +1111,11 @@ function Dashboard() {
                   to={mod.path as never}
                   className="flex items-center gap-3 rounded-xl p-3.5 transition-all group"
                   style={{
-                    background: isRecommended ? "var(--primary-soft)" : done ? "transparent" : "var(--surface-offset)",
+                    background: isRecommended
+                      ? "var(--primary-soft)"
+                      : done
+                        ? "transparent"
+                        : "var(--surface-offset)",
                     border: isRecommended
                       ? "1px solid var(--primary-border)"
                       : done
@@ -843,7 +1231,11 @@ function Dashboard() {
         {/* ── Section 5: What to Improve ── */}
         <div
           className="rounded-xl p-5 flex flex-col gap-3"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
         >
           <div
             style={{

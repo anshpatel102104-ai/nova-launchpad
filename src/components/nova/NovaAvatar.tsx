@@ -9,32 +9,35 @@ interface NovaAvatarProps {
 const SIZES = { sm: 24, md: 40, lg: 56, xl: 96 };
 
 const MOOD_COLOR: Record<NovaAvatarMood, string> = {
-  active:   "#16A34A",
+  active: "#16A34A",
   thinking: "#D97706",
-  alert:    "#E8530A",
-  idle:     "#A89F97",
+  alert: "#E8530A",
+  idle: "#A89F97",
 };
 
 export function NovaAvatar({ size = "md", mood = "active", className }: NovaAvatarProps) {
   const px = SIZES[size];
   const cx = px / 2;
 
-  const outerR    = px * 0.46;
-  const midR      = px * 0.35;
-  const coreR     = px * 0.24;
-  const eyeR      = coreR * 0.18;
-  const eyeOffX   = coreR * 0.30;
-  const eyeY      = cx - coreR * 0.06;
-  const moodDotR  = coreR * 0.16;
-  const moodDotY  = cx + coreR * 0.40;
+  const outerR = px * 0.46;
+  const midR = px * 0.35;
+  const coreR = px * 0.24;
+  const eyeR = coreR * 0.18;
+  const eyeOffX = coreR * 0.3;
+  const eyeY = cx - coreR * 0.06;
+  const moodDotR = coreR * 0.16;
+  const moodDotY = cx + coreR * 0.4;
 
   const moodColor = MOOD_COLOR[mood];
 
   const moodAnim =
-    mood === "active"   ? { animation: "nova-mood-pulse 2s ease-in-out infinite" } :
-    mood === "alert"    ? { animation: "nova-mood-fast 0.9s ease-in-out infinite" } :
-    mood === "thinking" ? undefined :
-    undefined;
+    mood === "active"
+      ? { animation: "nova-mood-pulse 2s ease-in-out infinite" }
+      : mood === "alert"
+        ? { animation: "nova-mood-fast 0.9s ease-in-out infinite" }
+        : mood === "thinking"
+          ? undefined
+          : undefined;
 
   const uid = `nova-${size}-${mood}`;
 
@@ -54,7 +57,13 @@ export function NovaAvatar({ size = "md", mood = "active", className }: NovaAvat
           <stop offset="100%" stopColor="#B33A06" />
         </radialGradient>
         <filter id={`${uid}-shadow`} x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="0" stdDeviation={px * 0.07} floodColor="#E8530A" floodOpacity="0.45" />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation={px * 0.07}
+            floodColor="#E8530A"
+            floodOpacity="0.45"
+          />
         </filter>
         <filter id={`${uid}-dark-glow`} x="-100%" y="-100%" width="300%" height="300%">
           <feGaussianBlur stdDeviation={px * 0.12} result="blur" />
@@ -94,13 +103,7 @@ export function NovaAvatar({ size = "md", mood = "active", className }: NovaAvat
       />
 
       {/* Core orb */}
-      <circle
-        cx={cx}
-        cy={cx}
-        r={coreR}
-        fill={`url(#${uid}-core)`}
-        filter={`url(#${uid}-shadow)`}
-      />
+      <circle cx={cx} cy={cx} r={coreR} fill={`url(#${uid}-core)`} filter={`url(#${uid}-shadow)`} />
 
       {/* Eyes — blink every 4s */}
       <circle
@@ -126,13 +129,7 @@ export function NovaAvatar({ size = "md", mood = "active", className }: NovaAvat
       />
 
       {/* Mood indicator dot */}
-      <circle
-        cx={cx}
-        cy={moodDotY}
-        r={moodDotR}
-        fill={moodColor}
-        style={moodAnim}
-      />
+      <circle cx={cx} cy={moodDotY} r={moodDotR} fill={moodColor} style={moodAnim} />
     </svg>
   );
 }

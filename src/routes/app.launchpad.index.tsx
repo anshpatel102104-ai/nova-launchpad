@@ -4,27 +4,35 @@ import { useQuery } from "@tanstack/react-query";
 import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery, organizationQuery, leadsQuery } from "@/lib/queries";
-import { Lock, Search, History, ChevronRight, Check, MessageSquare, ArrowRight } from "lucide-react";
+import {
+  Lock,
+  Search,
+  History,
+  ChevronRight,
+  Check,
+  MessageSquare,
+  ArrowRight,
+} from "lucide-react";
 import { useOwnerMode } from "@/lib/ownerMode";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
 
 const STAGE_TABS = [
-  { key: "all",     label: "All" },
+  { key: "all", label: "All" },
   { key: "validate", label: "Validate" },
-  { key: "plan",    label: "Plan" },
+  { key: "plan", label: "Plan" },
   { key: "customers", label: "Launch" },
-  { key: "launch",  label: "Scale" },
+  { key: "launch", label: "Scale" },
   { key: "funding", label: "Funding" },
 ] as const;
 
 const CATEGORY_META: Record<string, { label: string; desc: string }> = {
-  validate:  { label: "Validate & Research", desc: "Test your idea before you build" },
-  plan:      { label: "Plan & Strategy", desc: "Map the path to product-market fit" },
+  validate: { label: "Validate & Research", desc: "Test your idea before you build" },
+  plan: { label: "Plan & Strategy", desc: "Map the path to product-market fit" },
   customers: { label: "Launch & Acquire", desc: "Get your first customers" },
-  launch:    { label: "Launch & Scale", desc: "Accelerate what's working" },
-  funding:   { label: "Funding", desc: "Raise from investors" },
+  launch: { label: "Launch & Scale", desc: "Accelerate what's working" },
+  funding: { label: "Funding", desc: "Raise from investors" },
 };
 
 const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
@@ -64,7 +72,7 @@ function LaunchpadOverview() {
   const { currentOrgId } = useAuth();
   const isOwner = useOwnerMode();
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
-  const orgQ  = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
 
   const runsByTool = useMemo(() => {
@@ -73,8 +81,8 @@ function LaunchpadOverview() {
     return map;
   }, [runsQ.data]);
 
-  const [search, setSearch]           = useState("");
-  const [activeTab, setActiveTab]     = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("all");
   const [novaSidebarOpen, setNovaSidebarOpen] = useState(true);
 
   const allTools = LAUNCHPAD_TOOLS;
@@ -96,13 +104,14 @@ function LaunchpadOverview() {
     [runsByTool, allTools],
   );
 
-  const stage     = (orgQ.data?.stage as string) ?? "Idea";
-  const runCount  = runsQ.data?.length ?? 0;
+  const stage = (orgQ.data?.stage as string) ?? "Idea";
+  const runCount = runsQ.data?.length ?? 0;
   const leadCount = leadsQ.data?.length ?? 0;
 
-  const novaAnalysis = runCount === 0
-    ? `You're at ${stage} stage with no tools run yet. I recommend starting with Idea Validation — it scores your concept across 8 critical dimensions and sets the direction for everything that follows.`
-    : `You've completed ${totalCompleted} of ${allTools.length} tools at ${stage} stage. ${leadCount > 0 ? `Your ${leadCount} contacts give me signal to refine your GTM recommendations.` : "Adding contacts to your pipeline will help me personalise your execution path."}`;
+  const novaAnalysis =
+    runCount === 0
+      ? `You're at ${stage} stage with no tools run yet. I recommend starting with Idea Validation — it scores your concept across 8 critical dimensions and sets the direction for everything that follows.`
+      : `You've completed ${totalCompleted} of ${allTools.length} tools at ${stage} stage. ${leadCount > 0 ? `Your ${leadCount} contacts give me signal to refine your GTM recommendations.` : "Adding contacts to your pipeline will help me personalise your execution path."}`;
 
   const novaMood: "active" | "thinking" | "alert" =
     runCount >= 5 ? "active" : runCount >= 1 ? "thinking" : "alert";
@@ -111,15 +120,14 @@ function LaunchpadOverview() {
 
   // Group by category (only when not filtering)
   const showCategorised = activeTab === "all" && !search;
-  const categories = Object.keys(CATEGORY_META).filter(
-    (cat) => filtered.some((t) => t.category === cat),
+  const categories = Object.keys(CATEGORY_META).filter((cat) =>
+    filtered.some((t) => t.category === cat),
   );
 
   return (
     <div className="flex gap-5 items-start">
       {/* ── Main content ── */}
       <div className="flex-1 min-w-0 space-y-5">
-
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -206,7 +214,8 @@ function LaunchpadOverview() {
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                borderBottom: activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
+                borderBottom:
+                  activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
                 marginBottom: "-1px",
               }}
             >
@@ -256,7 +265,9 @@ function LaunchpadOverview() {
             className="rounded-xl p-12 text-center"
             style={{ border: "1px dashed var(--border)", color: "var(--muted-foreground)" }}
           >
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>No tools match your search.</p>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>
+              No tools match your search.
+            </p>
           </div>
         ) : showCategorised ? (
           <div className="space-y-8">
@@ -280,7 +291,13 @@ function LaunchpadOverview() {
                       {meta.label}
                     </span>
                     <div className="flex-1 h-px" style={{ background: "var(--divider)" }} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-faint)" }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "10px",
+                        color: "var(--text-faint)",
+                      }}
+                    >
                       {catTools.length}
                     </span>
                   </div>
@@ -338,10 +355,24 @@ function LaunchpadOverview() {
           <div className="flex items-center gap-2.5">
             <NovaAvatar size="md" mood={novaMood} />
             <div>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 700, color: "var(--foreground)" }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: "var(--foreground)",
+                }}
+              >
                 Nova
               </p>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--primary)", letterSpacing: "0.06em" }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "10px",
+                  color: "var(--primary)",
+                  letterSpacing: "0.06em",
+                }}
+              >
                 LAUNCHPAD GUIDE
               </p>
             </div>
@@ -418,8 +449,12 @@ function LaunchpadOverview() {
               background: "transparent",
               marginTop: "auto",
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
           >
             Open full chat
             <ArrowRight style={{ width: 13, height: 13 }} />
@@ -432,7 +467,14 @@ function LaunchpadOverview() {
 
 /* ── Tool Card ── */
 function ToolCard({
-  slug, name, description, available, runCount, estimatedMinutes, icon: Icon, isRecommended,
+  slug,
+  name,
+  description,
+  available,
+  runCount,
+  estimatedMinutes,
+  icon: Icon,
+  isRecommended,
 }: {
   slug: string;
   name: string;

@@ -69,13 +69,13 @@ export const Route = createFileRoute("/app/mentor")({ component: MentorPage });
 
 /* ─────────────────────────── BRAND TOKENS ─────────────────────────── */
 const C = {
-  blue:   "#3b82f6",
+  blue: "#3b82f6",
   violet: "#8b5cf6",
-  cyan:   "#06b6d4",
+  cyan: "#06b6d4",
   orange: "#E8530A",
-  green:  "#16a34a",
-  amber:  "#d97706",
-  red:    "#dc2626",
+  green: "#16a34a",
+  amber: "#d97706",
+  red: "#dc2626",
 } as const;
 
 /* ─────────────────────────── AGENT DEFINITIONS ─────────────────────── */
@@ -300,10 +300,11 @@ function OrbitalCanvas() {
 
       ctx.clearRect(0, 0, W, H);
 
-      const isDark = document.documentElement.classList.contains("dark") ||
-        (!document.documentElement.classList.contains("light"));
+      const isDark =
+        document.documentElement.classList.contains("dark") ||
+        !document.documentElement.classList.contains("light");
       const starAlpha = isDark ? 1 : 0.35;
-      const orbColor  = isDark ? "232,83,10" : "232,83,10";
+      const orbColor = isDark ? "232,83,10" : "232,83,10";
       const ringAlpha = isDark ? 0.07 : 0.05;
 
       STARS.forEach((s) => {
@@ -730,7 +731,10 @@ function MissionBriefPanel({
     <>
       <div
         className="fixed inset-0 z-40"
-        style={{ background: "color-mix(in oklab, var(--background) 65%, transparent)", backdropFilter: "blur(3px)" }}
+        style={{
+          background: "color-mix(in oklab, var(--background) 65%, transparent)",
+          backdropFilter: "blur(3px)",
+        }}
         onClick={onClose}
       />
       <div
@@ -1118,7 +1122,10 @@ function CommandCenter({
     <>
       <div
         className="fixed inset-0 z-40"
-        style={{ background: "color-mix(in oklab, var(--background) 85%, transparent)", backdropFilter: "blur(8px)" }}
+        style={{
+          background: "color-mix(in oklab, var(--background) 85%, transparent)",
+          backdropFilter: "blur(8px)",
+        }}
         onClick={onClose}
       />
       <div
@@ -1629,7 +1636,8 @@ function MentorPage() {
                     color: "var(--primary)",
                   }}
                 >
-                  MISSION CONTROL · {profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "COMMANDER"}
+                  MISSION CONTROL ·{" "}
+                  {profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "COMMANDER"}
                 </span>
                 <span
                   className="inline-flex items-center gap-1.5 mt-0.5"
@@ -1655,7 +1663,8 @@ function MentorPage() {
               Business Mission Control
             </h1>
             <p style={{ fontSize: "13px", color: "var(--muted-foreground)", lineHeight: 1.6 }}>
-              {liveAgents.length} AI specialists monitoring your business. {allInsights.length} signals loaded.
+              {liveAgents.length} AI specialists monitoring your business. {allInsights.length}{" "}
+              signals loaded.
             </p>
           </div>
 
@@ -1677,7 +1686,11 @@ function MentorPage() {
                 >
                   <div
                     className="font-mono"
-                    style={{ fontSize: "8px", color: "var(--muted-foreground)", letterSpacing: "0.1em" }}
+                    style={{
+                      fontSize: "8px",
+                      color: "var(--muted-foreground)",
+                      letterSpacing: "0.1em",
+                    }}
                   >
                     {label}
                   </div>
@@ -2007,10 +2020,7 @@ function MentorPage() {
               ))}
             </div>
           </div>
-          <ul
-            className="divide-y flex-1 overflow-y-auto"
-            style={{ borderColor: "var(--divider)" }}
-          >
+          <ul className="divide-y flex-1 overflow-y-auto" style={{ borderColor: "var(--divider)" }}>
             {filteredInsights.length === 0 ? (
               <li className="flex flex-col items-center justify-center px-5 py-10 text-center">
                 <Activity className="h-6 w-6 mb-3" style={{ color: "var(--text-faint)" }} />

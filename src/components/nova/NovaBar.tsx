@@ -61,8 +61,7 @@ export function NovaBar() {
   const leads = leadsQ.data?.length ?? 0;
   const score = computeScore(runs, leads, Math.max(0, stageIdx));
 
-  const mood: NovaMood =
-    score >= 70 ? "active" : score >= 40 ? "thinking" : "alert";
+  const mood: NovaMood = score >= 70 ? "active" : score >= 40 ? "thinking" : "alert";
 
   const isLoading = orgQ.isLoading && runsQ.isLoading;
   const directive = isLoading
