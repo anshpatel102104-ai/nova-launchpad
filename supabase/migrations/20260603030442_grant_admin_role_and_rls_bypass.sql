@@ -14,10 +14,13 @@ AS $$
   );
 $$;
 
--- Grant ansh.patel102104@gmail.com the admin role
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('00fc0b23-4126-4a7d-8088-a04f310b6e67', 'admin')
-ON CONFLICT DO NOTHING;
+-- Grant ansh.patel102104@gmail.com the admin role (no-op on preview branches where this user doesn't exist)
+DO $$ BEGIN
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES ('00fc0b23-4126-4a7d-8088-a04f310b6e67', 'admin')
+  ON CONFLICT DO NOTHING;
+EXCEPTION WHEN foreign_key_violation THEN NULL;
+END $$;
 
 -- Admin SELECT bypass policies
 -- These are permissive (OR'd with existing policies) — existing user-scoped access is unchanged
