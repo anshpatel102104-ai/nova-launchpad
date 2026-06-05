@@ -103,8 +103,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const data = await resp.json();
-    const suggestion =
-      data.content?.[0]?.type === "text" ? (data.content[0].text as string) : null;
+    const suggestion = data.content?.[0]?.type === "text" ? (data.content[0].text as string) : null;
 
     if (!suggestion) continue;
 

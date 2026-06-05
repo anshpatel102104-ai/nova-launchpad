@@ -709,11 +709,7 @@ function MemoryPage() {
                     queryMutation.mutate({ query: queryText, orgId: currentOrgId });
                   }
                 }}
-                disabled={
-                  indexedSources.length === 0 ||
-                  !queryText.trim() ||
-                  queryMutation.isPending
-                }
+                disabled={indexedSources.length === 0 || !queryText.trim() || queryMutation.isPending}
                 className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12.5px] font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary)" }}
                 onMouseEnter={(e) => {
@@ -727,7 +723,9 @@ function MemoryPage() {
                 {queryMutation.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <>Ask <ChevronRight className="h-3.5 w-3.5" /></>
+                  <>
+                    Ask <ChevronRight className="h-3.5 w-3.5" />
+                  </>
                 )}
               </button>
             </div>
@@ -789,10 +787,7 @@ function MemoryPage() {
             >
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
-                <span
-                  className="text-[13px] font-semibold"
-                  style={{ color: "var(--foreground)" }}
-                >
+                <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
                   Answer
                 </span>
               </div>

@@ -19,11 +19,9 @@ Deno.serve(async (req: Request) => {
   const auth = req.headers.get("Authorization");
   if (!auth) return jsonResponse({ error: "Missing auth" }, 401);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: auth } } },
-  );
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: auth } },
+  });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData?.user) return jsonResponse({ error: "Invalid token" }, 401);
@@ -40,7 +38,7 @@ Deno.serve(async (req: Request) => {
   if (!orgId) return jsonResponse({ error: "orgId is required" }, 400);
 
   // Fetch indexed memory artifacts for this org
-  // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any;
   const { data: artifacts, error: artifactsErr } = await db
     .from("memory_artifacts")
@@ -59,8 +57,7 @@ Deno.serve(async (req: Request) => {
 
   if (docs.length === 0) {
     return jsonResponse({
-      answer:
-        "No indexed content found. Add and index sources on the Sources tab before querying.",
+      answer: "No indexed content found. Add and index sources on the Sources tab before querying.",
       sources_searched: 0,
     });
   }
