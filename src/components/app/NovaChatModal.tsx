@@ -16,13 +16,30 @@ type Message = {
   pending?: boolean;
 };
 
-const QUICK_PROMPTS = [
+const QUICK_PROMPTS_BASE = [
   "What should I work on next?",
-  "Analyse my startup progress",
-  "What's my highest-leverage move?",
+  "What's my highest-leverage move right now?",
   "How do I get my first 10 customers?",
-  "Show me the AI tool suite",
+  "What's the biggest risk to my idea?",
+  "Build me a 30-day action plan",
 ];
+
+function buildQuickPrompts(idea: string | null, stage: string, toolRunCount: number): string[] {
+  const prompts: string[] = [];
+  if (idea) prompts.push(`What's the #1 thing I should do today for ${idea.split(" ").slice(0, 4).join(" ")}?`);
+  if (stage === "Validate" || toolRunCount < 3) {
+    prompts.push("Have I validated this idea enough to move forward?");
+    prompts.push("What assumptions am I making that could kill this?");
+  } else if (stage === "Plan") {
+    prompts.push("What's missing from my go-to-market plan?");
+    prompts.push("How do I price this to maximize early conversions?");
+  } else {
+    prompts.push("How do I get my first 10 customers this week?");
+    prompts.push("What should I automate first?");
+  }
+  prompts.push("What's my highest-leverage move right now?");
+  return prompts.slice(0, 5);
+}
 
 const BOOT_LINES = [
   "NOVA CORE INITIALIZING...",
@@ -251,8 +268,24 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          messages: updatedHistory.map((m) => ({ role: m.role, content: m.content })),
-          context,
+          message: trimmed,
+          conversation_history: updatedHistory
+            .slice(0, -1) // exclude the message we just added
+            .map((m) => ({ role: m.role, content: m.content })),
+          user_context: {
+            ...(profile.full_name ? { name: profile.full_name } : {}),
+            ...(currentIdea ? { idea: currentIdea } : {}),
+            ...(currentChallenge ? { challenge: currentChallenge } : {}),
+            ...(stage ? { stage } : {}),
+            ...(lane ? { lane } : {}),
+            ...(planTier ? { plan: planTier } : {}),
+            ...(currentMission ? { current_mission: currentMission } : {}),
+            ...(toolRunCount > 0 ? { tools_completed: String(toolRunCount) } : {}),
+            ...(recentRuns.length > 0
+              ? { recent_tools: recentRuns.map((r) => r.toolKey).filter(Boolean).join(", ") }
+              : {}),
+          },
+          org_id: (ctxAny.organization_id as string) || undefined,
         }),
         signal: abort.signal,
       });
@@ -325,21 +358,21 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
     }
   };
 
-  // Extract telemetry from workspace context
-  const ctxAny = context as Record<string, unknown> & {
-    name?: string;
-    plan?: string;
-    idea?: string;
-    mission?: string;
-    recentToolRuns?: Array<{ toolKey?: string; tool?: string }>;
-    toolRunCount?: number;
-  };
-  const displayName = ctxAny.name || user?.email?.split("@")[0] || "Founder";
+  // Extract telemetry from workspace context — field paths match buildAgentContext output
+  const ctxAny = context as Record<string, unknown>;
+  const profile = (ctxAny.profile as { full_name?: string; idea?: string; challenge?: string }) ?? {};
+  const currentMissionObj = (ctxAny.current_mission as { title?: string; id?: string }) ?? {};
+  const recentRunsRaw = (ctxAny.recent_tool_runs as Array<{ tool_key?: string; status?: string }>) ?? [];
+
+  const displayName = profile.full_name || (ctxAny.name as string) || user?.email?.split("@")[0] || "Founder";
   const planTier = (ctxAny.plan as string) || "starter";
-  const currentIdea = (ctxAny.idea as string) || null;
-  const currentMission = (ctxAny.mission as string) || null;
-  const recentRuns = (ctxAny.recentToolRuns as Array<{ toolKey?: string; tool?: string }>) || [];
-  const toolRunCount = (ctxAny.toolRunCount as number) || 0;
+  const currentIdea = profile.idea?.trim() || null;
+  const currentChallenge = profile.challenge?.trim() || null;
+  const currentMission = currentMissionObj.title || null;
+  const stage = (ctxAny.stage as string) || "Validate";
+  const lane = (ctxAny.lane as string) || "Idea";
+  const recentRuns = recentRunsRaw.map((r) => ({ toolKey: r.tool_key, status: r.status }));
+  const toolRunCount = recentRuns.length;
 
   if (typeof window === "undefined") return null;
 
@@ -699,7 +732,14 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
               }}
             >
               {messages.length === 0 && (
-                <EmptyState displayName={displayName} onSend={sendMessage} />
+                <EmptyState
+                  displayName={displayName}
+                  idea={currentIdea}
+                  stage={stage}
+                  toolRunCount={toolRunCount}
+                  recentRuns={recentRuns}
+                  onSend={sendMessage}
+                />
               )}
 
               {messages.map((msg) => (
@@ -968,11 +1008,22 @@ function TelemetryRow({
 
 function EmptyState({
   displayName,
+  idea,
+  stage,
+  toolRunCount,
+  recentRuns,
   onSend,
 }: {
   displayName: string;
+  idea: string | null;
+  stage: string;
+  toolRunCount: number;
+  recentRuns: Array<{ toolKey?: string; status?: string }>;
   onSend: (text: string) => void;
 }) {
+  const quickPrompts = buildQuickPrompts(idea, stage, toolRunCount);
+  const lastTool = recentRuns[0]?.toolKey?.replace(/-/g, " ") || null;
+
   return (
     <div
       style={{
@@ -981,27 +1032,62 @@ function EmptyState({
         alignItems: "center",
         justifyContent: "center",
         minHeight: 240,
-        gap: 24,
+        gap: 20,
         padding: "0 20px",
       }}
     >
       <div style={{ textAlign: "center" }}>
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: "#fff",
-            marginBottom: 8,
-          }}
-        >
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
           Good to see you, {displayName}.
         </div>
-        <div style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6 }}>
-          I have full visibility into your workspace.
-          <br />
-          What's the mission today?
-        </div>
+        {idea ? (
+          <div style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.7 }}>
+            Building: <span style={{ color: "#F97316", fontWeight: 500 }}>{idea}</span>
+            <br />
+            {toolRunCount > 0
+              ? `${toolRunCount} tool${toolRunCount !== 1 ? "s" : ""} completed${lastTool ? ` — last ran ${lastTool}` : ""}.`
+              : "No tools run yet — let's get started."}
+          </div>
+        ) : (
+          <div style={{ fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6 }}>
+            I have full visibility into your workspace.
+            <br />
+            What's the mission today?
+          </div>
+        )}
       </div>
+
+      {/* Stage badge */}
+      {stage && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 12px",
+            borderRadius: 20,
+            border: "1px solid rgba(249,115,22,0.25)",
+            background: "rgba(249,115,22,0.06)",
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#F97316",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: "#F97316",
+              display: "inline-block",
+            }}
+          />
+          {stage} stage
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
@@ -1011,7 +1097,7 @@ function EmptyState({
           maxWidth: 480,
         }}
       >
-        {QUICK_PROMPTS.map((p) => (
+        {quickPrompts.map((p) => (
           <button
             key={p}
             onClick={() => onSend(p)}

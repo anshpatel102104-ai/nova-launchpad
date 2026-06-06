@@ -96,29 +96,40 @@ Deno.serve(async (req: Request) => {
 
   const { message, conversation_history = [], user_context = {}, session_id, org_id } = body;
 
-  // Fetch org context if not provided
-  let contextStr = "";
+  // Build rich personalised context block
+  let contextLines: string[] = [];
+
   if (Object.keys(user_context).length > 0) {
-    contextStr = Object.entries(user_context)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("\n");
+    // Structured context sent from the frontend (preferred)
+    const { name, idea, challenge, stage, lane, plan, current_mission, tools_completed, recent_tools } = user_context as Record<string, string>;
+    if (name) contextLines.push(`Founder name: ${name}`);
+    if (idea) contextLines.push(`What they're building: ${idea}`);
+    if (challenge) contextLines.push(`Biggest challenge: ${challenge}`);
+    if (stage) contextLines.push(`Current stage: ${stage}`);
+    if (lane) contextLines.push(`Lane: ${lane}`);
+    if (plan) contextLines.push(`Plan tier: ${plan}`);
+    if (current_mission) contextLines.push(`Active mission: ${current_mission}`);
+    if (tools_completed) contextLines.push(`Launchpad tools completed: ${tools_completed}`);
+    if (recent_tools) contextLines.push(`Recently used tools: ${recent_tools}`);
   } else if (org_id) {
+    // Fallback: pull from organizations table
     const { data: org } = await supabase
       .from("organizations")
       .select("name, niche, stage, target_customer, offer, goal")
       .eq("id", org_id)
       .maybeSingle();
     if (org) {
-      contextStr = Object.entries(org)
+      contextLines = Object.entries(org as Record<string, unknown>)
         .filter(([, v]) => v)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join("\n");
+        .map(([k, v]) => `${k}: ${v}`);
     }
   }
 
-  const systemPrompt = contextStr
-    ? `${NOVA_SYSTEM_PROMPT}\n\n## User Business Context\n${contextStr}`
-    : NOVA_SYSTEM_PROMPT;
+  const contextBlock = contextLines.length > 0
+    ? `\n\n## This Founder's Context\nAddress them by name if provided. Reference their idea and stage naturally — not robotically. Tailor every response to where they actually are.\n\n${contextLines.join("\n")}`
+    : "";
+
+  const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}`;
 
   const messages = [
     ...conversation_history.slice(-20), // keep last 20 messages for context
