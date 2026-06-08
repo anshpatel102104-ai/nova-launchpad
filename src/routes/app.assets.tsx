@@ -22,6 +22,7 @@ const KIND_TONE: Record<string, string> = {
   "generate-gtm-strategy": "border-launchpad/30 bg-launchpad/10 text-launchpad",
   "validate-idea": "border-success/30 bg-success/10 text-success",
   "generate-ops-plan": "border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+  "competitor-scanner": "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400",
 };
 
 const FILTERS = [
@@ -30,7 +31,15 @@ const FILTERS = [
   { key: "generate-offer", label: "Offers" },
   { key: "generate-followup-sequence", label: "Email sequences" },
   { key: "analyze-website", label: "Audits" },
+  { key: "competitor-scanner", label: "Competitor snapshots" },
 ];
+
+interface CompetitorSnapshotMeta {
+  tier1?: unknown[];
+  tier2?: unknown[];
+  gaps?: unknown[];
+  winning_angle?: string;
+}
 
 function AssetsPage() {
   const { currentOrgId } = useAuth();
@@ -132,6 +141,25 @@ function AssetsPage() {
               <div className="mt-1 text-[11.5px] text-muted-foreground">
                 {new Date(a.created_at).toLocaleDateString()}
               </div>
+              {a.kind === "competitor-scanner" &&
+                (() => {
+                  const meta = (a.metadata ?? {}) as CompetitorSnapshotMeta;
+                  const tier1Count = Array.isArray(meta.tier1) ? meta.tier1.length : 0;
+                  const gapCount = Array.isArray(meta.gaps) ? meta.gaps.length : 0;
+                  return (
+                    <div className="mt-3 rounded-lg border border-border/60 bg-surface-2 px-3 py-2">
+                      {meta.winning_angle && (
+                        <p className="line-clamp-2 text-[11.5px] text-foreground">
+                          {meta.winning_angle}
+                        </p>
+                      )}
+                      <p className="mt-1 text-[10.5px] text-muted-foreground">
+                        {tier1Count} direct competitor{tier1Count === 1 ? "" : "s"} mapped ·{" "}
+                        {gapCount} gap{gapCount === 1 ? "" : "s"} found
+                      </p>
+                    </div>
+                  );
+                })()}
               <div className="mt-4 flex gap-2">
                 <Button
                   size="sm"

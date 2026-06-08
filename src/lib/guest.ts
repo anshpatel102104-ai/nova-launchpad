@@ -210,6 +210,27 @@ export const GUEST_ASSETS = [
     tool_run_id: null,
     created_at: new Date(now - 7 * day).toISOString(),
   },
+  {
+    id: "g-a4",
+    organization_id: GUEST_ORG_ID,
+    user_id: GUEST_USER.id,
+    kind: "competitor-scanner",
+    title: "Competitor Scan: Northwind Labs vs. founder-coaching market",
+    metadata: {
+      tier1: [{ name: "CoachFlow" }, { name: "Mentora" }, { name: "LaunchPilot" }],
+      tier2: [{ name: "Generic course platforms" }],
+      gaps: ["No async accountability layer", "Pricing opaque until a sales call"],
+      winning_angle:
+        "Position as the only coaching offer with a built-in async accountability system — competitors sell access to a person, we sell a system that keeps founders moving between sessions.",
+      full_report: "",
+    },
+    mime_type: null,
+    size_bytes: null,
+    storage_bucket: null,
+    storage_path: null,
+    tool_run_id: null,
+    created_at: new Date(now - 5 * day).toISOString(),
+  },
 ];
 
 export const GUEST_TOOL_RUNS = [
