@@ -93,6 +93,12 @@ const NAV_GROUPS: NavGroup[] = [
         match: (p) => p === "/app/launch-control",
       },
       {
+        label: "First Customers",
+        to: "/app/launchpad/first-customers",
+        icon: Users,
+        match: (p) => p === "/app/launchpad/first-customers",
+      },
+      {
         label: "Mission Path",
         to: "/app/launchpad-path",
         icon: Map,
