@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronRight,
   BookOpen,
+  Crosshair,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
       p.startsWith("/app/launchpad") ||
       p === "/app/launchpad-path" ||
       p === "/app/assets" ||
+      p === "/app/launch-control" ||
       p.startsWith("/app/mission"),
     children: [
       {
@@ -83,6 +85,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/launchpad",
         icon: Sparkles,
         match: (p) => p.startsWith("/app/launchpad"),
+      },
+      {
+        label: "Launch Control",
+        to: "/app/launch-control",
+        icon: Crosshair,
+        match: (p) => p === "/app/launch-control",
       },
       {
         label: "Mission Path",
