@@ -344,6 +344,37 @@ export const launchpadCatalog: LaunchpadTool[] = [
     requiredPlan: "Operate",
     handoffKey: "client-report",
   },
+  {
+    key: "positioning-engine",
+    toolKey: "positioning-engine",
+    name: "Positioning Engine",
+    desc: "A defensible market position — statement, category frame, and proof points.",
+    wired: true,
+    difficulty: "Intermediate",
+    xp: 75,
+    handoffKey: "positioning-engine",
+  },
+  {
+    key: "niche-scorer",
+    toolKey: "niche-scorer",
+    name: "Niche Scorer",
+    desc: "Score any niche across audience, competition, and monetization out of 100.",
+    wired: true,
+    difficulty: "Beginner",
+    xp: 50,
+    handoffKey: "niche-scorer",
+  },
+  {
+    key: "mvp-planner",
+    toolKey: "mvp-planner",
+    name: "MVP / Build Planner",
+    desc: "Cut your idea down to a buildable MVP — scope, sequence, and milestones.",
+    wired: true,
+    difficulty: "Advanced",
+    xp: 100,
+    requiredPlan: "Launch",
+    handoffKey: "mvp-planner",
+  },
 ];
 
 export type NovaModule = {

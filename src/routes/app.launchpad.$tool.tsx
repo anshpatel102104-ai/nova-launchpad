@@ -747,6 +747,95 @@ const TOOL_FIELDS: Record<string, FieldDef[]> = {
       placeholder: "e.g. May 2026, Q2 2026",
     },
   ],
+  "positioning-engine": [
+    {
+      key: "product_description",
+      label: "Product / service",
+      type: "textarea",
+      required: true,
+      placeholder: "What you're building and how it works",
+    },
+    {
+      key: "audience",
+      label: "Target audience",
+      type: "text",
+      required: true,
+      placeholder: "Who this is for — be specific",
+    },
+    {
+      key: "alternatives",
+      label: "What they use today instead",
+      type: "textarea",
+      placeholder: "Competitors, workarounds, status quo, \"doing nothing\"",
+    },
+    {
+      key: "differentiator",
+      label: "Your differentiator",
+      type: "textarea",
+      placeholder: "The one thing that makes you different — even a hunch is fine",
+    },
+  ],
+  "niche-scorer": [
+    {
+      key: "niche_description",
+      label: "Describe the niche",
+      type: "textarea",
+      required: true,
+      placeholder: "Who it serves, what problem it solves, and where you'd find them",
+    },
+    {
+      key: "audience_size",
+      label: "Audience size signal",
+      type: "select",
+      options: ["Small (under 10k)", "Medium (10k–100k)", "Large (100k+)", "Not sure"],
+    },
+    {
+      key: "competition_level",
+      label: "Competition level",
+      type: "select",
+      options: ["Low — few real players", "Medium — some players", "High — crowded", "Not sure"],
+    },
+    {
+      key: "monetization_signal",
+      label: "How would you monetize it?",
+      type: "text",
+      placeholder: "e.g. subscription, one-time purchase, services, ads",
+    },
+  ],
+  "mvp-planner": [
+    {
+      key: "problem",
+      label: "The problem you're solving",
+      type: "textarea",
+      required: true,
+      placeholder: "What pain point does this address, and for whom?",
+    },
+    {
+      key: "target_user",
+      label: "Target user",
+      type: "text",
+      required: true,
+      placeholder: "Who will use this first?",
+    },
+    {
+      key: "core_feature_hypothesis",
+      label: "Core feature hypothesis",
+      type: "textarea",
+      placeholder: "The ONE thing your MVP must prove works",
+    },
+    {
+      key: "build_resources",
+      label: "Build resources",
+      type: "select",
+      options: ["Solo, no-code", "Solo + some code", "Solo developer", "Small team (2-4)"],
+    },
+    {
+      key: "timeline",
+      label: "Target timeline",
+      type: "text",
+      placeholder: "e.g. 4 weeks, 2 months",
+    },
+  ],
 };
 
 /* Build the backend payload from per-tool fields */
