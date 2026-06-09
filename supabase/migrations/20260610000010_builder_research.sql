@@ -21,14 +21,18 @@ CREATE TABLE IF NOT EXISTS public.workflow_builders (
 
 ALTER TABLE public.workflow_builders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "wb_select" ON public.workflow_builders;
 CREATE POLICY "wb_select" ON public.workflow_builders
   FOR SELECT USING (user_id = auth.uid() OR org_id IN (
     SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()
   ));
+DROP POLICY IF EXISTS "wb_insert" ON public.workflow_builders;
 CREATE POLICY "wb_insert" ON public.workflow_builders
   FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "wb_update" ON public.workflow_builders;
 CREATE POLICY "wb_update" ON public.workflow_builders
   FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "wb_delete" ON public.workflow_builders;
 CREATE POLICY "wb_delete" ON public.workflow_builders
   FOR DELETE USING (user_id = auth.uid());
 
@@ -55,12 +59,16 @@ CREATE TABLE IF NOT EXISTS public.research_results (
 
 ALTER TABLE public.research_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "rr_select" ON public.research_results;
 CREATE POLICY "rr_select" ON public.research_results
   FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "rr_insert" ON public.research_results;
 CREATE POLICY "rr_insert" ON public.research_results
   FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "rr_update" ON public.research_results;
 CREATE POLICY "rr_update" ON public.research_results
   FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "rr_delete" ON public.research_results;
 CREATE POLICY "rr_delete" ON public.research_results
   FOR DELETE USING (user_id = auth.uid());
 
@@ -70,7 +78,6 @@ CREATE INDEX IF NOT EXISTS idx_research_results_verdict ON public.research_resul
 
 -- ─────────────────────────────────────────────────────────
 -- Add org_id to operator_memory if it doesn't exist
--- so research can be scoped to org
 -- ─────────────────────────────────────────────────────────
 DO $$
 BEGIN
