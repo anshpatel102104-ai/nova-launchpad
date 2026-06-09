@@ -533,7 +533,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                 RECENT ACTIVITY
               </div>
               {recentRuns.slice(0, 4).map((run, i) => {
-                const key = run.toolKey || run.tool || "tool";
+                const key = run.toolKey || "tool";
                 return (
                   <div
                     key={i}

@@ -5,7 +5,16 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery, usageQuery, leadsQuery, roiAnalyticsQuery } from "@/lib/queries";
-import { BarChart3, CheckCircle2, XCircle, Activity, Users, Clock, TrendingUp, Zap } from "lucide-react";
+import {
+  BarChart3,
+  CheckCircle2,
+  XCircle,
+  Activity,
+  Users,
+  Clock,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/nova/reports")({ component: Reports });
@@ -59,7 +68,12 @@ function Reports() {
         <KPI icon={Activity} label="Generations (mo)" value={totalGens.toLocaleString()} />
         <KPI icon={CheckCircle2} label="Success rate" value={`${successRate}%`} accent="emerald" />
         <KPI icon={Users} label="Open pipeline" value={`$${openPipeline.toLocaleString()}`} />
-        <KPI icon={BarChart3} label="Won value" value={`$${wonValue.toLocaleString()}`} accent="primary" />
+        <KPI
+          icon={BarChart3}
+          label="Won value"
+          value={`$${wonValue.toLocaleString()}`}
+          accent="primary"
+        />
       </div>
 
       {/* Tabs */}
@@ -83,7 +97,9 @@ function Reports() {
       {tab === "activity" && (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-border bg-surface p-5">
-            <div className="font-display text-[14px] font-semibold tracking-tight">Usage by tool</div>
+            <div className="font-display text-[14px] font-semibold tracking-tight">
+              Usage by tool
+            </div>
             <div className="mt-4 space-y-2.5">
               {sortedUsage.length === 0 && (
                 <div className="text-[12.5px] text-muted-foreground">No usage this month yet.</div>
@@ -97,7 +113,10 @@ function Reports() {
                       <span className="font-mono text-muted-foreground">{u.count}</span>
                     </div>
                     <div className="mt-1 h-1 overflow-hidden rounded-full bg-surface-2">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                 );
@@ -215,7 +234,8 @@ function Reports() {
           )}
 
           <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            Time-saved estimates are heuristic (validate: 45 min/run · plan: 90 min · customers: 60 min · launch: 75 min · funding: 120 min). Won value from closed leads.
+            Time-saved estimates are heuristic (validate: 45 min/run · plan: 90 min · customers: 60
+            min · launch: 75 min · funding: 120 min). Won value from closed leads.
           </p>
         </div>
       )}
@@ -239,7 +259,9 @@ function RoiCard({
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2 mb-2">
-        <span style={{ color, opacity: 0.8 }}><Icon className="h-3.5 w-3.5" /></span>
+        <span style={{ color, opacity: 0.8 }}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
         <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </span>

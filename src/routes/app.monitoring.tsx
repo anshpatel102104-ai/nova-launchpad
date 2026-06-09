@@ -105,7 +105,9 @@ function MonitoringPage() {
       >
         <div
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, rgba(251,146,60,0.1) 0%, transparent 70%)",
+          }}
         />
         <div className="relative">
           <div
@@ -128,7 +130,9 @@ function MonitoringPage() {
             {openLoops.length > 0
               ? `${openLoops.length} open loop${openLoops.length !== 1 ? "s" : ""} · `
               : ""}
-            {activeJobs.length > 0 ? `${activeJobs.length} exception${activeJobs.length !== 1 ? "s" : ""} queued` : "All systems nominal"}
+            {activeJobs.length > 0
+              ? `${activeJobs.length} exception${activeJobs.length !== 1 ? "s" : ""} queued`
+              : "All systems nominal"}
           </p>
         </div>
       </div>
@@ -136,10 +140,34 @@ function MonitoringPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Open Alerts", value: openAlerts.length, icon: AlertTriangle, color: "#FB923C", tab: "alerts" as TabKey },
-          { label: "Tracked Outcomes", value: outcomes.length, icon: Target, color: "#7DD3FC", tab: "outcomes" as TabKey },
-          { label: "Open Loops", value: openLoops.length, icon: RefreshCw, color: "#A78BFA", tab: "loops" as TabKey },
-          { label: "Failed Jobs", value: activeJobs.length, icon: Zap, color: "#F87171", tab: "exceptions" as TabKey },
+          {
+            label: "Open Alerts",
+            value: openAlerts.length,
+            icon: AlertTriangle,
+            color: "#FB923C",
+            tab: "alerts" as TabKey,
+          },
+          {
+            label: "Tracked Outcomes",
+            value: outcomes.length,
+            icon: Target,
+            color: "#7DD3FC",
+            tab: "outcomes" as TabKey,
+          },
+          {
+            label: "Open Loops",
+            value: openLoops.length,
+            icon: RefreshCw,
+            color: "#A78BFA",
+            tab: "loops" as TabKey,
+          },
+          {
+            label: "Failed Jobs",
+            value: activeJobs.length,
+            icon: Zap,
+            color: "#F87171",
+            tab: "exceptions" as TabKey,
+          },
         ].map((stat) => (
           <button
             key={stat.label}
@@ -150,7 +178,7 @@ function MonitoringPage() {
             )}
             style={
               tab === stat.tab
-                ? { "--tw-ring-color": stat.color } as React.CSSProperties
+                ? ({ "--tw-ring-color": stat.color } as React.CSSProperties)
                 : undefined
             }
           >
@@ -190,17 +218,11 @@ function MonitoringPage() {
 
       {/* Content */}
       {tab === "alerts" && (
-        <AlertsTab
-          alerts={alerts}
-          acting={acting}
-          onAction={handleAlertAction}
-        />
+        <AlertsTab alerts={alerts} acting={acting} onAction={handleAlertAction} />
       )}
       {tab === "outcomes" && <OutcomesTab outcomes={outcomes} />}
       {tab === "loops" && <LoopsTab loops={loops} />}
-      {tab === "exceptions" && (
-        <ExceptionsTab failedJobs={failedJobs} n8nErrors={n8nErrors} />
-      )}
+      {tab === "exceptions" && <ExceptionsTab failedJobs={failedJobs} n8nErrors={n8nErrors} />}
     </div>
   );
 }
@@ -235,7 +257,10 @@ function AlertsTab({
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-medium">{alert.title}</div>
                 {alert.diagnosis && (
-                  <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                  <p
+                    className="text-[11.5px] mt-0.5 leading-relaxed"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     {alert.diagnosis}
                   </p>
                 )}
@@ -281,17 +306,19 @@ function AlertsTab({
 
 function OutcomesTab({ outcomes }: { outcomes: ExpectedOutcome[] }) {
   if (outcomes.length === 0) {
-    return <EmptyCard icon={Target} message="No tracked outcomes yet — add targets in your memory module" />;
+    return (
+      <EmptyCard
+        icon={Target}
+        message="No tracked outcomes yet — add targets in your memory module"
+      />
+    );
   }
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {outcomes.map((o) => (
         <div key={o.id} className="nova-card rounded-xl p-4">
           <div className="text-[12.5px] font-medium truncate">{o.metric_name}</div>
-          <div
-            className="font-mono text-[20px] font-bold mt-1"
-            style={{ color: "#7DD3FC" }}
-          >
+          <div className="font-mono text-[20px] font-bold mt-1" style={{ color: "#7DD3FC" }}>
             {o.target_value}
             {o.target_unit && (
               <span className="text-[12px] font-normal ml-1 text-muted-foreground">
@@ -401,7 +428,10 @@ function ExceptionsTab({
               <div className="flex-1 min-w-0">
                 <div className="text-[12.5px] font-medium truncate">{job.tool_slug}</div>
                 {job.error_message && (
-                  <p className="text-[11px] mt-0.5 truncate" style={{ color: "var(--muted-foreground)" }}>
+                  <p
+                    className="text-[11px] mt-0.5 truncate"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
                     {job.error_message}
                   </p>
                 )}
@@ -443,7 +473,10 @@ function ExceptionsTab({
               <div className="flex items-center gap-2 mb-1">
                 <Info className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="text-[12.5px] font-medium truncate">{err.workflow_name}</span>
-                <span className="ml-auto text-[10.5px] shrink-0" style={{ color: "var(--muted-foreground)" }}>
+                <span
+                  className="ml-auto text-[10.5px] shrink-0"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {new Date(err.occurred_at).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
@@ -451,7 +484,10 @@ function ExceptionsTab({
                 </span>
               </div>
               {err.error_message && (
-                <p className="text-[11.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                <p
+                  className="text-[11.5px] leading-relaxed"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {err.error_message}
                 </p>
               )}
@@ -476,14 +512,18 @@ function ExceptionsTab({
 /* ─── Helpers ────────────────────────────────────────────────────────── */
 
 function StatusDot({ status }: { status: string }) {
-  if (status === "resolved") return <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#34D399" }} />;
-  if (status === "acknowledged") return <Clock className="h-4 w-4 shrink-0" style={{ color: "#FB923C" }} />;
+  if (status === "resolved")
+    return <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#34D399" }} />;
+  if (status === "acknowledged")
+    return <Clock className="h-4 w-4 shrink-0" style={{ color: "#FB923C" }} />;
   return <Circle className="h-4 w-4 shrink-0" style={{ color: "#F87171" }} />;
 }
 
 function JobStatusIcon({ status }: { status: string }) {
-  if (status === "resolved") return <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#34D399" }} />;
-  if (status === "dead") return <XCircle className="h-4 w-4 shrink-0" style={{ color: "#F87171" }} />;
+  if (status === "resolved")
+    return <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "#34D399" }} />;
+  if (status === "dead")
+    return <XCircle className="h-4 w-4 shrink-0" style={{ color: "#F87171" }} />;
   return <RefreshCw className="h-4 w-4 shrink-0" style={{ color: "#FB923C" }} />;
 }
 

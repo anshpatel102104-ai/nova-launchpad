@@ -88,7 +88,9 @@ function SopLibraryPage() {
       >
         <div
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, rgba(52,211,153,0.1) 0%, transparent 70%)",
+          }}
         />
         <div className="relative flex items-start justify-between gap-4">
           <div>
@@ -190,7 +192,10 @@ function SopLibraryPage() {
                     <div className="text-[13.5px] font-medium truncate">{doc.title}</div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {doc.category && (
-                        <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+                        <span
+                          className="text-[10.5px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
                           {doc.category}
                         </span>
                       )}
@@ -206,10 +211,7 @@ function SopLibraryPage() {
                     </div>
                   </div>
 
-                  <div
-                    className="flex items-center gap-1.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setEditing(doc)}
                       className="rounded-lg p-1.5 transition hover:bg-muted/30"
@@ -237,10 +239,7 @@ function SopLibraryPage() {
 
                 {/* Expanded content */}
                 {isExp && doc.content && (
-                  <div
-                    className="px-4 pb-4 pt-0 border-t"
-                    style={{ borderColor: "var(--border)" }}
-                  >
+                  <div className="px-4 pb-4 pt-0 border-t" style={{ borderColor: "var(--border)" }}>
                     <pre
                       className="mt-3 text-[12px] leading-relaxed whitespace-pre-wrap"
                       style={{ color: "var(--muted-foreground)", fontFamily: "inherit" }}
@@ -323,13 +322,8 @@ function SopEditor({
         style={{ background: "var(--card)", border: "1px solid var(--border)" }}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[16px] font-bold">
-            {doc ? "Edit SOP" : "New SOP"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 hover:bg-muted/30 transition"
-          >
+          <h2 className="font-display text-[16px] font-bold">{doc ? "Edit SOP" : "New SOP"}</h2>
+          <button onClick={onClose} className="rounded-lg p-1 hover:bg-muted/30 transition">
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>

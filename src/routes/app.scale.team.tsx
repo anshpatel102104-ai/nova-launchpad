@@ -9,14 +9,54 @@ export const Route = createFileRoute("/app/scale/team")({
 });
 
 const CAPABILITIES = [
-  { key: "run_tools", label: "Run AI Tools", description: "Generate content, analyze, plan", access: "all" },
-  { key: "view_reports", label: "View Reports", description: "Access analytics and ROI data", access: "all" },
-  { key: "view_pipeline", label: "View Pipeline", description: "See leads and contacts", access: "all" },
-  { key: "edit_automations", label: "Edit Automations", description: "Toggle and configure systems", access: "admin" },
-  { key: "approve_spend", label: "Approve Spend", description: "Approve budget-spend requests", access: "admin" },
-  { key: "invite_members", label: "Invite Members", description: "Add team members", access: "owner" },
-  { key: "edit_settings", label: "Edit Settings", description: "Manage workspace settings", access: "owner" },
-  { key: "manage_billing", label: "Manage Billing", description: "Subscription and payment", access: "owner" },
+  {
+    key: "run_tools",
+    label: "Run AI Tools",
+    description: "Generate content, analyze, plan",
+    access: "all",
+  },
+  {
+    key: "view_reports",
+    label: "View Reports",
+    description: "Access analytics and ROI data",
+    access: "all",
+  },
+  {
+    key: "view_pipeline",
+    label: "View Pipeline",
+    description: "See leads and contacts",
+    access: "all",
+  },
+  {
+    key: "edit_automations",
+    label: "Edit Automations",
+    description: "Toggle and configure systems",
+    access: "admin",
+  },
+  {
+    key: "approve_spend",
+    label: "Approve Spend",
+    description: "Approve budget-spend requests",
+    access: "admin",
+  },
+  {
+    key: "invite_members",
+    label: "Invite Members",
+    description: "Add team members",
+    access: "owner",
+  },
+  {
+    key: "edit_settings",
+    label: "Edit Settings",
+    description: "Manage workspace settings",
+    access: "owner",
+  },
+  {
+    key: "manage_billing",
+    label: "Manage Billing",
+    description: "Subscription and payment",
+    access: "owner",
+  },
 ] as const;
 
 type AccessLevel = "all" | "admin" | "owner";
@@ -141,7 +181,8 @@ function ScaleTeam() {
             Team invitations coming soon
           </div>
           <p className="text-[12px] max-w-xs mx-auto" style={{ color: "var(--muted-foreground)" }}>
-            Invite collaborators to your workspace. The permissions system below is already wired — roles and granular capability flags will apply automatically when you add members.
+            Invite collaborators to your workspace. The permissions system below is already wired —
+            roles and granular capability flags will apply automatically when you add members.
           </p>
         </div>
       </div>
@@ -191,8 +232,18 @@ function ScaleTeam() {
                     <CheckCircle2 className="h-3.5 w-3.5" />
                   </span>
                   {/* Admin */}
-                  <span title="Admin" style={{ color: isOwnerCapability ? "var(--muted-foreground)" : "#A78BFA", opacity: isOwnerCapability ? 0.3 : 1 }}>
-                    {isOwnerCapability ? <Lock className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  <span
+                    title="Admin"
+                    style={{
+                      color: isOwnerCapability ? "var(--muted-foreground)" : "#A78BFA",
+                      opacity: isOwnerCapability ? 0.3 : 1,
+                    }}
+                  >
+                    {isOwnerCapability ? (
+                      <Lock className="h-3.5 w-3.5" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
                   </span>
                   {/* Owner */}
                   <span title="Owner" style={{ color: s.color }}>
@@ -204,7 +255,9 @@ function ScaleTeam() {
           })}
         </div>
         <p className="mt-4 text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
-          Granular overrides are stored per member in the <code className="font-mono">permissions</code> field — admin and owner roles have all capabilities by default, with per-member flags available as a team grows.
+          Granular overrides are stored per member in the{" "}
+          <code className="font-mono">permissions</code> field — admin and owner roles have all
+          capabilities by default, with per-member flags available as a team grows.
         </p>
       </div>
     </div>

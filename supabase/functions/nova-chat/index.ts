@@ -101,7 +101,17 @@ Deno.serve(async (req: Request) => {
 
   if (Object.keys(user_context).length > 0) {
     // Structured context sent from the frontend (preferred)
-    const { name, idea, challenge, stage, lane, plan, current_mission, tools_completed, recent_tools } = user_context as Record<string, string>;
+    const {
+      name,
+      idea,
+      challenge,
+      stage,
+      lane,
+      plan,
+      current_mission,
+      tools_completed,
+      recent_tools,
+    } = user_context as Record<string, string>;
     if (name) contextLines.push(`Founder name: ${name}`);
     if (idea) contextLines.push(`What they're building: ${idea}`);
     if (challenge) contextLines.push(`Biggest challenge: ${challenge}`);
@@ -125,9 +135,10 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const contextBlock = contextLines.length > 0
-    ? `\n\n## This Founder's Context\nAddress them by name if provided. Reference their idea and stage naturally — not robotically. Tailor every response to where they actually are.\n\n${contextLines.join("\n")}`
-    : "";
+  const contextBlock =
+    contextLines.length > 0
+      ? `\n\n## This Founder's Context\nAddress them by name if provided. Reference their idea and stage naturally — not robotically. Tailor every response to where they actually are.\n\n${contextLines.join("\n")}`
+      : "";
 
   const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}`;
 

@@ -12,13 +12,7 @@ import {
 } from "@/lib/templates-catalog";
 import { blockIfGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
-import {
-  LayoutTemplate,
-  CheckCircle2,
-  ArrowRight,
-  Rocket,
-  Zap,
-} from "lucide-react";
+import { LayoutTemplate, CheckCircle2, ArrowRight, Rocket, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/app/templates")({ component: TemplatesPage });
 
@@ -69,13 +63,16 @@ function TemplatesPage() {
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(125,211,252,0.04) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(167,139,250,0.08) 0%, rgba(125,211,252,0.04) 100%)",
           border: "1px solid rgba(167,139,250,0.18)",
         }}
       >
         <div
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%)",
+          }}
         />
         <div className="relative">
           <div
@@ -155,7 +152,10 @@ function TemplatesPage() {
                   </div>
                 </div>
                 {isApplied && (
-                  <CheckCircle2 className="h-4.5 w-4.5 shrink-0 mt-0.5" style={{ color: "#34D399" }} />
+                  <CheckCircle2
+                    className="h-4.5 w-4.5 shrink-0 mt-0.5"
+                    style={{ color: "#34D399" }}
+                  />
                 )}
               </div>
 
@@ -195,7 +195,10 @@ function TemplatesPage() {
               {/* CTA */}
               <div className="flex items-center gap-2 pt-1">
                 {isApplied ? (
-                  <div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: "#34D399" }}>
+                  <div
+                    className="flex items-center gap-1.5 text-[12px] font-medium"
+                    style={{ color: "#34D399" }}
+                  >
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Applied
                   </div>

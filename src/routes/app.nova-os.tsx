@@ -21,9 +21,7 @@ function NovaOSPage() {
   const orgId = currentOrgId ?? "";
 
   const settingsQ = useQuery({ ...automationSettingsQuery(orgId), enabled: !!orgId });
-  const settingsByKey = Object.fromEntries(
-    (settingsQ.data ?? []).map((s) => [s.key, s]),
-  );
+  const settingsByKey = Object.fromEntries((settingsQ.data ?? []).map((s) => [s.key, s]));
 
   return (
     <>
@@ -50,9 +48,7 @@ function NovaOSPage() {
                   <div className="h-9 w-9 rounded-md border border-border bg-surface-elevated grid place-items-center">
                     <sys.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <StatusPill tone={statusTone}>
-                    {statusLabel}
-                  </StatusPill>
+                  <StatusPill tone={statusTone}>{statusLabel}</StatusPill>
                 </div>
                 <h3 className="text-sm font-semibold">{sys.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground flex-1">{sys.description}</p>
