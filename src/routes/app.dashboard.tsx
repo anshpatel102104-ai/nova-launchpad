@@ -22,6 +22,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -963,6 +964,11 @@ function Dashboard() {
           </div>
         </Link>
       </div>
+
+      {/* ── Adaptive Guidance ── */}
+      {currentOrgId && user && (
+        <AdaptiveGuidance orgId={currentOrgId} userId={user.id} stageIdx={stageIdx} />
+      )}
 
       {/* ── Section 3: Stage Map ── */}
       <div

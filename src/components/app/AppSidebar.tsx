@@ -29,7 +29,8 @@ import {
   ClipboardList,
   MoreHorizontal,
   PlayCircle,
-  HelpCircle,
+  Blocks,
+  Search,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -84,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/launch-control" ||
       p === "/app/templates" ||
       p === "/app/sop-library" ||
+      p === "/app/research" ||
       p.startsWith("/app/mission"),
     children: [
       {
@@ -121,6 +123,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/templates",
         icon: LayoutTemplate,
         match: (p) => p === "/app/templates",
+      },
+      {
+        label: "Research",
+        to: "/app/research",
+        icon: Search,
+        match: (p) => p === "/app/research",
       },
       {
         label: "SOP Library",
@@ -188,13 +196,19 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Automate",
     icon: Zap,
     to: "/app/automations",
-    match: (p) => p === "/app/automations" || p === "/app/integrations",
+    match: (p) => p === "/app/automations" || p === "/app/integrations" || p === "/app/builder",
     children: [
       {
         label: "Workflows",
         to: "/app/automations",
         icon: Workflow,
         match: (p) => p === "/app/automations",
+      },
+      {
+        label: "Builder",
+        to: "/app/builder",
+        icon: Blocks,
+        match: (p) => p === "/app/builder",
       },
       {
         label: "Integrations",

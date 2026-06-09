@@ -22,7 +22,7 @@ alter table public.admin_audit_log enable row level security;
 -- Only admins (via app_role) can read audit log
 drop policy if exists "admin_select" on public.admin_audit_log;
 create policy "admin_select" on public.admin_audit_log
-  for select using (public.has_role('admin'::public.app_role, auth.uid()));
+  for select using (public.has_role(auth.uid(), 'admin'::public.app_role));
 
 -- Service role writes all audit events (n8n, edge functions, etc.)
 drop policy if exists "service_role_all" on public.admin_audit_log;
