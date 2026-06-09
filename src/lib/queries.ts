@@ -958,3 +958,44 @@ export const launchControlExtrasQuery = (orgId: string, userId: string) =>
     },
     staleTime: 30_000,
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Template applications
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface TemplateApplication {
+  id: string;
+  organization_id: string;
+  template_slug: string;
+  applied_at: string;
+  customizations: Record<string, unknown>;
+}
+
+export function templateApplicationsQuery(orgId: string) {
+  return queryOptions({
+    queryKey: ["template_applications", orgId],
+    queryFn: async () => {
+      if (!orgId) return [] as TemplateApplication[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("template_applications")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("applied_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as TemplateApplication[];
+    },
+    staleTime: 60_000,
+  });
+}
+
+export async function applyTemplate(orgId: string, templateSlug: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb.from("template_applications").insert({
+    organization_id: orgId,
+    template_slug: templateSlug,
+  });
+  if (error) throw error;
+}

@@ -26,6 +26,7 @@ import {
   ChevronRight,
   BookOpen,
   Crosshair,
+  LayoutTemplate,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/launchpad-path" ||
       p === "/app/assets" ||
       p === "/app/launch-control" ||
+      p === "/app/templates" ||
       p.startsWith("/app/mission"),
     children: [
       {
@@ -109,6 +111,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/assets",
         icon: FileText,
         match: (p) => p === "/app/assets",
+      },
+      {
+        label: "Templates",
+        to: "/app/templates",
+        icon: LayoutTemplate,
+        match: (p) => p === "/app/templates",
       },
     ],
   },
