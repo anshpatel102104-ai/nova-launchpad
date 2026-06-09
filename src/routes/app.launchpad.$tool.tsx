@@ -29,6 +29,13 @@ import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/d
 import { PaywallModal } from "@/components/app/PaywallModal";
 import { runTool } from "@/lib/runTool";
 import { useOwnerMode } from "@/lib/ownerMode";
+import {
+  loadWorkspaceProfile,
+  saveWorkspaceProfile,
+  extractAndSaveProfileFromFields,
+  getProfilePrefills,
+  type WorkspaceProfile,
+} from "@/lib/workspaceProfile";
 
 /* ─── Per-tool field config ──────────────────────────────────────────────── */
 type FieldType = "text" | "textarea" | "select" | "number";
@@ -1265,6 +1272,10 @@ function ToolPage() {
   const [fields, setFields] = useState<Record<string, string>>({});
   const [draftRestored, setDraftRestored] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [workspaceProfile, setWorkspaceProfile] = useState<WorkspaceProfile>(() =>
+    loadWorkspaceProfile(),
+  );
 
   const isOwner = useOwnerMode();
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -1294,30 +1305,38 @@ function ToolPage() {
     setRunId(null);
     setFeedback(null);
     setDraftRestored(false);
+
+    // Load the latest profile
+    const profile = loadWorkspaceProfile();
+    setWorkspaceProfile(profile);
+    const profileFills = toolFieldDefs
+      ? getProfilePrefills(toolFieldDefs.map((f) => f.key), profile)
+      : {};
+
     if (search?.context || search?.title) {
       setTitle(search.title ?? "");
       // Pre-fill the primary field with the URL context param
       const primary = toolFieldDefs?.[0]?.key ?? "context";
-      setFields(search.context ? { [primary]: search.context } : {});
+      setFields({ ...profileFills, ...(search.context ? { [primary]: search.context } : {}) });
       return;
     }
     const draft = loadDraft(currentOrgId, tool.key);
     if (draft) {
       setTitle(draft.title ?? "");
       if (draft.fields && Object.keys(draft.fields).length > 0) {
-        setFields(draft.fields);
+        setFields({ ...profileFills, ...draft.fields });
         setDraftRestored(true);
       } else if (draft.context) {
         // Backward compat: put old context into primary field
         const primary = toolFieldDefs?.[0]?.key ?? "context";
-        setFields({ [primary]: draft.context });
+        setFields({ ...profileFills, [primary]: draft.context });
         setDraftRestored(true);
       } else {
-        setFields({});
+        setFields(profileFills);
       }
     } else {
       setTitle("");
-      setFields({});
+      setFields(profileFills);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tool.key, currentOrgId]);
@@ -1386,6 +1405,9 @@ function ToolPage() {
       setStreamText("");
       setOutput(result.output);
       if (result.run_id) setRunId(result.run_id);
+      // Save relevant fields to workspace profile for future pre-fills
+      extractAndSaveProfileFromFields(fields);
+      setWorkspaceProfile(loadWorkspaceProfile());
       toast.success("Output ready");
       if (currentOrgId) {
         qc.invalidateQueries({ queryKey: ["tool_runs", currentOrgId] });
@@ -1575,12 +1597,137 @@ function ToolPage() {
               >
                 Inputs
               </div>
-              {savedLabel && (
-                <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
-                  {savedLabel}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {workspaceProfile.business_name && (
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(true)}
+                    className="text-[10.5px] transition-colors hover:text-foreground"
+                    style={{ color: "var(--primary)" }}
+                    title="Edit your workspace profile to pre-fill common fields"
+                  >
+                    ✦ {workspaceProfile.business_name} · Edit Profile
+                  </button>
+                )}
+                {!workspaceProfile.business_name && (
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(true)}
+                    className="text-[10.5px] transition-colors hover:text-foreground"
+                    style={{ color: "var(--muted-foreground)" }}
+                    title="Set up workspace profile to pre-fill common fields"
+                  >
+                    Set up profile →
+                  </button>
+                )}
+                {savedLabel && (
+                  <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+                    {savedLabel}
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Workspace Profile Quick-edit panel */}
+            {profileModalOpen && (
+              <div
+                className="px-5 py-4 space-y-3"
+                style={{
+                  borderBottom: "1px solid var(--border)",
+                  background: "color-mix(in oklab, var(--primary) 3%, var(--surface-2))",
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div
+                    className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Workspace Profile — auto pre-fills all tools
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(false)}
+                    className="text-[11px]"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(
+                    [
+                      { key: "business_name", label: "Business name", placeholder: "e.g. Northwind Labs" },
+                      { key: "target_market", label: "Target market", placeholder: "e.g. B2B SaaS founders" },
+                      { key: "revenue_model", label: "Revenue model", placeholder: "e.g. SaaS subscription" },
+                      { key: "stage", label: "Stage", placeholder: "e.g. Pre-seed, Seed" },
+                    ] as Array<{ key: keyof WorkspaceProfile; label: string; placeholder: string }>
+                  ).map((pf) => (
+                    <div key={pf.key}>
+                      <div
+                        className="mb-1 text-[10.5px] font-medium"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {pf.label}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={pf.placeholder}
+                        value={workspaceProfile[pf.key] ?? ""}
+                        onChange={(e) => {
+                          const updated = { ...workspaceProfile, [pf.key]: e.target.value };
+                          setWorkspaceProfile(updated);
+                          saveWorkspaceProfile(updated);
+                          // Immediately apply to current form fields
+                          const fills = getProfilePrefills(
+                            toolFieldDefs?.map((f) => f.key) ?? [],
+                            updated,
+                          );
+                          setFields((prev) => ({ ...fills, ...prev }));
+                        }}
+                        className="w-full rounded-lg px-3 py-1.5 text-[12.5px] outline-none"
+                        style={{
+                          background: "var(--surface)",
+                          border: "1px solid var(--border)",
+                          color: "var(--foreground)",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="col-span-2">
+                  <div
+                    className="mb-1 text-[10.5px] font-medium"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Business description
+                  </div>
+                  <textarea
+                    rows={2}
+                    placeholder="What your business does, who it serves, and your core value prop."
+                    value={workspaceProfile.description ?? ""}
+                    onChange={(e) => {
+                      const updated = { ...workspaceProfile, description: e.target.value };
+                      setWorkspaceProfile(updated);
+                      saveWorkspaceProfile(updated);
+                      const fills = getProfilePrefills(
+                        toolFieldDefs?.map((f) => f.key) ?? [],
+                        updated,
+                      );
+                      setFields((prev) => ({ ...fills, ...prev }));
+                    }}
+                    className="w-full resize-none rounded-lg px-3 py-1.5 text-[12.5px] outline-none"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  />
+                </div>
+                <p className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+                  Saved automatically · fills matching fields across all tools
+                </p>
+              </div>
+            )}
 
             <div className="space-y-5 px-5 py-5">
               {/* Run identity */}

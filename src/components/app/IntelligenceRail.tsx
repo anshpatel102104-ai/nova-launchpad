@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { X, Send, RotateCcw, ArrowUpRight, Zap } from "lucide-react";
+import { X, Send, RotateCcw, ArrowUpRight, Zap, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
@@ -165,6 +165,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   const [streaming, setStreaming] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
   const [greeted, setGreeted] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -210,7 +211,12 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   }, [messages]);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 80);
+    if (open && expanded) setTimeout(() => inputRef.current?.focus(), 120);
+  }, [open, expanded]);
+
+  // Reset expanded to true whenever opened
+  useEffect(() => {
+    if (open) setExpanded(true);
   }, [open]);
 
   const handleNavigate = useCallback(
@@ -338,127 +344,107 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   if (!open) return null;
 
   return (
-    <aside
-      className={cn("hidden xl:flex shrink-0 flex-col w-[300px] h-full")}
-      style={{
-        background: "var(--background)",
-        borderLeft: "1px solid var(--border)",
-      }}
-    >
-      {/* Header */}
-      <div
-        className="flex h-12 items-center justify-between px-4 shrink-0"
-        style={{ borderBottom: "1px solid var(--border)" }}
-      >
-        <div className="flex items-center gap-2">
-          <div
-            className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "var(--primary)" }}
-          >
-            <Zap className="h-3 w-3 text-white" />
-          </div>
-          <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
-            Nova
-          </span>
-          {streaming && (
-            <span
-              className="text-[9px] font-semibold tracking-widest uppercase"
-              style={{ color: "var(--primary)" }}
-            >
-              thinking
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {messages.length > 1 && (
-            <button
-              onClick={resetChat}
-              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
-              style={{ color: "var(--muted-foreground)" }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "transparent";
-                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-              }}
-              title="New conversation"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
-            style={{ color: "var(--muted-foreground)" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-              (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-            }}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
+    <>
+      {/* Backdrop */}
+      {expanded && (
+        <div
+          className="fixed inset-0 z-40"
+          style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(2px)" }}
+          onClick={onClose}
+        />
+      )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-        {messages.map((msg) => (
+      {/* Bottom center drawer */}
+      <div
+        className={cn("fixed bottom-0 left-0 right-0 z-50 flex justify-center")}
+        style={{ pointerEvents: "none" }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 700,
+            pointerEvents: "all",
+            background: "var(--background)",
+            borderTop: "1px solid var(--border)",
+            borderLeft: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            borderRight: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+            borderRadius: "20px 20px 0 0",
+            boxShadow: "0 -8px 48px rgba(0,0,0,0.35), 0 -1px 0 rgba(255,107,26,0.12)",
+            display: "flex",
+            flexDirection: "column",
+            height: expanded ? "min(55vh, 520px)" : "52px",
+            transition: "height 0.28s cubic-bezier(0.4,0,0.2,1)",
+            overflow: "hidden",
+          }}
+        >
+          {/* Drag handle pill */}
           <div
-            key={msg.id}
-            className={cn("flex gap-2 items-start", msg.role === "user" && "flex-row-reverse")}
+            style={{
+              width: 40,
+              height: 4,
+              borderRadius: 2,
+              background: "color-mix(in oklab, var(--border) 150%, transparent)",
+              margin: "10px auto 0",
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
+            onClick={() => setExpanded((e) => !e)}
+          />
+
+          {/* Header */}
+          <div
+            className="flex items-center justify-between px-5 py-2 shrink-0"
+            style={{ cursor: "pointer" }}
+            onClick={() => setExpanded((e) => !e)}
           >
-            {msg.role === "assistant" && (
+            <div className="flex items-center gap-2.5">
               <div
-                className="h-5 w-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                style={{ background: "var(--primary)" }}
+                className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  background: "linear-gradient(135deg, var(--primary) 0%, #ff8c42 100%)",
+                  boxShadow: "0 0 12px rgba(255,107,26,0.45)",
+                }}
               >
-                <Zap className="h-3 w-3 text-white" />
+                <Zap className="h-3.5 w-3.5 text-white" />
               </div>
-            )}
-            <div
-              className="rounded-xl px-3 py-2 text-[12.5px] leading-relaxed"
-              style={{
-                maxWidth: "calc(100% - 36px)",
-                background: msg.role === "user" ? "var(--primary)" : "var(--surface-2)",
-                color: msg.role === "user" ? "#fff" : "var(--foreground)",
-                border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
-                borderRadius: msg.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
-              }}
-            >
-              {msg.pending && !msg.content ? (
-                <span className="flex gap-1 items-center" style={{ color: "var(--primary)" }}>
-                  <span style={{ animation: "pulse 1.2s ease-in-out infinite" }}>●</span>
-                  <span style={{ animation: "pulse 1.2s ease-in-out 0.2s infinite" }}>●</span>
-                  <span style={{ animation: "pulse 1.2s ease-in-out 0.4s infinite" }}>●</span>
+              <span className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
+                Nova AI
+              </span>
+              {streaming && (
+                <span
+                  className="text-[9px] font-semibold tracking-widest uppercase"
+                  style={{ color: "var(--primary)" }}
+                >
+                  thinking…
                 </span>
-              ) : msg.role === "assistant" ? (
-                renderContent(msg.content, handleNavigate)
-              ) : (
-                msg.content
               )}
             </div>
-          </div>
-        ))}
-
-        {/* Quick prompts when chat is fresh */}
-        {messages.length <= 1 && !streaming && (
-          <div className="pt-1 space-y-1.5">
-            {QUICK_PROMPTS.map((p) => (
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              {messages.length > 1 && (
+                <button
+                  onClick={resetChat}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+                  style={{ color: "var(--muted-foreground)" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                  }}
+                  title="New conversation"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </button>
+              )}
               <button
-                key={p}
-                onClick={() => sendMessage(p)}
-                className="w-full text-left rounded-lg px-3 py-2 text-[11.5px] transition-colors"
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--border)",
-                  color: "var(--muted-foreground)",
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((x) => !x);
                 }}
+                className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+                style={{ color: "var(--muted-foreground)" }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
                   (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
@@ -468,72 +454,188 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                   (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
                 }}
               >
-                {p}
+                <ChevronDown
+                  className="h-3.5 w-3.5 transition-transform duration-200"
+                  style={{ transform: expanded ? "rotate(0deg)" : "rotate(180deg)" }}
+                />
               </button>
-            ))}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors"
+                style={{ color: "var(--muted-foreground)" }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                }}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
-        )}
 
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input */}
-      <div
-        className="px-3 pb-3 shrink-0"
-        style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}
-      >
-        <div
-          className="flex items-end gap-2 rounded-xl px-3 py-2"
-          style={{
-            border: "1px solid var(--border)",
-            background: "var(--surface-2)",
-          }}
-          onFocusCapture={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,107,26,0.35)";
-          }}
-          onBlurCapture={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-          }}
-        >
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask Nova..."
-            rows={1}
-            disabled={streaming}
-            className="flex-1 bg-transparent text-[12.5px] outline-none resize-none"
+          {/* Messages */}
+          <div
+            className="flex-1 overflow-y-auto px-5 py-2 space-y-3"
             style={{
-              color: "var(--foreground)",
-              maxHeight: 100,
-              overflowY: "auto",
-              lineHeight: 1.5,
-              caretColor: "var(--primary)",
-            }}
-            onInput={(e) => {
-              const el = e.currentTarget;
-              el.style.height = "auto";
-              el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
-            }}
-          />
-          <button
-            onClick={() => sendMessage(input)}
-            disabled={!input.trim() || streaming}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors"
-            style={{
-              background: input.trim() && !streaming ? "var(--primary)" : "transparent",
-              color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
-              cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
+              opacity: expanded ? 1 : 0,
+              transition: "opacity 0.12s",
+              pointerEvents: expanded ? "all" : "none",
             }}
           >
-            <Send className="h-3 w-3" />
-          </button>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn("flex gap-2 items-start", msg.role === "user" && "flex-row-reverse")}
+              >
+                {msg.role === "assistant" && (
+                  <div
+                    className="h-5 w-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                    style={{
+                      background: "linear-gradient(135deg, var(--primary) 0%, #ff8c42 100%)",
+                    }}
+                  >
+                    <Zap className="h-3 w-3 text-white" />
+                  </div>
+                )}
+                <div
+                  className="px-3 py-2 text-[12.5px] leading-relaxed"
+                  style={{
+                    maxWidth: "calc(100% - 36px)",
+                    background: msg.role === "user" ? "var(--primary)" : "var(--surface-2)",
+                    color: msg.role === "user" ? "#fff" : "var(--foreground)",
+                    border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
+                    borderRadius:
+                      msg.role === "user" ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
+                  }}
+                >
+                  {msg.pending && !msg.content ? (
+                    <span className="flex gap-1 items-center" style={{ color: "var(--primary)" }}>
+                      <span style={{ animation: "pulse 1.2s ease-in-out infinite" }}>●</span>
+                      <span style={{ animation: "pulse 1.2s ease-in-out 0.2s infinite" }}>●</span>
+                      <span style={{ animation: "pulse 1.2s ease-in-out 0.4s infinite" }}>●</span>
+                    </span>
+                  ) : msg.role === "assistant" ? (
+                    renderContent(msg.content, handleNavigate)
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Quick prompts when chat is fresh */}
+            {messages.length <= 1 && !streaming && (
+              <div className="flex flex-wrap gap-1.5 pt-1 pb-2">
+                {QUICK_PROMPTS.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => sendMessage(p)}
+                    className="rounded-full px-3 py-1.5 text-[11.5px] transition-colors"
+                    style={{
+                      background: "transparent",
+                      border: "1px solid var(--border)",
+                      color: "var(--muted-foreground)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,107,26,0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                      (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Input */}
+          <div
+            className="px-5 pb-4 shrink-0"
+            style={{
+              borderTop: "1px solid var(--border)",
+              paddingTop: 10,
+              opacity: expanded ? 1 : 0,
+              transition: "opacity 0.12s",
+              pointerEvents: expanded ? "all" : "none",
+            }}
+          >
+            <div
+              className="flex items-end gap-2 rounded-2xl px-3 py-2"
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface-2)",
+              }}
+              onFocusCapture={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,107,26,0.4)";
+              }}
+              onBlurCapture={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              }}
+            >
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask Nova anything about your business…"
+                rows={1}
+                disabled={streaming}
+                className="flex-1 bg-transparent text-[13px] outline-none resize-none"
+                style={{
+                  color: "var(--foreground)",
+                  maxHeight: 80,
+                  overflowY: "auto",
+                  lineHeight: 1.5,
+                  caretColor: "var(--primary)",
+                }}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = "auto";
+                  el.style.height = `${Math.min(el.scrollHeight, 80)}px`;
+                }}
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={!input.trim() || streaming}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all"
+                style={{
+                  background:
+                    input.trim() && !streaming
+                      ? "linear-gradient(135deg, var(--primary), #ff8c42)"
+                      : "transparent",
+                  color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
+                  cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
+                  boxShadow:
+                    input.trim() && !streaming ? "0 2px 8px rgba(255,107,26,0.4)" : "none",
+                }}
+              >
+                <Send className="h-3 w-3" />
+              </button>
+            </div>
+            <p
+              className="mt-1.5 text-center text-[10px]"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Nova AI · verify critical decisions
+            </p>
+          </div>
         </div>
-        <p className="mt-1.5 text-center text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-          Nova AI · verify critical decisions
-        </p>
       </div>
-    </aside>
+    </>
   );
 }

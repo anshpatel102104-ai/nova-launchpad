@@ -77,21 +77,24 @@ function AppLayout() {
         <NovaBar />
 
         <div className="flex flex-1 overflow-hidden">
-          <main className="flex-1 overflow-x-hidden overflow-y-auto pb-20 lg:pb-0">
+          <main
+            className="flex-1 overflow-x-hidden overflow-y-auto"
+            style={{ paddingBottom: railOpen && !hideRail ? 360 : 0 }}
+          >
             {isGalaxy ? (
               <div key={path} className="page-in h-full w-full">
                 <Outlet />
               </div>
             ) : (
-              <div key={path} className="page-in w-full px-5 py-5 md:px-7 md:py-6">
+              <div key={path} className="page-in w-full px-5 py-5 pb-20 md:px-7 md:py-6">
                 <Outlet />
               </div>
             )}
           </main>
-
-          {!hideRail && <IntelligenceRail open={railOpen} onClose={() => setRailOpen(false)} />}
         </div>
       </div>
+
+      {!hideRail && <IntelligenceRail open={railOpen} onClose={() => setRailOpen(false)} />}
 
       <MobileTabBar />
       <GuestGateModal />
