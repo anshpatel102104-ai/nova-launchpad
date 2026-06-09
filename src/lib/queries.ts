@@ -1090,3 +1090,288 @@ export async function decideApprovalRequest(
     .eq("id", requestId);
   if (error) throw error;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Monitoring layer (deviation alerts, expected outcomes, open loops)
+// Tables use org_id = auth.uid() RLS (single-owner, v1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DeviationAlert {
+  id: string;
+  org_id: string;
+  expected_outcome_id: string | null;
+  alert_type: string;
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
+  diagnosis: string | null;
+  status: "open" | "acknowledged" | "resolved";
+  triggered_at: string;
+  resolved_at: string | null;
+}
+
+export interface ExpectedOutcome {
+  id: string;
+  org_id: string;
+  metric_name: string;
+  target_value: number;
+  target_unit: string | null;
+  check_date: string;
+  tolerance_pct: number;
+  created_at: string;
+}
+
+export interface OpenLoop {
+  id: string;
+  org_id: string;
+  title: string;
+  description: string | null;
+  priority: "low" | "medium" | "high" | "critical";
+  status: "open" | "in_progress" | "resolved" | "dropped";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FailedJob {
+  id: string;
+  user_id: string | null;
+  tool_slug: string;
+  error_message: string | null;
+  retry_count: number;
+  next_retry_at: string;
+  status: "pending" | "retrying" | "resolved" | "dead";
+  created_at: string;
+}
+
+export interface N8nErrorLogEntry {
+  id: string;
+  workflow_name: string;
+  error_message: string | null;
+  error_node: string | null;
+  execution_id: string | null;
+  occurred_at: string;
+}
+
+export const deviationAlertsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["deviation_alerts", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as DeviationAlert[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("deviation_alerts")
+        .select("*")
+        .eq("org_id", userId)
+        .order("triggered_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as DeviationAlert[];
+    },
+    staleTime: 30_000,
+  });
+
+export const expectedOutcomesQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["expected_outcomes", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as ExpectedOutcome[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("expected_outcomes")
+        .select("*")
+        .eq("org_id", userId)
+        .order("check_date", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ExpectedOutcome[];
+    },
+    staleTime: 60_000,
+  });
+
+export const openLoopsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["open_loops", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as OpenLoop[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("open_loops")
+        .select("*")
+        .eq("org_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as OpenLoop[];
+    },
+    staleTime: 60_000,
+  });
+
+export const failedJobsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["failed_jobs", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as FailedJob[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("failed_jobs")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as FailedJob[];
+    },
+    staleTime: 30_000,
+  });
+
+export const n8nErrorLogQuery = () =>
+  queryOptions({
+    queryKey: ["n8n_error_log"],
+    queryFn: async () => {
+      if (isGuest()) return [] as N8nErrorLogEntry[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("n8n_error_log")
+        .select("*")
+        .order("occurred_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as N8nErrorLogEntry[];
+    },
+    staleTime: 60_000,
+  });
+
+export async function acknowledgeAlert(alertId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("deviation_alerts")
+    .update({ status: "acknowledged" })
+    .eq("id", alertId);
+  if (error) throw error;
+}
+
+export async function resolveAlert(alertId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("deviation_alerts")
+    .update({ status: "resolved", resolved_at: new Date().toISOString() })
+    .eq("id", alertId);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROI analytics (derived — no new tables, mirrors mentorKPIsQuery pattern)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Estimated minutes saved per tool category (heuristic, v1)
+const CATEGORY_TIME_SAVED_MINS: Record<string, number> = {
+  validate: 45,
+  plan: 90,
+  customers: 60,
+  launch: 75,
+  funding: 120,
+};
+
+export interface RoiAnalytics {
+  totalTimeSavedHrs: number;
+  totalToolRuns: number;
+  activeAutomations: number;
+  wonLeadsValue: number;
+  estimatedPipelineValue: number;
+  runsByCategory: Record<string, number>;
+}
+
+export const roiAnalyticsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["roi_analytics", orgId],
+    queryFn: async (): Promise<RoiAnalytics> => {
+      if (!orgId || isGuest()) {
+        return {
+          totalTimeSavedHrs: 0,
+          totalToolRuns: 0,
+          activeAutomations: 0,
+          wonLeadsValue: 0,
+          estimatedPipelineValue: 0,
+          runsByCategory: {},
+        };
+      }
+
+      const [runsRes, autoRes, leadsRes] = await Promise.all([
+        supabase
+          .from("tool_runs")
+          .select("id,status,tool_key,created_at")
+          .eq("organization_id", orgId)
+          .eq("status", "succeeded")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase
+          .from("automation_settings")
+          .select("id,enabled")
+          .eq("organization_id", orgId),
+        supabase
+          .from("leads")
+          .select("id,stage,value")
+          .eq("organization_id", orgId),
+      ]);
+
+      const runs = runsRes.data ?? [];
+      const autos = autoRes.data ?? [];
+      const leads = leadsRes.data ?? [];
+
+      // We need LAUNCHPAD_TOOLS to map tool_key → category
+      // Import dynamically to avoid circular deps — use a static fallback map instead
+      const TOOL_CATEGORY_MAP: Record<string, string> = {
+        "validate-idea": "validate",
+        "niche-scorer": "validate",
+        "mvp-planner": "plan",
+        "positioning-engine": "plan",
+        "competitor-scanner": "plan",
+        "persona-builder": "plan",
+        "pricing-calculator": "plan",
+        "first-10-customers-finder": "customers",
+        "pitch-generator": "launch",
+        "landing-page-creator": "launch",
+        "email-sequence": "launch",
+        "ad-copy": "launch",
+        "launch-checklist": "launch",
+        "funding-readiness": "funding",
+        "kpi-dashboard": "plan",
+        "idea-validator": "validate",
+      };
+
+      const runsByCategory: Record<string, number> = {};
+      let totalTimeMins = 0;
+
+      for (const run of runs) {
+        const category = TOOL_CATEGORY_MAP[run.tool_key ?? ""] ?? "plan";
+        runsByCategory[category] = (runsByCategory[category] ?? 0) + 1;
+        totalTimeMins += CATEGORY_TIME_SAVED_MINS[category] ?? 45;
+      }
+
+      const activeAutomations = autos.filter(
+        (a) => (a as { enabled?: boolean }).enabled === true,
+      ).length;
+
+      const wonLeadsValue = leads
+        .filter((l) => l.stage === "Won")
+        .reduce((s, l) => s + (Number(l.value) || 0), 0);
+
+      const estimatedPipelineValue = leads
+        .filter((l) => l.stage !== "Lost" && l.stage !== "Won")
+        .reduce((s, l) => s + (Number(l.value) || 0), 0);
+
+      return {
+        totalTimeSavedHrs: Math.round(totalTimeMins / 60),
+        totalToolRuns: runs.length,
+        activeAutomations,
+        wonLeadsValue,
+        estimatedPipelineValue,
+        runsByCategory,
+      };
+    },
+    staleTime: 120_000,
+  });

@@ -196,6 +196,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    id: "monitoring",
+    label: "Monitoring",
+    icon: Activity,
+    to: "/app/monitoring",
+    match: (p) => p === "/app/monitoring",
+  },
+  {
     id: "memory",
     label: "Memory",
     icon: Brain,
