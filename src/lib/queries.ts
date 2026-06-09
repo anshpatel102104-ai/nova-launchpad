@@ -95,7 +95,7 @@ const PLAN_GEN_LIMITS: Record<string, number | null> = {
 // Cumulative — each tier includes all tools from lower tiers.
 // Keep in sync with plan_tier_limits table seed.
 const PLAN_TOOLS: Record<string, string[]> = {
-  starter: ["validate-idea", "generate-pitch"],
+  starter: ["validate-idea", "generate-pitch", "persona-builder", "launch-checklist"],
   launch: [
     "validate-idea",
     "generate-pitch",
@@ -106,6 +106,29 @@ const PLAN_TOOLS: Record<string, string[]> = {
     "landing-page",
     "first-10-customers",
     "generate-followup-sequence",
+    "blog",
+    "social",
+    "email_sequence",
+    "sales_script",
+    "cold_email",
+    "pitch_deck",
+    "lead_magnet",
+    "niche_validator",
+    "icp",
+    "positioning-engine",
+    "niche-scorer",
+    "mvp-planner",
+    "competitor-scanner",
+    "gtm-strategy-builder",
+    "business-plan-generator",
+    "persona-builder",
+    "pricing-calculator",
+    "first-10-customers-finder",
+    "landing-page-creator",
+    "kpi-dashboard",
+    "seo-audit",
+    "launch-checklist",
+    "ad-copy",
   ],
   operate: [
     "validate-idea",
@@ -122,6 +145,35 @@ const PLAN_TOOLS: Record<string, string[]> = {
     "investor-emails",
     "business-plan",
     "analyze-website",
+    "blog",
+    "social",
+    "email_sequence",
+    "sales_script",
+    "cold_email",
+    "pitch_deck",
+    "lead_magnet",
+    "niche_validator",
+    "icp",
+    "positioning-engine",
+    "niche-scorer",
+    "mvp-planner",
+    "ad_creative",
+    "vsl",
+    "automation",
+    "client_report",
+    "competitor-scanner",
+    "gtm-strategy-builder",
+    "business-plan-generator",
+    "persona-builder",
+    "pricing-calculator",
+    "first-10-customers-finder",
+    "landing-page-creator",
+    "kpi-dashboard",
+    "seo-audit",
+    "launch-checklist",
+    "ad-copy",
+    "investor-email-writer",
+    "funding-readiness-score",
   ],
   scale: [
     "validate-idea",
@@ -141,6 +193,35 @@ const PLAN_TOOLS: Record<string, string[]> = {
     "competitor-analysis",
     "pricing-strategy",
     "revenue-projector",
+    "blog",
+    "social",
+    "email_sequence",
+    "sales_script",
+    "cold_email",
+    "pitch_deck",
+    "lead_magnet",
+    "niche_validator",
+    "icp",
+    "positioning-engine",
+    "niche-scorer",
+    "mvp-planner",
+    "ad_creative",
+    "vsl",
+    "automation",
+    "client_report",
+    "competitor-scanner",
+    "gtm-strategy-builder",
+    "business-plan-generator",
+    "persona-builder",
+    "pricing-calculator",
+    "first-10-customers-finder",
+    "landing-page-creator",
+    "kpi-dashboard",
+    "seo-audit",
+    "launch-checklist",
+    "ad-copy",
+    "investor-email-writer",
+    "funding-readiness-score",
   ],
 };
 
@@ -684,4 +765,708 @@ export const mentorKPIsQuery = (orgId: string) =>
         activeAutomations,
       };
     },
+  });
+
+// ── Setup Checklist (domain / email / legal / banking / tools) ────────────────
+
+export type ChecklistCategory = "domain" | "email" | "legal" | "banking" | "tools";
+export type ChecklistItemStatus = "pending" | "done" | "skipped";
+
+export type SetupChecklistItem = {
+  id: string;
+  organization_id: string;
+  category: ChecklistCategory;
+  label: string;
+  status: ChecklistItemStatus;
+  sort_order: number;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const CHECKLIST_CATEGORY_META: Record<ChecklistCategory, { label: string }> = {
+  domain: { label: "Domain" },
+  email: { label: "Email" },
+  legal: { label: "Legal" },
+  banking: { label: "Banking" },
+  tools: { label: "Tools" },
+};
+
+/** Static seed template — curated business-setup tasks, one-time-inserted per org. */
+const SETUP_CHECKLIST_TEMPLATE: { category: ChecklistCategory; label: string }[] = [
+  { category: "domain", label: "Register your business domain name" },
+  { category: "domain", label: "Point DNS at your hosting or landing page" },
+  { category: "domain", label: "Turn on WHOIS privacy protection" },
+  { category: "email", label: "Set up a professional address (you@yourdomain.com)" },
+  { category: "email", label: "Connect a transactional email provider (e.g. Postmark, Resend)" },
+  { category: "email", label: "Set up an email marketing tool (e.g. Mailchimp, ConvertKit)" },
+  { category: "legal", label: "Register your business entity (LLC / Corp)" },
+  { category: "legal", label: "Get an EIN / tax ID number" },
+  { category: "legal", label: "Draft Terms of Service and a Privacy Policy" },
+  { category: "banking", label: "Open a business bank account" },
+  { category: "banking", label: "Get a business debit or credit card" },
+  { category: "banking", label: "Connect a payment processor (e.g. Stripe)" },
+  { category: "tools", label: "Set up web analytics (e.g. Google Analytics, Plausible)" },
+  { category: "tools", label: "Connect a CRM or pipeline tracker" },
+  { category: "tools", label: "Set up a help-desk or support inbox" },
+];
+
+const GUEST_SETUP_CHECKLIST: SetupChecklistItem[] = SETUP_CHECKLIST_TEMPLATE.map((t, i) => ({
+  id: `guest-checklist-${i}`,
+  organization_id: "guest",
+  category: t.category,
+  label: t.label,
+  status: i < 3 ? "done" : "pending",
+  sort_order: i,
+  completed_at: i < 3 ? new Date().toISOString() : null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}));
+
+/**
+ * Org-scoped setup checklist. Self-seeds from the static template on first read
+ * (idempotent — only inserts when the org has zero rows) so no separate
+ * provisioning step or edge function is needed.
+ */
+export const setupChecklistQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["setup_checklist_items", orgId],
+    queryFn: async (): Promise<SetupChecklistItem[]> => {
+      if (isGuest() || !orgId) return GUEST_SETUP_CHECKLIST;
+
+      const { data, error } = await db
+        .from("setup_checklist_items")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("sort_order");
+      if (error) throw error;
+      if (data && data.length > 0) return data as SetupChecklistItem[];
+
+      const seedRows = SETUP_CHECKLIST_TEMPLATE.map((t, i) => ({
+        organization_id: orgId,
+        category: t.category,
+        label: t.label,
+        sort_order: i,
+      }));
+      const { data: seeded, error: seedError } = await db
+        .from("setup_checklist_items")
+        .insert(seedRows)
+        .select("*");
+      if (seedError) throw seedError;
+      return (seeded ?? []) as SetupChecklistItem[];
+    },
+    staleTime: 30_000,
+  });
+
+export async function setChecklistItemStatus(
+  id: string,
+  status: ChecklistItemStatus,
+): Promise<void> {
+  const { error } = await db
+    .from("setup_checklist_items")
+    .update({ status, completed_at: status === "done" ? new Date().toISOString() : null })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// ── Launch Control Center ──────────────────────────────────────────────────────
+// The control center composes setupChecklistQuery + mentorKPIsQuery directly (both
+// already exist) alongside this query, which owns just the two genuinely-new
+// aggregations: the analytics-install checklist and the feedback capture feed.
+
+const ANALYTICS_CHECKLIST_KEYS: { key: string; label: string }[] = [
+  { key: "googleanalytics", label: "Web analytics (Google Analytics)" },
+  { key: "facebook_api", label: "Meta / Facebook Ads pixel" },
+  { key: "stripe", label: "Payments (Stripe)" },
+  { key: "mailchimp", label: "Email marketing tool" },
+];
+const EMAIL_TOOL_KEYS = ["mailchimp", "klaviyo", "convertkit"];
+
+export type ToolFeedbackEntry = {
+  runId: string;
+  toolKey: string;
+  feedback: string;
+  feedbackAt: string | null;
+};
+
+export type LaunchControlExtras = {
+  analyticsChecklist: { key: string; label: string; connected: boolean }[];
+  feedback: ToolFeedbackEntry[];
+  insights: MentorInsight[];
+};
+
+export const launchControlExtrasQuery = (orgId: string, userId: string) =>
+  queryOptions({
+    queryKey: ["launch_control_extras", orgId, userId],
+    queryFn: async (): Promise<LaunchControlExtras> => {
+      if (isGuest() || !orgId) {
+        return {
+          analyticsChecklist: ANALYTICS_CHECKLIST_KEYS.map((a) => ({ ...a, connected: false })),
+          feedback: [],
+          insights: [],
+        };
+      }
+
+      const [integrationsRes, runsRes, insightsRes] = await Promise.all([
+        userId
+          ? db
+              .from("user_integrations_masked")
+              .select("integration_key,is_connected")
+              .eq("user_id", userId)
+          : Promise.resolve({ data: [] as { integration_key: string; is_connected: boolean }[] }),
+        db
+          .from("tool_runs")
+          .select("id,tool_key,feedback,feedback_at")
+          .eq("organization_id", orgId)
+          .not("feedback", "is", null)
+          .order("feedback_at", { ascending: false })
+          .limit(8),
+        db
+          .from("mentor_insights")
+          .select("*")
+          .eq("org_id", orgId)
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
+
+      const connectedKeys = new Set(
+        ((integrationsRes.data ?? []) as { integration_key: string; is_connected: boolean }[])
+          .filter((i) => i.is_connected)
+          .map((i) => i.integration_key),
+      );
+      const analyticsChecklist = ANALYTICS_CHECKLIST_KEYS.map((a) => ({
+        ...a,
+        connected:
+          connectedKeys.has(a.key) ||
+          (a.key === "mailchimp" && EMAIL_TOOL_KEYS.some((k) => connectedKeys.has(k))),
+      }));
+
+      const feedback: ToolFeedbackEntry[] = ((runsRes.data ?? []) as Record<string, unknown>[]).map(
+        (r) => ({
+          runId: String(r.id),
+          toolKey: String(r.tool_key ?? ""),
+          feedback: String(r.feedback ?? ""),
+          feedbackAt: (r.feedback_at as string | null) ?? null,
+        }),
+      );
+
+      return {
+        analyticsChecklist,
+        feedback,
+        insights: (insightsRes.data ?? []) as MentorInsight[],
+      };
+    },
+    staleTime: 30_000,
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Template applications
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface TemplateApplication {
+  id: string;
+  organization_id: string;
+  template_slug: string;
+  applied_at: string;
+  customizations: Record<string, unknown>;
+}
+
+export function templateApplicationsQuery(orgId: string) {
+  return queryOptions({
+    queryKey: ["template_applications", orgId],
+    queryFn: async () => {
+      if (!orgId) return [] as TemplateApplication[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("template_applications")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("applied_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as TemplateApplication[];
+    },
+    staleTime: 60_000,
+  });
+}
+
+export async function applyTemplate(orgId: string, templateSlug: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb.from("template_applications").insert({
+    organization_id: orgId,
+    template_slug: templateSlug,
+  });
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Approval requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "expired";
+export type ApprovalRequestType =
+  | "content_publish"
+  | "automation_change"
+  | "budget_spend"
+  | "client_communication";
+
+export interface ApprovalRequest {
+  id: string;
+  organization_id: string;
+  requested_by: string;
+  request_type: ApprovalRequestType;
+  title: string;
+  description: string | null;
+  payload: Record<string, unknown>;
+  status: ApprovalStatus;
+  approver_id: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  related_mission_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function approvalRequestsQuery(orgId: string, status?: ApprovalStatus) {
+  return queryOptions({
+    queryKey: ["approval_requests", orgId, status ?? "all"],
+    queryFn: async () => {
+      if (!orgId) return [] as ApprovalRequest[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      let q = sb
+        .from("approval_requests")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false });
+      if (status) q = q.eq("status", status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as ApprovalRequest[];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export async function createApprovalRequest(
+  orgId: string,
+  requestedBy: string,
+  fields: {
+    request_type: ApprovalRequestType;
+    title: string;
+    description?: string;
+    payload?: Record<string, unknown>;
+    related_mission_id?: string;
+  },
+): Promise<ApprovalRequest> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { data, error } = await sb
+    .from("approval_requests")
+    .insert({ organization_id: orgId, requested_by: requestedBy, ...fields })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as ApprovalRequest;
+}
+
+export async function decideApprovalRequest(
+  requestId: string,
+  decision: "approved" | "rejected",
+  approverId: string,
+  note?: string,
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("approval_requests")
+    .update({
+      status: decision,
+      approver_id: approverId,
+      decided_at: new Date().toISOString(),
+      decision_note: note ?? null,
+    })
+    .eq("id", requestId);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Monitoring layer (deviation alerts, expected outcomes, open loops)
+// Tables use org_id = auth.uid() RLS (single-owner, v1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DeviationAlert {
+  id: string;
+  org_id: string;
+  expected_outcome_id: string | null;
+  alert_type: string;
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
+  diagnosis: string | null;
+  status: "open" | "acknowledged" | "resolved";
+  triggered_at: string;
+  resolved_at: string | null;
+}
+
+export interface ExpectedOutcome {
+  id: string;
+  org_id: string;
+  metric_name: string;
+  target_value: number;
+  target_unit: string | null;
+  check_date: string;
+  tolerance_pct: number;
+  created_at: string;
+}
+
+export interface OpenLoop {
+  id: string;
+  org_id: string;
+  title: string;
+  description: string | null;
+  priority: "low" | "medium" | "high" | "critical";
+  status: "open" | "in_progress" | "resolved" | "dropped";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FailedJob {
+  id: string;
+  user_id: string | null;
+  tool_slug: string;
+  error_message: string | null;
+  retry_count: number;
+  next_retry_at: string;
+  status: "pending" | "retrying" | "resolved" | "dead";
+  created_at: string;
+}
+
+export interface N8nErrorLogEntry {
+  id: string;
+  workflow_name: string;
+  error_message: string | null;
+  error_node: string | null;
+  execution_id: string | null;
+  occurred_at: string;
+}
+
+export const deviationAlertsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["deviation_alerts", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as DeviationAlert[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("deviation_alerts")
+        .select("*")
+        .eq("org_id", userId)
+        .order("triggered_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as DeviationAlert[];
+    },
+    staleTime: 30_000,
+  });
+
+export const expectedOutcomesQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["expected_outcomes", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as ExpectedOutcome[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("expected_outcomes")
+        .select("*")
+        .eq("org_id", userId)
+        .order("check_date", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as ExpectedOutcome[];
+    },
+    staleTime: 60_000,
+  });
+
+export const openLoopsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["open_loops", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as OpenLoop[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("open_loops")
+        .select("*")
+        .eq("org_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as OpenLoop[];
+    },
+    staleTime: 60_000,
+  });
+
+export const failedJobsQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["failed_jobs", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return [] as FailedJob[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("failed_jobs")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as FailedJob[];
+    },
+    staleTime: 30_000,
+  });
+
+export const n8nErrorLogQuery = () =>
+  queryOptions({
+    queryKey: ["n8n_error_log"],
+    queryFn: async () => {
+      if (isGuest()) return [] as N8nErrorLogEntry[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("n8n_error_log")
+        .select("*")
+        .order("occurred_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as N8nErrorLogEntry[];
+    },
+    staleTime: 60_000,
+  });
+
+export async function acknowledgeAlert(alertId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("deviation_alerts")
+    .update({ status: "acknowledged" })
+    .eq("id", alertId);
+  if (error) throw error;
+}
+
+export async function resolveAlert(alertId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("deviation_alerts")
+    .update({ status: "resolved", resolved_at: new Date().toISOString() })
+    .eq("id", alertId);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROI analytics (derived — no new tables, mirrors mentorKPIsQuery pattern)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Estimated minutes saved per tool category (heuristic, v1)
+const CATEGORY_TIME_SAVED_MINS: Record<string, number> = {
+  validate: 45,
+  plan: 90,
+  customers: 60,
+  launch: 75,
+  funding: 120,
+};
+
+export interface RoiAnalytics {
+  totalTimeSavedHrs: number;
+  totalToolRuns: number;
+  activeAutomations: number;
+  wonLeadsValue: number;
+  estimatedPipelineValue: number;
+  runsByCategory: Record<string, number>;
+}
+
+export const roiAnalyticsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["roi_analytics", orgId],
+    queryFn: async (): Promise<RoiAnalytics> => {
+      if (!orgId || isGuest()) {
+        return {
+          totalTimeSavedHrs: 0,
+          totalToolRuns: 0,
+          activeAutomations: 0,
+          wonLeadsValue: 0,
+          estimatedPipelineValue: 0,
+          runsByCategory: {},
+        };
+      }
+
+      const [runsRes, autoRes, leadsRes] = await Promise.all([
+        supabase
+          .from("tool_runs")
+          .select("id,status,tool_key,created_at")
+          .eq("organization_id", orgId)
+          .eq("status", "succeeded")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase.from("automation_settings").select("id,enabled").eq("organization_id", orgId),
+        supabase.from("leads").select("id,stage,value").eq("organization_id", orgId),
+      ]);
+
+      const runs = runsRes.data ?? [];
+      const autos = autoRes.data ?? [];
+      const leads = leadsRes.data ?? [];
+
+      // We need LAUNCHPAD_TOOLS to map tool_key → category
+      // Import dynamically to avoid circular deps — use a static fallback map instead
+      const TOOL_CATEGORY_MAP: Record<string, string> = {
+        "validate-idea": "validate",
+        "niche-scorer": "validate",
+        "mvp-planner": "plan",
+        "positioning-engine": "plan",
+        "competitor-scanner": "plan",
+        "persona-builder": "plan",
+        "pricing-calculator": "plan",
+        "first-10-customers-finder": "customers",
+        "pitch-generator": "launch",
+        "landing-page-creator": "launch",
+        "email-sequence": "launch",
+        "ad-copy": "launch",
+        "launch-checklist": "launch",
+        "funding-readiness": "funding",
+        "kpi-dashboard": "plan",
+        "idea-validator": "validate",
+      };
+
+      const runsByCategory: Record<string, number> = {};
+      let totalTimeMins = 0;
+
+      for (const run of runs) {
+        const category = TOOL_CATEGORY_MAP[run.tool_key ?? ""] ?? "plan";
+        runsByCategory[category] = (runsByCategory[category] ?? 0) + 1;
+        totalTimeMins += CATEGORY_TIME_SAVED_MINS[category] ?? 45;
+      }
+
+      const activeAutomations = autos.filter(
+        (a) => (a as { enabled?: boolean }).enabled === true,
+      ).length;
+
+      const wonLeadsValue = leads
+        .filter((l) => l.stage === "Won")
+        .reduce((s, l) => s + (Number(l.value) || 0), 0);
+
+      const estimatedPipelineValue = leads
+        .filter((l) => l.stage !== "Lost" && l.stage !== "Won")
+        .reduce((s, l) => s + (Number(l.value) || 0), 0);
+
+      return {
+        totalTimeSavedHrs: Math.round(totalTimeMins / 60),
+        totalToolRuns: runs.length,
+        activeAutomations,
+        wonLeadsValue,
+        estimatedPipelineValue,
+        runsByCategory,
+      };
+    },
+    staleTime: 120_000,
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOP documents
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SopStatus = "draft" | "published" | "archived";
+
+export interface SopDocument {
+  id: string;
+  organization_id: string;
+  created_by: string | null;
+  title: string;
+  category: string | null;
+  content: string;
+  related_tool_keys: string[];
+  related_module_ids: string[];
+  status: SopStatus;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export const sopDocumentsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["sop_documents", orgId],
+    queryFn: async () => {
+      if (!orgId || isGuest()) return [] as SopDocument[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("sop_documents")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as SopDocument[];
+    },
+    staleTime: 60_000,
+  });
+
+export async function upsertSopDocument(
+  orgId: string,
+  userId: string,
+  fields: {
+    id?: string;
+    title: string;
+    category?: string;
+    content?: string;
+    status?: SopStatus;
+    related_tool_keys?: string[];
+    related_module_ids?: string[];
+  },
+): Promise<SopDocument> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const payload = {
+    organization_id: orgId,
+    created_by: userId,
+    ...fields,
+  };
+  const { data, error } = fields.id
+    ? await sb.from("sop_documents").update(payload).eq("id", fields.id).select().single()
+    : await sb.from("sop_documents").insert(payload).select().single();
+  if (error) throw error;
+  return data as SopDocument;
+}
+
+export async function deleteSopDocument(id: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb.from("sop_documents").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audit log (admin-only)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AuditLogEntry {
+  id: string;
+  user_id: string | null;
+  email: string | null;
+  event_type: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export const auditLogQuery = (limit = 200) =>
+  queryOptions({
+    queryKey: ["admin_audit_log", limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as AuditLogEntry[];
+    },
+    staleTime: 30_000,
   });

@@ -25,6 +25,9 @@ import {
   ChevronDown,
   ChevronRight,
   BookOpen,
+  Crosshair,
+  LayoutTemplate,
+  ClipboardList,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -76,6 +79,9 @@ const NAV_GROUPS: NavGroup[] = [
       p.startsWith("/app/launchpad") ||
       p === "/app/launchpad-path" ||
       p === "/app/assets" ||
+      p === "/app/launch-control" ||
+      p === "/app/templates" ||
+      p === "/app/sop-library" ||
       p.startsWith("/app/mission"),
     children: [
       {
@@ -83,6 +89,18 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/launchpad",
         icon: Sparkles,
         match: (p) => p.startsWith("/app/launchpad"),
+      },
+      {
+        label: "Launch Control",
+        to: "/app/launch-control",
+        icon: Crosshair,
+        match: (p) => p === "/app/launch-control",
+      },
+      {
+        label: "First Customers",
+        to: "/app/launchpad/first-customers",
+        icon: Users,
+        match: (p) => p === "/app/launchpad/first-customers",
       },
       {
         label: "Mission Path",
@@ -96,6 +114,18 @@ const NAV_GROUPS: NavGroup[] = [
         icon: FileText,
         match: (p) => p === "/app/assets",
       },
+      {
+        label: "Templates",
+        to: "/app/templates",
+        icon: LayoutTemplate,
+        match: (p) => p === "/app/templates",
+      },
+      {
+        label: "SOP Library",
+        to: "/app/sop-library",
+        icon: BookOpen,
+        match: (p) => p === "/app/sop-library",
+      },
     ],
   },
   {
@@ -107,8 +137,24 @@ const NAV_GROUPS: NavGroup[] = [
       p.startsWith("/app/nova") ||
       p.startsWith("/app/scale") ||
       p === "/app/contacts" ||
-      p === "/app/leads",
+      p === "/app/leads" ||
+      p === "/app/command-center" ||
+      p === "/app/nova-os" ||
+      p.startsWith("/app/nova-os/") ||
+      p === "/app/approvals",
     children: [
+      {
+        label: "Command Center",
+        to: "/app/command-center",
+        icon: LayoutDashboard,
+        match: (p) => p === "/app/command-center",
+      },
+      {
+        label: "Nova OS",
+        to: "/app/nova-os",
+        icon: Zap,
+        match: (p) => p === "/app/nova-os" || p.startsWith("/app/nova-os/"),
+      },
       {
         label: "Pipeline",
         to: "/app/nova/crm",
@@ -120,6 +166,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/contacts",
         icon: Users,
         match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/nova/leads",
+      },
+      {
+        label: "Approvals",
+        to: "/app/approvals",
+        icon: ClipboardList,
+        match: (p) => p === "/app/approvals",
       },
       {
         label: "Campaigns",
@@ -149,6 +201,13 @@ const NAV_GROUPS: NavGroup[] = [
         match: (p) => p === "/app/integrations",
       },
     ],
+  },
+  {
+    id: "monitoring",
+    label: "Monitoring",
+    icon: Activity,
+    to: "/app/monitoring",
+    match: (p) => p === "/app/monitoring",
   },
   {
     id: "memory",

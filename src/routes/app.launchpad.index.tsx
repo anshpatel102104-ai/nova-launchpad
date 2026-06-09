@@ -2,8 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
+import { launchpadCatalog } from "@/lib/mock";
 import { useAuth } from "@/lib/auth";
-import { toolRunsQuery, organizationQuery, leadsQuery } from "@/lib/queries";
+import {
+  toolRunsQuery,
+  organizationQuery,
+  leadsQuery,
+  subscriptionQuery,
+  planEntitlementsQuery,
+} from "@/lib/queries";
 import {
   Lock,
   Search,
@@ -74,6 +81,23 @@ function LaunchpadOverview() {
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const plansQ = useQuery(planEntitlementsQuery());
+
+  // Real per-plan entitlements — mirrors the `isToolLocked` check in app.launchpad.$tool.tsx
+  // so a card's lock state always matches whether clicking it actually unlocks the tool.
+  const planTier = subQ.data?.plan ?? "starter";
+  const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
+  const toolKeyBySlug = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of launchpadCatalog) map.set(t.key, t.toolKey);
+    return map;
+  }, []);
+  const isToolAvailable = (slug: string) => {
+    if (isOwner) return true;
+    if (!currentEnt) return true;
+    return currentEnt.allowed_tools.includes(toolKeyBySlug.get(slug) ?? slug);
+  };
 
   const runsByTool = useMemo(() => {
     const map = new Map<string, number>();
@@ -308,7 +332,7 @@ function LaunchpadOverview() {
                         slug={tool.slug}
                         name={tool.name}
                         description={tool.description}
-                        available={isOwner || tool.plan === "0"}
+                        available={isToolAvailable(tool.slug)}
                         runCount={runsByTool.get(tool.slug) ?? 0}
                         estimatedMinutes={tool.estimatedMinutes}
                         icon={tool.icon}
@@ -328,7 +352,7 @@ function LaunchpadOverview() {
                 slug={tool.slug}
                 name={tool.name}
                 description={tool.description}
-                available={isOwner || tool.plan === "0"}
+                available={isToolAvailable(tool.slug)}
                 runCount={runsByTool.get(tool.slug) ?? 0}
                 estimatedMinutes={tool.estimatedMinutes}
                 icon={tool.icon}

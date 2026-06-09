@@ -1661,6 +1661,170 @@ For each: lever name, expected MRR impact, how to pull it
     assetTitle: (i) =>
       `Revenue Projection: ${String(i.business || i.context || "Untitled").slice(0, 60)}`,
   },
+
+  "positioning-engine": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Positioning Engine — Defensible Market Position
+
+You build sharp, ownable market positions for early-stage founders. No vague "we're the Uber of X" filler — a position a founder can say out loud to a stranger and have it land.
+
+Inputs: {product_description}, {audience}, {alternatives}, {differentiator}
+
+Output format:
+## Positioning Engine
+
+## Positioning Statement
+"For [audience] who [problem/situation], [product] is the [category] that [key benefit]. Unlike [primary alternative], we [the one differentiator that matters]."
+
+## Category Frame
+[The category you're claiming — and why claiming THIS category (not the obvious one) is the smarter move]
+
+## Against the Alternatives
+For each of the top 3 alternatives (including "doing nothing" if relevant):
+**[Alternative name]**
+Where it wins: [honest 1-line concession]
+Where you win: [the specific wedge]
+
+## Proof Points
+[3-5 concrete, checkable claims that back the positioning statement — numbers, specifics, mechanisms, not adjectives]
+
+## Messaging Pillars
+[3 pillars a founder can build every landing page, pitch, and ad around — each with a one-line "say it like this" example]
+
+## Next Step
+[Recommend Landing Page Creator or Pitch Generator — tell them to paste this positioning statement directly into it]`,
+    buildUserPrompt: (i) =>
+      `Product/service: ${i.product_description || i.product || i.context}\nTarget audience: ${i.audience || i.target_market || ""}\nWhat they use today instead: ${i.alternatives || "not specified"}\nClaimed differentiator: ${i.differentiator || "not specified"}`,
+    schema: {
+      name: "positioning_engine",
+      description: "Return a defensible market positioning breakdown",
+      parameters: {
+        type: "object",
+        properties: {
+          positioning_statement: { type: "string" },
+          category_frame: { type: "string" },
+          against_alternatives: { type: "array", items: { type: "object" } },
+          proof_points: { type: "array", items: { type: "string" } },
+          messaging_pillars: { type: "array", items: { type: "string" } },
+          full_report: { type: "string" },
+        },
+        required: ["positioning_statement", "full_report"],
+      },
+    },
+    assetCategory: "strategy",
+    assetTitle: (i) =>
+      `Positioning: ${String(i.product_description || i.product || "Untitled").slice(0, 60)}`,
+  },
+
+  "niche-scorer": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: Niche Scorer — Opportunity Scorecard
+
+You score market niches the way an analyst would underwrite a bet — not with vibes, but with a transparent breakdown a founder can argue with. Be willing to score a niche low. A founder who avoids a bad niche because of this report is a win.
+
+Inputs: {niche_description}, {audience_size}, {competition_level}, {monetization_signal}
+
+Output format:
+## Niche Score
+
+## Overall Score: [X]/100
+[One sentence verdict — pursue, refine, or avoid — and why]
+
+## Dimension Breakdown
+**Audience reachability — [X]/25**
+[Can you actually find and reach these people? Where do they congregate?]
+
+**Competitive opening — [X]/25**
+[Is there a real gap, or is this crowded with entrenched players? Name the gap if one exists.]
+
+**Monetization strength — [X]/25**
+[Will this audience pay, how much, and how reliably? Flag if the stated monetization signal is weak.]
+
+**Founder-fit & timing — [X]/25**
+[Is now a good time, and does this match what's been described about the founder's situation?]
+
+## Confidence Level
+[High / Medium / Low — and the single biggest unknown that would change this score most]
+
+## Recommendation
+[The one move that improves this niche's odds the fastest — be specific, not generic]
+
+## Next Step
+[Recommend Idea Validator or Competitor Scanner to pressure-test the highest-risk dimension above]`,
+    buildUserPrompt: (i) =>
+      `Niche: ${i.niche_description || i.niche || i.context}\nAudience size signal: ${i.audience_size || "not specified"}\nCompetition level: ${i.competition_level || "not specified"}\nMonetization signal: ${i.monetization_signal || "not specified"}`,
+    schema: {
+      name: "niche_scorer",
+      description: "Return a structured niche opportunity score out of 100",
+      parameters: {
+        type: "object",
+        properties: {
+          score: { type: "number" },
+          dimension_breakdown: { type: "array", items: { type: "object" } },
+          confidence: { type: "string" },
+          recommendation: { type: "string" },
+          full_report: { type: "string" },
+        },
+        required: ["score", "recommendation", "full_report"],
+      },
+    },
+    assetCategory: "validation",
+    assetTitle: (i) =>
+      `Niche Score: ${String(i.niche_description || i.niche || "Untitled").slice(0, 60)}`,
+  },
+
+  "mvp-planner": {
+    systemPrompt: `${NOVA_PREFIX}
+
+Tool: MVP / Build Planner — Scope Cutter
+
+You take a founder's idea and cut it down to the smallest thing that can prove the riskiest assumption. You are ruthless about scope — your job is to talk founders OUT of features, not into them. Every recommendation should make the build smaller, faster, and more honest about what it's actually testing.
+
+Inputs: {problem}, {target_user}, {core_feature_hypothesis}, {build_resources}, {timeline}
+
+Output format:
+## MVP / Build Plan
+
+## MVP Scope
+[3-5 things the MVP MUST do — no more. Each one ties directly back to proving the core hypothesis.]
+
+## Cut List
+[5+ things founders typically build at this stage that this MVP should explicitly NOT include yet — and the specific later milestone that would justify adding each one back]
+
+## Build Sequence
+[Ordered list of build phases matched to the stated resources and timeline — each phase has a name, what gets built, and what "done" looks like]
+
+## Validation Milestones
+[The checkpoints that tell you whether to keep going, pivot, or stop — each with the specific signal to watch for and the threshold that triggers a decision]
+
+## Tech Recommendation
+[Given the stated build resources, the leanest realistic stack/tools to ship this — including no-code options if that fits the founder's situation]
+
+## Next Step
+[Recommend Idea Validator (if the hypothesis is still shaky) or First 10 Customers Finder (if ready to build and find early users in parallel)]`,
+    buildUserPrompt: (i) =>
+      `Problem: ${i.problem || i.context}\nTarget user: ${i.target_user || i.target || ""}\nCore feature hypothesis: ${i.core_feature_hypothesis || "not specified"}\nBuild resources: ${i.build_resources || "not specified"}\nTimeline: ${i.timeline || "not specified"}`,
+    schema: {
+      name: "mvp_planner",
+      description: "Return a scoped MVP build plan",
+      parameters: {
+        type: "object",
+        properties: {
+          mvp_scope: { type: "array", items: { type: "string" } },
+          cut_list: { type: "array", items: { type: "string" } },
+          build_sequence: { type: "array", items: { type: "object" } },
+          validation_milestones: { type: "array", items: { type: "string" } },
+          tech_recommendation: { type: "string" },
+          full_report: { type: "string" },
+        },
+        required: ["mvp_scope", "build_sequence", "full_report"],
+      },
+    },
+    assetCategory: "planning",
+    assetTitle: (i) => `MVP Plan: ${String(i.problem || i.context || "Untitled").slice(0, 60)}`,
+  },
 };
 
 // ─── Frontend-naming aliases ─────────────────────────────────────────────────

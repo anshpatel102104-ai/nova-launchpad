@@ -26,7 +26,10 @@ const QUICK_PROMPTS_BASE = [
 
 function buildQuickPrompts(idea: string | null, stage: string, toolRunCount: number): string[] {
   const prompts: string[] = [];
-  if (idea) prompts.push(`What's the #1 thing I should do today for ${idea.split(" ").slice(0, 4).join(" ")}?`);
+  if (idea)
+    prompts.push(
+      `What's the #1 thing I should do today for ${idea.split(" ").slice(0, 4).join(" ")}?`,
+    );
   if (stage === "Validate" || toolRunCount < 3) {
     prompts.push("Have I validated this idea enough to move forward?");
     prompts.push("What assumptions am I making that could kill this?");
@@ -282,7 +285,12 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
             ...(currentMission ? { current_mission: currentMission } : {}),
             ...(toolRunCount > 0 ? { tools_completed: String(toolRunCount) } : {}),
             ...(recentRuns.length > 0
-              ? { recent_tools: recentRuns.map((r) => r.toolKey).filter(Boolean).join(", ") }
+              ? {
+                  recent_tools: recentRuns
+                    .map((r) => r.toolKey)
+                    .filter(Boolean)
+                    .join(", "),
+                }
               : {}),
           },
           org_id: (ctxAny.organization_id as string) || undefined,
@@ -360,11 +368,14 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
 
   // Extract telemetry from workspace context — field paths match buildAgentContext output
   const ctxAny = context as Record<string, unknown>;
-  const profile = (ctxAny.profile as { full_name?: string; idea?: string; challenge?: string }) ?? {};
+  const profile =
+    (ctxAny.profile as { full_name?: string; idea?: string; challenge?: string }) ?? {};
   const currentMissionObj = (ctxAny.current_mission as { title?: string; id?: string }) ?? {};
-  const recentRunsRaw = (ctxAny.recent_tool_runs as Array<{ tool_key?: string; status?: string }>) ?? [];
+  const recentRunsRaw =
+    (ctxAny.recent_tool_runs as Array<{ tool_key?: string; status?: string }>) ?? [];
 
-  const displayName = profile.full_name || (ctxAny.name as string) || user?.email?.split("@")[0] || "Founder";
+  const displayName =
+    profile.full_name || (ctxAny.name as string) || user?.email?.split("@")[0] || "Founder";
   const planTier = (ctxAny.plan as string) || "starter";
   const currentIdea = profile.idea?.trim() || null;
   const currentChallenge = profile.challenge?.trim() || null;
@@ -533,7 +544,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                 RECENT ACTIVITY
               </div>
               {recentRuns.slice(0, 4).map((run, i) => {
-                const key = run.toolKey || run.tool || "tool";
+                const key = run.toolKey || "tool";
                 return (
                   <div
                     key={i}
