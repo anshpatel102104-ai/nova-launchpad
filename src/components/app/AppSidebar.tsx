@@ -27,6 +27,7 @@ import {
   BookOpen,
   Crosshair,
   LayoutTemplate,
+  ClipboardList,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -129,8 +130,24 @@ const NAV_GROUPS: NavGroup[] = [
       p.startsWith("/app/nova") ||
       p.startsWith("/app/scale") ||
       p === "/app/contacts" ||
-      p === "/app/leads",
+      p === "/app/leads" ||
+      p === "/app/command-center" ||
+      p === "/app/nova-os" ||
+      p.startsWith("/app/nova-os/") ||
+      p === "/app/approvals",
     children: [
+      {
+        label: "Command Center",
+        to: "/app/command-center",
+        icon: LayoutDashboard,
+        match: (p) => p === "/app/command-center",
+      },
+      {
+        label: "Nova OS",
+        to: "/app/nova-os",
+        icon: Zap,
+        match: (p) => p === "/app/nova-os" || p.startsWith("/app/nova-os/"),
+      },
       {
         label: "Pipeline",
         to: "/app/nova/crm",
@@ -142,6 +159,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/contacts",
         icon: Users,
         match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/nova/leads",
+      },
+      {
+        label: "Approvals",
+        to: "/app/approvals",
+        icon: ClipboardList,
+        match: (p) => p === "/app/approvals",
       },
       {
         label: "Campaigns",

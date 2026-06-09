@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/app/PageHeader";
 import { StatusPill } from "@/components/app/StatusPill";
 import { LockedOverlay } from "@/components/app/LockedOverlay";
 import { NOVA_SYSTEMS } from "@/lib/catalog";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useAuth } from "@/lib/auth";
 import { canAccessSystem, PLANS } from "@/lib/plan";
+import { automationSettingsQuery } from "@/lib/queries";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +17,14 @@ export const Route = createFileRoute("/app/nova-os")({
 
 function NovaOSPage() {
   const { workspace } = useWorkspace();
+  const { currentOrgId } = useAuth();
+  const orgId = currentOrgId ?? "";
+
+  const settingsQ = useQuery({ ...automationSettingsQuery(orgId), enabled: !!orgId });
+  const settingsByKey = Object.fromEntries(
+    (settingsQ.data ?? []).map((s) => [s.key, s]),
+  );
+
   return (
     <>
       <PageHeader
@@ -25,6 +36,13 @@ function NovaOSPage() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {NOVA_SYSTEMS.map((sys, i) => {
           const unlocked = canAccessSystem(workspace.plan, i);
+          const setting = settingsByKey[sys.slug];
+          const isEnabled = setting?.enabled ?? false;
+          const isConfigured = setting != null;
+
+          const statusTone = isEnabled ? "success" : isConfigured ? "primary" : "muted";
+          const statusLabel = isEnabled ? "Active" : isConfigured ? "Setup needed" : "Inactive";
+
           return (
             <div key={sys.slug} className="relative">
               <div className="nova-card nova-card-hover p-5 h-full flex flex-col">
@@ -32,8 +50,8 @@ function NovaOSPage() {
                   <div className="h-9 w-9 rounded-md border border-border bg-surface-elevated grid place-items-center">
                     <sys.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <StatusPill tone={i === 0 ? "primary" : "muted"}>
-                    {i === 0 ? "Setup needed" : "Inactive"}
+                  <StatusPill tone={statusTone}>
+                    {statusLabel}
                   </StatusPill>
                 </div>
                 <h3 className="text-sm font-semibold">{sys.name}</h3>

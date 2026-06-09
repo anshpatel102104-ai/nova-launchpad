@@ -999,3 +999,94 @@ export async function applyTemplate(orgId: string, templateSlug: string): Promis
   });
   if (error) throw error;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Approval requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "expired";
+export type ApprovalRequestType =
+  | "content_publish"
+  | "automation_change"
+  | "budget_spend"
+  | "client_communication";
+
+export interface ApprovalRequest {
+  id: string;
+  organization_id: string;
+  requested_by: string;
+  request_type: ApprovalRequestType;
+  title: string;
+  description: string | null;
+  payload: Record<string, unknown>;
+  status: ApprovalStatus;
+  approver_id: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  related_mission_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function approvalRequestsQuery(orgId: string, status?: ApprovalStatus) {
+  return queryOptions({
+    queryKey: ["approval_requests", orgId, status ?? "all"],
+    queryFn: async () => {
+      if (!orgId) return [] as ApprovalRequest[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      let q = sb
+        .from("approval_requests")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false });
+      if (status) q = q.eq("status", status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as ApprovalRequest[];
+    },
+    staleTime: 30_000,
+  });
+}
+
+export async function createApprovalRequest(
+  orgId: string,
+  requestedBy: string,
+  fields: {
+    request_type: ApprovalRequestType;
+    title: string;
+    description?: string;
+    payload?: Record<string, unknown>;
+    related_mission_id?: string;
+  },
+): Promise<ApprovalRequest> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { data, error } = await sb
+    .from("approval_requests")
+    .insert({ organization_id: orgId, requested_by: requestedBy, ...fields })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as ApprovalRequest;
+}
+
+export async function decideApprovalRequest(
+  requestId: string,
+  decision: "approved" | "rejected",
+  approverId: string,
+  note?: string,
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb
+    .from("approval_requests")
+    .update({
+      status: decision,
+      approver_id: approverId,
+      decided_at: new Date().toISOString(),
+      decision_note: note ?? null,
+    })
+    .eq("id", requestId);
+  if (error) throw error;
+}
