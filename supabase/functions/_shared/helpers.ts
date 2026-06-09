@@ -1,6 +1,8 @@
 // Shared helpers for AI edge functions
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { CLAUDE_MODEL } from "./config.ts";
+import { callPAL, buildUsageRows } from "./pal/index.ts";
+import type { PALResult } from "./pal/types.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,7 +78,7 @@ export async function authenticateAndAuthorize(
     );
   }
 
-  // Quota check
+  // Quota check against usage_tracking
   if (monthlyLimit !== null) {
     const period = new Date().toISOString().slice(0, 7);
     const { data: usageRows } = await supabase
@@ -118,6 +120,8 @@ export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
   }
 }
 
+// ─── callClaude (legacy — kept for feedback-loop, memory-query) ───────────
+
 export async function callClaude(
   systemPrompt: string,
   userPrompt: string,
@@ -127,46 +131,57 @@ export async function callClaude(
     parameters: Record<string, unknown>;
   },
 ): Promise<Record<string, unknown>> {
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
-
-  const resp = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 8192,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-      tools: [
-        {
-          name: schema.name,
-          description: schema.description,
-          input_schema: schema.parameters,
-        },
-      ],
-      tool_choice: { type: "tool", name: schema.name },
-    }),
-  });
-
-  if (!resp.ok) {
-    if (resp.status === 429) throw new Error("RATE_LIMIT");
-    if (resp.status === 402) throw new Error("PAYMENT_REQUIRED");
-    const t = await resp.text();
-    throw new Error(`Anthropic API error: ${resp.status} ${t}`);
-  }
-
-  const data = await resp.json();
-  const toolUse = (data.content as Array<{ type: string; input?: Record<string, unknown> }>)?.find(
-    (b) => b.type === "tool_use",
+  const result = await callPAL(
+    { systemPrompt, userPrompt, tool: schema },
+    { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
   );
-  if (!toolUse?.input) throw new Error("No tool_use block in Anthropic response");
-  return toolUse.input;
+  if (!result.toolResult) throw new Error("No tool_use block in response");
+  return result.toolResult;
 }
+
+// ─── callClaudeTracked — returns PALResult with usage info ────────────────
+
+export async function callClaudeTracked(
+  systemPrompt: string,
+  userPrompt: string,
+  schema: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  },
+  plan = "starter",
+  toolKey?: string,
+): Promise<PALResult> {
+  return callPAL(
+    { systemPrompt, userPrompt, tool: schema },
+    { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
+    plan,
+    toolKey,
+  );
+}
+
+// ─── writeUsage — persists credit_ledger + usage_events ──────────────────
+
+export async function writeUsage(
+  admin: SupabaseClient,
+  result: PALResult,
+  opts: {
+    userId: string;
+    orgId: string | null;
+    workspaceId: string | null;
+    eventType: string;
+    resourceKey: string;
+  },
+): Promise<void> {
+  const { creditRow, usageRow } = buildUsageRows(result, opts);
+
+  await Promise.allSettled([
+    admin.from("credit_ledger").insert(creditRow),
+    usageRow ? admin.from("usage_events").insert(usageRow) : Promise.resolve(),
+  ]);
+}
+
+// ─── runTool — central tool execution wrapper ─────────────────────────────
 
 export async function runTool(opts: {
   req: Request;
@@ -176,8 +191,6 @@ export async function runTool(opts: {
   schema: { name: string; description: string; parameters: Record<string, unknown> };
   assetCategory: string;
   assetTitle: (input: Record<string, unknown>, output: Record<string, unknown>) => string;
-  // Pre-parsed body — pass when the caller already consumed req.json() to avoid
-  // double-reading the stream (e.g. the central run-tool router).
   preloadedInput?: Record<string, unknown>;
 }) {
   if (opts.req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -216,23 +229,55 @@ export async function runTool(opts: {
     return jsonResponse({ error: "Failed to create run", details: runErr?.message }, 500);
 
   try {
-    const output = await callClaude(opts.systemPrompt, opts.buildUserPrompt(input), opts.schema);
+    const palResult = await callClaudeTracked(
+      opts.systemPrompt,
+      opts.buildUserPrompt(input),
+      opts.schema,
+      ctx.plan,
+      opts.toolKey,
+    );
+    const output = palResult.toolResult!;
 
-    await ctx.supabase
-      .from("tool_runs")
-      .update({ status: "succeeded", output, completed_at: new Date().toISOString() })
-      .eq("id", run.id);
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
-    await ctx.supabase.from("generated_assets").insert({
-      organization_id: ctx.organizationId,
-      user_id: ctx.userId,
-      tool_run_id: run.id,
-      kind: opts.toolKey,
-      title: opts.assetTitle(input, output),
-      metadata: output,
-    });
+    await Promise.all([
+      // Update tool_run with output + model attribution
+      admin
+        .from("tool_runs")
+        .update({
+          status: "succeeded",
+          output,
+          model: palResult.model,
+          provider_name: palResult.provider,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", run.id),
 
-    await incrementUsage(ctx, opts.toolKey);
+      // Save generated asset
+      admin.from("generated_assets").insert({
+        organization_id: ctx.organizationId,
+        user_id: ctx.userId,
+        tool_run_id: run.id,
+        kind: opts.toolKey,
+        title: opts.assetTitle(input, output),
+        metadata: output,
+      }),
+
+      // Increment quota counter
+      incrementUsage(ctx, opts.toolKey),
+
+      // Write credits + usage event
+      writeUsage(admin, palResult, {
+        userId: ctx.userId,
+        orgId: ctx.organizationId,
+        workspaceId: null,
+        eventType: "tool_run",
+        resourceKey: opts.toolKey,
+      }),
+    ]);
 
     return jsonResponse({ run_id: run.id, output });
   } catch (e) {

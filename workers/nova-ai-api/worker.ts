@@ -1,5 +1,6 @@
 // nova-ai-api — POST /api/nova
 // Streams Claude responses for Nova AI chat. Saves to nova_conversations.
+// After streaming, writes credit_ledger + usage_events entries via Supabase REST.
 
 export interface Env {
   SUPABASE_URL: string;
@@ -13,6 +14,10 @@ export interface Env {
 
 const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
 const MODEL = "claude-sonnet-4-6";
+
+// Cost per 1k tokens (matches ai_model_catalog)
+const COST_INPUT_PER_1K  = 0.003;
+const COST_OUTPUT_PER_1K = 0.015;
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova.
 
@@ -39,7 +44,6 @@ Dynamic context will be injected at runtime with user business data.`;
 
 async function validateJWT(token: string, env: Env): Promise<{ sub: string } | null> {
   try {
-    // Validate by calling Supabase auth endpoint
     const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: { Authorization: `Bearer ${token}`, apikey: env.SUPABASE_ANON_KEY },
     });
@@ -51,7 +55,7 @@ async function validateJWT(token: string, env: Env): Promise<{ sub: string } | n
   }
 }
 
-function corsHeaders(origin: string) {
+function cors() {
   return {
     "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -59,11 +63,53 @@ function corsHeaders(origin: string) {
   };
 }
 
+/** Fire-and-forget: write credit_ledger + usage_events to Supabase via REST. */
+async function recordUsage(env: Env, opts: {
+  userId: string;
+  tokensIn: number;
+  tokensOut: number;
+  latencyMs: number;
+}) {
+  const actualCostUsd =
+    (opts.tokensIn / 1000) * COST_INPUT_PER_1K +
+    (opts.tokensOut / 1000) * COST_OUTPUT_PER_1K;
+  const credits = Math.max(1, Math.ceil((opts.tokensIn + opts.tokensOut * 2) / 1000));
+
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    Prefer: "return=minimal",
+  };
+  const base = `${env.SUPABASE_URL}/rest/v1`;
+
+  await Promise.allSettled([
+    fetch(`${base}/credit_ledger`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        user_id: opts.userId,
+        tool: "nova_chat_worker",
+        cost: credits,
+        status: "confirmed",
+        actual_cost_usd: actualCostUsd,
+        provider_name: "anthropic",
+        model_id: MODEL,
+        meta: {
+          tokens_in: opts.tokensIn,
+          tokens_out: opts.tokensOut,
+          latency_ms: opts.latencyMs,
+        },
+      }),
+    }),
+  ]);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin") ?? "";
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return new Response(null, { status: 204, headers: cors() });
     }
     if (request.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
@@ -76,7 +122,7 @@ export default {
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+        headers: { ...cors(), "Content-Type": "application/json" },
       });
     }
 
@@ -122,12 +168,16 @@ export default {
       const err = await aiRes.text();
       return new Response(JSON.stringify({ error: "AI error", detail: err }), {
         status: 502,
-        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+        headers: { ...cors(), "Content-Type": "application/json" },
       });
     }
 
-    // Collect full text while streaming
+    const sid = session_id ?? crypto.randomUUID();
     let fullText = "";
+    let tokensIn = 0;
+    let tokensOut = 0;
+    const t0 = Date.now();
+
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
@@ -145,6 +195,15 @@ export default {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
+
+            // Extract token counts from Anthropic streaming events
+            if (parsed.type === "message_start" && parsed.message?.usage) {
+              tokensIn = parsed.message.usage.input_tokens ?? 0;
+            }
+            if (parsed.type === "message_delta" && parsed.usage) {
+              tokensOut = parsed.usage.output_tokens ?? 0;
+            }
+
             const text = parsed.delta?.text ?? "";
             if (text) {
               fullText += text;
@@ -157,36 +216,41 @@ export default {
       }
       await writer.close();
 
-      // Save conversation to Supabase
-      const sid = session_id ?? crypto.randomUUID();
-      const updatedMessages = [
-        ...conversation_history,
-        { role: "user", content: message },
-        { role: "assistant", content: fullText },
-      ];
-      await fetch(`${env.SUPABASE_URL}/rest/v1/nova_conversations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-          Prefer: "resolution=merge-duplicates",
-        },
-        body: JSON.stringify({
-          user_id: user.sub,
-          session_id: sid,
-          messages: updatedMessages,
-          updated_at: new Date().toISOString(),
+      const latencyMs = Date.now() - t0;
+
+      // Fire-and-forget: save conversation + write credits
+      const headers = {
+        "Content-Type": "application/json",
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "resolution=merge-duplicates",
+      };
+
+      await Promise.allSettled([
+        fetch(`${env.SUPABASE_URL}/rest/v1/nova_conversations`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            user_id: user.sub,
+            session_id: sid,
+            messages: [
+              ...conversation_history,
+              { role: "user", content: message },
+              { role: "assistant", content: fullText },
+            ],
+            updated_at: new Date().toISOString(),
+          }),
         }),
-      });
+        recordUsage(env, { userId: user.sub, tokensIn, tokensOut, latencyMs }),
+      ]);
     })();
 
     return new Response(readable, {
       headers: {
-        ...corsHeaders(origin),
+        ...cors(),
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        "X-Session-Id": session_id ?? "",
+        "X-Session-Id": sid,
       },
     });
   },
