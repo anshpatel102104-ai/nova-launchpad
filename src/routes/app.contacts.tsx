@@ -22,6 +22,8 @@ import {
   CheckSquare,
   Square,
   Zap,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
@@ -47,6 +49,14 @@ interface Contact {
   created_at: string;
 }
 
+interface ContactNote {
+  id: string;
+  contact_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+}
+
 type ContactStatus =
   | "new"
   | "contacted"
@@ -69,7 +79,59 @@ const STATUS_OPTIONS: ContactStatus[] = [
   "archived",
 ];
 
+const STATUS_CONFIG: Record<
+  ContactStatus,
+  { bg: string; text: string; dot: string; label: string }
+> = {
+  new:       { bg: "rgba(107,114,128,0.12)", text: "#6B7280", dot: "#6B7280",  label: "New"       },
+  contacted: { bg: "rgba(59,130,246,0.12)",  text: "#2563EB", dot: "#3B82F6",  label: "Contacted" },
+  qualified: { bg: "rgba(124,58,237,0.12)",  text: "#7C3AED", dot: "#7C3AED",  label: "Qualified" },
+  engaged:   { bg: "rgba(5,150,105,0.12)",   text: "#059669", dot: "#059669",  label: "Engaged"   },
+  nurture:   { bg: "rgba(217,119,6,0.12)",   text: "#D97706", dot: "#D97706",  label: "Nurture"   },
+  cold:      { bg: "rgba(8,145,178,0.12)",   text: "#0891B2", dot: "#0891B2",  label: "Cold"      },
+  archived:  { bg: "rgba(220,38,38,0.12)",   text: "#DC2626", dot: "#DC2626",  label: "Archived"  },
+};
+
+const AVATAR_PALETTE = [
+  { bg: "rgba(124,58,237,0.15)", text: "#7C3AED" },
+  { bg: "rgba(59,130,246,0.15)", text: "#2563EB" },
+  { bg: "rgba(5,150,105,0.15)",  text: "#059669" },
+  { bg: "rgba(217,119,6,0.15)",  text: "#D97706" },
+  { bg: "rgba(236,72,153,0.15)", text: "#EC4899" },
+  { bg: "rgba(8,145,178,0.15)",  text: "#0891B2" },
+];
+
+const TAG_PALETTE = [
+  { bg: "rgba(124,58,237,0.10)", text: "#7C3AED" },
+  { bg: "rgba(59,130,246,0.10)", text: "#2563EB" },
+  { bg: "rgba(5,150,105,0.10)",  text: "#059669" },
+  { bg: "rgba(217,119,6,0.10)",  text: "#D97706" },
+  { bg: "rgba(236,72,153,0.10)", text: "#EC4899" },
+  { bg: "rgba(8,145,178,0.10)",  text: "#0891B2" },
+];
+
 const PAGE_SIZE = 25;
+
+function hashStr(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0x7fffffff;
+  return h;
+}
+
+function avatarColor(name: string) {
+  return AVATAR_PALETTE[hashStr(name) % AVATAR_PALETTE.length];
+}
+
+function tagColor(tag: string) {
+  return TAG_PALETTE[hashStr(tag) % TAG_PALETTE.length];
+}
+
+function scoreColor(score: number) {
+  if (score >= 80) return "#059669";
+  if (score >= 60) return "#7C3AED";
+  if (score >= 40) return "#D97706";
+  return "#6B7280";
+}
 
 /* ─── Supabase helpers ─── */
 async function fetchContacts(userId: string): Promise<Contact[]> {
@@ -93,16 +155,13 @@ async function deleteContact(id: string): Promise<void> {
   await db.from("contacts").delete().eq("id", id);
 }
 
-async function fetchContactLogs(contactId: string): Promise<Record<string, unknown>[]> {
+async function fetchContactNotes(contactId: string): Promise<ContactNote[]> {
   const { data } = await db
-    .from("automation_logs")
+    .from("contact_notes")
     .select("*")
-    .order("created_at", { ascending: false })
-    .limit(20);
-  return ((data ?? []) as Record<string, unknown>[]).filter((log) => {
-    const payload = log.trigger_payload as Record<string, unknown> | null;
-    return payload && (payload.contact_id === contactId || payload.email === contactId);
-  });
+    .eq("contact_id", contactId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as ContactNote[];
 }
 
 /* ─── Main Page ─── */
@@ -263,38 +322,11 @@ function ContactsPage() {
                 border: "1px solid var(--border)",
                 color: "var(--foreground)",
               }}
-              onFocus={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  "color-mix(in oklab, var(--primary) 50%, transparent)";
-              }}
-              onBlur={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-              }}
             />
           </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as ContactStatus | "all");
-              setPage(1);
-            }}
-            className="rounded-lg px-3 py-2 text-[13px] outline-none"
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-            }}
-          >
-            <option value="all">All statuses</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </option>
-            ))}
-          </select>
         </div>
 
+        {/* Score range */}
         <div className="flex items-center gap-3">
           <Filter className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
           <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
@@ -318,6 +350,53 @@ function ContactsPage() {
           >
             {minScore}
           </span>
+        </div>
+
+        {/* Status chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => {
+              setStatusFilter("all");
+              setPage(1);
+            }}
+            className="rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
+            style={
+              statusFilter === "all"
+                ? { background: "var(--primary)", color: "#fff" }
+                : {
+                    background: "var(--surface-2)",
+                    color: "var(--muted-foreground)",
+                    border: "1px solid var(--border)",
+                  }
+            }
+          >
+            All
+          </button>
+          {STATUS_OPTIONS.map((s) => {
+            const cfg = STATUS_CONFIG[s];
+            const active = statusFilter === s;
+            return (
+              <button
+                key={s}
+                onClick={() => {
+                  setStatusFilter(s);
+                  setPage(1);
+                }}
+                className="rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
+                style={
+                  active
+                    ? { background: cfg.dot, color: "#fff" }
+                    : {
+                        background: cfg.bg,
+                        color: cfg.text,
+                        border: `1px solid ${cfg.dot}40`,
+                      }
+                }
+              >
+                {cfg.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -367,7 +446,7 @@ function ContactsPage() {
                 <option value="">Select status…</option>
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {STATUS_CONFIG[s].label}
                   </option>
                 ))}
               </select>
@@ -440,7 +519,7 @@ function ContactsPage() {
                     Name
                   </th>
                   <th
-                    className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                    className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden sm:table-cell"
                     style={{ color: "var(--muted-foreground)" }}
                   >
                     Company
@@ -464,6 +543,12 @@ function ContactsPage() {
                     </span>
                   </th>
                   <th
+                    className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden lg:table-cell"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Tags
+                  </th>
+                  <th
                     className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none hidden md:table-cell"
                     style={{ color: "var(--muted-foreground)" }}
                     onClick={() => handleSort("last_contacted_at")}
@@ -478,7 +563,7 @@ function ContactsPage() {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-16 text-center">
+                    <td colSpan={8} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Users
                           className="h-7 w-7"
@@ -506,7 +591,14 @@ function ContactsPage() {
                     const score = contact.lead_score;
                     const fullName =
                       [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "—";
-                    const isActive = contact.status === "qualified" || contact.status === "engaged";
+                    const initials =
+                      [contact.first_name?.[0], contact.last_name?.[0]]
+                        .filter(Boolean)
+                        .join("")
+                        .toUpperCase() || "?";
+                    const av = avatarColor(fullName);
+                    const sc = STATUS_CONFIG[contact.status];
+                    const tags = contact.tags ?? [];
 
                     return (
                       <tr
@@ -536,23 +628,36 @@ function ContactsPage() {
                             )}
                           </button>
                         </td>
+
+                        {/* Name + avatar */}
                         <td className="px-4 py-3">
-                          <div
-                            className="font-medium text-[13px]"
-                            style={{ color: "var(--foreground)" }}
-                          >
-                            {fullName}
-                          </div>
-                          {contact.email && (
+                          <div className="flex items-center gap-2.5">
                             <div
-                              className="text-[11px] mt-0.5"
-                              style={{ color: "var(--muted-foreground)" }}
+                              className="flex h-8 w-8 items-center justify-center rounded-full shrink-0 font-semibold text-[11px]"
+                              style={{ background: av.bg, color: av.text }}
                             >
-                              {contact.email}
+                              {initials}
                             </div>
-                          )}
+                            <div>
+                              <div
+                                className="font-medium text-[13px]"
+                                style={{ color: "var(--foreground)" }}
+                              >
+                                {fullName}
+                              </div>
+                              {contact.email && (
+                                <div
+                                  className="text-[11px] mt-0.5"
+                                  style={{ color: "var(--muted-foreground)" }}
+                                >
+                                  {contact.email}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
+
+                        <td className="px-4 py-3 hidden sm:table-cell">
                           <span
                             className="text-[13px]"
                             style={{ color: "var(--muted-foreground)" }}
@@ -560,22 +665,27 @@ function ContactsPage() {
                             {contact.company ?? "—"}
                           </span>
                         </td>
+
+                        {/* Score bar */}
                         <td className="px-4 py-3">
                           {score != null ? (
-                            <span
-                              className="inline-flex items-center justify-center rounded-md px-2 py-0.5 text-[11px] font-bold tabular-nums min-w-[32px]"
-                              style={
-                                score >= 70
-                                  ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                                  : {
-                                      background: "var(--surface-2)",
-                                      color: "var(--muted-foreground)",
-                                      border: "1px solid var(--border)",
-                                    }
-                              }
-                            >
-                              {score}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-1.5 rounded-full overflow-hidden"
+                                style={{ background: "var(--surface-2)", width: "48px" }}
+                              >
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{ width: `${score}%`, background: scoreColor(score) }}
+                                />
+                              </div>
+                              <span
+                                className="text-[12px] font-semibold tabular-nums"
+                                style={{ color: scoreColor(score) }}
+                              >
+                                {score}
+                              </span>
+                            </div>
                           ) : (
                             <span
                               className="text-[12px]"
@@ -585,22 +695,47 @@ function ContactsPage() {
                             </span>
                           )}
                         </td>
+
+                        {/* Status badge with dot */}
                         <td className="px-4 py-3">
                           <span
-                            className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium capitalize"
-                            style={
-                              isActive
-                                ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                                : {
-                                    background: "var(--surface-2)",
-                                    color: "var(--muted-foreground)",
-                                    border: "1px solid var(--border)",
-                                  }
-                            }
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                            style={{ background: sc.bg, color: sc.text }}
                           >
-                            {contact.status}
+                            <span
+                              className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ background: sc.dot }}
+                            />
+                            {sc.label}
                           </span>
                         </td>
+
+                        {/* Tags chips */}
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          <div className="flex flex-wrap gap-1">
+                            {tags.slice(0, 3).map((tag, i) => {
+                              const tc = tagColor(tag);
+                              return (
+                                <span
+                                  key={i}
+                                  className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                                  style={{ background: tc.bg, color: tc.text }}
+                                >
+                                  {tag}
+                                </span>
+                              );
+                            })}
+                            {tags.length > 3 && (
+                              <span
+                                className="rounded-full px-1.5 py-0.5 text-[10px]"
+                                style={{ color: "var(--muted-foreground)" }}
+                              >
+                                +{tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
                         <td className="px-4 py-3 hidden md:table-cell">
                           <span
                             className="text-[12px]"
@@ -691,6 +826,7 @@ function ContactsPage() {
       {detailContact && (
         <ContactDetail
           contact={detailContact}
+          userId={user.id}
           onClose={() => setDetailContact(null)}
           onStatusChange={(id, status) => {
             updateMutation.mutate({ id, status });
@@ -890,24 +1026,50 @@ function AddContactModal({
 /* ─── Contact Detail Slide-over ─── */
 function ContactDetail({
   contact,
+  userId,
   onClose,
   onStatusChange,
   onDelete,
 }: {
   contact: Contact;
+  userId: string;
   onClose: () => void;
   onStatusChange: (id: string, status: ContactStatus) => void;
   onDelete: (id: string) => void;
 }) {
-  const logsQ = useQuery({
-    queryKey: ["contact-logs", contact.id],
-    queryFn: () => fetchContactLogs(contact.id),
+  const qc = useQueryClient();
+  const [activeTab, setActiveTab] = useState<"overview" | "notes">("overview");
+  const [newNote, setNewNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+
+  const notesQ = useQuery({
+    queryKey: ["contact-notes", contact.id],
+    queryFn: () => fetchContactNotes(contact.id),
   });
 
   const fullName =
     [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "Unnamed Contact";
-  const isActive = contact.status === "qualified" || contact.status === "engaged";
+  const initials =
+    [contact.first_name?.[0], contact.last_name?.[0]].filter(Boolean).join("").toUpperCase() ||
+    "?";
+  const av = avatarColor(fullName);
+  const sc = STATUS_CONFIG[contact.status];
   const score = contact.lead_score;
+  const tags = contact.tags ?? [];
+
+  const addNote = async () => {
+    if (!newNote.trim()) return;
+    setSavingNote(true);
+    try {
+      await db
+        .from("contact_notes")
+        .insert({ contact_id: contact.id, user_id: userId, body: newNote.trim() });
+      qc.invalidateQueries({ queryKey: ["contact-notes", contact.id] });
+      setNewNote("");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   const triggerAutomation = async () => {
     const {
@@ -925,7 +1087,7 @@ function ContactDetail({
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
-        className="relative ml-auto flex h-full w-full max-w-md flex-col"
+        className="relative ml-auto flex h-full w-full max-w-[400px] flex-col"
         style={{ background: "var(--surface)", borderLeft: "1px solid var(--border)" }}
       >
         {/* Header */}
@@ -935,17 +1097,31 @@ function ContactDetail({
         >
           <div className="flex items-center gap-3">
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg font-bold text-[14px]"
-              style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+              className="flex h-10 w-10 items-center justify-center rounded-full font-bold text-[14px] shrink-0"
+              style={{ background: av.bg, color: av.text }}
             >
-              {fullName[0]?.toUpperCase() ?? "?"}
+              {initials}
             </div>
             <div>
               <div className="font-semibold text-[14px]" style={{ color: "var(--foreground)" }}>
                 {fullName}
               </div>
-              <div className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-                {contact.company ?? "No company"}
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                  style={{ background: sc.bg, color: sc.text }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: sc.dot }}
+                  />
+                  {sc.label}
+                </span>
+                {contact.company && (
+                  <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                    {contact.company}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -954,184 +1130,312 @@ function ContactDetail({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {/* Profile info */}
-          <div className="px-5 py-5 space-y-4" style={{ borderBottom: "1px solid var(--border)" }}>
-            {/* Score + status row */}
-            <div className="flex items-center gap-2">
-              {score != null && (
-                <span
-                  className="rounded-md px-2.5 py-1 text-[12px] font-bold"
-                  style={
-                    score >= 70
-                      ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                      : {
-                          background: "var(--surface-2)",
-                          color: "var(--muted-foreground)",
-                          border: "1px solid var(--border)",
-                        }
-                  }
-                >
-                  {score} pts
+        {/* Tabs */}
+        <div className="flex shrink-0 px-5" style={{ borderBottom: "1px solid var(--border)" }}>
+          {(["overview", "notes"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="relative py-2.5 px-1 mr-5 text-[12px] font-medium transition-colors"
+              style={activeTab === tab ? { color: "var(--primary)" } : { color: "var(--muted-foreground)" }}
+            >
+              {tab === "notes" ? (
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="h-3 w-3" />
+                  Notes
+                  {notesQ.data && notesQ.data.length > 0 && (
+                    <span
+                      className="ml-0.5 rounded-full px-1.5 py-0 text-[9px] font-bold"
+                      style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                    >
+                      {notesQ.data.length}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Activity className="h-3 w-3" />
+                  Overview
                 </span>
               )}
-              <span
-                className="rounded-md px-2.5 py-1 text-[11px] font-medium capitalize"
-                style={
-                  isActive
-                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                    : {
-                        background: "var(--surface-2)",
-                        color: "var(--muted-foreground)",
-                        border: "1px solid var(--border)",
-                      }
-                }
-              >
-                {contact.status}
-              </span>
-            </div>
-
-            {/* Info rows */}
-            {[
-              { icon: Mail, value: contact.email, label: "Email" },
-              { icon: Phone, value: contact.phone, label: "Phone" },
-              { icon: Building2, value: contact.company, label: "Company" },
-              { icon: Tag, value: contact.source, label: "Source" },
-            ]
-              .filter((r) => r.value)
-              .map(({ icon: Icon, value, label }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <Icon
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: "var(--muted-foreground)" }}
-                  />
-                  <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
-                    {value}
-                  </span>
-                </div>
-              ))}
-
-            {/* Status change */}
-            <div>
-              <label
-                className="block text-[11px] font-semibold mb-2 uppercase tracking-wider"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                Change Status
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {STATUS_OPTIONS.map((s) => {
-                  const active = contact.status === s;
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => onStatusChange(contact.id, s)}
-                      className="rounded-md px-2.5 py-1 text-[11px] font-medium capitalize transition-colors"
-                      style={
-                        active
-                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                          : {
-                              background: "var(--surface-2)",
-                              color: "var(--muted-foreground)",
-                              border: "1px solid var(--border)",
-                            }
-                      }
-                    >
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {contact.notes && (
-              <div>
-                <label
-                  className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Notes
-                </label>
-                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>
-                  {contact.notes}
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={triggerAutomation}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-opacity hover:opacity-80"
-                style={{ background: "var(--primary)", color: "#fff" }}
-              >
-                <Zap className="h-3.5 w-3.5" /> Trigger Automation
-              </button>
-              <button
-                onClick={() => onDelete(contact.id)}
-                className="rounded-lg px-3 py-2 text-[12px] font-medium transition-colors"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  color: "var(--muted-foreground)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-
-          {/* Activity timeline */}
-          <div className="px-5 py-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />
-              <span
-                className="text-[11px] font-semibold uppercase tracking-wider"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                Activity
-              </span>
-            </div>
-            {logsQ.isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2
-                  className="h-4 w-4 animate-spin"
-                  style={{ color: "var(--muted-foreground)" }}
+              {activeTab === tab && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                  style={{ background: "var(--primary)" }}
                 />
-              </div>
-            ) : logsQ.data && logsQ.data.length > 0 ? (
-              <div className="space-y-3">
-                {logsQ.data.map((log, i) => (
-                  <div key={i} className="flex items-start gap-3">
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {/* ── Overview Tab ── */}
+          {activeTab === "overview" && (
+            <div className="px-5 py-5 space-y-5">
+              {/* Score bar */}
+              {score != null && (
+                <div>
+                  <label
+                    className="block text-[11px] font-semibold mb-2 uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Lead Score
+                  </label>
+                  <div className="flex items-center gap-3">
                     <div
-                      className="w-1 h-1 rounded-full mt-2 shrink-0"
-                      style={{ background: "var(--primary)" }}
-                    />
-                    <div>
-                      <div className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
-                        {String(log.message ?? "Automation event")}
-                      </div>
+                      className="flex-1 h-2 rounded-full overflow-hidden"
+                      style={{ background: "var(--surface-2)" }}
+                    >
                       <div
-                        className="text-[11px] mt-0.5"
-                        style={{ color: "var(--muted-foreground)" }}
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${score}%`, background: scoreColor(score) }}
+                      />
+                    </div>
+                    <span
+                      className="text-[15px] font-bold tabular-nums w-8 text-right"
+                      style={{ color: scoreColor(score) }}
+                    >
+                      {score}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Tags */}
+              {tags.length > 0 && (
+                <div>
+                  <label
+                    className="block text-[11px] font-semibold mb-2 uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Tags
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {tags.map((tag, i) => {
+                      const tc = tagColor(tag);
+                      return (
+                        <span
+                          key={i}
+                          className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+                          style={{ background: tc.bg, color: tc.text }}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Contact info rows */}
+              <div className="space-y-3">
+                {[
+                  { icon: Mail, value: contact.email, label: "Email" },
+                  { icon: Phone, value: contact.phone, label: "Phone" },
+                  { icon: Building2, value: contact.company, label: "Company" },
+                  { icon: Tag, value: contact.source, label: "Source" },
+                ]
+                  .filter((r) => r.value)
+                  .map(({ icon: Icon, value, label }) => (
+                    <div key={label} className="flex items-center gap-3">
+                      <div
+                        className="h-7 w-7 flex items-center justify-center rounded-lg shrink-0"
+                        style={{ background: "var(--surface-2)" }}
                       >
-                        {new Date(String(log.created_at)).toLocaleDateString()}
+                        <Icon
+                          className="h-3.5 w-3.5"
+                          style={{ color: "var(--muted-foreground)" }}
+                        />
+                      </div>
+                      <div>
+                        <div
+                          className="text-[10px] uppercase tracking-wider font-medium"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          {label}
+                        </div>
+                        <div className="text-[13px]" style={{ color: "var(--foreground)" }}>
+                          {value}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
-            ) : (
-              <p className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
-                No activity logged yet.
-              </p>
-            )}
-          </div>
+
+              {/* Status change */}
+              <div>
+                <label
+                  className="block text-[11px] font-semibold mb-2 uppercase tracking-wider"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  Status
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {STATUS_OPTIONS.map((s) => {
+                    const cfg = STATUS_CONFIG[s];
+                    const active = contact.status === s;
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => onStatusChange(contact.id, s)}
+                        className="rounded-full px-2.5 py-1 text-[11px] font-medium transition-all"
+                        style={
+                          active
+                            ? { background: cfg.dot, color: "#fff" }
+                            : {
+                                background: cfg.bg,
+                                color: cfg.text,
+                                border: `1px solid ${cfg.dot}40`,
+                              }
+                        }
+                      >
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {contact.notes && (
+                <div>
+                  <label
+                    className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Profile Notes
+                  </label>
+                  <p
+                    className="text-[12.5px] leading-relaxed"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {contact.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={triggerAutomation}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-opacity hover:opacity-80"
+                  style={{ background: "var(--primary)", color: "#fff" }}
+                >
+                  <Zap className="h-3.5 w-3.5" /> Trigger Automation
+                </button>
+                <button
+                  onClick={() => onDelete(contact.id)}
+                  className="rounded-lg px-3 py-2 text-[12px] font-medium transition-colors"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    color: "var(--muted-foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "#DC2626";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Notes Tab ── */}
+          {activeTab === "notes" && (
+            <div className="flex flex-col h-full">
+              {/* Add note */}
+              <div className="px-5 py-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+                <textarea
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  placeholder="Add a note…"
+                  rows={3}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addNote();
+                  }}
+                  className="w-full rounded-lg px-3 py-2.5 text-[13px] outline-none resize-none"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    color: "var(--foreground)",
+                  }}
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                    ⌘ Enter to save
+                  </span>
+                  <button
+                    onClick={addNote}
+                    disabled={!newNote.trim() || savingNote}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "var(--primary)", color: "#fff" }}
+                  >
+                    {savingNote ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Send className="h-3 w-3" />
+                    )}
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              {/* Notes timeline */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+                {notesQ.isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      style={{ color: "var(--muted-foreground)" }}
+                    />
+                  </div>
+                ) : notesQ.data && notesQ.data.length > 0 ? (
+                  notesQ.data.map((note) => (
+                    <div
+                      key={note.id}
+                      className="rounded-xl p-3.5"
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <p
+                        className="text-[13px] leading-relaxed"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        {note.body}
+                      </p>
+                      <p
+                        className="text-[11px] mt-2"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {new Date(note.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 gap-2">
+                    <MessageSquare
+                      className="h-6 w-6"
+                      style={{ color: "var(--muted-foreground)", opacity: 0.3 }}
+                    />
+                    <p className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+                      No notes yet
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
