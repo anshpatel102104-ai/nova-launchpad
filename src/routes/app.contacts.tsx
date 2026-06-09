@@ -83,31 +83,31 @@ const STATUS_CONFIG: Record<
   ContactStatus,
   { bg: string; text: string; dot: string; label: string }
 > = {
-  new:       { bg: "rgba(107,114,128,0.12)", text: "#6B7280", dot: "#6B7280",  label: "New"       },
-  contacted: { bg: "rgba(59,130,246,0.12)",  text: "#2563EB", dot: "#3B82F6",  label: "Contacted" },
-  qualified: { bg: "rgba(124,58,237,0.12)",  text: "#7C3AED", dot: "#7C3AED",  label: "Qualified" },
-  engaged:   { bg: "rgba(5,150,105,0.12)",   text: "#059669", dot: "#059669",  label: "Engaged"   },
-  nurture:   { bg: "rgba(217,119,6,0.12)",   text: "#D97706", dot: "#D97706",  label: "Nurture"   },
-  cold:      { bg: "rgba(8,145,178,0.12)",   text: "#0891B2", dot: "#0891B2",  label: "Cold"      },
-  archived:  { bg: "rgba(220,38,38,0.12)",   text: "#DC2626", dot: "#DC2626",  label: "Archived"  },
+  new: { bg: "rgba(107,114,128,0.12)", text: "#6B7280", dot: "#6B7280", label: "New" },
+  contacted: { bg: "rgba(59,130,246,0.12)", text: "#2563EB", dot: "#3B82F6", label: "Contacted" },
+  qualified: { bg: "rgba(124,58,237,0.12)", text: "#7C3AED", dot: "#7C3AED", label: "Qualified" },
+  engaged: { bg: "rgba(5,150,105,0.12)", text: "#059669", dot: "#059669", label: "Engaged" },
+  nurture: { bg: "rgba(217,119,6,0.12)", text: "#D97706", dot: "#D97706", label: "Nurture" },
+  cold: { bg: "rgba(8,145,178,0.12)", text: "#0891B2", dot: "#0891B2", label: "Cold" },
+  archived: { bg: "rgba(220,38,38,0.12)", text: "#DC2626", dot: "#DC2626", label: "Archived" },
 };
 
 const AVATAR_PALETTE = [
   { bg: "rgba(124,58,237,0.15)", text: "#7C3AED" },
   { bg: "rgba(59,130,246,0.15)", text: "#2563EB" },
-  { bg: "rgba(5,150,105,0.15)",  text: "#059669" },
-  { bg: "rgba(217,119,6,0.15)",  text: "#D97706" },
+  { bg: "rgba(5,150,105,0.15)", text: "#059669" },
+  { bg: "rgba(217,119,6,0.15)", text: "#D97706" },
   { bg: "rgba(236,72,153,0.15)", text: "#EC4899" },
-  { bg: "rgba(8,145,178,0.15)",  text: "#0891B2" },
+  { bg: "rgba(8,145,178,0.15)", text: "#0891B2" },
 ];
 
 const TAG_PALETTE = [
   { bg: "rgba(124,58,237,0.10)", text: "#7C3AED" },
   { bg: "rgba(59,130,246,0.10)", text: "#2563EB" },
-  { bg: "rgba(5,150,105,0.10)",  text: "#059669" },
-  { bg: "rgba(217,119,6,0.10)",  text: "#D97706" },
+  { bg: "rgba(5,150,105,0.10)", text: "#059669" },
+  { bg: "rgba(217,119,6,0.10)", text: "#D97706" },
   { bg: "rgba(236,72,153,0.10)", text: "#EC4899" },
-  { bg: "rgba(8,145,178,0.10)",  text: "#0891B2" },
+  { bg: "rgba(8,145,178,0.10)", text: "#0891B2" },
 ];
 
 const PAGE_SIZE = 25;
@@ -1050,8 +1050,7 @@ function ContactDetail({
   const fullName =
     [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "Unnamed Contact";
   const initials =
-    [contact.first_name?.[0], contact.last_name?.[0]].filter(Boolean).join("").toUpperCase() ||
-    "?";
+    [contact.first_name?.[0], contact.last_name?.[0]].filter(Boolean).join("").toUpperCase() || "?";
   const av = avatarColor(fullName);
   const sc = STATUS_CONFIG[contact.status];
   const score = contact.lead_score;
@@ -1137,7 +1136,11 @@ function ContactDetail({
               key={tab}
               onClick={() => setActiveTab(tab)}
               className="relative py-2.5 px-1 mr-5 text-[12px] font-medium transition-colors"
-              style={activeTab === tab ? { color: "var(--primary)" } : { color: "var(--muted-foreground)" }}
+              style={
+                activeTab === tab
+                  ? { color: "var(--primary)" }
+                  : { color: "var(--muted-foreground)" }
+              }
             >
               {tab === "notes" ? (
                 <span className="flex items-center gap-1">
@@ -1347,7 +1350,10 @@ function ContactDetail({
           {activeTab === "notes" && (
             <div className="flex flex-col h-full">
               {/* Add note */}
-              <div className="px-5 py-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+              <div
+                className="px-5 py-4 shrink-0"
+                style={{ borderBottom: "1px solid var(--border)" }}
+              >
                 <textarea
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
@@ -1408,10 +1414,7 @@ function ContactDetail({
                       >
                         {note.body}
                       </p>
-                      <p
-                        className="text-[11px] mt-2"
-                        style={{ color: "var(--muted-foreground)" }}
-                      >
+                      <p className="text-[11px] mt-2" style={{ color: "var(--muted-foreground)" }}>
                         {new Date(note.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
