@@ -673,7 +673,6 @@ const str = (v: unknown): string =>
 const num = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
 
 function ValidatorOut({ o }: { o: Record<string, unknown> }) {
-  // Edge function returns total_score (out of 80) — normalize to 0-100
   const rawScore = o.score ?? o.viability_score ?? o.overall_score ?? o.total_score;
   const score =
     typeof rawScore === "number" && rawScore > 0
@@ -682,40 +681,175 @@ function ValidatorOut({ o }: { o: Record<string, unknown> }) {
         : rawScore
       : 0;
   const verdict = str(o.verdict ?? o.recommendation);
-  const summary = str(o.summary ?? o.full_report);
+  const summary = str(o.summary);
   const strengths = arr(o.strengths);
   const weaknesses = arr(o.weaknesses);
   const risks = arr(o.risks);
   const next = arr(o.next_steps ?? o.recommendations ?? o.action_items);
+  const dimensions = arr(o.dimensions ?? o.dimension_scores ?? o.criteria);
   const fullReport = str(o.full_report);
+
+  const verdictLower = verdict.toLowerCase();
+  const verdictColor =
+    verdictLower.includes("go") || verdictLower.includes("strong") || verdictLower.includes("valid")
+      ? "var(--success)"
+      : verdictLower.includes("pause") || verdictLower.includes("caution")
+        ? "var(--warning)"
+        : verdictLower.includes("pivot") || verdictLower.includes("stop") || verdictLower.includes("kill")
+          ? "var(--destructive)"
+          : score >= 65 ? "var(--success)" : score >= 40 ? "var(--warning)" : "var(--destructive)";
+
+  const verdictLabel =
+    verdictLower.includes("go") || score >= 70 ? "GO"
+    : verdictLower.includes("pivot") ? "PIVOT"
+    : score >= 45 ? "PAUSE" : "STOP";
+
   return (
     <div className="space-y-3">
-      {(score > 0 || verdict) && <ScoreGauge value={score} label={verdict || "Viability score"} />}
-      {summary && !fullReport && <Block title="Summary">{summary}</Block>}
-      {strengths.length > 0 && (
-        <Block title="Strengths" accent="success">
-          <BulletList items={strengths} accent="success" />
-        </Block>
+      {(score > 0 || verdict) && (
+        <div
+          className="flex items-center gap-5 overflow-hidden rounded-xl p-5"
+          style={{
+            background: `color-mix(in oklab, ${verdictColor} 6%, var(--surface-2))`,
+            border: `1px solid color-mix(in oklab, ${verdictColor} 22%, transparent)`,
+          }}
+        >
+          {score > 0 && (
+            <div className="relative shrink-0" style={{ width: 80, height: 80 }}>
+              <svg viewBox="0 0 36 36" style={{ transform: "rotate(-90deg)", width: 80, height: 80 }}>
+                <circle cx="18" cy="18" r="14" fill="none" stroke="var(--surface-offset, rgba(0,0,0,0.08))" strokeWidth="4" />
+                <circle
+                  cx="18" cy="18" r="14" fill="none"
+                  stroke={verdictColor}
+                  strokeWidth="4"
+                  strokeDasharray={`${(score / 100) * 87.96} 87.96`}
+                  strokeLinecap="round"
+                  style={{ filter: `drop-shadow(0 0 4px ${verdictColor})` }}
+                />
+              </svg>
+              <div
+                className="absolute inset-0 flex items-center justify-center font-mono text-[1.15rem] font-bold tabular-nums"
+                style={{ color: verdictColor }}
+              >
+                {Math.round(score)}
+              </div>
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <span
+                className="rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider"
+                style={{
+                  background: `color-mix(in oklab, ${verdictColor} 18%, transparent)`,
+                  color: verdictColor,
+                  border: `1px solid color-mix(in oklab, ${verdictColor} 35%, transparent)`,
+                }}
+              >
+                {verdictLabel}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--muted-foreground)" }}>
+                Viability score
+              </span>
+            </div>
+            {verdict && (
+              <div className="text-[13.5px] font-medium leading-snug" style={{ color: "var(--foreground)" }}>{verdict}</div>
+            )}
+            {summary && (
+              <div className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{summary}</div>
+            )}
+          </div>
+        </div>
       )}
-      {weaknesses.length > 0 && (
-        <Block title="Weaknesses" accent="warning">
-          <BulletList items={weaknesses} accent="warning" />
-        </Block>
+      {dimensions.length > 0 && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+        >
+          <div
+            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}
+          >
+            Dimension breakdown
+          </div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {dimensions.map((d, i) => {
+              const item = typeof d === "object" && d ? (d as Record<string, unknown>) : { name: String(d) };
+              const label = str(item.name ?? item.dimension ?? item.criterion ?? item.category);
+              const sc = num(item.score, 0);
+              const maxSc = num(item.max, 10);
+              const note = str(item.note ?? item.notes ?? item.rationale);
+              const pct = Math.min(100, (sc / maxSc) * 100);
+              const col = pct >= 70 ? "var(--success)" : pct >= 40 ? "var(--primary)" : "var(--warning)";
+              return (
+                <div key={i} className="px-4 py-3">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-[12.5px] font-medium" style={{ color: "var(--foreground)" }}>{label}</span>
+                    <span className="font-mono text-[12px] font-semibold" style={{ color: col }}>{sc}/{maxSc}</span>
+                  </div>
+                  <div className="mb-1 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--surface-offset, rgba(0,0,0,0.06))" }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: col, boxShadow: `0 0 6px ${col}` }} />
+                  </div>
+                  {note && <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{note}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
-      {risks.length > 0 && (
-        <Block title="Key risks" accent="destructive">
-          <BulletList items={risks} accent="destructive" />
-        </Block>
+      {(strengths.length > 0 || weaknesses.length > 0 || risks.length > 0) && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {strengths.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--success) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--success) 22%, transparent)", borderTop: "3px solid var(--success)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Strengths</div>
+              {strengths.slice(0, 3).map((s, i) => (
+                <div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                  <span style={{ color: "var(--success)", flexShrink: 0 }}>✓</span>
+                  {typeof s === "string" ? s : JSON.stringify(s)}
+                </div>
+              ))}
+              {strengths.length > 3 && <div className="text-[10.5px]" style={{ color: "var(--success)" }}>+{strengths.length - 3} more</div>}
+            </div>
+          )}
+          {weaknesses.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--warning) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--warning) 22%, transparent)", borderTop: "3px solid var(--warning)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--warning)" }}>Weaknesses</div>
+              {weaknesses.slice(0, 3).map((w, i) => (
+                <div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                  <span style={{ color: "var(--warning)", flexShrink: 0 }}>△</span>
+                  {typeof w === "string" ? w : JSON.stringify(w)}
+                </div>
+              ))}
+              {weaknesses.length > 3 && <div className="text-[10.5px]" style={{ color: "var(--warning)" }}>+{weaknesses.length - 3} more</div>}
+            </div>
+          )}
+          {risks.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--destructive) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--destructive) 22%, transparent)", borderTop: "3px solid var(--destructive)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--destructive)" }}>Key Risks</div>
+              {risks.slice(0, 3).map((r, i) => (
+                <div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                  <span style={{ color: "var(--destructive)", flexShrink: 0 }}>✕</span>
+                  {typeof r === "string" ? r : JSON.stringify(r)}
+                </div>
+              ))}
+              {risks.length > 3 && <div className="text-[10.5px]" style={{ color: "var(--destructive)" }}>+{risks.length - 3} more</div>}
+            </div>
+          )}
+        </div>
       )}
       {next.length > 0 && (
-        <Block title="Recommended next steps" accent="primary">
-          <BulletList items={next} accent="primary" />
+        <Block title="Next steps — what to do now" accent="primary">
+          <div className="space-y-1.5">
+            {next.map((n, i) => (
+              <div key={i} className="flex gap-2.5 text-[13px]" style={{ color: "var(--foreground)" }}>
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "var(--primary)", flexShrink: 0 }}>{i + 1}</span>
+                {typeof n === "string" ? n : JSON.stringify(n)}
+              </div>
+            ))}
+          </div>
         </Block>
       )}
-      {fullReport && strengths.length === 0 && weaknesses.length === 0 && (
-        <Block title="Full Report">
-          <MarkdownReport content={fullReport} />
-        </Block>
+      {fullReport && strengths.length === 0 && weaknesses.length === 0 && dimensions.length === 0 && (
+        <Block title="Full Report"><MarkdownReport content={fullReport} /></Block>
       )}
     </div>
   );
@@ -895,87 +1029,100 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
 
 function GtmOut({ o }: { o: Record<string, unknown> }) {
   const icp = str(o.icp);
-  // Edge function returns positioning_statement, top_channels, kpis
   const positioning = str(o.positioning ?? o.positioning_statement);
   const channels = arr(o.channels ?? o.top_channels);
   const phases = arr(o.phases ?? o.timeline);
   const priorities = arr(o.priorities ?? o.kpis);
+  const actions = arr(o.top_actions ?? o.immediate_actions ?? o.quick_wins);
   const fullReport = str(o.full_report);
+  const channelColors = ["var(--primary)","var(--accent)","var(--success)","color-mix(in oklab, var(--primary) 60%, var(--accent))","color-mix(in oklab, var(--accent) 70%, var(--success))"];
   return (
     <div className="space-y-3">
       {icp && (
-        <Block title="Ideal customer profile" accent="primary">
-          {icp}
-        </Block>
-      )}
-      {positioning && <Block title="Positioning">{positioning}</Block>}
-      {channels.length > 0 && (
-        <Block title="Channels">
-          <BulletList items={channels} accent="primary" />
-        </Block>
-      )}
-      {phases.length > 0 && (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-          }}
-        >
-          <div
-            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{
-              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              color: "var(--muted-foreground)",
-            }}
-          >
-            Launch phases
-          </div>
-          <ol
-            className="space-y-0 divide-y"
-            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
-          >
-            {phases.map((p, i) => {
-              const item =
-                typeof p === "object" && p ? (p as Record<string, unknown>) : { name: String(p) };
-              const name = str(item.name ?? item.title ?? `Phase ${i + 1}`);
-              const description = str(item.description);
-              return (
-                <li key={i} className="flex gap-3 px-4 py-3">
-                  <span
-                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                    style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1 text-[13.5px]">
-                    <div className="font-semibold" style={{ color: "var(--foreground)" }}>
-                      {name}
-                    </div>
-                    {description && (
-                      <div
-                        className="mt-0.5 text-[13px]"
-                        style={{ color: "var(--muted-foreground)" }}
-                      >
-                        {description}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+        <div className="overflow-hidden rounded-xl p-4" style={{ background: "color-mix(in oklab, var(--primary) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--primary) 20%, transparent)", borderTop: "3px solid var(--primary)" }}>
+          <div className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--primary)" }}>Ideal Customer Profile</div>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>{icp}</div>
         </div>
       )}
-      {priorities.length > 0 && (
-        <Block title="Priorities" accent="warning">
-          <BulletList items={priorities} accent="warning" />
-        </Block>
+      {positioning && (
+        <div className="rounded-xl p-4" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted-foreground)" }}>Positioning statement</div>
+          <div className="text-[13.5px] leading-relaxed italic" style={{ color: "var(--foreground)" }}>"{positioning}"</div>
+        </div>
       )}
-      {fullReport && !positioning && channels.length === 0 && (
-        <Block title="GTM Strategy">
-          <MarkdownReport content={fullReport} />
-        </Block>
+      {channels.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            Channel priority matrix
+          </div>
+          <div className="grid gap-2 p-3">
+            {channels.map((c, i) => {
+              const item = typeof c === "object" && c ? (c as Record<string, unknown>) : { name: String(c) };
+              const name = str(item.name ?? item.channel ?? item.title ?? String(c));
+              const why = str(item.why ?? item.rationale ?? item.description ?? item.reason);
+              const col = channelColors[i % channelColors.length];
+              return (
+                <div key={i} className="flex items-start gap-3 rounded-lg px-3 py-2.5" style={{ background: `color-mix(in oklab, ${col} 6%, transparent)`, border: `1px solid color-mix(in oklab, ${col} 18%, transparent)` }}>
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: col }}>{i + 1}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>{name}</div>
+                    {why && <div className="mt-0.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{why}</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {phases.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            90-day launch timeline
+          </div>
+          <div className="relative p-4">
+            <div className="absolute bottom-7 top-7" style={{ left: "calc(1rem + 12px)", width: 2, background: "color-mix(in oklab, var(--border) 60%, transparent)" }} />
+            <div className="space-y-4">
+              {phases.map((p, i) => {
+                const item = typeof p === "object" && p ? (p as Record<string, unknown>) : { name: String(p) };
+                const name = str(item.name ?? item.title ?? item.phase ?? `Phase ${i + 1}`);
+                const description = str(item.description ?? item.focus ?? item.goal);
+                const timeline = str(item.timeline ?? item.duration ?? item.period);
+                const phaseColors = ["var(--primary)", "var(--accent)", "var(--success)"];
+                const col = phaseColors[i % phaseColors.length];
+                return (
+                  <div key={i} className="flex gap-3">
+                    <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: col }}>{i + 1}</div>
+                    <div className="min-w-0 flex-1 pb-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>{name}</span>
+                        {timeline && (
+                          <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: `color-mix(in oklab, ${col} 12%, transparent)`, color: col, border: `1px solid color-mix(in oklab, ${col} 28%, transparent)` }}>{timeline}</span>
+                        )}
+                      </div>
+                      {description && <div className="mt-1 text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{description}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+      {(actions.length > 0 || priorities.length > 0) && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "color-mix(in oklab, var(--accent) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--accent) 20%, transparent)", borderTop: "3px solid var(--accent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--accent)" }}>Top actions — start here</div>
+          <div className="space-y-2 px-4 pb-4">
+            {(actions.length > 0 ? actions : priorities).slice(0, 5).map((a, i) => (
+              <div key={i} className="flex gap-2.5 text-[13px]" style={{ color: "var(--foreground)" }}>
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "var(--accent)", flexShrink: 0 }}>{i + 1}</span>
+                {typeof a === "string" ? a : JSON.stringify(a)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {fullReport && !positioning && channels.length === 0 && phases.length === 0 && (
+        <Block title="GTM Strategy"><MarkdownReport content={fullReport} /></Block>
       )}
     </div>
   );
@@ -1173,7 +1320,6 @@ function WebsiteOut({ o }: { o: Record<string, unknown> }) {
 function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
   const score = num(o.survival_score, 0);
   const verdict = str(o.verdict);
-  // Edge function returns fatal_flaw (singular) and reasons_to_fail array
   const killShot = str(o.the_kill_shot ?? o.fatal_flaw);
   const fatalFlaws = arr(o.fatal_flaws ?? o.reasons_to_fail);
   const marketRisks = arr(o.market_risks);
@@ -1181,144 +1327,74 @@ function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
   const assumptions = arr(o.dangerous_assumptions);
   const ifYouProceed = arr(o.if_you_proceed ?? o.pivots);
   const fullReport = str(o.full_report);
-
   const pct = Math.max(0, Math.min(100, score));
   const color = pct >= 65 ? "var(--warning)" : "var(--destructive)";
 
+  const allFlaws: Array<{ label: string; severity: "fatal" | "market" | "exec"; mitigation?: string }> = [
+    ...fatalFlaws.map((f) => {
+      if (typeof f === "object" && f) {
+        const item = f as Record<string, unknown>;
+        return { label: str(item.flaw ?? item.issue ?? item.description ?? item), severity: "fatal" as const, mitigation: str(item.mitigation ?? item.fix) };
+      }
+      return { label: String(f), severity: "fatal" as const };
+    }),
+    ...marketRisks.map((r) => ({ label: typeof r === "string" ? r : JSON.stringify(r), severity: "market" as const })),
+    ...executionRisks.map((r) => ({ label: typeof r === "string" ? r : JSON.stringify(r), severity: "exec" as const })),
+  ];
+  const severityConfig = {
+    fatal: { color: "var(--destructive)", label: "FATAL", bg: "color-mix(in oklab, var(--destructive) 8%, var(--surface-2))", border: "color-mix(in oklab, var(--destructive) 25%, transparent)" },
+    market: { color: "var(--warning)", label: "MARKET RISK", bg: "color-mix(in oklab, var(--warning) 6%, var(--surface-2))", border: "color-mix(in oklab, var(--warning) 22%, transparent)" },
+    exec: { color: "color-mix(in oklab, var(--warning) 80%, var(--foreground))", label: "EXECUTION", bg: "color-mix(in oklab, var(--warning) 5%, var(--surface-2))", border: "color-mix(in oklab, var(--warning) 18%, transparent)" },
+  };
   return (
     <div className="space-y-3">
-      {/* Survival score */}
-      <div
-        className="flex items-center gap-4 overflow-hidden rounded-xl p-4"
-        style={{
-          background: `color-mix(in oklab, ${color} 7%, var(--surface-2))`,
-          border: `1px solid color-mix(in oklab, ${color} 25%, transparent)`,
-        }}
-      >
-        <div
-          className="font-display text-[2.6rem] font-semibold leading-none tabular-nums"
-          style={{ color }}
-        >
-          {Math.round(score)}
-          <span className="ml-0.5 text-sm font-normal" style={{ color: "var(--muted-foreground)" }}>
-            /100
-          </span>
-        </div>
-        <div className="min-w-0 flex-1">
-          {verdict && (
-            <div className="text-[12.5px] font-medium" style={{ color: "var(--foreground)" }}>
-              {verdict}
+      {(score > 0 || verdict) && (
+        <div className="overflow-hidden rounded-xl p-4" style={{ background: `color-mix(in oklab, ${color} 7%, var(--surface-2))`, border: `1px solid color-mix(in oklab, ${color} 25%, transparent)` }}>
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color }}>Survivability score</div>
+              {verdict && <div className="text-[13.5px] font-semibold leading-snug" style={{ color: "var(--foreground)" }}>{verdict}</div>}
             </div>
-          )}
-          <div
-            className="mt-2 h-1.5 overflow-hidden rounded-full"
-            style={{ background: "var(--surface-offset)" }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${pct}%`, background: color, boxShadow: `0 0 8px ${color}` }}
-            />
+            <div className="flex shrink-0 items-baseline gap-0.5 font-mono font-bold tabular-nums" style={{ color, fontSize: "2.2rem", lineHeight: 1 }}>
+              {Math.round(score)}<span className="text-[14px] font-normal" style={{ color: "var(--muted-foreground)" }}>/100</span>
+            </div>
           </div>
-          <div className="mt-1 text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
-            Survival score — lower = higher failure risk
+          <div className="h-2 overflow-hidden rounded-full" style={{ background: "var(--surface-offset, rgba(0,0,0,0.08))" }}>
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color, boxShadow: `0 0 8px ${color}` }} />
           </div>
+          <div className="mt-1.5 text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>Lower = higher failure risk · 0 means certain death</div>
         </div>
-      </div>
-
-      {/* Kill shot */}
+      )}
       {killShot && (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{
-            background: "color-mix(in oklab, var(--destructive) 7%, var(--surface-2))",
-            border: "1px solid color-mix(in oklab, var(--destructive) 25%, transparent)",
-            borderLeft: "3px solid var(--destructive)",
-          }}
-        >
-          <div className="p-4">
-            <div
-              className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: "var(--destructive)" }}
-            >
-              The kill shot
-            </div>
-            <div
-              className="text-[13.5px] leading-relaxed"
-              style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}
-            >
-              {killShot}
-            </div>
+        <div className="overflow-hidden rounded-xl" style={{ background: "color-mix(in oklab, var(--destructive) 8%, var(--surface-2))", border: "2px solid color-mix(in oklab, var(--destructive) 30%, transparent)" }}>
+          <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: "1px solid color-mix(in oklab, var(--destructive) 20%, transparent)" }}>
+            <span className="text-[9.5px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--destructive)" }}>☠ The kill shot</span>
           </div>
+          <div className="p-4 text-[14px] font-medium leading-relaxed" style={{ color: "var(--foreground)" }}>{killShot}</div>
         </div>
       )}
-
-      {fatalFlaws.length > 0 && (
-        <Block title="Fatal flaws" accent="destructive">
-          <BulletList items={fatalFlaws} accent="destructive" />
-        </Block>
-      )}
-      {marketRisks.length > 0 && (
-        <Block title="Market risks" accent="warning">
-          <BulletList items={marketRisks} accent="warning" />
-        </Block>
-      )}
-      {executionRisks.length > 0 && (
-        <Block title="Execution risks" accent="warning">
-          <BulletList items={executionRisks} accent="warning" />
-        </Block>
-      )}
-
-      {assumptions.length > 0 && (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-          }}
-        >
-          <div
-            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{
-              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              color: "var(--muted-foreground)",
-            }}
-          >
-            Dangerous assumptions
+      {allFlaws.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            Failure points — ranked by severity
           </div>
-          <div
-            className="space-y-0 divide-y px-4"
-            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
-          >
-            {assumptions.map((a, i) => {
-              const item = typeof a === "object" && a ? (a as Record<string, unknown>) : {};
+          <div className="space-y-2 p-3">
+            {allFlaws.map((flaw, i) => {
+              const cfg = severityConfig[flaw.severity];
               return (
-                <div key={i} className="grid gap-3 py-3 sm:grid-cols-2">
-                  <div>
-                    <div
-                      className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                      style={{ color: "var(--warning)" }}
-                    >
-                      You assume
-                    </div>
-                    <div
-                      className="text-[12.5px]"
-                      style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}
-                    >
-                      {str(item.assumption)}
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                      style={{ color: "var(--destructive)" }}
-                    >
-                      Reality
-                    </div>
-                    <div
-                      className="text-[12.5px]"
-                      style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}
-                    >
-                      {str(item.reality)}
+                <div key={i} className="overflow-hidden rounded-lg" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
+                  <div className="flex items-start gap-3 p-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: cfg.color }}>{i + 1}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1">
+                        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-[0.1em]" style={{ background: `color-mix(in oklab, ${cfg.color} 15%, transparent)`, color: cfg.color }}>{cfg.label}</span>
+                      </div>
+                      <div className="text-[12.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>{flaw.label}</div>
+                      {flaw.mitigation && (
+                        <div className="mt-1.5 flex gap-1.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                          <span style={{ color: "var(--success)", flexShrink: 0 }}>→</span><span>{flaw.mitigation}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1327,91 +1403,22 @@ function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
           </div>
         </div>
       )}
-
-      {ifYouProceed.length > 0 && (
-        <Block title="If you proceed — fix these first" accent="primary">
-          <BulletList items={ifYouProceed} accent="primary" />
-        </Block>
-      )}
-      {fullReport && !killShot && fatalFlaws.length === 0 && (
-        <Block title="Devil's Advocate Report">
-          <MarkdownReport content={fullReport} />
-        </Block>
-      )}
-    </div>
-  );
-}
-
-function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
-  // Edge function returns overall_score, grade, dimension_scores
-  const score = num(o.score ?? o.funding_score ?? o.overall_score, 0);
-  const verdict = str(o.verdict ?? o.summary ?? o.grade);
-  const breakdown = arr(o.breakdown ?? o.criteria ?? o.dimension_scores);
-  const strengths = arr(o.investor_strengths ?? o.strengths);
-  const weaknesses = arr(o.investor_concerns ?? o.weaknesses);
-  const recommendations = arr(o.recommendations ?? o.next_steps);
-  const investorType = str(o.investor_type);
-  const fullReport = str(o.full_report);
-  return (
-    <div className="space-y-3">
-      <ScoreGauge value={score} label={verdict || "Fundability score"} />
-      {breakdown.length > 0 && (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-          }}
-        >
-          <div
-            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{
-              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              color: "var(--muted-foreground)",
-            }}
-          >
-            Criteria breakdown
-          </div>
-          <div
-            className="divide-y"
-            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
-          >
-            {breakdown.map((b, i) => {
-              const item =
-                typeof b === "object" && b
-                  ? (b as Record<string, unknown>)
-                  : { criterion: String(b) };
-              const criterion = str(item.criterion ?? item.name ?? item.category);
-              const sc = num(item.score, 0);
-              const note = str(item.notes ?? item.rationale ?? item.note);
-              const pct = Math.min(100, (sc / 10) * 100);
-              const color =
-                pct >= 70 ? "var(--success)" : pct >= 40 ? "var(--primary)" : "var(--warning)";
+      {assumptions.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>Dangerous assumptions</div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {assumptions.map((a, i) => {
+              const item = typeof a === "object" && a ? (a as Record<string, unknown>) : {};
               return (
-                <div key={i} className="px-4 py-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span
-                      className="text-[12.5px] font-medium"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      {criterion}
-                    </span>
-                    <span className="font-mono text-[12px] font-semibold" style={{ color }}>
-                      {sc}/10
-                    </span>
+                <div key={i} className="grid gap-3 px-4 py-3 sm:grid-cols-2">
+                  <div>
+                    <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--warning)" }}>You assume</div>
+                    <div className="text-[12.5px]" style={{ color: "var(--foreground)" }}>{str(item.assumption ?? a)}</div>
                   </div>
-                  <div
-                    className="h-1 overflow-hidden rounded-full mb-1.5"
-                    style={{ background: "var(--surface-offset)" }}
-                  >
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}` }}
-                    />
-                  </div>
-                  {note && (
-                    <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
-                      {note}
+                  {str(item.reality) && (
+                    <div>
+                      <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--destructive)" }}>Reality check</div>
+                      <div className="text-[12.5px]" style={{ color: "var(--foreground)" }}>{str(item.reality)}</div>
                     </div>
                   )}
                 </div>
@@ -1420,30 +1427,135 @@ function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
           </div>
         </div>
       )}
-      {strengths.length > 0 && (
-        <Block title="Investor strengths" accent="success">
-          <BulletList items={strengths} accent="success" />
+      {ifYouProceed.length > 0 && (
+        <Block title="If you proceed — fix these first" accent="primary">
+          <div className="space-y-1.5">
+            {ifYouProceed.map((n, i) => (
+              <div key={i} className="flex gap-2.5 text-[13px]" style={{ color: "var(--foreground)" }}>
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "var(--primary)", flexShrink: 0 }}>{i + 1}</span>
+                {typeof n === "string" ? n : JSON.stringify(n)}
+              </div>
+            ))}
+          </div>
         </Block>
       )}
-      {weaknesses.length > 0 && (
-        <Block title="Investor concerns" accent="warning">
-          <BulletList items={weaknesses} accent="warning" />
-        </Block>
+      {fullReport && !killShot && allFlaws.length === 0 && (
+        <Block title="Devil's Advocate Report"><MarkdownReport content={fullReport} /></Block>
+      )}
+    </div>
+  );
+}
+
+function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
+  const score = num(o.score ?? o.funding_score ?? o.overall_score, 0);
+  const verdict = str(o.verdict ?? o.summary ?? o.grade);
+  const breakdown = arr(o.breakdown ?? o.criteria ?? o.dimension_scores);
+  const strengths = arr(o.investor_strengths ?? o.strengths);
+  const weaknesses = arr(o.investor_concerns ?? o.weaknesses);
+  const recommendations = arr(o.recommendations ?? o.next_steps);
+  const investorType = str(o.investor_type);
+  const fullReport = str(o.full_report);
+  const pct = Math.max(0, Math.min(100, score));
+  const scoreColor = pct >= 70 ? "var(--success)" : pct >= 45 ? "var(--primary)" : pct >= 25 ? "var(--warning)" : "var(--destructive)";
+  const readinessLabel = pct >= 75 ? "Investor-Ready" : pct >= 55 ? "Getting There" : pct >= 35 ? "Pre-Ready" : "Not Ready";
+  return (
+    <div className="space-y-3">
+      {(score > 0 || verdict) && (
+        <div className="overflow-hidden rounded-xl p-5" style={{ background: `color-mix(in oklab, ${scoreColor} 6%, var(--surface-2))`, border: `1px solid color-mix(in oklab, ${scoreColor} 22%, transparent)` }}>
+          <div className="flex items-center gap-5">
+            <div className="relative shrink-0" style={{ width: 90, height: 55 }}>
+              <svg viewBox="0 0 100 60" style={{ width: 90, height: 55 }}>
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--surface-offset, rgba(0,0,0,0.08))" strokeWidth="9" strokeLinecap="round" />
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={scoreColor} strokeWidth="9" strokeLinecap="round"
+                  strokeDasharray={`${(pct / 100) * 125.66} 125.66`} style={{ filter: `drop-shadow(0 0 4px ${scoreColor})` }} />
+              </svg>
+              <div className="absolute inset-x-0 bottom-0 text-center font-mono font-bold tabular-nums" style={{ fontSize: "1.3rem", color: scoreColor, lineHeight: 1 }}>
+                {Math.round(score)}
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider" style={{ background: `color-mix(in oklab, ${scoreColor} 15%, transparent)`, color: scoreColor, border: `1px solid color-mix(in oklab, ${scoreColor} 30%, transparent)` }}>{readinessLabel}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--muted-foreground)" }}>Fundability score</span>
+              </div>
+              {verdict && <div className="text-[13.5px] font-medium leading-snug" style={{ color: "var(--foreground)" }}>{verdict}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+      {breakdown.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            Investor criteria checklist
+          </div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {breakdown.map((b, i) => {
+              const item = typeof b === "object" && b ? (b as Record<string, unknown>) : { criterion: String(b) };
+              const criterion = str(item.criterion ?? item.name ?? item.category);
+              const sc = num(item.score, 0);
+              const note = str(item.notes ?? item.rationale ?? item.note);
+              const maxSc = num(item.max, 10);
+              const pctItem = Math.min(100, (sc / maxSc) * 100);
+              const passes = pctItem >= 60;
+              const itemColor = pctItem >= 70 ? "var(--success)" : pctItem >= 40 ? "var(--warning)" : "var(--destructive)";
+              return (
+                <div key={i} className="flex items-start gap-3 px-4 py-3">
+                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: itemColor, flexShrink: 0 }}>{passes ? "✓" : "✕"}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-[12.5px] font-medium" style={{ color: "var(--foreground)" }}>{criterion}</span>
+                      <span className="font-mono text-[11px] font-semibold" style={{ color: itemColor }}>{sc}/{maxSc}</span>
+                    </div>
+                    <div className="mb-1 h-1 overflow-hidden rounded-full" style={{ background: "var(--surface-offset, rgba(0,0,0,0.06))" }}>
+                      <div className="h-full rounded-full" style={{ width: `${pctItem}%`, background: itemColor, boxShadow: `0 0 5px ${itemColor}` }} />
+                    </div>
+                    {note && <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{note}</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {(strengths.length > 0 || weaknesses.length > 0) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {strengths.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--success) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--success) 20%, transparent)", borderTop: "3px solid var(--success)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Investor strengths</div>
+              {strengths.slice(0, 4).map((s, i) => (
+                <div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                  <span style={{ color: "var(--success)", flexShrink: 0 }}>✓</span>{typeof s === "string" ? s : JSON.stringify(s)}
+                </div>
+              ))}
+            </div>
+          )}
+          {weaknesses.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--warning) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--warning) 20%, transparent)", borderTop: "3px solid var(--warning)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--warning)" }}>Investor concerns</div>
+              {weaknesses.slice(0, 4).map((w, i) => (
+                <div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                  <span style={{ color: "var(--warning)", flexShrink: 0 }}>△</span>{typeof w === "string" ? w : JSON.stringify(w)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
       {recommendations.length > 0 && (
         <Block title="To improve your score" accent="primary">
-          <BulletList items={recommendations} accent="primary" />
+          <div className="space-y-1.5">
+            {recommendations.map((r, i) => (
+              <div key={i} className="flex gap-2.5 text-[13px]" style={{ color: "var(--foreground)" }}>
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "var(--primary)", flexShrink: 0 }}>{i + 1}</span>
+                {typeof r === "string" ? r : JSON.stringify(r)}
+              </div>
+            ))}
+          </div>
         </Block>
       )}
-      {investorType && (
-        <Block title="Best investor match" accent="accent">
-          {investorType}
-        </Block>
-      )}
+      {investorType && <Block title="Best investor match" accent="accent">{investorType}</Block>}
       {fullReport && score === 0 && breakdown.length === 0 && (
-        <Block title="Funding Readiness Report">
-          <MarkdownReport content={fullReport} />
-        </Block>
+        <Block title="Funding Readiness Report"><MarkdownReport content={fullReport} /></Block>
       )}
     </div>
   );
@@ -2164,120 +2276,120 @@ function LandingPageOut({ o }: { o: Record<string, unknown> }) {
 
 function CompetitorOut({ o }: { o: Record<string, unknown> }) {
   const overview = str(o.market_overview ?? o.overview);
-  // Edge function returns tier1 + tier2 arrays instead of a combined competitors array
   const tier1 = arr(o.tier1);
   const tier2 = arr(o.tier2);
-  const competitors = arr(o.competitors).length > 0 ? arr(o.competitors) : [...tier1, ...tier2];
+  const allCompetitors = arr(o.competitors).length > 0 ? arr(o.competitors) : [...tier1, ...tier2];
   const gaps = arr(o.gaps ?? o.market_gaps);
   const opportunity = str(o.positioning_opportunity ?? o.opportunity ?? o.winning_angle);
+  const moat = str(o.your_moat ?? o.competitive_advantage ?? o.differentiation);
   const gtm = str(o.go_to_market ?? o.recommendation);
   const fullReport = str(o.full_report);
+  const competitors = allCompetitors.map((c, idx) => {
+    const item = typeof c === "object" && c ? (c as Record<string, unknown>) : { name: String(c) };
+    return {
+      name: str(item.name ?? item.company),
+      positioning: str(item.positioning ?? item.description ?? item.tagline),
+      strengths: arr(item.strengths),
+      weaknesses: arr(item.weaknesses),
+      price: str(item.price ?? item.pricing),
+      icp: str(item.target ?? item.icp ?? item.ideal_customer),
+      isTier1: idx < tier1.length && tier1.length > 0,
+    };
+  });
   return (
     <div className="space-y-3">
       {overview && (
-        <Block title="Market overview" accent="primary">
-          {overview}
-        </Block>
+        <div className="rounded-xl p-4" style={{ background: "color-mix(in oklab, var(--primary) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--primary) 20%, transparent)", borderTop: "3px solid var(--primary)" }}>
+          <div className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--primary)" }}>Market overview</div>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>{overview}</div>
+        </div>
       )}
       {competitors.length > 0 && (
-        <div className="space-y-2">
-          {competitors.map((c, i) => {
-            const item =
-              typeof c === "object" && c ? (c as Record<string, unknown>) : { name: String(c) };
-            const name = str(item.name ?? item.company);
-            const strengths = arr(item.strengths);
-            const weaknesses = arr(item.weaknesses);
-            const positioning = str(item.positioning ?? item.description);
-            return (
-              <div
-                key={i}
-                className="overflow-hidden rounded-xl"
-                style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-                }}
-              >
-                <div
-                  className="px-4 py-2.5 font-semibold text-[13px]"
-                  style={{
-                    borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-                    color: "var(--foreground)",
-                    background: "color-mix(in oklab, var(--primary) 5%, transparent)",
-                  }}
-                >
-                  {name}
-                </div>
-                <div className="p-4 space-y-2">
-                  {positioning && (
-                    <div className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
-                      {positioning}
-                    </div>
-                  )}
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {strengths.length > 0 && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>Competitor breakdown</div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {competitors.map((comp, i) => {
+              const tierColor = comp.isTier1 ? "var(--destructive)" : "var(--warning)";
+              const tierLabel = comp.isTier1 ? "Tier 1" : "Tier 2";
+              return (
+                <div key={i} className="p-4">
+                  <div className="mb-2.5 flex flex-wrap items-center gap-2">
+                    <span className="text-[14px] font-bold" style={{ color: "var(--foreground)" }}>{comp.name}</span>
+                    {(tier1.length > 0 || tier2.length > 0) && (
+                      <span className="rounded-full px-2 py-0.5 text-[9.5px] font-semibold" style={{ background: `color-mix(in oklab, ${tierColor} 12%, transparent)`, color: tierColor, border: `1px solid color-mix(in oklab, ${tierColor} 25%, transparent)` }}>{tierLabel}</span>
+                    )}
+                    {comp.price && <span className="font-mono text-[11px]" style={{ color: "var(--muted-foreground)" }}>{comp.price}</span>}
+                  </div>
+                  {comp.positioning && <div className="mb-2 text-[12px] italic" style={{ color: "var(--muted-foreground)" }}>"{comp.positioning}"</div>}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {comp.strengths.length > 0 && (
                       <div>
-                        <div
-                          className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                          style={{ color: "var(--success)" }}
-                        >
-                          Strengths
+                        <div className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--success)" }}>Strengths</div>
+                        <div className="space-y-1">
+                          {comp.strengths.slice(0, 3).map((s, j) => (
+                            <div key={j} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                              <span style={{ color: "var(--success)", flexShrink: 0 }}>+</span>{typeof s === "string" ? s : JSON.stringify(s)}
+                            </div>
+                          ))}
                         </div>
-                        <BulletList items={strengths} accent="success" />
                       </div>
                     )}
-                    {weaknesses.length > 0 && (
+                    {comp.weaknesses.length > 0 && (
                       <div>
-                        <div
-                          className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                          style={{ color: "var(--warning)" }}
-                        >
-                          Weaknesses
+                        <div className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--warning)" }}>Weaknesses</div>
+                        <div className="space-y-1">
+                          {comp.weaknesses.slice(0, 3).map((w, j) => (
+                            <div key={j} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}>
+                              <span style={{ color: "var(--warning)", flexShrink: 0 }}>−</span>{typeof w === "string" ? w : JSON.stringify(w)}
+                            </div>
+                          ))}
                         </div>
-                        <BulletList items={weaknesses} accent="warning" />
                       </div>
                     )}
                   </div>
+                  {comp.icp && <div className="mt-2 text-[11px]" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">Targets:</span> {comp.icp}</div>}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {moat && (
+        <div className="rounded-xl p-4" style={{ background: "color-mix(in oklab, var(--success) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--success) 22%, transparent)", borderLeft: "3px solid var(--success)" }}>
+          <div className="mb-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Your competitive moat</div>
+          <div className="text-[13.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>{moat}</div>
         </div>
       )}
       {gaps.length > 0 && (
-        <Block title="Market gaps you can own" accent="accent">
-          <BulletList items={gaps} accent="primary" />
-        </Block>
+        <div className="overflow-hidden rounded-xl" style={{ background: "color-mix(in oklab, var(--accent) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--accent) 20%, transparent)", borderTop: "3px solid var(--accent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--accent)" }}>Market gaps you can own</div>
+          <div className="space-y-1.5 px-4 pb-4">
+            {gaps.map((g, i) => (
+              <div key={i} className="flex gap-2 text-[12.5px]" style={{ color: "var(--foreground)" }}>
+                <span style={{ color: "var(--accent)", flexShrink: 0 }}>◆</span>{typeof g === "string" ? g : JSON.stringify(g)}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-      {opportunity && (
-        <Block title="Positioning opportunity" accent="success">
-          {opportunity}
-        </Block>
-      )}
-      {gtm && (
-        <Block title="GTM recommendation" accent="primary">
-          {gtm}
-        </Block>
-      )}
+      {opportunity && <Block title="Positioning opportunity" accent="success">{opportunity}</Block>}
+      {gtm && <Block title="GTM recommendation" accent="primary">{gtm}</Block>}
       {fullReport && competitors.length === 0 && !opportunity && (
-        <Block title="Competitive Analysis">
-          <MarkdownReport content={fullReport} />
-        </Block>
+        <Block title="Competitive Analysis"><MarkdownReport content={fullReport} /></Block>
       )}
     </div>
   );
 }
 
 function PricingOut({ o }: { o: Record<string, unknown> }) {
-  // Edge function returns recommended_strategy and recommended_price (number)
   const model = str(o.recommended_model ?? o.pricing_model ?? o.model ?? o.recommended_strategy);
   const rationale = str(o.rationale ?? o.positioning_rationale);
   const recommendedPrice = o.recommended_price != null ? `$${String(o.recommended_price)}` : "";
   const tiers = arr(o.pricing_tiers ?? o.tiers ?? o.plans);
   const comparison = str(o.competitor_comparison ?? o.market_context);
-  // Edge function returns revenue_projections as object with scenarios, not array
+  const justification = arr(o.price_justification ?? o.justification ?? o.value_bullets);
   const revenueObj = o.revenue_projections;
-  const revenue = Array.isArray(revenueObj)
-    ? (revenueObj as unknown[])
+  const revenue = Array.isArray(revenueObj) ? (revenueObj as unknown[])
     : revenueObj && typeof revenueObj === "object"
       ? Object.entries(revenueObj as Record<string, unknown>).map(([k, v]) => `${k}: ${String(v)}`)
       : [];
@@ -2285,129 +2397,63 @@ function PricingOut({ o }: { o: Record<string, unknown> }) {
   return (
     <div className="space-y-3">
       {model && (
-        <div
-          className="rounded-xl p-5"
-          style={{
-            background: "color-mix(in oklab, var(--accent) 7%, var(--surface-2))",
-            border: "1px solid color-mix(in oklab, var(--accent) 25%, transparent)",
-            borderLeft: "3px solid var(--accent)",
-          }}
-        >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1.5"
-            style={{ color: "var(--accent)" }}
-          >
-            Recommended model
-          </div>
-          <div
-            className="font-display text-[1.2rem] font-semibold"
-            style={{ color: "var(--foreground)" }}
-          >
-            {model}
-          </div>
-          {rationale && (
-            <div
-              className="mt-2 text-[13px] leading-relaxed"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              {rationale}
-            </div>
-          )}
+        <div className="rounded-xl p-5" style={{ background: "color-mix(in oklab, var(--accent) 7%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--accent) 25%, transparent)", borderLeft: "3px solid var(--accent)" }}>
+          <div className="mb-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--accent)" }}>Recommended model</div>
+          <div className="font-display text-[1.2rem] font-semibold" style={{ color: "var(--foreground)" }}>{model}</div>
+          {rationale && <div className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{rationale}</div>}
         </div>
       )}
       {tiers.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-3 ${tiers.length <= 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
           {tiers.map((t, i) => {
-            const item =
-              typeof t === "object" && t ? (t as Record<string, unknown>) : { name: String(t) };
+            const item = typeof t === "object" && t ? (t as Record<string, unknown>) : { name: String(t) };
             const name = str(item.name ?? item.tier ?? item.plan);
             const price = str(item.price ?? item.pricing);
             const features = arr(item.features ?? item.includes);
-            const highlight = !!(item.recommended ?? item.highlighted ?? i === 1);
+            const highlight = !!(item.recommended ?? item.highlighted ?? (tiers.length === 3 && i === 1));
+            const tierColor = highlight ? "var(--primary)" : i === 0 ? "var(--muted-foreground)" : "var(--accent)";
             return (
-              <div
-                key={i}
-                className="overflow-hidden rounded-xl"
-                style={{
-                  background: highlight
-                    ? "color-mix(in oklab, var(--primary) 8%, var(--surface-2))"
-                    : "var(--surface-2)",
-                  border: highlight
-                    ? "1px solid color-mix(in oklab, var(--primary) 30%, transparent)"
-                    : "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-                  boxShadow: highlight
-                    ? "0 0 20px color-mix(in oklab, var(--primary) 10%, transparent)"
-                    : "none",
-                }}
-              >
-                {highlight && (
-                  <div
-                    className="h-0.5"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, transparent, var(--primary), transparent)",
-                    }}
-                  />
-                )}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div
-                      className="text-[13px] font-semibold"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      {name}
-                    </div>
-                    {highlight && (
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[9.5px] font-bold"
-                        style={{
-                          background: "color-mix(in oklab, var(--primary) 15%, transparent)",
-                          color: "var(--primary)",
-                          border: "1px solid color-mix(in oklab, var(--primary) 30%, transparent)",
-                        }}
-                      >
-                        POPULAR
-                      </span>
-                    )}
-                  </div>
-                  {price && (
-                    <div
-                      className="font-display text-[1.5rem] font-bold mb-3"
-                      style={{ color: highlight ? "var(--primary)" : "var(--foreground)" }}
-                    >
-                      {price}
+              <div key={i} className="relative overflow-hidden rounded-xl" style={{
+                background: highlight ? "color-mix(in oklab, var(--primary) 8%, var(--surface-2))" : "var(--surface-2)",
+                border: highlight ? "2px solid color-mix(in oklab, var(--primary) 40%, transparent)" : "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+                boxShadow: highlight ? "0 0 24px color-mix(in oklab, var(--primary) 12%, transparent)" : "none",
+              }}>
+                {highlight && <div className="py-1.5 text-center text-[9.5px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: "var(--primary)" }}>Most Popular</div>}
+                <div className="p-5">
+                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: tierColor }}>{name}</div>
+                  {price && <div className="mb-4 font-display font-bold tabular-nums" style={{ color: highlight ? "var(--primary)" : "var(--foreground)", fontSize: "1.75rem", lineHeight: 1.1 }}>{price}</div>}
+                  {features.length > 0 && (
+                    <div className="space-y-1.5">
+                      {features.map((f, j) => (
+                        <div key={j} className="flex gap-2 text-[12px]" style={{ color: "var(--foreground)" }}>
+                          <span style={{ color: highlight ? "var(--primary)" : "var(--success)", flexShrink: 0 }}>✓</span>
+                          {typeof f === "string" ? f : JSON.stringify(f)}
+                        </div>
+                      ))}
                     </div>
                   )}
-                  {features.length > 0 && <BulletList items={features} accent="success" />}
                 </div>
               </div>
             );
           })}
         </div>
       )}
-      {recommendedPrice && !model && (
-        <Block title="Recommended Price" accent="success">
-          <span className="font-display text-2xl font-bold">{recommendedPrice}</span>
-        </Block>
+      {recommendedPrice && !model && tiers.length === 0 && (
+        <div className="rounded-xl p-5 text-center" style={{ background: "color-mix(in oklab, var(--success) 8%, var(--surface-2))", border: "2px solid color-mix(in oklab, var(--success) 30%, transparent)" }}>
+          <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Recommended Price</div>
+          <div className="font-display text-[2.5rem] font-bold tabular-nums" style={{ color: "var(--success)" }}>{recommendedPrice}</div>
+        </div>
       )}
-      {comparison && <Block title="Competitor comparison">{comparison}</Block>}
-      {revenue.length > 0 && (
-        <Block title="Revenue projections" accent="success">
-          <BulletList items={revenue} accent="success" />
-        </Block>
-      )}
-      {fullReport && !model && tiers.length === 0 && (
-        <Block title="Pricing Strategy">
-          <MarkdownReport content={fullReport} />
-        </Block>
-      )}
+      {justification.length > 0 && <Block title="Why this price is justified" accent="success"><BulletList items={justification} accent="success" /></Block>}
+      {comparison && <Block title="Market context">{comparison}</Block>}
+      {revenue.length > 0 && <Block title="Revenue projections" accent="success"><BulletList items={revenue} accent="success" /></Block>}
+      {fullReport && !model && tiers.length === 0 && <Block title="Pricing Strategy"><MarkdownReport content={fullReport} /></Block>}
     </div>
   );
 }
 
 function RevenueOut({ o }: { o: Record<string, unknown> }) {
   const assumptions = arr(o.assumptions);
-  // Edge function returns conservative_scenario, base_scenario, optimistic_scenario objects
   const projections = arr(o.projections ?? o.monthly_projections ?? o.yearly_projections);
   const baseScenario = o.base_scenario as Record<string, unknown> | undefined;
   const conservativeScenario = o.conservative_scenario as Record<string, unknown> | undefined;
@@ -2419,141 +2465,99 @@ function RevenueOut({ o }: { o: Record<string, unknown> }) {
   const milestones = arr(o.milestones);
   const risks = arr(o.risks ?? o.key_risks);
   const fullReport = str(o.full_report);
+
+  function scenarioRows(sc: Record<string, unknown> | undefined): Array<{ label: string; val: string }> {
+    if (!sc) return [];
+    return Object.entries(sc).map(([k, v]) => ({ label: k.replace(/_/g, " "), val: String(v) }));
+  }
+  const scenarios = [
+    { label: "Conservative", data: conservativeScenario, color: "var(--warning)" },
+    { label: "Base", data: baseScenario, color: "var(--primary)" },
+    { label: "Optimistic", data: optimisticScenario, color: "var(--success)" },
+  ].filter((s) => s.data);
+
+  function extractRevNum(v: string): number {
+    const m = v.match(/([\d,]+(?:\.\d+)?)\s*([KMBkm]?)/);
+    if (!m) return 0;
+    const n = parseFloat(m[1].replace(/,/g, ""));
+    const mult = ({ k: 1e3, K: 1e3, m: 1e6, M: 1e6, b: 1e9, B: 1e9 } as Record<string, number>)[m[2]] ?? 1;
+    return n * mult;
+  }
+  const projNums = projections.map((p) => {
+    const item = typeof p === "object" && p ? (p as Record<string, unknown>) : { period: String(p) };
+    return extractRevNum(str(item.revenue ?? item.mrr ?? item.arr));
+  });
+  const maxRevNum = Math.max(...projNums, 1);
+
   return (
     <div className="space-y-3">
       {totalArr && (
-        <div
-          className="rounded-xl p-5"
-          style={{
-            background: "color-mix(in oklab, var(--success) 8%, var(--surface-2))",
-            border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
-            borderLeft: "3px solid var(--success)",
-          }}
-        >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1"
-            style={{ color: "var(--success)" }}
-          >
-            Projected ARR
-          </div>
-          <div className="font-display text-[2rem] font-bold" style={{ color: "var(--success)" }}>
-            {totalArr}
-          </div>
+        <div className="rounded-xl p-5" style={{ background: "color-mix(in oklab, var(--success) 8%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)", borderLeft: "3px solid var(--success)" }}>
+          <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Projected ARR</div>
+          <div className="font-display text-[2rem] font-bold tabular-nums" style={{ color: "var(--success)" }}>{totalArr}</div>
         </div>
       )}
-      {assumptions.length > 0 && (
-        <Block title="Key assumptions">
-          <BulletList items={assumptions} />
-        </Block>
+      {scenarios.length > 0 && (
+        <div className={`grid gap-3 ${scenarios.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+          {scenarios.map((s) => {
+            const rows = scenarioRows(s.data);
+            const keyRow = rows.find((r) => r.label.toLowerCase().includes("mrr") || r.label.toLowerCase().includes("arr") || r.label.toLowerCase().includes("revenue"));
+            return (
+              <div key={s.label} className="overflow-hidden rounded-xl" style={{ background: `color-mix(in oklab, ${s.color} 6%, var(--surface-2))`, border: `1px solid color-mix(in oklab, ${s.color} 22%, transparent)`, borderTop: `3px solid ${s.color}` }}>
+                <div className="p-4">
+                  <div className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: s.color }}>{s.label}</div>
+                  {keyRow && <div className="mb-2 font-mono text-[1.2rem] font-bold tabular-nums" style={{ color: s.color }}>{keyRow.val}</div>}
+                  <div className="space-y-1">
+                    {rows.filter((r) => r !== keyRow).slice(0, 3).map((r, i) => (
+                      <div key={i} className="flex justify-between gap-2 text-[11px]">
+                        <span className="capitalize" style={{ color: "var(--muted-foreground)" }}>{r.label}</span>
+                        <span className="font-medium tabular-nums" style={{ color: "var(--foreground)" }}>{r.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
       {projections.length > 0 && (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-          }}
-        >
-          <div
-            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{
-              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              color: "var(--muted-foreground)",
-            }}
-          >
-            Projections
-          </div>
-          <div
-            className="divide-y"
-            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
-          >
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>Revenue projections</div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
             {projections.map((p, i) => {
-              const item =
-                typeof p === "object" && p ? (p as Record<string, unknown>) : { period: String(p) };
-              const period = str(
-                item.period ?? item.month ?? item.year ?? item.quarter ?? `Period ${i + 1}`,
-              );
+              const item = typeof p === "object" && p ? (p as Record<string, unknown>) : { period: String(p) };
+              const period = str(item.period ?? item.month ?? item.year ?? item.quarter ?? `Month ${i + 1}`);
               const revenue = str(item.revenue ?? item.mrr ?? item.arr);
               const users = str(item.users ?? item.customers);
               const note = str(item.note ?? item.notes);
+              const barPct = maxRevNum > 0 ? Math.round((projNums[i] / maxRevNum) * 100) : Math.min(100, 15 + i * 12);
               return (
-                <div key={i} className="flex items-center gap-4 px-4 py-2.5">
-                  <span
-                    className="w-20 shrink-0 text-[11px] font-semibold"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {period}
-                  </span>
-                  {revenue && (
-                    <span
-                      className="font-mono text-[13px] font-semibold"
-                      style={{ color: "var(--success)" }}
-                    >
-                      {revenue}
-                    </span>
-                  )}
-                  {users && (
-                    <span className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
-                      {users} users
-                    </span>
-                  )}
-                  {note && (
-                    <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                      {note}
-                    </span>
-                  )}
+                <div key={i} className="px-4 py-3">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-[11.5px] font-semibold" style={{ color: "var(--muted-foreground)" }}>{period}</span>
+                    <div className="flex items-center gap-3">
+                      {users && <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>{users} users</span>}
+                      {revenue && <span className="font-mono text-[13px] font-bold tabular-nums" style={{ color: "var(--success)" }}>{revenue}</span>}
+                    </div>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full" style={{ background: "var(--surface-offset, rgba(0,0,0,0.06))" }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${barPct}%`, background: "linear-gradient(90deg, var(--primary), var(--success))", boxShadow: "0 0 5px var(--success)" }} />
+                  </div>
+                  {note && <div className="mt-1 text-[11px]" style={{ color: "var(--muted-foreground)" }}>{note}</div>}
                 </div>
               );
             })}
           </div>
         </div>
       )}
-      {milestones.length > 0 && (
-        <Block title="Key milestones" accent="primary">
-          <BulletList items={milestones} accent="primary" />
-        </Block>
-      )}
-      {risks.length > 0 && (
-        <Block title="Revenue risks" accent="warning">
-          <BulletList items={risks} accent="warning" />
-        </Block>
-      )}
-      {/* Edge function scenario blocks */}
-      {!projections.length && (baseScenario || conservativeScenario || optimisticScenario) && (
-        <div className="space-y-2">
-          {[
-            { label: "Conservative", data: conservativeScenario, accent: "warning" as const },
-            { label: "Base", data: baseScenario, accent: "primary" as const },
-            { label: "Optimistic", data: optimisticScenario, accent: "success" as const },
-          ]
-            .filter((s) => s.data)
-            .map((s) => (
-              <Block key={s.label} title={`${s.label} scenario`} accent={s.accent}>
-                <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
-                  {Object.entries(s.data as Record<string, unknown>)
-                    .map(([k, v]) => `${k}: ${String(v)}`)
-                    .join("\n")}
-                </div>
-              </Block>
-            ))}
-        </div>
-      )}
-      {verdict && (
-        <Block title="Unit economics verdict" accent="accent">
-          {verdict}
-        </Block>
-      )}
+      {assumptions.length > 0 && <Block title="Key assumptions"><BulletList items={assumptions} /></Block>}
+      {verdict && <Block title="Unit economics verdict" accent="accent">{verdict}</Block>}
       {breakeven && <Block title="Breakeven analysis">{breakeven}</Block>}
-      {growthLevers.length > 0 && (
-        <Block title="Growth levers" accent="primary">
-          <BulletList items={growthLevers} accent="primary" />
-        </Block>
-      )}
-      {fullReport && !totalArr && projections.length === 0 && !baseScenario && (
-        <Block title="Revenue Projection">
-          <MarkdownReport content={fullReport} />
-        </Block>
-      )}
+      {milestones.length > 0 && <Block title="Key milestones" accent="primary"><BulletList items={milestones} accent="primary" /></Block>}
+      {risks.length > 0 && <Block title="Revenue risks" accent="warning"><BulletList items={risks} accent="warning" /></Block>}
+      {growthLevers.length > 0 && <Block title="Growth levers" accent="primary"><BulletList items={growthLevers} accent="primary" /></Block>}
+      {fullReport && !totalArr && projections.length === 0 && !baseScenario && <Block title="Revenue Projection"><MarkdownReport content={fullReport} /></Block>}
     </div>
   );
 }
@@ -3044,67 +3048,63 @@ function ColdEmailOut({ o }: { o: Record<string, unknown> }) {
   return (
     <div className="space-y-3">
       {subjects.length > 0 && (
-        <Block title="Subject lines" accent="primary">
-          <BulletList items={subjects} accent="primary" />
-        </Block>
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-3 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            Subject line variants — A/B test these
+          </div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {subjects.map((s, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold" style={{ background: "color-mix(in oklab, var(--primary) 15%, transparent)", color: "var(--primary)" }}>
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{typeof s === "string" ? s : JSON.stringify(s)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
       {emails.map((e, i) => {
         const email = typeof e === "object" && e ? (e as Record<string, unknown>) : {};
-        const angle = str(email.angle);
+        const angle = str(email.angle ?? email.variant_name);
         const subject = str(email.subject);
         const body = str(email.body ?? email.content);
         const ps = str(email.ps_line ?? email.ps);
         return (
-          <div
-            key={i}
-            className="overflow-hidden rounded-xl"
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-            }}
-          >
-            <div
-              className="flex items-center justify-between px-4 py-2.5"
-              style={{
-                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              }}
-            >
-              <div
-                className="text-[10px] font-semibold uppercase tracking-[0.12em]"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                Variant {i + 1}
+          <div key={i} className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)", boxShadow: "0 2px 8px color-mix(in oklab, var(--border) 40%, transparent)" }}>
+            <div className="px-4 py-2.5" style={{ background: "color-mix(in oklab, var(--primary) 4%, var(--surface-2))", borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)" }}>
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}>{i + 1}</div>
+                {angle && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: "color-mix(in oklab, var(--primary) 10%, transparent)", color: "var(--primary)", border: "1px solid color-mix(in oklab, var(--primary) 22%, transparent)" }}>{angle}</span>}
               </div>
-              {angle && (
-                <span className="text-[11px] italic" style={{ color: "var(--muted-foreground)" }}>
-                  {angle}
-                </span>
+              {subject && (
+                <div className="mt-2 space-y-0.5">
+                  <div className="flex items-baseline gap-2 text-[11.5px]">
+                    <span className="w-14 shrink-0 font-semibold" style={{ color: "var(--muted-foreground)" }}>Subject:</span>
+                    <span className="font-semibold" style={{ color: "var(--foreground)" }}>{subject}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 text-[11px]">
+                    <span className="w-14 shrink-0 font-semibold" style={{ color: "var(--muted-foreground)" }}>To:</span>
+                    <span style={{ color: "var(--muted-foreground)" }}>[First Name] &lt;prospect@company.com&gt;</span>
+                  </div>
+                </div>
               )}
             </div>
-            <div className="space-y-2 p-4">
-              {subject && (
-                <div className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
-                  Subject: {subject}
-                </div>
-              )}
-              {body && (
-                <div
-                  className="whitespace-pre-wrap text-[13px] leading-relaxed"
-                  style={{ color: "color-mix(in oklab, var(--foreground) 85%, transparent)" }}
-                >
-                  {body}
-                </div>
-              )}
-              {ps && (
-                <div className="text-[12px] italic" style={{ color: "var(--muted-foreground)" }}>
-                  P.S. {ps}
-                </div>
-              )}
+            <div className="px-4 py-4">
+              {body && <div className="whitespace-pre-wrap text-[13px] leading-relaxed" style={{ color: "color-mix(in oklab, var(--foreground) 88%, transparent)" }}>{body}</div>}
+              {ps && <div className="mt-3 border-t pt-3 text-[12px] italic" style={{ color: "var(--muted-foreground)", borderColor: "color-mix(in oklab, var(--border) 40%, transparent)" }}>P.S. {ps}</div>}
             </div>
           </div>
         );
       })}
-      {followUp && <Block title="Follow-up template">{followUp}</Block>}
+      {followUp && (
+        <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+          <div className="px-4 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>
+            Follow-up (send day 3–5 if no reply)
+          </div>
+          <div className="px-4 py-3 whitespace-pre-wrap text-[13px] leading-relaxed" style={{ color: "var(--foreground)" }}>{followUp}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3187,112 +3187,82 @@ function NicheValidatorOut({ o }: { o: Record<string, unknown> }) {
 
 function IcpOut({ o }: { o: Record<string, unknown> }) {
   const primary = str(o.primary_icp);
-  const demographics =
-    typeof o.demographics === "object" && o.demographics
-      ? (o.demographics as Record<string, unknown>)
-      : null;
-  const psychographics =
-    typeof o.psychographics === "object" && o.psychographics
-      ? (o.psychographics as Record<string, unknown>)
-      : null;
+  const demographics = typeof o.demographics === "object" && o.demographics ? (o.demographics as Record<string, unknown>) : null;
+  const psychographics = typeof o.psychographics === "object" && o.psychographics ? (o.psychographics as Record<string, unknown>) : null;
   const painPoints = arr(o.pain_points);
   const goals = arr(o.goals);
   const triggers = arr(o.buying_triggers);
   const objections = arr(o.objections);
   const whereToFind = arr(o.where_to_find_them);
   const message = str(o.message_that_resonates);
+  const initials = primary.split(" ").filter((w) => /^[A-Z]/.test(w)).slice(0, 2).map((w) => w[0]).join("") || "IC";
   return (
     <div className="space-y-3">
       {primary && (
-        <div
-          className="overflow-hidden rounded-xl p-5"
-          style={{
-            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
-            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
-            borderLeft: "3px solid var(--primary)",
-          }}
-        >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
-            style={{ color: "var(--primary)" }}
-          >
-            Primary ICP
-          </div>
-          <div
-            className="text-[14px] font-semibold leading-snug"
-            style={{ color: "var(--foreground)" }}
-          >
-            {primary}
+        <div className="overflow-hidden rounded-xl" style={{ background: "color-mix(in oklab, var(--primary) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--primary) 22%, transparent)" }}>
+          <div className="flex items-center gap-4 p-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-[1.1rem] font-bold text-white" style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))", boxShadow: "0 4px 12px color-mix(in oklab, var(--primary) 30%, transparent)" }}>{initials}</div>
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--primary)" }}>Ideal Customer Profile</div>
+              <div className="text-[14px] font-semibold leading-snug" style={{ color: "var(--foreground)" }}>{primary}</div>
+            </div>
           </div>
         </div>
       )}
-      {demographics && (
-        <Block title="Demographics">
-          <div className="space-y-1">
-            {Object.entries(demographics).map(([k, v]) => (
-              <div key={k} className="flex gap-2">
-                <span
-                  className="w-28 shrink-0 text-[11px] font-medium capitalize"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {k.replace(/_/g, " ")}
-                </span>
-                <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
-                  {str(v)}
-                </span>
+      {(demographics || psychographics) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {demographics && (
+            <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+              <div className="px-4 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>Demographics</div>
+              <div className="space-y-2 p-4">
+                {Object.entries(demographics).map(([k, v]) => (
+                  <div key={k} className="flex gap-2">
+                    <span className="w-24 shrink-0 text-[10.5px] font-medium capitalize" style={{ color: "var(--muted-foreground)" }}>{k.replace(/_/g, " ")}</span>
+                    <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>{str(v)}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Block>
-      )}
-      {psychographics && (
-        <Block title="Psychographics">
-          <div className="space-y-1">
-            {Object.entries(psychographics).map(([k, v]) => (
-              <div key={k} className="flex gap-2">
-                <span
-                  className="w-28 shrink-0 text-[11px] font-medium capitalize"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {k.replace(/_/g, " ")}
-                </span>
-                <span className="text-[13px]" style={{ color: "var(--foreground)" }}>
-                  {str(v)}
-                </span>
+            </div>
+          )}
+          {psychographics && (
+            <div className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}>
+              <div className="px-4 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}>Psychographics</div>
+              <div className="space-y-2 p-4">
+                {Object.entries(psychographics).map(([k, v]) => (
+                  <div key={k} className="flex gap-2">
+                    <span className="w-24 shrink-0 text-[10.5px] font-medium capitalize" style={{ color: "var(--muted-foreground)" }}>{k.replace(/_/g, " ")}</span>
+                    <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>{str(v)}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Block>
+            </div>
+          )}
+        </div>
       )}
-      {painPoints.length > 0 && (
-        <Block title="Pain points" accent="destructive">
-          <BulletList items={painPoints} accent="destructive" />
-        </Block>
+      {(painPoints.length > 0 || goals.length > 0) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {painPoints.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--destructive) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--destructive) 20%, transparent)", borderTop: "3px solid var(--destructive)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--destructive)" }}>Pain points</div>
+              {painPoints.map((p, i) => (<div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}><span style={{ color: "var(--destructive)", flexShrink: 0 }}>✕</span>{typeof p === "string" ? p : JSON.stringify(p)}</div>))}
+            </div>
+          )}
+          {goals.length > 0 && (
+            <div className="space-y-1.5 rounded-xl p-3" style={{ background: "color-mix(in oklab, var(--success) 5%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--success) 20%, transparent)", borderTop: "3px solid var(--success)" }}>
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--success)" }}>Goals</div>
+              {goals.map((g, i) => (<div key={i} className="flex gap-1.5 text-[11.5px]" style={{ color: "var(--foreground)" }}><span style={{ color: "var(--success)", flexShrink: 0 }}>✓</span>{typeof g === "string" ? g : JSON.stringify(g)}</div>))}
+            </div>
+          )}
+        </div>
       )}
-      {goals.length > 0 && (
-        <Block title="Goals" accent="success">
-          <BulletList items={goals} accent="success" />
-        </Block>
-      )}
-      {triggers.length > 0 && (
-        <Block title="Buying triggers" accent="primary">
-          <BulletList items={triggers} accent="primary" />
-        </Block>
-      )}
-      {objections.length > 0 && (
-        <Block title="Objections" accent="warning">
-          <BulletList items={objections} accent="warning" />
-        </Block>
-      )}
-      {whereToFind.length > 0 && (
-        <Block title="Where to find them">
-          <BulletList items={whereToFind} accent="primary" />
-        </Block>
-      )}
+      {triggers.length > 0 && <Block title="Buying triggers" accent="primary"><BulletList items={triggers} accent="primary" /></Block>}
+      {objections.length > 0 && <Block title="Objections to handle" accent="warning"><BulletList items={objections} accent="warning" /></Block>}
+      {whereToFind.length > 0 && <Block title="Where to find them"><BulletList items={whereToFind} accent="primary" /></Block>}
       {message && (
-        <Block title="Message that resonates" accent="accent">
-          {message}
-        </Block>
+        <div className="rounded-xl p-4" style={{ background: "color-mix(in oklab, var(--accent) 6%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--accent) 22%, transparent)", borderLeft: "3px solid var(--accent)" }}>
+          <div className="mb-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--accent)" }}>Message that resonates</div>
+          <div className="text-[13.5px] leading-relaxed italic" style={{ color: "var(--foreground)" }}>"{message}"</div>
+        </div>
       )}
     </div>
   );
@@ -3302,74 +3272,51 @@ function PitchDeckOut({ o }: { o: Record<string, unknown> }) {
   const slides = arr(o.slides);
   const elevatorPitch = str(o.elevator_pitch);
   const oneLiner = str(o.one_line_summary ?? o.one_liner);
+  const slideColors = ["var(--primary)","var(--accent)","var(--success)","color-mix(in oklab, var(--primary) 60%, var(--accent))","var(--primary)","var(--accent)","var(--success)","color-mix(in oklab, var(--accent) 70%, var(--success))","var(--primary)","var(--accent)"];
   return (
     <div className="space-y-3">
       {oneLiner && (
-        <div
-          className="rounded-xl p-4"
-          style={{
-            background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))",
-            border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)",
-            borderLeft: "3px solid var(--primary)",
-          }}
-        >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-1.5"
-            style={{ color: "var(--primary)" }}
-          >
-            One-liner
-          </div>
-          <div className="text-[14px] font-semibold" style={{ color: "var(--foreground)" }}>
-            {oneLiner}
-          </div>
+        <div className="rounded-xl p-4" style={{ background: "color-mix(in oklab, var(--primary) 7%, var(--surface-2))", border: "1px solid color-mix(in oklab, var(--primary) 25%, transparent)", borderLeft: "3px solid var(--primary)" }}>
+          <div className="mb-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--primary)" }}>One-liner</div>
+          <div className="text-[14px] font-semibold" style={{ color: "var(--foreground)" }}>{oneLiner}</div>
         </div>
       )}
       {elevatorPitch && <Block title="Elevator pitch">{elevatorPitch}</Block>}
-      {slides.map((s, i) => {
-        const slide = typeof s === "object" && s ? (s as Record<string, unknown>) : {};
-        const title = str(slide.title);
-        const points = arr(slide.key_points);
-        const notes = str(slide.speaker_notes);
-        const num2 = slide.slide_number != null ? String(slide.slide_number) : String(i + 1);
-        return (
-          <div
-            key={i}
-            className="overflow-hidden rounded-xl"
-            style={{
-              background: "var(--surface-2)",
-              border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
-            }}
-          >
-            <div
-              className="flex items-center gap-3 px-4 py-2.5"
-              style={{
-                borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
-              }}
-            >
-              <span
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                style={{
-                  background: "color-mix(in oklab, var(--primary) 15%, transparent)",
-                  color: "var(--primary)",
-                }}
-              >
-                {num2}
-              </span>
-              <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
-                {title}
-              </div>
-            </div>
-            <div className="p-4 space-y-2">
-              {points.length > 0 && <BulletList items={points} accent="primary" />}
-              {notes && (
-                <div className="text-[11.5px] italic" style={{ color: "var(--muted-foreground)" }}>
-                  {notes}
+      {slides.length > 0 && (
+        <div className="space-y-2">
+          {slides.map((s, i) => {
+            const slide = typeof s === "object" && s ? (s as Record<string, unknown>) : {};
+            const title = str(slide.title);
+            const points = arr(slide.key_points);
+            const content = str(slide.content ?? slide.description ?? slide.body);
+            const notes = str(slide.speaker_notes);
+            const slideNum = slide.slide_number != null ? String(slide.slide_number) : String(i + 1);
+            const col = slideColors[i % slideColors.length];
+            return (
+              <div key={i} className="overflow-hidden rounded-xl" style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)", borderLeft: `3px solid ${col}` }}>
+                <div className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)" }}>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: col }}>{slideNum}</span>
+                  <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>{title}</div>
                 </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
+                <div className="space-y-2 p-4">
+                  {content && !points.length && <div className="text-[13px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{content}</div>}
+                  {points.length > 0 && (
+                    <div className="space-y-1.5">
+                      {points.map((pt, j) => (
+                        <div key={j} className="flex gap-2 text-[12.5px]" style={{ color: "var(--foreground)" }}>
+                          <span style={{ color: col, flexShrink: 0 }}>→</span>
+                          {typeof pt === "string" ? pt : JSON.stringify(pt)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {notes && <div className="rounded-lg px-3 py-2 text-[11px] italic" style={{ background: "color-mix(in oklab, var(--border) 30%, transparent)", color: "var(--muted-foreground)" }}>📣 {notes}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
