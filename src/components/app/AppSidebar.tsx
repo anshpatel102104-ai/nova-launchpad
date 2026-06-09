@@ -28,6 +28,8 @@ import {
   LayoutTemplate,
   ClipboardList,
   MoreHorizontal,
+  PlayCircle,
+  HelpCircle,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -238,6 +240,15 @@ const NAV_GROUPS: NavGroup[] = [
       },
     ],
   },
+  {
+    id: "tutorials",
+    label: "Tutorials",
+    icon: PlayCircle,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    to: "/app/tutorials" as any,
+    match: (p: string) => p === "/app/tutorials",
+    badge: "new",
+  },
 ];
 
 /* Which group IDs begin a new named section */
@@ -246,6 +257,7 @@ const SECTION_STARTS: Record<string, string> = {
   operate: "Operate",
   automate: "Automate",
   monitoring: "Monitoring",
+  tutorials: "Help",
 };
 
 const STORAGE = "nova-sidebar-collapsed";

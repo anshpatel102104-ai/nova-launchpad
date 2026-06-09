@@ -18,11 +18,28 @@ import {
   BarChart3,
   Circle,
   ClipboardList,
+  DollarSign,
+  Target,
+  Star,
+  Layers,
+  Lightbulb,
 } from "lucide-react";
 import { auditLogQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartTooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  Cell,
+} from "recharts";
 
 export const Route = createFileRoute("/app/admin")({
   beforeLoad: async () => {
@@ -41,7 +58,7 @@ export const Route = createFileRoute("/app/admin")({
   component: AdminHub,
 });
 
-type TabKey = "overview" | "users" | "orgs" | "subs" | "runs" | "audit";
+type TabKey = "overview" | "users" | "orgs" | "subs" | "runs" | "audit" | "analytics";
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-muted text-muted-foreground",
@@ -123,12 +140,27 @@ function AdminHub() {
 
   const auditQ = useQuery({ ...auditLogQuery(200) });
 
+  const leadsQ = useQuery({
+    queryKey: ["admin", "leads"],
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("leads")
+        .select("id, stage, value, probability, score, created_at, organization_id")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (data ?? []) as any[];
+    },
+  });
+
   const profiles = profilesQ.data ?? [];
   const orgs = orgsQ.data ?? [];
   const subs = subsQ.data ?? [];
   const runs = runsQ.data ?? [];
   const roles = rolesQ.data ?? [];
   const auditEntries = auditQ.data ?? [];
+  const allLeads = leadsQ.data ?? [];
 
   const adminIds = useMemo(
     () => new Set(roles.filter((r) => r.role === "admin").map((r) => r.user_id)),
@@ -174,6 +206,88 @@ function AdminHub() {
     (o) => !search || o.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  // Analytics computations
+  const totalPipelineValue = allLeads
+    .filter((l) => l.stage !== "Lost" && l.stage !== "Won")
+    .reduce((s, l) => s + ((l.value as number) || 0), 0);
+  const wonValue = allLeads
+    .filter((l) => l.stage === "Won")
+    .reduce((s, l) => s + ((l.value as number) || 0), 0);
+  const weightedForecast = allLeads
+    .filter((l) => l.stage !== "Lost")
+    .reduce((s, l) => s + (((l.value as number) || 0) * ((l.probability as number) || 0)) / 100, 0);
+
+  // Tool usage by day (last 14 days)
+  const last14Days = useMemo(() => {
+    const days: Record<string, number> = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days[d.toLocaleDateString("en-US", { month: "short", day: "numeric" })] = 0;
+    }
+    runs.forEach((r) => {
+      const d = new Date(r.created_at);
+      const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      if (label in days) days[label]++;
+    });
+    return Object.entries(days).map(([date, count]) => ({ date, count }));
+  }, [runs]);
+
+  // Feature adoption (feature → usage %)
+  const featureAdoption = useMemo(() => {
+    const totalOrgsCount = orgs.length || 1;
+    const orgsWithRuns = new Set(runs.map((r) => r.organization_id));
+    const orgsWithLeads = new Set(allLeads.map((l) => l.organization_id));
+    return [
+      {
+        feature: "AI Tools",
+        count: orgsWithRuns.size,
+        pct: Math.round((orgsWithRuns.size / totalOrgsCount) * 100),
+        color: "#7C3AED",
+      },
+      {
+        feature: "CRM / Pipeline",
+        count: orgsWithLeads.size,
+        pct: Math.round((orgsWithLeads.size / totalOrgsCount) * 100),
+        color: "#3B82F6",
+      },
+      {
+        feature: "Onboarding",
+        count: profiles.filter((p) => p.onboarding_complete).length,
+        pct: Math.round(
+          (profiles.filter((p) => p.onboarding_complete).length / (profiles.length || 1)) * 100,
+        ),
+        color: "#059669",
+      },
+      {
+        feature: "Paid Plans",
+        count: subs.filter((s) => s.plan !== "starter").length,
+        pct: Math.round(
+          (subs.filter((s) => s.plan !== "starter").length / (subs.length || 1)) * 100,
+        ),
+        color: "#D97706",
+      },
+    ];
+  }, [orgs, runs, allLeads, profiles, subs]);
+
+  // Revenue by plan (breakdown)
+  const revByPlan = useMemo(() => {
+    const PLAN_PRICES = { starter: 0, launch: 49, operate: 149, scale: 299 } as const;
+    return (["starter", "launch", "operate", "scale"] as const).map((plan) => {
+      const count = subs.filter((s) => s.plan === plan && s.status === "active").length;
+      return {
+        plan,
+        count,
+        mrr: count * (PLAN_PRICES[plan] ?? 0),
+        color: { starter: "#6B7280", launch: "#3B82F6", operate: "#7C3AED", scale: "#D97706" }[
+          plan
+        ],
+      };
+    });
+  }, [subs]);
+
+  const arr = mrr * 12;
+
   const tabs: {
     key: TabKey;
     label: string;
@@ -181,6 +295,7 @@ function AdminHub() {
     count?: number;
   }[] = [
     { key: "overview", label: "Overview", icon: Activity },
+    { key: "analytics", label: "Analytics", icon: BarChart3 },
     { key: "users", label: "Users", icon: Users, count: totalUsers },
     { key: "orgs", label: "Workspaces", icon: Building2, count: totalOrgs },
     { key: "subs", label: "Subscriptions", icon: CreditCard, count: subs.length },
@@ -745,6 +860,272 @@ function AdminHub() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* ── Analytics tab ── */}
+        {tab === "analytics" && (
+          <div className="p-5 space-y-6">
+            {/* Revenue KPI row */}
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-3 flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5" />
+                Revenue & Growth
+              </h3>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  {
+                    label: "MRR",
+                    value: `$${mrr.toLocaleString()}`,
+                    sub: "Monthly recurring revenue",
+                    color: "#059669",
+                  },
+                  {
+                    label: "ARR",
+                    value: `$${arr.toLocaleString()}`,
+                    sub: "Annualized run rate",
+                    color: "#7C3AED",
+                  },
+                  {
+                    label: "Pipeline",
+                    value: `$${Math.round(totalPipelineValue).toLocaleString()}`,
+                    sub: "Active CRM pipeline",
+                    color: "#3B82F6",
+                  },
+                  {
+                    label: "Won (All-Time)",
+                    value: `$${Math.round(wonValue).toLocaleString()}`,
+                    sub: "Closed-won deal value",
+                    color: "#D97706",
+                  },
+                ].map(({ label, value, sub, color }) => (
+                  <div
+                    key={label}
+                    className="rounded-xl p-4"
+                    style={{ background: "var(--surface)", border: `1px solid ${color}30` }}
+                  >
+                    <div
+                      className="text-[10.5px] font-semibold uppercase tracking-wider mb-1"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      {label}
+                    </div>
+                    <div className="font-display text-[22px] font-bold" style={{ color }}>
+                      {value}
+                    </div>
+                    <div className="text-[11px] mt-1" style={{ color: "var(--muted-foreground)" }}>
+                      {sub}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tool runs over time + Revenue by plan */}
+            <div className="grid lg:grid-cols-2 gap-5">
+              <div
+                className="rounded-xl p-5"
+                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+              >
+                <h4 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5" />
+                  Tool Usage — Last 14 Days
+                </h4>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={last14Days} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                      interval={2}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                      allowDecimals={false}
+                    />
+                    <RechartTooltip
+                      contentStyle={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="count" name="Runs" fill="#f97316" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div
+                className="rounded-xl p-5"
+                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+              >
+                <h4 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  MRR by Plan
+                </h4>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={revByPlan} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="plan"
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                      tickFormatter={(v) => `$${v}`}
+                    />
+                    <RechartTooltip
+                      formatter={(v) => [`$${v}`, "MRR"]}
+                      contentStyle={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="mrr" name="MRR" radius={[3, 3, 0, 0]}>
+                      {revByPlan.map((d) => (
+                        <Cell key={d.plan} fill={d.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Feature adoption */}
+            <div
+              className="rounded-xl p-5"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              <h4 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5" />
+                Feature Adoption
+              </h4>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {featureAdoption.map(({ feature, count, pct, color }) => (
+                  <div key={feature}>
+                    <div className="flex items-center justify-between mb-1.5 text-[12.5px]">
+                      <span className="font-medium" style={{ color: "var(--foreground)" }}>
+                        {feature}
+                      </span>
+                      <span className="font-semibold tabular-nums" style={{ color }}>
+                        {count} workspaces · {pct}%
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full" style={{ background: "var(--border)" }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, background: color }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CRM pipeline health */}
+            <div
+              className="rounded-xl p-5"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              <h4 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5" />
+                CRM Pipeline Health (All Workspaces)
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Total Deals", value: allLeads.length, color: "#6B7280" },
+                  {
+                    label: "Active Deals",
+                    value: allLeads.filter((l) => l.stage !== "Won" && l.stage !== "Lost").length,
+                    color: "#3B82F6",
+                  },
+                  {
+                    label: "Won Deals",
+                    value: allLeads.filter((l) => l.stage === "Won").length,
+                    color: "#059669",
+                  },
+                  {
+                    label: "Weighted Forecast",
+                    value: `$${Math.round(weightedForecast).toLocaleString()}`,
+                    color: "#7C3AED",
+                  },
+                ].map(({ label, value, color }) => (
+                  <div
+                    key={label}
+                    className="rounded-lg p-3 text-center"
+                    style={{ background: `${color}10`, border: `1px solid ${color}30` }}
+                  >
+                    <div className="font-display text-[20px] font-bold" style={{ color }}>
+                      {value}
+                    </div>
+                    <div
+                      className="text-[11px] mt-0.5"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Platform health summary */}
+            <div
+              className="rounded-xl p-5"
+              style={{
+                background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(124,58,237,0.06))",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <h4 className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-1.5">
+                <Lightbulb className="h-3.5 w-3.5" />
+                Platform Health Insights
+              </h4>
+              <div className="space-y-3">
+                {[
+                  {
+                    insight: `${Math.round((profiles.filter((p) => p.onboarding_complete).length / (profiles.length || 1)) * 100)}% of users completed onboarding`,
+                    good:
+                      profiles.filter((p) => p.onboarding_complete).length /
+                        (profiles.length || 1) >
+                      0.7,
+                  },
+                  {
+                    insight: `${Math.round((subs.filter((s) => s.plan !== "starter" && s.status === "active").length / (subs.length || 1)) * 100)}% of workspaces on paid plans`,
+                    good:
+                      subs.filter((s) => s.plan !== "starter" && s.status === "active").length /
+                        (subs.length || 1) >
+                      0.3,
+                  },
+                  {
+                    insight: `${last7d} tool runs in the last 7 days — platform is ${last7d > 0 ? "active" : "idle"}`,
+                    good: last7d > 0,
+                  },
+                  {
+                    insight:
+                      allLeads.length > 0
+                        ? `${allLeads.length} CRM deals across all workspaces — pipeline is healthy`
+                        : "No CRM deals yet — encourage users to add deals",
+                    good: allLeads.length > 0,
+                  },
+                ].map(({ insight, good }, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div
+                      className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: good ? "#05966920" : "#D9770620" }}
+                    >
+                      <span className="text-[11px]">{good ? "✓" : "!"}</span>
+                    </div>
+                    <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
+                      {insight}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
