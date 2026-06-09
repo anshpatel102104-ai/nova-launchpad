@@ -16,7 +16,6 @@ import {
   Target,
   Loader2,
   Trash2,
-  ChevronRight,
   SlidersHorizontal,
   Tag,
   FileText,
@@ -25,7 +24,6 @@ import { useAuth } from "@/lib/auth";
 import { leadsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { blockIfGuest } from "@/lib/guest";
 
 export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
@@ -335,7 +333,7 @@ function CRMPage() {
               deals={filtered}
               selectedId={selectedDeal?.id}
               onSelect={onSelect}
-              onAddInStage={(stage) => {
+              onAddInStage={() => {
                 setAddOpen(true);
               }}
             />
@@ -429,7 +427,7 @@ function KanbanBoard({
   deals: Deal[];
   selectedId?: string;
   onSelect: (d: Deal) => void;
-  onAddInStage: (stage: Stage) => void;
+  onAddInStage: () => void;
 }) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-2 h-full">
@@ -498,7 +496,7 @@ function KanbanBoard({
 
             {/* Add in column */}
             <button
-              onClick={() => onAddInStage(stage)}
+              onClick={() => onAddInStage()}
               className="flex items-center gap-1.5 px-3 py-2 text-[11.5px] transition-colors w-full"
               style={{ borderTop: "1px solid var(--border)", color: "var(--muted-foreground)" }}
               onMouseEnter={(e) => {
