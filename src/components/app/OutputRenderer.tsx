@@ -1506,13 +1506,38 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       ? (o.revenue_projections as Record<string, unknown>)
       : null;
 
+  // Fallback: parse TAM/SAM/SOM from full_report markdown if structured object missing
+  function parseMarketFromMarkdown(md: string): Array<{key: string; val: string}> {
+    const result: Array<{key: string; val: string}> = [];
+    const lines = md.split("\n");
+    for (const line of lines) {
+      const m = line.match(/^\*{0,2}(TAM|SAM|SOM)\*{0,2}[:\s]+(.+)/i);
+      if (m) result.push({ key: m[1].toUpperCase(), val: m[2].replace(/\*\*/g, "").trim() });
+    }
+    return result;
+  }
+
+  // Fallback: parse Year N projections from full_report markdown if structured object missing
+  function parseRevenueFromMarkdown(md: string): Array<{year: string; val: string}> {
+    const result: Array<{year: string; val: string}> = [];
+    const lines = md.split("\n");
+    for (const line of lines) {
+      // Matches "Year 1: $360K ARR..." or "| Year 1 | $360K |..."
+      const m = line.match(/(Year\s+\d+)[:\s|]+(.+?)(?:\|.*)?$/i);
+      if (m && m[2].trim().match(/\$[\d.,]+/)) {
+        result.push({ year: m[1].trim(), val: m[2].trim().replace(/\|/g, "").trim() });
+      }
+    }
+    return result.slice(0, 4); // max 4 years
+  }
+
   const marketCards = marketObj
     ? Object.entries(marketObj).map(([key, val]) => ({ key, val: String(val) }))
-    : [];
+    : parseMarketFromMarkdown(fullReport);
 
   const revenueRows = revenueObj
     ? Object.entries(revenueObj).map(([year, val]) => ({ year, val: String(val) }))
-    : [];
+    : parseRevenueFromMarkdown(fullReport);
 
   // Extract the dollar figure and description from a market string like "$500B – description"
   function splitMarketStat(s: string): { figure: string; desc: string } {
