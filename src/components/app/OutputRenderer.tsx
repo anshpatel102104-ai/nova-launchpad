@@ -202,6 +202,191 @@ export function Block({
   );
 }
 
+// ─── Markdown renderer for full_report fields ────────────────────────────────
+// Handles the patterns our AI prompts produce: ## headers, **bold**, tables,
+// bullet lists, ordered lists, --- dividers, and paragraphs.
+export function MarkdownReport({ content }: { content: string }) {
+  if (!content) return null;
+
+  // Inline: **bold**, *italic*, `code`
+  function renderInline(text: string): React.ReactNode {
+    const parts: React.ReactNode[] = [];
+    const re = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) parts.push(text.slice(last, m.index));
+      if (m[2] !== undefined)
+        parts.push(<strong key={m.index} style={{ color: "var(--foreground)", fontWeight: 600 }}>{m[2]}</strong>);
+      else if (m[3] !== undefined)
+        parts.push(<em key={m.index}>{m[3]}</em>);
+      else if (m[4] !== undefined)
+        parts.push(
+          <code key={m.index} style={{ background: "var(--surface-3, var(--surface-2))", borderRadius: 4, padding: "1px 5px", fontSize: "0.85em", color: "var(--primary)" }}>{m[4]}</code>
+        );
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) parts.push(text.slice(last));
+    return parts.length === 1 && typeof parts[0] === "string" ? parts[0] : <>{parts}</>;
+  }
+
+  // Table row parser
+  function parseTableRow(line: string): string[] {
+    return line.split("|").map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+  }
+
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip empty lines between blocks
+    if (!trimmed) { i++; continue; }
+
+    // Horizontal rule
+    if (/^---+$/.test(trimmed)) {
+      elements.push(
+        <hr key={i} style={{ border: "none", borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)", margin: "4px 0" }} />
+      );
+      i++; continue;
+    }
+
+    // H2 heading
+    if (trimmed.startsWith("## ")) {
+      const text = trimmed.slice(3);
+      elements.push(
+        <h2 key={i} style={{
+          fontSize: "13px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+          color: "var(--primary)", marginTop: elements.length ? "20px" : 0, marginBottom: "6px",
+        }}>
+          {renderInline(text)}
+        </h2>
+      );
+      i++; continue;
+    }
+
+    // H3 heading
+    if (trimmed.startsWith("### ")) {
+      const text = trimmed.slice(4);
+      elements.push(
+        <h3 key={i} style={{
+          fontSize: "13px", fontWeight: 700, color: "var(--foreground)", marginTop: "14px", marginBottom: "4px",
+        }}>
+          {renderInline(text)}
+        </h3>
+      );
+      i++; continue;
+    }
+
+    // Table — collect header + separator + rows
+    if (trimmed.startsWith("|") && i + 1 < lines.length && /^\|[-| :]+\|$/.test(lines[i + 1].trim())) {
+      const headers = parseTableRow(trimmed);
+      i += 2; // skip header + separator
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        rows.push(parseTableRow(lines[i].trim()));
+        i++;
+      }
+      elements.push(
+        <div key={`table-${i}`} style={{ overflowX: "auto", marginTop: "8px", marginBottom: "8px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
+            <thead>
+              <tr style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--surface-2))" }}>
+                {headers.map((h, hi) => (
+                  <th key={hi} style={{ padding: "7px 12px", textAlign: "left", fontWeight: 600, color: "var(--foreground)", borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)", whiteSpace: "nowrap" }}>
+                    {renderInline(h)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) => (
+                <tr key={ri} style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 35%, transparent)" }}>
+                  {row.map((cell, ci) => (
+                    <td key={ci} style={{ padding: "6px 12px", color: "color-mix(in oklab, var(--foreground) 85%, transparent)", verticalAlign: "top" }}>
+                      {renderInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    // Unordered list — collect consecutive bullet lines
+    if (/^[-*] /.test(trimmed)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*] /.test(lines[i].trim())) {
+        items.push(lines[i].trim().slice(2));
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} style={{ paddingLeft: "16px", margin: "4px 0 8px" }}>
+          {items.map((item, ii) => (
+            <li key={ii} style={{ fontSize: "13px", color: "color-mix(in oklab, var(--foreground) 90%, transparent)", marginBottom: "3px", lineHeight: 1.55 }}>
+              {renderInline(item)}
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+
+    // Ordered list
+    if (/^\d+\. /.test(trimmed)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^\d+\. /, ""));
+        i++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} style={{ paddingLeft: "18px", margin: "4px 0 8px" }}>
+          {items.map((item, ii) => (
+            <li key={ii} style={{ fontSize: "13px", color: "color-mix(in oklab, var(--foreground) 90%, transparent)", marginBottom: "3px", lineHeight: 1.55 }}>
+              {renderInline(item)}
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+
+    // Blockquote (email templates)
+    if (trimmed.startsWith("> ")) {
+      const quoteLines: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith("> ")) {
+        quoteLines.push(lines[i].trim().slice(2));
+        i++;
+      }
+      elements.push(
+        <blockquote key={`bq-${i}`} style={{
+          borderLeft: "3px solid var(--primary)", paddingLeft: "14px", margin: "8px 0",
+          color: "color-mix(in oklab, var(--foreground) 80%, transparent)", fontStyle: "italic", fontSize: "13px", lineHeight: 1.6,
+        }}>
+          {quoteLines.map((ql, qi) => <p key={qi} style={{ margin: "3px 0" }}>{renderInline(ql)}</p>)}
+        </blockquote>
+      );
+      continue;
+    }
+
+    // Paragraph
+    elements.push(
+      <p key={i} style={{ fontSize: "13px", lineHeight: 1.6, color: "color-mix(in oklab, var(--foreground) 88%, transparent)", margin: "4px 0 6px" }}>
+        {renderInline(trimmed)}
+      </p>
+    );
+    i++;
+  }
+
+  return <div style={{ lineHeight: 1.6 }}>{elements}</div>;
+}
+
 export function ScoreGauge({
   value,
   max = 100,
@@ -416,7 +601,7 @@ function ValidatorOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && strengths.length === 0 && weaknesses.length === 0 && (
         <Block title="Full Report">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -528,7 +713,7 @@ function PitchOut({ o }: { o: Record<string, unknown> }) {
         )}
         {!verbalPitch && !slideNarrative.length && fullReport && (
           <Block title="Pitch Package">
-            <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+            <MarkdownReport content={fullReport} />
           </Block>
         )}
       </div>
@@ -676,7 +861,7 @@ function GtmOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !positioning && channels.length === 0 && (
         <Block title="GTM Strategy">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1037,7 +1222,7 @@ function KillMyIdeaOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !killShot && fatalFlaws.length === 0 && (
         <Block title="Devil's Advocate Report">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1144,7 +1329,7 @@ function FundingScoreOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && score === 0 && breakdown.length === 0 && (
         <Block title="Funding Readiness Report">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1296,7 +1481,7 @@ function FirstTenOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !strategy && scripts.length === 0 && !coldDm && (
         <Block title="First 10 Customers Playbook">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1366,7 +1551,7 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !exec && risks.length === 0 && (
         <Block title="Business Plan">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1547,7 +1732,7 @@ function IdeaVsIdeaOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !winner && (
         <Block title="Idea Comparison">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1677,7 +1862,7 @@ function LandingPageOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !headline && !heroCopy && (
         <Block title="Landing Page Copy">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1782,7 +1967,7 @@ function CompetitorOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && competitors.length === 0 && !opportunity && (
         <Block title="Competitive Analysis">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -1920,7 +2105,7 @@ function PricingOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !model && tiers.length === 0 && (
         <Block title="Pricing Strategy">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -2073,7 +2258,7 @@ function RevenueOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !totalArr && projections.length === 0 && !baseScenario && (
         <Block title="Revenue Projection">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -3351,7 +3536,7 @@ function NicheScorerOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && score === 0 && dimensions.length === 0 && (
         <Block title="Niche Score Report">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -3468,7 +3653,7 @@ function PositioningEngineOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && !statement && (
         <Block title="Positioning Report">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
@@ -3569,7 +3754,7 @@ function MvpPlannerOut({ o }: { o: Record<string, unknown> }) {
       )}
       {fullReport && scope.length === 0 && sequence.length === 0 && (
         <Block title="MVP / Build Plan">
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{fullReport}</div>
+          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
