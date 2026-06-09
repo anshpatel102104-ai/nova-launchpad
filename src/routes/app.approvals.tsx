@@ -11,14 +11,7 @@ import {
   type ApprovalRequestType,
 } from "@/lib/queries";
 import { blockIfGuest } from "@/lib/guest";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ClipboardList,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Clock, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/approvals")({
@@ -93,7 +86,9 @@ function ApprovalsPage() {
       >
         <div
           className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%)",
+          }}
         />
         <div className="relative">
           <div
@@ -149,7 +144,9 @@ function ApprovalsPage() {
       ) : visible.length === 0 ? (
         <div className="nova-card rounded-xl p-10 text-center">
           <ClipboardList className="h-8 w-8 mx-auto mb-3 opacity-30" />
-          <p className="text-[13px] text-muted-foreground">No {tab === "all" ? "" : tab + " "}requests yet</p>
+          <p className="text-[13px] text-muted-foreground">
+            No {tab === "all" ? "" : tab + " "}requests yet
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -188,10 +185,7 @@ function ApprovalsPage() {
 
                   {/* Pending actions (inline for quick access) */}
                   {req.status === "pending" && (
-                    <div
-                      className="flex items-center gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => void handleDecide(req, "approved")}
                         disabled={!!deciding}
@@ -235,7 +229,10 @@ function ApprovalsPage() {
                     style={{ borderColor: "var(--border)" }}
                   >
                     {req.description && (
-                      <p className="text-[12.5px] leading-relaxed pt-3" style={{ color: "var(--muted-foreground)" }}>
+                      <p
+                        className="text-[12.5px] leading-relaxed pt-3"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
                         {req.description}
                       </p>
                     )}

@@ -3,19 +3,25 @@
 -- Uses is_org_member RLS convention (multi-member aware, unlike simple
 -- org_id = auth.uid() check) since approvals involve multiple actors.
 
-create type if not exists public.approval_request_type as enum (
-  'content_publish',
-  'automation_change',
-  'budget_spend',
-  'client_communication'
-);
+do $$ begin
+  create type public.approval_request_type as enum (
+    'content_publish',
+    'automation_change',
+    'budget_spend',
+    'client_communication'
+  );
+exception when duplicate_object then null;
+end $$;
 
-create type if not exists public.approval_status as enum (
-  'pending',
-  'approved',
-  'rejected',
-  'expired'
-);
+do $$ begin
+  create type public.approval_status as enum (
+    'pending',
+    'approved',
+    'rejected',
+    'expired'
+  );
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists public.approval_requests (
   id                   uuid primary key default gen_random_uuid(),

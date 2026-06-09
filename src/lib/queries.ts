@@ -1308,14 +1308,8 @@ export const roiAnalyticsQuery = (orgId: string) =>
           .eq("status", "succeeded")
           .order("created_at", { ascending: false })
           .limit(500),
-        supabase
-          .from("automation_settings")
-          .select("id,enabled")
-          .eq("organization_id", orgId),
-        supabase
-          .from("leads")
-          .select("id,stage,value")
-          .eq("organization_id", orgId),
+        supabase.from("automation_settings").select("id,enabled").eq("organization_id", orgId),
+        supabase.from("leads").select("id,stage,value").eq("organization_id", orgId),
       ]);
 
       const runs = runsRes.data ?? [];

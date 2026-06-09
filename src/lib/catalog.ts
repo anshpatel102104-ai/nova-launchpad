@@ -607,7 +607,8 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
   {
     slug: "positioning-engine",
     name: "Positioning Engine",
-    description: "A defensible market position in one sitting — statement, frame, and proof points.",
+    description:
+      "A defensible market position in one sitting — statement, frame, and proof points.",
     icon: Crosshair,
     category: "plan",
     plan: "0",
@@ -634,7 +635,7 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
         key: "alternatives",
         label: "What they use today instead",
         type: "textarea",
-        placeholder: "Competitors, workarounds, status quo, \"doing nothing\"",
+        placeholder: 'Competitors, workarounds, status quo, "doing nothing"',
       },
       {
         key: "differentiator",
@@ -686,7 +687,8 @@ export const LAUNCHPAD_TOOLS: LaunchPadTool[] = [
   {
     slug: "mvp-planner",
     name: "MVP / Build Planner",
-    description: "Cut your idea down to a buildable MVP — scope, cut list, sequence, and milestones.",
+    description:
+      "Cut your idea down to a buildable MVP — scope, cut list, sequence, and milestones.",
     icon: Layers,
     category: "plan",
     plan: "49",

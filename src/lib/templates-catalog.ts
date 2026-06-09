@@ -6,18 +6,9 @@
 
 export type TemplateAudience = "founder" | "operator";
 
-export type FounderType =
-  | "agency"
-  | "saas"
-  | "info-product"
-  | "local-service"
-  | "ai-tool";
+export type FounderType = "agency" | "saas" | "info-product" | "local-service" | "ai-tool";
 
-export type VerticalType =
-  | "medspa"
-  | "home-improvement"
-  | "agency-operator"
-  | "service-business";
+export type VerticalType = "medspa" | "home-improvement" | "agency-operator" | "service-business";
 
 export type TemplateSlug = FounderType | VerticalType;
 
@@ -51,11 +42,7 @@ export const TEMPLATES: AppTemplate[] = [
       "email-sequence",
       "first-10-customers-finder",
     ],
-    recommendedAutomations: [
-      "crm-automation",
-      "ai-followup-sequences",
-      "lead-qualification",
-    ],
+    recommendedAutomations: ["crm-automation", "ai-followup-sequences", "lead-qualification"],
     checklistFocus: ["email", "legal", "banking"],
   },
   {
@@ -76,11 +63,7 @@ export const TEMPLATES: AppTemplate[] = [
       "landing-page-creator",
       "pitch-generator",
     ],
-    recommendedAutomations: [
-      "crm-automation",
-      "ai-followup-sequences",
-      "lead-qualification",
-    ],
+    recommendedAutomations: ["crm-automation", "ai-followup-sequences", "lead-qualification"],
     checklistFocus: ["domain", "email", "legal", "banking"],
   },
   {
@@ -100,10 +83,7 @@ export const TEMPLATES: AppTemplate[] = [
       "landing-page-creator",
       "ad-copy",
     ],
-    recommendedAutomations: [
-      "ai-followup-sequences",
-      "crm-automation",
-    ],
+    recommendedAutomations: ["ai-followup-sequences", "crm-automation"],
     checklistFocus: ["domain", "email", "banking", "tools"],
   },
   {
@@ -121,11 +101,7 @@ export const TEMPLATES: AppTemplate[] = [
       "pricing-calculator",
       "positioning-engine",
     ],
-    recommendedAutomations: [
-      "sms-automation",
-      "crm-automation",
-      "ai-appointment-setting",
-    ],
+    recommendedAutomations: ["sms-automation", "crm-automation", "ai-appointment-setting"],
     checklistFocus: ["legal", "banking", "tools"],
   },
   {
@@ -145,10 +121,7 @@ export const TEMPLATES: AppTemplate[] = [
       "landing-page-creator",
       "pitch-generator",
     ],
-    recommendedAutomations: [
-      "ai-followup-sequences",
-      "lead-qualification",
-    ],
+    recommendedAutomations: ["ai-followup-sequences", "lead-qualification"],
     checklistFocus: ["domain", "email", "legal", "banking"],
   },
 
@@ -161,11 +134,7 @@ export const TEMPLATES: AppTemplate[] = [
     audience: "operator",
     emoji: "💆",
     tags: ["aesthetics", "appointments", "memberships", "healthcare"],
-    recommendedTools: [
-      "kpi-dashboard",
-      "email-sequence",
-      "ad-copy",
-    ],
+    recommendedTools: ["kpi-dashboard", "email-sequence", "ad-copy"],
     recommendedAutomations: [
       "ai-appointment-setting",
       "sms-automation",
@@ -182,11 +151,7 @@ export const TEMPLATES: AppTemplate[] = [
     audience: "operator",
     emoji: "🔨",
     tags: ["trades", "contractors", "estimates", "referrals"],
-    recommendedTools: [
-      "first-10-customers-finder",
-      "pricing-calculator",
-      "email-sequence",
-    ],
+    recommendedTools: ["first-10-customers-finder", "pricing-calculator", "email-sequence"],
     recommendedAutomations: [
       "sms-automation",
       "crm-automation",
@@ -203,15 +168,8 @@ export const TEMPLATES: AppTemplate[] = [
     audience: "operator",
     emoji: "📊",
     tags: ["agency", "clients", "reporting", "ops"],
-    recommendedTools: [
-      "kpi-dashboard",
-      "email-sequence",
-    ],
-    recommendedAutomations: [
-      "crm-automation",
-      "ai-followup-sequences",
-      "lead-qualification",
-    ],
+    recommendedTools: ["kpi-dashboard", "email-sequence"],
+    recommendedAutomations: ["crm-automation", "ai-followup-sequences", "lead-qualification"],
     checklistFocus: ["email", "legal", "tools"],
   },
   {
@@ -222,11 +180,7 @@ export const TEMPLATES: AppTemplate[] = [
     audience: "operator",
     emoji: "🤝",
     tags: ["services", "recurring", "scheduling", "follow-up"],
-    recommendedTools: [
-      "pricing-calculator",
-      "first-10-customers-finder",
-      "email-sequence",
-    ],
+    recommendedTools: ["pricing-calculator", "first-10-customers-finder", "email-sequence"],
     recommendedAutomations: [
       "crm-automation",
       "ai-appointment-setting",

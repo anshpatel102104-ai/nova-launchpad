@@ -1,12 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import {
-  automationSettingsQuery,
-  toolRunsQuery,
-  leadsQuery,
-  mentorKPIsQuery,
-} from "@/lib/queries";
+import { automationSettingsQuery, toolRunsQuery, leadsQuery, mentorKPIsQuery } from "@/lib/queries";
 import { NOVA_SYSTEMS } from "@/lib/catalog";
 import {
   Zap,
@@ -82,8 +77,8 @@ function CommandCenterPage() {
             Welcome back, {name}
           </h1>
           <p className="text-[13px] mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {activeCount} automation{activeCount !== 1 ? "s" : ""} active ·{" "}
-            {leads.length} contacts in pipeline
+            {activeCount} automation{activeCount !== 1 ? "s" : ""} active · {leads.length} contacts
+            in pipeline
           </p>
         </div>
       </div>
@@ -196,7 +191,10 @@ function CommandCenterPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[12.5px] font-medium truncate">{sys.name}</div>
-                    <div className="text-[10.5px] truncate" style={{ color: "var(--muted-foreground)" }}>
+                    <div
+                      className="text-[10.5px] truncate"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {sys.trigger} → {sys.output}
                     </div>
                   </div>
@@ -205,7 +203,10 @@ function CommandCenterPage() {
                   ) : isConfigured ? (
                     <Circle className="h-3.5 w-3.5 shrink-0" style={{ color: "#F5A623" }} />
                   ) : (
-                    <Circle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
+                    <Circle
+                      className="h-3.5 w-3.5 shrink-0"
+                      style={{ color: "var(--muted-foreground)", opacity: 0.4 }}
+                    />
                   )}
                 </Link>
               );
@@ -276,9 +277,15 @@ function CommandCenterPage() {
                 to={item.to}
                 className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-muted/30"
               >
-                <item.icon className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+                <item.icon
+                  className="h-3.5 w-3.5 shrink-0"
+                  style={{ color: "var(--muted-foreground)" }}
+                />
                 <span className="text-[12.5px] font-medium">{item.label}</span>
-                <ArrowRight className="h-3 w-3 ml-auto" style={{ color: "var(--muted-foreground)", opacity: 0.5 }} />
+                <ArrowRight
+                  className="h-3 w-3 ml-auto"
+                  style={{ color: "var(--muted-foreground)", opacity: 0.5 }}
+                />
               </Link>
             ))}
           </div>
