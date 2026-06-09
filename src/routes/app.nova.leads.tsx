@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Inbox, Plus, Search, Filter } from "lucide-react";
+import { Inbox, Plus, Search, Filter, Calendar } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { leadsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,12 @@ const STAGE_BADGE: Record<Stage, string> = {
   Lost: "bg-rose-500/15 text-rose-400",
 };
 
+function probColor(p: number) {
+  if (p >= 70) return "#059669";
+  if (p >= 40) return "#D97706";
+  return "#6B7280";
+}
+
 function Leads() {
   const { currentOrgId, user } = useAuth();
   const qc = useQueryClient();
@@ -52,7 +58,9 @@ function Leads() {
       return (
         l.name?.toLowerCase().includes(t) ||
         l.email?.toLowerCase().includes(t) ||
-        l.source?.toLowerCase().includes(t)
+        l.source?.toLowerCase().includes(t) ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (l as any).company?.toLowerCase().includes(t)
       );
     });
   }, [all, filter, stageFilter]);
@@ -75,7 +83,7 @@ function Leads() {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search name, email, source…"
+            placeholder="Search name, email, company, source…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="pl-8 h-9 bg-surface"
@@ -126,78 +134,120 @@ function Leads() {
             <thead>
               <tr className="border-b border-border-subtle text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-2.5 text-left">Lead</th>
-                <th className="px-4 py-2.5 text-left">Source</th>
+                <th className="px-4 py-2.5 text-left hidden sm:table-cell">Source</th>
                 <th className="px-4 py-2.5 text-left">Stage</th>
                 <th className="px-4 py-2.5 text-right">Value</th>
-                <th className="px-4 py-2.5 text-left">Last touch</th>
+                <th className="px-4 py-2.5 text-left hidden md:table-cell">Probability</th>
+                <th className="px-4 py-2.5 text-left hidden lg:table-cell">Close Date</th>
                 <th className="px-4 py-2.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
-              {items.map((l) => (
-                <tr key={l.id} className="hover:bg-surface-2/60 transition">
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{l.name}</div>
-                    {l.email && (
-                      <div className="text-[11.5px] text-muted-foreground">{l.email}</div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-[12.5px] text-muted-foreground">
-                    {l.source ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={l.stage}
-                      onChange={async (e) => {
-                        if (blockIfGuest("Sign up to update your pipeline.")) return;
-                        const next = e.target.value as Stage;
-                        const { error } = await supabase
-                          .from("leads")
-                          .update({ stage: next })
-                          .eq("id", l.id);
-                        if (error) toast.error(error.message);
-                        else {
-                          toast.success(`Moved to ${next}`);
-                          qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
-                        }
-                      }}
-                      className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[10.5px] font-medium border-0 outline-none cursor-pointer",
-                        STAGE_BADGE[l.stage as Stage],
+              {items.map((l) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const la = l as any;
+                const prob: number = la.probability ?? 20;
+                const closeDate: string | null = la.close_date ?? null;
+                const company: string | null = la.company ?? null;
+
+                return (
+                  <tr key={l.id} className="hover:bg-surface-2/60 transition">
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{l.name}</div>
+                      {company && (
+                        <div className="text-[11px] text-muted-foreground">{company}</div>
                       )}
-                    >
-                      {STAGES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-[12.5px]">
-                    {l.value ? `$${Number(l.value).toLocaleString()}` : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-[12px] text-muted-foreground">
-                    {new Date(l.updated_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={async () => {
-                        if (blockIfGuest("Sign up to remove leads.")) return;
-                        if (!confirm("Delete lead?")) return;
-                        const { error } = await supabase.from("leads").delete().eq("id", l.id);
-                        if (error) toast.error(error.message);
-                        else {
-                          toast.success("Lead deleted");
-                          qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
-                        }
-                      }}
-                      className="text-[11.5px] text-muted-foreground hover:text-destructive transition"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {l.email && !company && (
+                        <div className="text-[11.5px] text-muted-foreground">{l.email}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-[12.5px] text-muted-foreground hidden sm:table-cell">
+                      {l.source ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={l.stage}
+                        onChange={async (e) => {
+                          if (blockIfGuest("Sign up to update your pipeline.")) return;
+                          const next = e.target.value as Stage;
+                          const { error } = await supabase
+                            .from("leads")
+                            .update({ stage: next })
+                            .eq("id", l.id);
+                          if (error) toast.error(error.message);
+                          else {
+                            toast.success(`Moved to ${next}`);
+                            qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
+                          }
+                        }}
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[10.5px] font-medium border-0 outline-none cursor-pointer",
+                          STAGE_BADGE[l.stage as Stage],
+                        )}
+                      >
+                        {STAGES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono text-[12.5px]">
+                      {l.value ? `$${Number(l.value).toLocaleString()}` : "—"}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-1.5 rounded-full overflow-hidden"
+                          style={{ background: "var(--surface-2)", width: "40px" }}
+                        >
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${prob}%`, background: probColor(prob) }}
+                          />
+                        </div>
+                        <span
+                          className="text-[11.5px] font-medium tabular-nums"
+                          style={{ color: probColor(prob) }}
+                        >
+                          {prob}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-[12px] text-muted-foreground hidden lg:table-cell">
+                      {closeDate ? (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 opacity-50" />
+                          {new Date(closeDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={async () => {
+                          if (blockIfGuest("Sign up to remove leads.")) return;
+                          if (!confirm("Delete lead?")) return;
+                          const { error } = await supabase.from("leads").delete().eq("id", l.id);
+                          if (error) toast.error(error.message);
+                          else {
+                            toast.success("Lead deleted");
+                            qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
+                          }
+                        }}
+                        className="text-[11.5px] text-muted-foreground hover:text-destructive transition"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -209,7 +259,8 @@ function Leads() {
         onCreate={async (lead) => {
           if (blockIfGuest("Sign up to add leads.")) return;
           if (!currentOrgId || !user) return;
-          const { error } = await supabase.from("leads").insert({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error } = await (supabase as any).from("leads").insert({
             ...lead,
             organization_id: currentOrgId,
           });
@@ -236,21 +287,27 @@ function CreateLeadSheet({
     name: string;
     email: string;
     phone: string;
+    company: string;
     source: string;
     value: number | null;
+    probability: number;
+    close_date: string | null;
     stage: Stage;
   }) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState("");
   const [source, setSource] = useState("");
   const [value, setValue] = useState("");
+  const [probability, setProbability] = useState("20");
+  const [closeDate, setCloseDate] = useState("");
   const [stage, setStage] = useState<Stage>("New");
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             New lead
@@ -263,6 +320,13 @@ function CreateLeadSheet({
         <div className="mt-5 space-y-3 px-4">
           <Field label="Full name" required>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
+          </Field>
+          <Field label="Company">
+            <Input
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Acme Corp"
+            />
           </Field>
           <Field label="Email">
             <Input
@@ -307,6 +371,24 @@ function CreateLeadSheet({
               </select>
             </Field>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={`Probability: ${probability}%`}>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={probability}
+                  onChange={(e) => setProbability(e.target.value)}
+                  className="flex-1"
+                  style={{ accentColor: "var(--primary)" }}
+                />
+              </div>
+            </Field>
+            <Field label="Close Date">
+              <Input type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} />
+            </Field>
+          </div>
           <Button
             className="w-full mt-2"
             disabled={!name.trim()}
@@ -315,8 +397,11 @@ function CreateLeadSheet({
                 name: name.trim(),
                 email: email.trim(),
                 phone: phone.trim(),
+                company: company.trim(),
                 source: source.trim(),
                 value: value ? Number(value) : null,
+                probability: Number(probability),
+                close_date: closeDate || null,
                 stage,
               })
             }

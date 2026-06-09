@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -23,11 +23,11 @@ import {
   MessageSquare,
   FileText,
   ChevronDown,
-  ChevronRight,
   BookOpen,
   Crosshair,
   LayoutTemplate,
   ClipboardList,
+  MoreHorizontal,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -220,7 +220,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     id: "intelligence",
     label: "Intelligence",
-    icon: Activity,
+    icon: BarChart3,
     to: "/app/ai-dashboard",
     match: (p) => p.startsWith("/app/ai-dashboard") || p === "/app/mentor",
     children: [
@@ -239,6 +239,14 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+/* Which group IDs begin a new named section */
+const SECTION_STARTS: Record<string, string> = {
+  build: "Build",
+  operate: "Operate",
+  automate: "Automate",
+  monitoring: "Monitoring",
+};
 
 const STORAGE = "nova-sidebar-collapsed";
 
@@ -275,7 +283,6 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
     }
   }, []);
 
-  // Auto-expand groups that contain the active route
   useEffect(() => {
     const active = NAV_GROUPS.filter((g) => g.children && g.match(path)).map((g) => g.id);
     if (active.length > 0) {
@@ -302,11 +309,8 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
   const toggleGroup = (id: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -323,180 +327,178 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
   ];
 
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const orgName = currentOrg?.name ?? `${planLabel} plan`;
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Account";
 
   return (
     <aside
       className={cn(
-        "hidden lg:flex shrink-0 flex-col relative",
+        "hidden lg:flex shrink-0 flex-col relative select-none",
         "transition-[width] duration-200 ease-in-out overflow-hidden",
-        collapsed ? "w-[60px]" : "w-[220px]",
+        collapsed ? "w-[56px]" : "w-[240px]",
       )}
       style={{
         background: "var(--sidebar)",
         borderRight: "1px solid var(--sidebar-border)",
       }}
     >
-      {/* Brand header */}
+      {/* ── Workspace / brand header ── */}
       <div
         className={cn(
-          "flex h-14 shrink-0 items-center gap-2.5 px-3",
+          "flex h-[52px] shrink-0 items-center gap-2.5 px-3",
           collapsed && "justify-center px-0",
         )}
         style={{ borderBottom: "1px solid var(--sidebar-border)" }}
       >
         <div
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white text-[10px] font-bold tracking-tight"
-          style={{ background: "var(--primary)" }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-bold tracking-tight"
+          style={{
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--orbit-accent) 100%)",
+          }}
         >
           LN
         </div>
         {!collapsed && (
-          <div className="min-w-0 flex-1">
-            <div
-              className="font-display text-[13px] font-bold tracking-tight truncate"
-              style={{ color: "var(--foreground)" }}
-            >
-              LaunchpadNova
-            </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className="inline-flex items-center rounded px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider"
-                style={{
-                  background: "var(--primary-soft)",
-                  color: "var(--primary)",
-                }}
+          <>
+            <div className="min-w-0 flex-1">
+              <div
+                className="font-display text-[13px] font-bold leading-tight truncate"
+                style={{ color: "var(--foreground)" }}
               >
-                {planLabel}
-              </span>
+                LaunchpadNova
+              </div>
+              <div
+                className="text-[11px] leading-tight truncate mt-px"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {orgName}
+              </div>
             </div>
-          </div>
+            <ChevronDown
+              className="h-3.5 w-3.5 shrink-0 opacity-50"
+              style={{ color: "var(--muted-foreground)" }}
+            />
+          </>
         )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-        {NAV_GROUPS.map((group, groupIdx) => {
+      {/* ── Navigation ── */}
+      <nav className="flex-1 overflow-y-auto py-2 space-y-px">
+        {NAV_GROUPS.map((group) => {
           const isActive = group.match(path);
           const isExpanded = expandedGroups.has(group.id);
           const hasChildren = !!group.children?.length;
+          const sectionLabel = SECTION_STARTS[group.id];
 
           return (
             <div key={group.id}>
-              {/* Section divider before Automate and Memory */}
-              {(group.id === "automate" || group.id === "memory") && (
-                <div
-                  className="my-2 mx-1"
-                  style={{ height: "1px", background: "var(--sidebar-border)" }}
-                />
+              {/* Section header */}
+              {sectionLabel && !collapsed && (
+                <div className="px-3 pt-4 pb-1">
+                  <span
+                    className="text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--muted-foreground)", opacity: 0.55 }}
+                  >
+                    {sectionLabel}
+                  </span>
+                </div>
+              )}
+              {sectionLabel && collapsed && (
+                <div className="mx-2 my-2 h-px" style={{ background: "var(--sidebar-border)" }} />
               )}
 
               {/* Parent nav item */}
-              <div className="relative">
-                {/* Active left indicator */}
-                {isActive && !hasChildren && (
-                  <span
-                    className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full"
-                    style={{ background: "var(--primary)" }}
-                  />
+              <div className={cn("px-2", collapsed && "px-1.5")}>
+                {hasChildren ? (
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    title={collapsed ? group.label : undefined}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-all duration-100",
+                      collapsed && "justify-center px-0 w-8 mx-auto",
+                      isActive ? "font-semibold" : "hover:bg-surface-2",
+                    )}
+                    style={
+                      isActive
+                        ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                        : { color: "var(--muted-foreground)" }
+                    }
+                  >
+                    <group.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-[13px]">{group.label}</span>
+                        <ChevronDown
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0 transition-transform duration-150 opacity-50",
+                            isExpanded && "rotate-180",
+                          )}
+                        />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    to={group.to}
+                    title={collapsed ? group.label : undefined}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
+                      collapsed && "justify-center px-0 w-8 mx-auto",
+                      isActive ? "font-semibold" : "hover:bg-surface-2",
+                    )}
+                    style={
+                      isActive
+                        ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                        : { color: "var(--muted-foreground)" }
+                    }
+                  >
+                    <group.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-[13px]">{group.label}</span>
+                        {group.badge && (
+                          <span
+                            className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
+                            style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                          >
+                            {group.badge}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Link>
                 )}
-
-                <div className="flex items-center">
-                  {hasChildren ? (
-                    /* Expandable parent */
-                    <button
-                      onClick={() => toggleGroup(group.id)}
-                      className={cn(
-                        "flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100",
-                        collapsed && "justify-center px-0",
-                      )}
-                      style={
-                        isActive
-                          ? {
-                              background: "var(--primary-soft)",
-                              color: "var(--foreground)",
-                            }
-                          : { color: "var(--muted-foreground)" }
-                      }
-                      title={collapsed ? group.label : undefined}
-                    >
-                      <group.icon className="h-[15px] w-[15px] shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 text-[12.5px] font-semibold">{group.label}</span>
-                          <ChevronDown
-                            className={cn(
-                              "h-3 w-3 shrink-0 transition-transform duration-150",
-                              isExpanded && "rotate-180",
-                            )}
-                          />
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    /* Direct link */
-                    <Link
-                      to={group.to}
-                      className={cn(
-                        "flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-100",
-                        collapsed && "justify-center px-0",
-                      )}
-                      style={
-                        isActive
-                          ? {
-                              background: "var(--primary-soft)",
-                              color: "var(--foreground)",
-                            }
-                          : { color: "var(--muted-foreground)" }
-                      }
-                      title={collapsed ? group.label : undefined}
-                    >
-                      <group.icon className="h-[15px] w-[15px] shrink-0" />
-                      {!collapsed && (
-                        <span className="flex-1 text-[12.5px] font-semibold">{group.label}</span>
-                      )}
-                      {!collapsed && group.badge && (
-                        <span
-                          className="rounded px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
-                          style={{
-                            background: "var(--primary-soft)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          {group.badge}
-                        </span>
-                      )}
-                    </Link>
-                  )}
-                </div>
               </div>
 
               {/* Sub-items */}
               {!collapsed && hasChildren && isExpanded && (
-                <div
-                  className="mt-0.5 ml-3 space-y-0.5 pl-3"
-                  style={{ borderLeft: "1px solid var(--sidebar-border)" }}
-                >
-                  {group.children!.map((child) => {
-                    const childActive = child.match(path);
-                    return (
-                      <Link
-                        key={child.to}
-                        to={child.to}
-                        className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-100"
-                        style={
-                          childActive
-                            ? {
-                                background: "var(--primary-soft)",
-                                color: "var(--foreground)",
-                              }
-                            : { color: "var(--muted-foreground)" }
-                        }
-                      >
-                        <child.icon className="h-[13px] w-[13px] shrink-0" />
-                        <span className="text-[12px] font-medium">{child.label}</span>
-                      </Link>
-                    );
-                  })}
+                <div className="px-2 mt-0.5 mb-1">
+                  <div
+                    className="ml-[18px] pl-3 space-y-px"
+                    style={{ borderLeft: "1.5px solid var(--border)" }}
+                  >
+                    {group.children!.map((child) => {
+                      const childActive = child.match(path);
+                      return (
+                        <Link
+                          key={child.to}
+                          to={child.to}
+                          className={cn(
+                            "flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-all duration-100",
+                            childActive ? "font-medium" : "hover:bg-surface-2",
+                          )}
+                          style={
+                            childActive
+                              ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                              : { color: "var(--muted-foreground)" }
+                          }
+                        >
+                          <child.icon className="h-3.5 w-3.5 shrink-0" />
+                          <span className="text-[12.5px]">{child.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -504,109 +506,115 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Footer */}
-      <div
-        className="shrink-0 p-2 space-y-0.5"
-        style={{ borderTop: "1px solid var(--sidebar-border)" }}
-      >
-        {isGuest && (
-          <button
-            onClick={exitDemo}
-            className={cn(
-              "mb-1.5 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-medium transition-colors",
-              collapsed && "justify-center px-0",
-            )}
-            style={{
-              background: "var(--primary-soft)",
-              border: "1px solid var(--primary-soft)",
-              color: "var(--primary)",
-            }}
-            title={collapsed ? "Exit demo" : undefined}
-          >
-            <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
-            {!collapsed && <span className="truncate">Exit demo</span>}
-          </button>
-        )}
-
-        {footerItems.map((item) => {
-          const active = path === item.to || path.startsWith(item.to + "/");
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
+      {/* ── Footer ── */}
+      <div className="shrink-0" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
+        {/* Footer nav links */}
+        <div className={cn("p-2 space-y-px", collapsed && "px-1.5")}>
+          {isGuest && (
+            <button
+              onClick={exitDemo}
+              title={collapsed ? "Exit demo" : undefined}
               className={cn(
-                "flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors duration-100",
-                collapsed && "justify-center px-0",
+                "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[12.5px] font-medium transition-colors",
+                collapsed && "justify-center px-0 w-8 mx-auto",
               )}
-              style={
-                active
-                  ? { background: "var(--primary-soft)", color: "var(--foreground)" }
-                  : { color: "var(--muted-foreground)" }
-              }
-              title={collapsed ? item.label : undefined}
+              style={{
+                background: "var(--primary-soft)",
+                color: "var(--primary)",
+              }}
             >
-              <item.icon className="h-[14px] w-[14px] shrink-0" />
-              {!collapsed && <span className="text-[12px] font-medium">{item.label}</span>}
-            </Link>
-          );
-        })}
+              <ArrowUpRight className="h-4 w-4 shrink-0" />
+              {!collapsed && <span>Exit demo</span>}
+            </button>
+          )}
+
+          {footerItems.map((item) => {
+            const active = path === item.to || path.startsWith(item.to + "/");
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                title={collapsed ? item.label : undefined}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
+                  collapsed && "justify-center px-0 w-8 mx-auto",
+                  !active && "hover:bg-surface-2",
+                )}
+                style={
+                  active
+                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                    : { color: "var(--muted-foreground)" }
+                }
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && <span className="text-[13px]">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
 
         {/* User card */}
-        <Link
-          to="/app/settings"
-          className={cn(
-            "mt-1 flex items-center gap-2 rounded-md p-2 transition-colors duration-150",
-            collapsed && "justify-center p-1.5",
-          )}
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid var(--sidebar-border)",
-          }}
-          title={collapsed ? profile?.full_name || "Account" : undefined}
-        >
-          <span
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
-            style={{ background: "var(--primary)" }}
+        <div className={cn("px-2 pb-2", collapsed && "px-1.5")}>
+          <button
+            onClick={() => navigate({ to: "/app/settings" })}
+            title={collapsed ? displayName : undefined}
+            className={cn(
+              "w-full flex items-center gap-2.5 rounded-lg p-2 transition-colors duration-150",
+              collapsed && "justify-center p-1.5",
+              "hover:bg-surface-2",
+            )}
+            style={{ border: "1px solid var(--border)" }}
           >
-            {initials}
-          </span>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <div
-                className="truncate text-[11.5px] font-medium leading-tight"
-                style={{ color: "var(--foreground)" }}
-              >
-                {profile?.full_name || "Account"}
-              </div>
-              <div
-                className="truncate text-[10px] leading-tight"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                {currentOrg?.name ?? planLabel + " plan"}
-              </div>
-            </div>
-          )}
-        </Link>
+            <span
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+              style={{ background: "var(--primary)" }}
+            >
+              {initials}
+            </span>
+            {!collapsed && (
+              <>
+                <div className="min-w-0 flex-1 text-left">
+                  <div
+                    className="truncate text-[12px] font-semibold leading-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {displayName}
+                  </div>
+                  <div
+                    className="truncate text-[10.5px] leading-tight mt-px"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    {planLabel} plan
+                  </div>
+                </div>
+                <MoreHorizontal
+                  className="h-3.5 w-3.5 shrink-0 opacity-40"
+                  style={{ color: "var(--foreground)" }}
+                />
+              </>
+            )}
+          </button>
 
-        {/* Collapse toggle */}
-        <button
-          onClick={toggle}
-          className={cn(
-            "mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1 text-[11px] transition-colors duration-150",
-            collapsed && "justify-center",
-          )}
-          style={{ color: "var(--muted-foreground)" }}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <ChevronsRight className="h-3.5 w-3.5" />
-          ) : (
-            <>
-              <ChevronsLeft className="h-3.5 w-3.5" />
-              <span>Collapse</span>
-            </>
-          )}
-        </button>
+          {/* Collapse toggle */}
+          <button
+            onClick={toggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={cn(
+              "mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-[11px] transition-colors hover:bg-surface-2",
+              collapsed && "justify-center",
+            )}
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            {collapsed ? (
+              <ChevronsRight className="h-3.5 w-3.5" />
+            ) : (
+              <>
+                <ChevronsLeft className="h-3.5 w-3.5" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   );

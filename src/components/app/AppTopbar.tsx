@@ -6,11 +6,15 @@ import {
   Moon,
   Monitor,
   ChevronDown,
+  ChevronRight,
   User as UserIcon,
   Settings as SettingsIcon,
   Check,
   Search,
   Zap,
+  Bell,
+  HelpCircle,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -35,6 +39,35 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/academy": "Academy",
   "/app/mentor": "Mentors",
   "/app/admin": "Admin",
+  "/app/nova/crm": "Pipeline",
+  "/app/nova-os": "Nova OS",
+  "/app/command-center": "Command Center",
+  "/app/monitoring": "Monitoring",
+  "/app/playbook": "Playbook",
+  "/app/approvals": "Approvals",
+  "/app/launch-control": "Launch Control",
+  "/app/templates": "Templates",
+  "/app/sop-library": "SOP Library",
+};
+
+const SECTION_LABELS: Record<string, string> = {
+  "/app/launchpad": "Build",
+  "/app/launch-control": "Build",
+  "/app/assets": "Build",
+  "/app/templates": "Build",
+  "/app/sop-library": "Build",
+  "/app/nova/crm": "Operate",
+  "/app/nova-os": "Operate",
+  "/app/command-center": "Operate",
+  "/app/contacts": "Operate",
+  "/app/leads": "Operate",
+  "/app/approvals": "Operate",
+  "/app/automations": "Automate",
+  "/app/integrations": "Automate",
+  "/app/monitoring": "Monitoring",
+  "/app/memory": "Monitoring",
+  "/app/ai-dashboard": "Intelligence",
+  "/app/mentor": "Intelligence",
 };
 
 interface AppTopbarProps {
@@ -63,7 +96,10 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
     .join("")
     .toUpperCase();
 
+  const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
+
   const pageTitle = Object.entries(PAGE_TITLES).find(([p]) => path.startsWith(p))?.[1] ?? "";
+  const sectionLabel = Object.entries(SECTION_LABELS).find(([p]) => path.startsWith(p))?.[1] ?? "";
 
   const handleSignOut = async () => {
     if (isGuest) {
@@ -98,105 +134,103 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
   return (
     <>
       <header
-        className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b px-4 shrink-0"
-        style={{
-          background: "var(--background)",
-          borderColor: "var(--border)",
-        }}
+        className="sticky top-0 z-30 flex h-[52px] items-center gap-4 border-b px-4 shrink-0"
+        style={{ background: "var(--background)", borderColor: "var(--border)" }}
       >
-        {/* Mobile: brand logo */}
+        {/* ── Mobile logo ── */}
         <Link to="/app/dashboard" className="flex items-center gap-2 lg:hidden shrink-0">
           <div
-            className="h-6 w-6 rounded flex items-center justify-center text-white text-[10px] font-bold"
-            style={{ background: "var(--primary)" }}
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
+            style={{ background: "linear-gradient(135deg, var(--primary), var(--orbit-accent))" }}
           >
             LN
           </div>
         </Link>
 
-        {/* Desktop: page title */}
-        {pageTitle && (
-          <span
-            className="hidden lg:block text-[13px] font-semibold shrink-0"
-            style={{ color: "var(--foreground)" }}
-          >
-            {pageTitle}
-          </span>
-        )}
+        {/* ── Desktop breadcrumb ── */}
+        <div className="hidden lg:flex items-center gap-1.5 shrink-0 min-w-0">
+          {sectionLabel && (
+            <>
+              <span className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
+                {sectionLabel}
+              </span>
+              <ChevronRight
+                className="h-3.5 w-3.5 shrink-0 opacity-40"
+                style={{ color: "var(--muted-foreground)" }}
+              />
+            </>
+          )}
+          {pageTitle && (
+            <span
+              className="text-[13px] font-semibold truncate"
+              style={{ color: "var(--foreground)" }}
+            >
+              {pageTitle}
+            </span>
+          )}
+        </div>
 
-        {/* Spacer */}
+        {/* ── Search bar ── */}
+        <button
+          onClick={() => setCmdOpen(true)}
+          className="flex items-center gap-2 rounded-lg h-[34px] px-3 transition-all duration-150 shrink-0 w-[220px] sm:w-[280px]"
+          style={{
+            background: "var(--surface-2)",
+            color: "var(--muted-foreground)",
+            border: "1.5px solid var(--border)",
+          }}
+          onFocus={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--ring)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px var(--primary-soft)";
+          }}
+          onBlur={(e) => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "none";
+          }}
+        >
+          <Search className="h-3.5 w-3.5 shrink-0" />
+          <span className="flex-1 text-left text-[12.5px] hidden sm:block">Search anything...</span>
+          <kbd
+            className="hidden md:inline text-[10px] font-mono shrink-0 rounded px-1 py-px"
+            style={{ background: "var(--border)", color: "var(--muted-foreground)" }}
+          >
+            ⌘K
+          </kbd>
+        </button>
+
+        {/* ── Spacer ── */}
         <div className="flex-1" />
 
-        {/* Right controls */}
-        <div className="flex items-center gap-1">
-          {/* Search / Command Palette trigger */}
+        {/* ── Right controls ── */}
+        <div className="flex items-center gap-0.5">
+          {/* New / Quick add */}
           <button
-            onClick={() => setCmdOpen(true)}
-            className="hidden sm:flex items-center gap-2 rounded-lg px-3 h-8 text-[12px] transition-colors"
-            style={{
-              background: "var(--surface-2)",
-              color: "var(--muted-foreground)",
-              border: "1px solid var(--border)",
-            }}
+            className="hidden sm:flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-semibold transition-colors mr-1"
+            style={{ background: "var(--primary)", color: "white" }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor =
-                "color-mix(in oklab, var(--border) 180%, transparent)";
+              (e.currentTarget as HTMLElement).style.background = "var(--primary-hover)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              (e.currentTarget as HTMLElement).style.background = "var(--primary)";
             }}
           >
-            <Search className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Search...</span>
-            <kbd className="hidden md:inline text-[10px] font-mono opacity-60 ml-1">⌘K</kbd>
+            <Plus className="h-3.5 w-3.5" />
+            <span>New</span>
           </button>
 
-          {/* Nova AI toggle */}
-          {onToggleRail && (
-            <button
-              onClick={onToggleRail}
-              title={railOpen ? "Close Nova" : "Open Nova AI"}
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-              )}
-              style={{
-                background: railOpen ? "var(--primary-soft)" : "transparent",
-                color: railOpen ? "var(--primary)" : "var(--muted-foreground)",
-                border: railOpen ? "1px solid var(--border-strong)" : "1px solid transparent",
-              }}
-              onMouseEnter={(e) => {
-                if (!railOpen) {
-                  (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!railOpen) {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                }
-              }}
-            >
-              <Zap className="h-4 w-4" />
-            </button>
-          )}
+          {/* Bell */}
+          <IconBtn title="Notifications">
+            <Bell className="h-4 w-4" />
+          </IconBtn>
+
+          {/* Help */}
+          <IconBtn title="Help & support">
+            <HelpCircle className="h-4 w-4" />
+          </IconBtn>
 
           {/* Theme picker */}
           <div className="relative" ref={themeRef}>
-            <button
-              onClick={() => setThemeOpen((o) => !o)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-              style={{ color: "var(--muted-foreground)" }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "transparent";
-                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-              }}
-              aria-label="Theme"
-            >
+            <IconBtn onClick={() => setThemeOpen((o) => !o)} title="Theme">
               {theme === "system" ? (
                 <Monitor className="h-4 w-4" />
               ) : resolvedTheme === "dark" ? (
@@ -204,7 +238,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
               ) : (
                 <Sun className="h-4 w-4" />
               )}
-            </button>
+            </IconBtn>
 
             {themeOpen && (
               <div
@@ -212,7 +246,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                 style={{
                   background: "var(--popover)",
                   borderColor: "var(--border)",
-                  boxShadow: "var(--shadow-card)",
+                  boxShadow: "var(--shadow-md)",
                   zIndex: 50,
                 }}
               >
@@ -251,11 +285,43 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
             )}
           </div>
 
-          {/* Avatar menu */}
-          <div className="relative" ref={menuRef}>
+          {/* Divider */}
+          <div className="h-5 w-px mx-1.5" style={{ background: "var(--border)" }} />
+
+          {/* Nova AI toggle */}
+          {onToggleRail && (
+            <button
+              onClick={onToggleRail}
+              title={railOpen ? "Close Nova AI" : "Open Nova AI"}
+              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-semibold transition-all duration-150"
+              style={
+                railOpen
+                  ? { background: "var(--primary)", color: "white" }
+                  : {
+                      background: "var(--primary-soft)",
+                      color: "var(--primary)",
+                      border: "1px solid var(--primary-border)",
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (!railOpen)
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-border)";
+              }}
+              onMouseLeave={(e) => {
+                if (!railOpen)
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+              }}
+            >
+              <Zap className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Nova AI</span>
+            </button>
+          )}
+
+          {/* User menu */}
+          <div className="relative ml-1.5" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              className="flex items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors"
+              className="flex items-center gap-2 h-8 rounded-lg px-2 transition-colors"
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
               }}
@@ -269,45 +335,64 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
               >
                 {initials}
               </span>
+              <span
+                className="hidden md:inline text-[12.5px] font-medium max-w-[90px] truncate"
+                style={{ color: "var(--foreground)" }}
+              >
+                {firstName}
+              </span>
+              {isGuest && (
+                <span
+                  className="hidden md:inline text-[10px] font-semibold px-1.5 py-px rounded"
+                  style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                >
+                  Demo
+                </span>
+              )}
               <ChevronDown
-                className="h-3 w-3 shrink-0"
+                className="h-3 w-3 shrink-0 opacity-50"
                 style={{ color: "var(--muted-foreground)" }}
               />
             </button>
 
             {menuOpen && (
               <div
-                className="absolute right-0 mt-1.5 w-52 rounded-xl border overflow-hidden"
+                className="absolute right-0 mt-1.5 w-56 rounded-xl border overflow-hidden"
                 style={{
                   background: "var(--popover)",
                   borderColor: "var(--border)",
-                  boxShadow: "var(--shadow-card)",
+                  boxShadow: "var(--shadow-md)",
                   zIndex: 50,
                 }}
               >
-                <div className="border-b p-3" style={{ borderColor: "var(--border)" }}>
-                  <div
-                    className="text-[13px] font-medium truncate"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {profile?.full_name || "Account"}
-                  </div>
-                  <div
-                    className="text-[11px] truncate mt-0.5"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {user?.email}
-                  </div>
-                  {isGuest && (
-                    <div
-                      className="mt-1.5 text-[10px] font-semibold"
-                      style={{ color: "var(--primary)" }}
+                {/* User info header */}
+                <div className="p-3 border-b" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                      style={{ background: "var(--primary)" }}
                     >
-                      Demo Mode
+                      {initials}
+                    </span>
+                    <div className="min-w-0">
+                      <div
+                        className="text-[13px] font-semibold truncate"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        {profile?.full_name || "Account"}
+                      </div>
+                      <div
+                        className="text-[11px] truncate"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {user?.email}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-                <div className="p-1">
+
+                {/* Menu items */}
+                <div className="p-1.5">
                   <TopbarMenuItem
                     onClick={() => {
                       setMenuOpen(false);
@@ -342,6 +427,36 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
   );
 }
 
+/* ── Small icon button helper ── */
+function IconBtn({
+  children,
+  onClick,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  title?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-100"
+      style={{ color: "var(--muted-foreground)" }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+        (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+        (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function TopbarMenuItem({
   onClick,
   icon: Icon,
@@ -356,10 +471,8 @@ function TopbarMenuItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition-colors"
-      style={{
-        color: destructive ? "var(--destructive)" : "var(--foreground)",
-      }}
+      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] transition-colors"
+      style={{ color: destructive ? "var(--destructive)" : "var(--foreground)" }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.background = destructive
           ? "color-mix(in oklab, var(--destructive) 8%, transparent)"
