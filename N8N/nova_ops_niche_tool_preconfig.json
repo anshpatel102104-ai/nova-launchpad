@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "nova-ops-tool-preconfig"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -44,10 +38,7 @@
       "name": "GET ai_operator_configs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        280
-      ],
+      "position": [720, 280],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -68,10 +59,7 @@
       "name": "GET user_entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        520
-      ],
+      "position": [720, 520],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -87,10 +75,7 @@
       "name": "Merge Fetches + Build Tool List",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        400
-      ]
+      "position": [960, 400]
     },
     {
       "parameters": {
@@ -100,10 +85,7 @@
       "name": "Split Into Per-Tool Items",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1200,
-        400
-      ]
+      "position": [1200, 400]
     },
     {
       "parameters": {
@@ -113,10 +95,7 @@
       "name": "Build Claude Prompt Per Tool",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1440,
-        400
-      ]
+      "position": [1440, 400]
     },
     {
       "parameters": {
@@ -148,10 +127,7 @@
       "name": "Call Claude API (Per Tool)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1700,
-        400
-      ],
+      "position": [1700, 400],
       "credentials": {
         "httpHeaderAuth": {
           "id": "eW91XpbDik7WWUjo",
@@ -167,10 +143,7 @@
       "name": "Parse Claude Response Per Tool",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1960,
-        400
-      ]
+      "position": [1960, 400]
     },
     {
       "parameters": {
@@ -200,10 +173,7 @@
       "name": "INSERT tool_configs (Per Tool)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2200,
-        400
-      ],
+      "position": [2200, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -219,10 +189,7 @@
       "name": "Aggregate Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2440,
-        400
-      ]
+      "position": [2440, 400]
     },
     {
       "parameters": {
@@ -252,10 +219,7 @@
       "name": "PATCH users: tools_preconfigured",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2680,
-        400
-      ],
+      "position": [2680, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -275,10 +239,7 @@
       "name": "Return: Tools Configured",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2920,
-        400
-      ]
+      "position": [2920, 400]
     }
   ],
   "connections": {

@@ -1,12 +1,6 @@
 {
   "health_checks": {
-    "cols": [
-      "error_message",
-      "error_node",
-      "execution_id",
-      "timestamp",
-      "workflow_name"
-    ],
+    "cols": ["error_message", "error_node", "execution_id", "timestamp", "workflow_name"],
     "filters": []
   },
   "notifications": {
@@ -44,9 +38,7 @@
       "user_id",
       "workflow_name"
     ],
-    "filters": [
-      "user_id"
-    ]
+    "filters": ["user_id"]
   },
   "operator_prompts": {
     "cols": [
@@ -63,9 +55,7 @@
       "version_label",
       "workflow_name"
     ],
-    "filters": [
-      "component"
-    ]
+    "filters": ["component"]
   },
   "operator_sessions": {
     "cols": [
@@ -84,18 +74,10 @@
       "updated_at",
       "workflow_name"
     ],
-    "filters": [
-      "session_id"
-    ]
+    "filters": ["session_id"]
   },
   "support_tickets": {
-    "cols": [
-      "created_at",
-      "issue_summary",
-      "session_id",
-      "status",
-      "user_id"
-    ],
+    "cols": ["created_at", "issue_summary", "session_id", "status", "user_id"],
     "filters": []
   },
   "tool_outputs": {

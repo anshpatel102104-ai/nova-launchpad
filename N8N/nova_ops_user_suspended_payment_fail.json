@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "nova-ops-user-suspended"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -59,10 +53,7 @@
       "name": "PATCH users: suspend",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        200
-      ],
+      "position": [720, 200],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -98,10 +89,7 @@
       "name": "PATCH user_entitlements: all false",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        400
-      ],
+      "position": [720, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -137,10 +125,7 @@
       "name": "PATCH user_credits: gate",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        600
-      ],
+      "position": [720, 600],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -156,10 +141,7 @@
       "name": "Merge & Validate Patches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        400
-      ]
+      "position": [960, 400]
     },
     {
       "parameters": {
@@ -189,10 +171,7 @@
       "name": "INSERT suspension_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1200,
-        400
-      ],
+      "position": [1200, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -228,10 +207,7 @@
       "name": "Validate Log Written",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1440,
-        400
-      ]
+      "position": [1440, 400]
     },
     {
       "parameters": {
@@ -245,10 +221,7 @@
       "name": "Return: Suspended",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1700,
-        280
-      ]
+      "position": [1700, 280]
     },
     {
       "parameters": {
@@ -262,10 +235,7 @@
       "name": "Return: Log Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1700,
-        520
-      ]
+      "position": [1700, 520]
     }
   ],
   "connections": {

@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "nova-ops-admin-override"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse, Validate & Hash Token",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Validate Admin Token",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        720,
-        400
-      ]
+      "position": [720, 400]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return: 401 Unauthorized",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        960,
-        600
-      ]
+      "position": [960, 600]
     },
     {
       "parameters": {
@@ -93,10 +81,7 @@
       "name": "GET user_entitlements (pre-check)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        960,
-        280
-      ],
+      "position": [960, 280],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -112,10 +97,7 @@
       "name": "Verify Entitlement Row Exists",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1200,
-        280
-      ]
+      "position": [1200, 280]
     },
     {
       "parameters": {
@@ -125,10 +107,7 @@
       "name": "Build Dynamic PATCH Body",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1440,
-        280
-      ]
+      "position": [1440, 280]
     },
     {
       "parameters": {
@@ -158,10 +137,7 @@
       "name": "PATCH user_entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1700,
-        280
-      ],
+      "position": [1700, 280],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -177,10 +153,7 @@
       "name": "Confirm PATCH Applied",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1940,
-        280
-      ]
+      "position": [1940, 280]
     },
     {
       "parameters": {
@@ -210,10 +183,7 @@
       "name": "INSERT admin_audit_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2180,
-        280
-      ],
+      "position": [2180, 280],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -233,10 +203,7 @@
       "name": "Return: 200 Override Applied",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2420,
-        280
-      ]
+      "position": [2420, 280]
     }
   ],
   "connections": {

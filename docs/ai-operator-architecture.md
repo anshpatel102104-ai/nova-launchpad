@@ -1,4 +1,5 @@
 # Nova Launchpad — AI Operator Architecture
+
 **Version:** 2.0  
 **Status:** Implementation-Ready
 
@@ -13,11 +14,12 @@ The 16 generic tool prompts seeded in `001_operator_schema.sql` (lines 225–246
 
 **2. Two overlapping tool layers with no clear boundary.**  
 The system has 6 subagents AND 10 launchpad tools that duplicate each other silently:
-- `social_subagent` ↔ `social_planning` one-liner  
-- `sales_script_subagent` ↔ `sales_script` one-liner  
-- `automation_builder_subagent` ↔ `automation_build` one-liner  
-- `offer_building` launchpad tool ↔ `offer_builder` launchpad tool  
-- `brand_voice_subagent` ↔ `brand_voice` one-liner  
+
+- `social_subagent` ↔ `social_planning` one-liner
+- `sales_script_subagent` ↔ `sales_script` one-liner
+- `automation_builder_subagent` ↔ `automation_build` one-liner
+- `offer_building` launchpad tool ↔ `offer_builder` launchpad tool
+- `brand_voice_subagent` ↔ `brand_voice` one-liner
 
 Users and n8n workflows must guess which layer to call. Neither layer knows about the other.
 
@@ -49,15 +51,15 @@ The `n8n_error_log` table exists, but there is no retry queue, no partial output
 
 ### Where role overlap exists
 
-| Overlap | Affected components |
-|---|---|
-| Social content | `social_subagent` + `social_planning` one-liner + `content_calendar` |
-| Sales scripts | `sales_script_subagent` + `sales_script` one-liner |
-| Automation building | `automation_builder_subagent` + `automation_build` one-liner |
-| Brand voice | `brand_voice_subagent` + `brand_voice` one-liner |
-| Offer building | `offer_building` + `offer` launchpad tool |
-| Analytics/reporting | `analytics` one-liner + `client_reporting_subagent` |
-| Lead gen | `lead_gen` one-liner + `icp-builder` launchpad tool |
+| Overlap             | Affected components                                                  |
+| ------------------- | -------------------------------------------------------------------- |
+| Social content      | `social_subagent` + `social_planning` one-liner + `content_calendar` |
+| Sales scripts       | `sales_script_subagent` + `sales_script` one-liner                   |
+| Automation building | `automation_builder_subagent` + `automation_build` one-liner         |
+| Brand voice         | `brand_voice_subagent` + `brand_voice` one-liner                     |
+| Offer building      | `offer_building` + `offer` launchpad tool                            |
+| Analytics/reporting | `analytics` one-liner + `client_reporting_subagent`                  |
+| Lead gen            | `lead_gen` one-liner + `icp-builder` launchpad tool                  |
 
 ---
 
@@ -96,103 +98,103 @@ The `n8n_error_log` table exists, but there is no retry queue, no partial output
 
 ### Agent 1 — Master Operator
 
-| Field | Value |
-|---|---|
-| **Role Name** | Master Operator |
-| **Core Mission** | Read user intent, assemble context, route to the correct specialist, enforce credits, return formatted output. Never does specialist work. |
-| **Trigger** | Any user message or tool invocation via `POST /webhook/operator` |
-| **Inputs** | `user_id`, `session_id`, `message`, `tool_slug` (optional), `context` from `ai_operator_configs` + `user_ai_config` + `operator_memory` |
-| **Actions** | Classify intent → reserve credits → route to specialist → receive output → run QA Agent → write to DB → return to user |
-| **Forbidden Actions** | Writing content, building strategies, generating code, doing any specialist task directly |
-| **Tool Access** | Supabase (read `ai_operator_configs`, `user_ai_config`, `user_credit_balance`; write `operator_sessions`, `tool_outputs`, `notifications`), `credit_guard` subworkflow, all specialist webhooks |
-| **Output** | `{ status, tool_slug, formatted_output, credits_used, session_id, timestamp }` |
-| **Success Metric** | >95% of requests routed correctly on first attempt; p95 latency < 6s end-to-end |
-| **Escalation Rule** | If confidence < 0.7 after 2 clarification attempts, or if 3 consecutive specialist failures, create `support_tickets` row and notify user |
+| Field                 | Value                                                                                                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role Name**         | Master Operator                                                                                                                                                                                 |
+| **Core Mission**      | Read user intent, assemble context, route to the correct specialist, enforce credits, return formatted output. Never does specialist work.                                                      |
+| **Trigger**           | Any user message or tool invocation via `POST /webhook/operator`                                                                                                                                |
+| **Inputs**            | `user_id`, `session_id`, `message`, `tool_slug` (optional), `context` from `ai_operator_configs` + `user_ai_config` + `operator_memory`                                                         |
+| **Actions**           | Classify intent → reserve credits → route to specialist → receive output → run QA Agent → write to DB → return to user                                                                          |
+| **Forbidden Actions** | Writing content, building strategies, generating code, doing any specialist task directly                                                                                                       |
+| **Tool Access**       | Supabase (read `ai_operator_configs`, `user_ai_config`, `user_credit_balance`; write `operator_sessions`, `tool_outputs`, `notifications`), `credit_guard` subworkflow, all specialist webhooks |
+| **Output**            | `{ status, tool_slug, formatted_output, credits_used, session_id, timestamp }`                                                                                                                  |
+| **Success Metric**    | >95% of requests routed correctly on first attempt; p95 latency < 6s end-to-end                                                                                                                 |
+| **Escalation Rule**   | If confidence < 0.7 after 2 clarification attempts, or if 3 consecutive specialist failures, create `support_tickets` row and notify user                                                       |
 
 ---
 
 ### Agent 2 — Intake Agent
 
-| Field | Value |
-|---|---|
-| **Role Name** | Intake Agent |
-| **Core Mission** | Extract clean, structured founder data from raw onboarding input and populate profile tables. |
-| **Trigger** | `POST /webhook/intake` — fires on new user signup, profile update, or when Operator detects missing required fields |
-| **Inputs** | Raw text from onboarding form, any existing `ai_operator_configs` row, any uploaded brand assets or URLs |
-| **Actions** | Parse raw input → extract structured fields → validate completeness → write to `ai_operator_configs` + `user_ai_config` → return confidence score per field |
-| **Forbidden Actions** | Writing any content output, making strategy recommendations, routing to other agents |
-| **Tool Access** | Supabase (write `ai_operator_configs`, `user_ai_config`), Claude |
-| **Output** | `{ user_id, fields_populated: [...], fields_missing: [...], confidence_per_field: {...}, profile_complete: bool }` |
-| **Success Metric** | Profile completeness score ≥ 85% after intake run; zero downstream null-field errors in specialist agents |
-| **Escalation Rule** | If fewer than 6 core fields can be extracted, return `profile_incomplete: true` and prompt user for the specific missing fields before releasing to Strategy Agent |
+| Field                 | Value                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Role Name**         | Intake Agent                                                                                                                                                       |
+| **Core Mission**      | Extract clean, structured founder data from raw onboarding input and populate profile tables.                                                                      |
+| **Trigger**           | `POST /webhook/intake` — fires on new user signup, profile update, or when Operator detects missing required fields                                                |
+| **Inputs**            | Raw text from onboarding form, any existing `ai_operator_configs` row, any uploaded brand assets or URLs                                                           |
+| **Actions**           | Parse raw input → extract structured fields → validate completeness → write to `ai_operator_configs` + `user_ai_config` → return confidence score per field        |
+| **Forbidden Actions** | Writing any content output, making strategy recommendations, routing to other agents                                                                               |
+| **Tool Access**       | Supabase (write `ai_operator_configs`, `user_ai_config`), Claude                                                                                                   |
+| **Output**            | `{ user_id, fields_populated: [...], fields_missing: [...], confidence_per_field: {...}, profile_complete: bool }`                                                 |
+| **Success Metric**    | Profile completeness score ≥ 85% after intake run; zero downstream null-field errors in specialist agents                                                          |
+| **Escalation Rule**   | If fewer than 6 core fields can be extracted, return `profile_incomplete: true` and prompt user for the specific missing fields before releasing to Strategy Agent |
 
 ---
 
 ### Agent 3 — Strategy Agent
 
-| Field | Value |
-|---|---|
-| **Role Name** | Strategy Agent |
-| **Core Mission** | Connect founder profile data into a coherent GTM strategy: validated niche, ICP, offer, pricing, and first-90-days execution plan. |
-| **Trigger** | `POST /webhook/strategy` — fires when Operator receives a strategy-type intent, or when any content agent detects missing strategy anchor |
-| **Inputs** | `ai_operator_configs` row, `user_ai_config` row, optional tool slugs to focus on (e.g., `["icp", "offer", "pricing"]`) |
-| **Actions** | Validate niche viability → define ICP → build core offer → set pricing logic → output GTM summary → write to `ai_operator_configs.gtm_summary` |
-| **Forbidden Actions** | Writing final content (blogs, social, scripts), building n8n workflows, reporting on client KPIs |
-| **Tool Access** | Supabase (read/write `ai_operator_configs`), Claude, launchpad tool sub-calls for niche-validator, icp-builder, offer-builder, pricing-strategist |
-| **Output** | `{ niche_validated: bool, icp: {...}, offer: {...}, pricing: {...}, gtm_summary: "...", strategy_score: 0-100, gaps: [...] }` |
-| **Success Metric** | `strategy_score` ≥ 70 on first run; downstream content agents report no strategy anchor errors |
-| **Escalation Rule** | If `strategy_score` < 50 after 2 runs, flag user profile as incomplete and trigger Intake Agent re-run |
+| Field                 | Value                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role Name**         | Strategy Agent                                                                                                                                    |
+| **Core Mission**      | Connect founder profile data into a coherent GTM strategy: validated niche, ICP, offer, pricing, and first-90-days execution plan.                |
+| **Trigger**           | `POST /webhook/strategy` — fires when Operator receives a strategy-type intent, or when any content agent detects missing strategy anchor         |
+| **Inputs**            | `ai_operator_configs` row, `user_ai_config` row, optional tool slugs to focus on (e.g., `["icp", "offer", "pricing"]`)                            |
+| **Actions**           | Validate niche viability → define ICP → build core offer → set pricing logic → output GTM summary → write to `ai_operator_configs.gtm_summary`    |
+| **Forbidden Actions** | Writing final content (blogs, social, scripts), building n8n workflows, reporting on client KPIs                                                  |
+| **Tool Access**       | Supabase (read/write `ai_operator_configs`), Claude, launchpad tool sub-calls for niche-validator, icp-builder, offer-builder, pricing-strategist |
+| **Output**            | `{ niche_validated: bool, icp: {...}, offer: {...}, pricing: {...}, gtm_summary: "...", strategy_score: 0-100, gaps: [...] }`                     |
+| **Success Metric**    | `strategy_score` ≥ 70 on first run; downstream content agents report no strategy anchor errors                                                    |
+| **Escalation Rule**   | If `strategy_score` < 50 after 2 runs, flag user profile as incomplete and trigger Intake Agent re-run                                            |
 
 ---
 
 ### Agent 4 — Content Agent
 
-| Field | Value |
-|---|---|
-| **Role Name** | Content Agent |
-| **Core Mission** | Produce a single, platform-specific, on-brand content piece per invocation. |
-| **Trigger** | `POST /webhook/content` — fires when Operator routes a content-type intent (blog, social, email, sales script, ad creative, VSL, cold email, landing page) |
-| **Inputs** | `user_ai_config` (brand voice, niche, ICP, value props), `content_type`, `platform` (where applicable), `topic` or `angle`, `ai_operator_configs.gtm_summary` |
-| **Actions** | Select correct content sub-prompt → apply brand voice → generate content → return structured JSON output |
-| **Forbidden Actions** | Making strategy decisions, running analytics, building automations, contacting external APIs directly |
-| **Tool Access** | Supabase (read `user_ai_config`, `ai_operator_configs`; write `content_outputs`), Claude |
-| **Output** | Strict JSON matching the content type schema (blog, social, email, script, ad, VSL, landing page — each has its own schema defined in the prompt) |
-| **Success Metric** | QA Agent approval rate ≥ 90% on first pass; user edit rate < 30% |
-| **Escalation Rule** | If QA Agent rejects output twice for the same request, escalate to Operator with reason; do not retry a third time without user confirmation |
+| Field                 | Value                                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role Name**         | Content Agent                                                                                                                                                 |
+| **Core Mission**      | Produce a single, platform-specific, on-brand content piece per invocation.                                                                                   |
+| **Trigger**           | `POST /webhook/content` — fires when Operator routes a content-type intent (blog, social, email, sales script, ad creative, VSL, cold email, landing page)    |
+| **Inputs**            | `user_ai_config` (brand voice, niche, ICP, value props), `content_type`, `platform` (where applicable), `topic` or `angle`, `ai_operator_configs.gtm_summary` |
+| **Actions**           | Select correct content sub-prompt → apply brand voice → generate content → return structured JSON output                                                      |
+| **Forbidden Actions** | Making strategy decisions, running analytics, building automations, contacting external APIs directly                                                         |
+| **Tool Access**       | Supabase (read `user_ai_config`, `ai_operator_configs`; write `content_outputs`), Claude                                                                      |
+| **Output**            | Strict JSON matching the content type schema (blog, social, email, script, ad, VSL, landing page — each has its own schema defined in the prompt)             |
+| **Success Metric**    | QA Agent approval rate ≥ 90% on first pass; user edit rate < 30%                                                                                              |
+| **Escalation Rule**   | If QA Agent rejects output twice for the same request, escalate to Operator with reason; do not retry a third time without user confirmation                  |
 
 ---
 
 ### Agent 5 — Automation Agent
 
-| Field | Value |
-|---|---|
-| **Role Name** | Automation Agent |
-| **Core Mission** | Convert a plain-English process description into a complete, importable n8n workflow JSON. |
-| **Trigger** | `POST /webhook/automation` — fires when Operator routes an automation-type intent |
-| **Inputs** | Process description (free text), user's existing workflow list from `automation_drafts`, plan tier (to determine allowed node types) |
-| **Actions** | Parse process description → design workflow topology → generate n8n JSON → validate node structure → write to `automation_drafts` |
-| **Forbidden Actions** | Executing the generated workflow, deploying to production, accessing other users' automation drafts |
-| **Tool Access** | Supabase (read plan tier, write `automation_drafts`), Claude |
-| **Output** | `{ draft_id, workflow_name, workflow_json, node_count, estimated_complexity: "low|medium|high", setup_steps: [...] }` |
-| **Success Metric** | Generated JSON imports into n8n without errors on first attempt ≥ 80% of the time |
-| **Escalation Rule** | If the process description requires external service credentials not available in the platform, list them explicitly in `setup_steps` and mark draft status as `needs_credentials` |
+| Field                 | Value                                                                                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------- |
+| **Role Name**         | Automation Agent                                                                                                                                                                   |
+| **Core Mission**      | Convert a plain-English process description into a complete, importable n8n workflow JSON.                                                                                         |
+| **Trigger**           | `POST /webhook/automation` — fires when Operator routes an automation-type intent                                                                                                  |
+| **Inputs**            | Process description (free text), user's existing workflow list from `automation_drafts`, plan tier (to determine allowed node types)                                               |
+| **Actions**           | Parse process description → design workflow topology → generate n8n JSON → validate node structure → write to `automation_drafts`                                                  |
+| **Forbidden Actions** | Executing the generated workflow, deploying to production, accessing other users' automation drafts                                                                                |
+| **Tool Access**       | Supabase (read plan tier, write `automation_drafts`), Claude                                                                                                                       |
+| **Output**            | `{ draft_id, workflow_name, workflow_json, node_count, estimated_complexity: "low                                                                                                  | medium | high", setup_steps: [...] }` |
+| **Success Metric**    | Generated JSON imports into n8n without errors on first attempt ≥ 80% of the time                                                                                                  |
+| **Escalation Rule**   | If the process description requires external service credentials not available in the platform, list them explicitly in `setup_steps` and mark draft status as `needs_credentials` |
 
 ---
 
 ### Agent 6 — QA Agent
 
-| Field | Value |
-|---|---|
-| **Role Name** | QA Agent |
-| **Core Mission** | Validate every specialist output before it reaches the user or is written to the database. |
-| **Trigger** | Called internally by Operator after every specialist response, before DB write |
-| **Inputs** | `raw_output` (specialist JSON), `output_type` (content, strategy, automation, intake), `user_ai_config` (brand voice for brand-check), `expected_schema` |
-| **Actions** | Validate JSON structure → check required fields are present and non-empty → brand voice spot-check (tone, vocabulary_donts) → flag hallucination signals (invented metrics, fake URLs) → return pass/fail with reasons |
-| **Forbidden Actions** | Rewriting the output directly, making creative decisions, routing to other agents |
-| **Tool Access** | Claude (validation pass only — no DB writes) |
-| **Output** | `{ passed: bool, score: 0-100, issues: [{ field, issue, severity: "block|warn" }], recommendation: "approve|retry|escalate" }` |
-| **Success Metric** | Zero hallucinated numbers reach `client_reports` table; zero malformed JSONs reach `content_outputs` table |
-| **Escalation Rule** | If `recommendation = "escalate"` (2+ block-severity issues survive a retry), pass to Operator with full issue list |
+| Field                 | Value                                                                                                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ----- | ------------ |
+| **Role Name**         | QA Agent                                                                                                                                                                                                               |
+| **Core Mission**      | Validate every specialist output before it reaches the user or is written to the database.                                                                                                                             |
+| **Trigger**           | Called internally by Operator after every specialist response, before DB write                                                                                                                                         |
+| **Inputs**            | `raw_output` (specialist JSON), `output_type` (content, strategy, automation, intake), `user_ai_config` (brand voice for brand-check), `expected_schema`                                                               |
+| **Actions**           | Validate JSON structure → check required fields are present and non-empty → brand voice spot-check (tone, vocabulary_donts) → flag hallucination signals (invented metrics, fake URLs) → return pass/fail with reasons |
+| **Forbidden Actions** | Rewriting the output directly, making creative decisions, routing to other agents                                                                                                                                      |
+| **Tool Access**       | Claude (validation pass only — no DB writes)                                                                                                                                                                           |
+| **Output**            | `{ passed: bool, score: 0-100, issues: [{ field, issue, severity: "block                                                                                                                                               | warn" }], recommendation: "approve | retry | escalate" }` |
+| **Success Metric**    | Zero hallucinated numbers reach `client_reports` table; zero malformed JSONs reach `content_outputs` table                                                                                                             |
+| **Escalation Rule**   | If `recommendation = "escalate"` (2+ block-severity issues survive a retry), pass to Operator with full issue list                                                                                                     |
 
 ---
 
@@ -915,7 +917,11 @@ recommendation:
     "reserve": {
       "input": { "user_id": "...", "tool_slug": "...", "amount": 0 },
       "behavior": "Check balance >= amount. Insert reservation row in credit_ledger with status=reserved.",
-      "output_on_success": { "reservation_id": "...", "balance_before": 0, "balance_after_if_confirmed": 0 },
+      "output_on_success": {
+        "reservation_id": "...",
+        "balance_before": 0,
+        "balance_after_if_confirmed": 0
+      },
       "output_on_fail": { "error": "insufficient_credits", "balance": 0, "required": 0 }
     },
     "confirm": {
@@ -941,13 +947,15 @@ recommendation:
 **Schema changes required:**
 
 1. Add `reservation_id` and `status` columns to `credit_ledger`:
+
    ```sql
-   ALTER TABLE credit_ledger 
+   ALTER TABLE credit_ledger
      ADD COLUMN reservation_id uuid DEFAULT uuid_generate_v4(),
      ADD COLUMN status text DEFAULT 'confirmed' CHECK (status IN ('reserved','confirmed','refunded'));
    ```
 
 2. Add `failed_jobs` table for failure recovery:
+
    ```sql
    CREATE TABLE failed_jobs (
      id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -971,6 +979,7 @@ recommendation:
    ```
 
 **RLS rules:**
+
 - All agent writes use service role key (already configured)
 - Users can read their own `tool_outputs`, `content_outputs`, `operator_memory`, `automation_drafts`
 - Users cannot read `n8n_error_log`, `failed_jobs`, `support_tickets` (service role only)
@@ -981,13 +990,13 @@ recommendation:
 
 **Workflow consolidation:**
 
-| Current | Action | Replacement |
-|---|---|---|
-| Workflow 05 (memory write) | Absorb into operator pipeline as a node | Remove standalone webhook |
-| Workflow 06 (memory read) | Absorb into operator pipeline as a node | Remove standalone webhook |
-| Workflow 07 (confidence fallback) | Absorb into main router as conditional branch | Remove standalone webhook |
-| 16 one-liner prompts | Replace with 5 specialist agent prompts | Update via prompt-swap webhook |
-| Subagents (6) + Launchpad tools (10) | Merge into single tool catalog | Each calls the appropriate specialist internally |
+| Current                              | Action                                        | Replacement                                      |
+| ------------------------------------ | --------------------------------------------- | ------------------------------------------------ |
+| Workflow 05 (memory write)           | Absorb into operator pipeline as a node       | Remove standalone webhook                        |
+| Workflow 06 (memory read)            | Absorb into operator pipeline as a node       | Remove standalone webhook                        |
+| Workflow 07 (confidence fallback)    | Absorb into main router as conditional branch | Remove standalone webhook                        |
+| 16 one-liner prompts                 | Replace with 5 specialist agent prompts       | Update via prompt-swap webhook                   |
+| Subagents (6) + Launchpad tools (10) | Merge into single tool catalog                | Each calls the appropriate specialist internally |
 
 **New workflows to add:**
 
@@ -998,6 +1007,7 @@ recommendation:
 5. `failed_job_retry` — Schedule trigger every 5 minutes — picks up `failed_jobs` with `status=pending` and `next_retry_at <= now()`, retries with exponential backoff (2m, 4m, 8m, then `status=dead`)
 
 **Operator pipeline (Workflow 01) must be updated to:**
+
 1. Include memory read as a Supabase node (not a webhook call)
 2. Include pre-flight checks as an IF node with four branches
 3. Call `credit_guard` as an HTTP Request before routing
@@ -1015,21 +1025,22 @@ recommendation:
 **Required state machine for the operator chat interface:**
 
 ```typescript
-type OperatorState = 
+type OperatorState =
   | "idle"
   | "loading_context"
-  | "awaiting_clarification"     // show clarification prompt, block other input
-  | "running_intake"             // show "Setting up your profile..."
-  | "running_strategy"           // show "Building your strategy..."
-  | "running_specialist"         // show tool-specific loading state
-  | "qa_in_progress"             // internal, no UI needed
-  | "output_ready"               // show formatted output + credits used
-  | "credit_insufficient"        // show upgrade CTA
-  | "escalated"                  // show support ticket ID + message
-  | "error"                      // show retry option
+  | "awaiting_clarification" // show clarification prompt, block other input
+  | "running_intake" // show "Setting up your profile..."
+  | "running_strategy" // show "Building your strategy..."
+  | "running_specialist" // show tool-specific loading state
+  | "qa_in_progress" // internal, no UI needed
+  | "output_ready" // show formatted output + credits used
+  | "credit_insufficient" // show upgrade CTA
+  | "escalated" // show support ticket ID + message
+  | "error"; // show retry option
 ```
 
 **`src/lib/subagents.ts` and `src/lib/launchpadTools.ts`** should be merged into a single `src/lib/operator.ts` module that:
+
 - Always routes through `POST /webhook/operator`
 - Never calls specialist webhooks directly from the frontend
 - Handles all state transitions above
@@ -1042,6 +1053,7 @@ type OperatorState =
 **Single source of truth:** `user_credit_balance` view (`sum of confirmed debits subtracted from plan allocation`).
 
 **Credit display rules:**
+
 - Show `credits_remaining` on every tool output
 - Block tool invocation in UI if `credits_remaining < tool_cost` (check before the API call)
 - Show low-credit warning when `credits_remaining < 20`
@@ -1049,26 +1061,27 @@ type OperatorState =
 
 **Credit cost table** (matches Operator system prompt):
 
-| Tool | Credits |
-|---|---|
-| Intake | 0 |
-| Strategy | 20 |
-| Blog | 10 |
-| Social post | 5 |
-| Email sequence | 12 |
-| Sales script | 8 |
-| Ad creative | 8 |
-| VSL | 15 |
-| Landing page | 10 |
-| Cold email sequence | 12 |
-| Automation build | 25 |
-| Client report | 20 |
+| Tool                | Credits |
+| ------------------- | ------- |
+| Intake              | 0       |
+| Strategy            | 20      |
+| Blog                | 10      |
+| Social post         | 5       |
+| Email sequence      | 12      |
+| Sales script        | 8       |
+| Ad creative         | 8       |
+| VSL                 | 15      |
+| Landing page        | 10      |
+| Cold email sequence | 12      |
+| Automation build    | 25      |
+| Client report       | 20      |
 
 ---
 
 ### Logs and History
 
 **`tool_outputs` table** is the single log for all user-facing results. Every output writes here with:
+
 - `user_id`, `session_id`, `tool_slug`, `raw_output` (full specialist JSON), `formatted_output` (display-ready), `qa_score`, `credits_used`, `created_at`
 
 **`n8n_error_log`** receives all n8n Error Trigger events. Add `reservation_id` column so failed jobs can be linked to credit reservations for automatic refund.
@@ -1082,6 +1095,7 @@ type OperatorState =
 ### Failure Recovery
 
 **Pattern:**
+
 1. On any specialist failure: catch in n8n Error Trigger node
 2. Write to `failed_jobs` with full payload and `next_retry_at = now() + 2 minutes`
 3. Call `credit_guard` with `action=refund` on the reservation

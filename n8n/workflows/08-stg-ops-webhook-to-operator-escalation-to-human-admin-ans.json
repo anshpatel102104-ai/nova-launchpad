@@ -37,10 +37,7 @@
       "name": "Webhook - Receive Request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "path": "operator-escalation",
         "httpMethod": "POST",
@@ -54,10 +51,7 @@
       "name": "HTTP - Insert Support Ticket",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/support_tickets",
@@ -100,10 +94,7 @@
       "name": "HTTP - Get User Profile",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        680,
-        380
-      ],
+      "position": [680, 380],
       "parameters": {
         "method": "GET",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/profiles",
@@ -147,10 +138,7 @@
       "name": "Code - Build Notification Payloads",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        900,
-        380
-      ],
+      "position": [900, 380],
       "parameters": {
         "jsCode": "// \u2500\u2500 Extract ticket from INSERT response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst insertRaw    = $('HTTP - Insert Support Ticket').first().json;\\nconst insertedRow  = Array.isArray(insertRaw) ? insertRaw[0] : insertRaw;\\nconst ticket_id    = insertedRow?.id || 'UNKNOWN';\\nconst ticket_status = insertedRow?.status || 'open';\\n\\n// \u2500\u2500 Extract user profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst profileRaw = $input.first().json;   // result of HTTP - Get User Profile\\nconst profiles   = Array.isArray(profileRaw) ? profileRaw : (profileRaw ? [profileRaw] : []);\\nconst profile    = profiles[0] || {};\\n\\n// Try common email column names \u2014 adjust to match your schema\\nconst userEmail = profile.email\\n  || profile.user_email\\n  || profile.contact_email\\n  || `user-${$('Webhook - Receive Request').first().json.body.user_id}@nova-ops.space`;\\n\\nconst userName = profile.full_name\\n  || profile.name\\n  || profile.display_name\\n  || 'Valued Customer';\\n\\n// \u2500\u2500 Original request \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst body         = $('Webhook - Receive Request').first().json.body;\\nconst issueSummary = (body.issue_summary || 'No summary provided').trim();\\nconst sessionId    = body.session_id || 'N/A';\\nconst appUrl       = $vars.GLOBAL_APP_URL_PROD || 'https://nova-ops.space';\\n\\n// \u2500\u2500 Slack block message \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst slackBlocks = [\\n  {\\n    type: 'header',\\n    text: { type: 'plain_text', text: '\ud83d\udea8 Operator Escalation \u2014 Human Review Needed', emoji: true }\\n  },\\n  {\\n    type: 'section',\\n    fields: [\\n      { type: 'mrkdwn', text: `*User:*\\\\n${userEmail}` },\\n      { type: 'mrkdwn', text: `*Ticket ID:*\\\\n${ticket_id}` },\\n      { type: 'mrkdwn', text: `*Session:*\\\\n${sessionId}` },\\n      { type: 'mrkdwn', text: `*Status:*\\\\n${ticket_status}` }\\n    ]\\n  },\\n  {\\n    type: 'section',\\n    text: { type: 'mrkdwn', text: `*Issue Summary:*\\\\n${issueSummary}` }\\n  },\\n  {\\n    type: 'actions',\\n    elements: [{\\n      type: 'button',\\n      text: { type: 'plain_text', text: 'View Ticket', emoji: true },\\n      url: `${appUrl}/admin/tickets/${ticket_id}`,\\n      style: 'primary'\\n    }]\\n  }\\n];\\n\\n// \u2500\u2500 User confirmation email \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst emailSubject = `Your request is being reviewed \u2014 Ticket #${ticket_id}`;\\nconst emailBody    = `Hi ${userName},\\\\n\\\\nThank you for reaching out to Nova OPS.\\\\n\\\\nA member of our team is reviewing your request and will respond within 24 hours.\\\\n\\\\nYour ticket reference: ${ticket_id}\\\\n\\\\nIssue logged:\\\\n\"${issueSummary}\"\\\\n\\\\nIf you have additional information to share, simply reply to this email and include your ticket reference.\\\\n\\\\nNova OPS Support Team\\\\n${appUrl}`;\\n\\nreturn [{\\n  json: {\\n    ticket_id,\\n    ticket_status,\\n    user_id:       body.user_id,\\n    user_email:    userEmail,\\n    user_name:     userName,\\n    issue_summary: issueSummary,\\n    slack_text:    `Escalation needed \u2014 User: ${userEmail} | Issue: ${issueSummary} | Ticket: ${ticket_id}`,\\n    slack_blocks:  slackBlocks,\\n    email_subject: emailSubject,\\n    email_body:    emailBody\\n  }\\n}];"
       }
@@ -160,10 +148,7 @@
       "name": "Slack - Alert Admin Channel",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
-      "position": [
-        1120,
-        220
-      ],
+      "position": [1120, 220],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -185,10 +170,7 @@
       "name": "Gmail - Email User Confirmation",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [
-        1120,
-        540
-      ],
+      "position": [1120, 540],
       "parameters": {
         "resource": "message",
         "operation": "send",
@@ -213,10 +195,7 @@
       "name": "Merge - Await Both Sent",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [
-        1340,
-        380
-      ],
+      "position": [1340, 380],
       "parameters": {
         "mode": "combine",
         "combinationMode": "mergeByPosition",
@@ -228,10 +207,7 @@
       "name": "Respond - Return Ticket",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1560,
-        380
-      ],
+      "position": [1560, 380],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ ticket_id: $('Code - Build Notification Payloads').first().json.ticket_id, status: 'escalated', user_email: $('Code - Build Notification Payloads').first().json.user_email, message: 'A human is reviewing your request and will respond within 24 hours.' }) }}",
@@ -245,20 +221,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        660
-      ]
+      "position": [240, 660]
     },
     {
       "id": "h8000010-0000-0000-0000-000000000010",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        660
-      ],
+      "position": [460, 660],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

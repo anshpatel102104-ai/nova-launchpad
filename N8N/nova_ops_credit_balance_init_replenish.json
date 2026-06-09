@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "nova-ops-credit-balance"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -133,10 +127,7 @@
       "name": "Switch: Plan Tier",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
-      "position": [
-        720,
-        400
-      ]
+      "position": [720, 400]
     },
     {
       "parameters": {
@@ -146,10 +137,7 @@
       "name": "Credits: Free (10)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        160
-      ]
+      "position": [960, 160]
     },
     {
       "parameters": {
@@ -159,10 +147,7 @@
       "name": "Credits: Starter (100)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        320
-      ]
+      "position": [960, 320]
     },
     {
       "parameters": {
@@ -172,10 +157,7 @@
       "name": "Credits: Pro (500)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        480
-      ]
+      "position": [960, 480]
     },
     {
       "parameters": {
@@ -185,10 +167,7 @@
       "name": "Credits: Scale (9999)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        640
-      ]
+      "position": [960, 640]
     },
     {
       "parameters": {
@@ -198,10 +177,7 @@
       "name": "Merge Credit Branches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1200,
-        400
-      ]
+      "position": [1200, 400]
     },
     {
       "parameters": {
@@ -261,10 +237,7 @@
       "name": "Switch: Trigger Type",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
-      "position": [
-        1440,
-        400
-      ]
+      "position": [1440, 400]
     },
     {
       "parameters": {
@@ -294,10 +267,7 @@
       "name": "INSERT user_credits (init)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1700,
-        260
-      ],
+      "position": [1700, 260],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -326,10 +296,7 @@
       "name": "GET current lifetime_granted",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1700,
-        540
-      ],
+      "position": [1700, 540],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -345,10 +312,7 @@
       "name": "Calc New Lifetime",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1940,
-        540
-      ]
+      "position": [1940, 540]
     },
     {
       "parameters": {
@@ -378,10 +342,7 @@
       "name": "PATCH user_credits (renewal)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2180,
-        540
-      ],
+      "position": [2180, 540],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -397,10 +358,7 @@
       "name": "Merge for Event Log",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2420,
-        400
-      ]
+      "position": [2420, 400]
     },
     {
       "parameters": {
@@ -430,10 +388,7 @@
       "name": "INSERT credit_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2660,
-        400
-      ],
+      "position": [2660, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -469,10 +424,7 @@
       "name": "Validate Event Log",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        2900,
-        400
-      ]
+      "position": [2900, 400]
     },
     {
       "parameters": {
@@ -486,10 +438,7 @@
       "name": "Return Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        3140,
-        280
-      ]
+      "position": [3140, 280]
     },
     {
       "parameters": {
@@ -503,10 +452,7 @@
       "name": "Return Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        3140,
-        520
-      ]
+      "position": [3140, 520]
     }
   ],
   "connections": {

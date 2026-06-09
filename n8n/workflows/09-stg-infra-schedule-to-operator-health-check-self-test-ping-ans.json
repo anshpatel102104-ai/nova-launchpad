@@ -37,10 +37,7 @@
       "name": "Schedule - Every 15 Minutes",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "rule": {
           "interval": [
@@ -57,10 +54,7 @@
       "name": "Code - Build Endpoint List",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "jsCode": "// Base URLs \u2014 override with env vars if present\\nconst n8nBase = $vars.N8N_WEBHOOK_BASE_URL  || 'https://launchpad-novaops.app.n8n.cloud/webhook';\\nconst appBase = $vars.GLOBAL_APP_URL_STG    || 'https://stg.nova-ops.space';\\n\\nconst endpoints = [\\n  // \u2500\u2500 Core operator workflows (n8n webhooks) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n  { name: 'AI Operator Main Router',        url: `${n8nBase}/ai-operator-router` },\\n  { name: 'AI Operator Context Loader',     url: `${n8nBase}/ai-operator-context-loader` },\\n  { name: 'AI Operator Tool Dispatcher',    url: `${n8nBase}/ai-operator-tool-dispatcher` },\\n  { name: 'Operator Memory Read',           url: `${n8nBase}/operator-memory-read` },\\n\\n  // \u2500\u2500 Launchpad subagent webhooks (app-side) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n  { name: 'Subagent: Lead Gen',             url: `${appBase}/api/webhooks/tools/lead-gen` },\\n  { name: 'Subagent: Copywriting',          url: `${appBase}/api/webhooks/tools/copywriting` },\\n  { name: 'Subagent: Offer Builder',        url: `${appBase}/api/webhooks/tools/offer-building` },\\n  { name: 'Subagent: Funnel Mapper',        url: `${appBase}/api/webhooks/tools/funnel-mapping` },\\n  { name: 'Subagent: Content Calendar',     url: `${appBase}/api/webhooks/tools/content-calendar` },\\n  { name: 'Subagent: Ad Strategy',          url: `${appBase}/api/webhooks/tools/ad-strategy` },\\n  { name: 'Subagent: Email Sequence',       url: `${appBase}/api/webhooks/tools/email-sequence` },\\n  { name: 'Subagent: SEO Brief',            url: `${appBase}/api/webhooks/tools/seo-brief` },\\n  { name: 'Subagent: Competitor Research',  url: `${appBase}/api/webhooks/tools/competitor-research` },\\n  { name: 'Subagent: Social Planning',      url: `${appBase}/api/webhooks/tools/social-planning` },\\n  { name: 'Subagent: Sales Script',         url: `${appBase}/api/webhooks/tools/sales-script` },\\n  { name: 'Subagent: Brand Voice',          url: `${appBase}/api/webhooks/tools/brand-voice` },\\n  { name: 'Subagent: Analytics',            url: `${appBase}/api/webhooks/tools/analytics` },\\n  { name: 'Subagent: Automation Builder',   url: `${appBase}/api/webhooks/tools/automation-build` },\\n  { name: 'Subagent: Client Reporting',     url: `${appBase}/api/webhooks/tools/client-reporting` },\\n];\\n\\n// Return one item per endpoint for SplitInBatches\\nreturn endpoints.map(e => ({\\n  json: { _endpoint_name: e.name, _url: e.url }\\n}));"
       }
@@ -70,10 +64,7 @@
       "name": "SplitInBatches - Loop Endpoints",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [
-        680,
-        380
-      ],
+      "position": [680, 380],
       "parameters": {
         "batchSize": 1,
         "options": {}
@@ -84,10 +75,7 @@
       "name": "Code - Set Start Time",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        900,
-        260
-      ],
+      "position": [900, 260],
       "parameters": {
         "jsCode": "// Stamp the precise start time immediately before the HTTP ping.\\n// Must run as close to the HTTP call as possible for accurate timing.\\nconst item = $input.first().json;\\nreturn [{ json: Object.assign({}, item, { _start_time: Date.now() }) }];"
       }
@@ -97,10 +85,7 @@
       "name": "HTTP - Ping Endpoint",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1100,
-        260
-      ],
+      "position": [1100, 260],
       "parameters": {
         "method": "GET",
         "url": "={{ $json._url }}",
@@ -121,10 +106,7 @@
       "name": "Code - Record Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1300,
-        260
-      ],
+      "position": [1300, 260],
       "parameters": {
         "jsCode": "const response = $input.first().json;\\nconst meta     = $('Code - Set Start Time').first().json;\\n\\nconst endTime        = Date.now();\\nconst responseTimeMs = endTime - (meta._start_time || endTime);\\n\\n// statusCode = 0 means no HTTP response received (timeout / connection refused)\\nconst statusCode = response.statusCode || 0;\\n\\n// DOWN if: no response at all, OR wall-clock time hit the 5s ceiling\\n// Any HTTP status (even 404 / 405) means the server is reachable \u2192 UP\\nconst isDown = statusCode === 0 || responseTimeMs >= 5000;\\n\\nreturn [{\\n  json: {\\n    endpoint_name:    meta._endpoint_name,\\n    url:              meta._url,\\n    status:           isDown ? 'down' : 'up',\\n    status_code:      statusCode,\\n    response_time_ms: Math.min(responseTimeMs, 5001),\\n    is_down:          isDown,\\n    checked_at:       new Date().toISOString()\\n  }\\n}];"
       }
@@ -134,10 +116,7 @@
       "name": "Code - Analyze Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        900,
-        520
-      ],
+      "position": [900, 520],
       "parameters": {
         "jsCode": "// SplitInBatches done output delivers ALL processed items accumulated across iterations.\\nconst allResults = $input.all().map(item => item.json);\\n\\nconst failures   = allResults.filter(r => r.is_down);\\nconst upCount    = allResults.length - failures.length;\\nconst checkedAt  = new Date().toISOString();\\n\\n// \u2500\u2500 Slack message \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nlet slackText;\\nif (failures.length === 0) {\\n  slackText = `\u2705 *Nova OPS Health Check* \u2014 All ${allResults.length} endpoints UP (${checkedAt})`;\\n} else {\\n  const lines = failures.map(f =>\\n    `\u2022 *${f.endpoint_name}*: HTTP ${f.status_code} \u00b7 ${f.response_time_ms}ms${\\n      f.response_time_ms >= 5000 ? ' \u23f1 TIMEOUT' : ''}`\\n  ).join('\\\\n');\\n  slackText =\\n    `\ud83d\udd34 *Nova OPS Health Alert \u2014 ${failures.length}/${allResults.length} endpoint(s) DOWN*\\\\n\\\\n` +\\n    lines +\\n    `\\\\n\\\\n_Checked at: ${checkedAt}_`;\\n}\\n\\n// \u2500\u2500 Supabase bulk payload \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst dbRows = allResults.map(r => ({\\n  endpoint_name:    r.endpoint_name,\\n  status:           r.status,\\n  status_code:      r.status_code,\\n  response_time_ms: r.response_time_ms,\\n  checked_at:       r.checked_at\\n}));\\n\\nreturn [{\\n  json: {\\n    results:     allResults,\\n    db_rows:     dbRows,\\n    failures,\\n    has_failures: failures.length > 0,\\n    slack_text:   slackText,\\n    total:        allResults.length,\\n    up_count:     upCount,\\n    down_count:   failures.length,\\n    checked_at:   checkedAt\\n  }\\n}];"
       }
@@ -147,10 +126,7 @@
       "name": "IF - Any Failures",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1120,
-        520
-      ],
+      "position": [1120, 520],
       "parameters": {
         "conditions": {
           "options": {
@@ -179,10 +155,7 @@
       "name": "Slack - Alert Admin Channel",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
-      "position": [
-        1340,
-        420
-      ],
+      "position": [1340, 420],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -202,10 +175,7 @@
       "name": "Merge - Converge Paths",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [
-        1540,
-        520
-      ],
+      "position": [1540, 520],
       "parameters": {
         "mode": "combine",
         "combinationMode": "mergeByPosition",
@@ -217,10 +187,7 @@
       "name": "HTTP - Bulk Log to Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1740,
-        520
-      ],
+      "position": [1740, 520],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/health_checks",
@@ -263,20 +230,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        680
-      ]
+      "position": [240, 680]
     },
     {
       "id": "i9000013-0000-0000-0000-000000000013",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        680
-      ],
+      "position": [460, 680],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

@@ -1,5 +1,3 @@
-
-
 # Launchpad Nova — Full Lovable Cloud Backend
 
 Switching backend from external Supabase to **Lovable Cloud**. Existing 8-table naming kept; missing tables added; Claude wired through Edge Functions; new pricing seeded.
@@ -18,9 +16,11 @@ Switching backend from external Supabase to **Lovable Cloud**. Existing 8-table 
 ## 1. Schema (migrations)
 
 **Kept (renamed in your spec → existing names):**
+
 - `profiles`, `organizations` (= "businesses"), `organization_members`, `subscriptions`, `plan_entitlements`, `onboarding_responses` (= "onboarding_answers"), `tool_runs` (= "ai_generations"), `generated_assets` (= "saved_assets")
 
 **Added:**
+
 - `website_analyses` — url, snapshot_path, issues jsonb, opportunities jsonb, ux_notes, seo_notes, suggested_changes jsonb, organization_id
 - `automation_settings` — organization_id, key, config jsonb, enabled bool
 - `usage_tracking` — organization_id, period (month), tool_key, count, last_used_at
@@ -53,6 +53,7 @@ Path convention: `{organization_id}/{user_id}/{filename}`. RLS policies on `stor
 All functions: verify JWT → load org + subscription → check plan entitlement → check `usage_tracking` quota → validate input (Zod) → call Lovable AI Gateway with Claude model → insert `tool_runs` row (status `running` → `succeeded`/`failed`) → insert structured output to `generated_assets` (or `website_analyses`) → increment `usage_tracking` → return JSON.
 
 Functions:
+
 - `validate-idea` → `{ score, strengths[], weaknesses[], risks[], recommendation }`
 - `generate-pitch` → `{ headline, problem, offer, outcome, cta }`
 - `generate-gtm-strategy` → `{ audience, channels[], messaging, plan_30d[] }`
@@ -76,16 +77,16 @@ Shared `_helpers/` module: `requireUser()`, `requireEntitlement(toolKey)`, `incr
 
 Build `src/lib/queries.ts` with TanStack Query options for every entity. Each `/app/*` route gets a `loader` calling `ensureQueryData`; components use `useSuspenseQuery`. Replaces all `src/lib/mock.ts` reads.
 
-| Screen | Source |
-|---|---|
-| Dashboard | `profiles` + active `organizations` + recent `tool_runs` |
-| Launchpad index/$tool | Static catalog + `tool_runs` + Edge Function invocations |
-| Launchpad history | `tool_runs` desc |
-| Nova screens | `tool_runs` + `generated_assets` + `automation_settings` |
-| Billing | `subscriptions` + `plan_entitlements` + `usage_tracking` |
-| Settings | `profiles` + `organizations` mutations |
-| Stage tracker | `organizations.stage` |
-| Locked overlay | `subscriptions.plan` vs `plan_entitlements.required_plan` |
+| Screen                | Source                                                    |
+| --------------------- | --------------------------------------------------------- |
+| Dashboard             | `profiles` + active `organizations` + recent `tool_runs`  |
+| Launchpad index/$tool | Static catalog + `tool_runs` + Edge Function invocations  |
+| Launchpad history     | `tool_runs` desc                                          |
+| Nova screens          | `tool_runs` + `generated_assets` + `automation_settings`  |
+| Billing               | `subscriptions` + `plan_entitlements` + `usage_tracking`  |
+| Settings              | `profiles` + `organizations` mutations                    |
+| Stage tracker         | `organizations.stage`                                     |
+| Locked overlay        | `subscriptions.plan` vs `plan_entitlements.required_plan` |
 
 **Zero design system changes.** No edits to `styles.css`, `components/ui/*`, sidebar, topbar, or route JSX structure.
 
@@ -94,6 +95,7 @@ Build `src/lib/queries.ts` with TanStack Query options for every entity. Each `/
 Lovable Cloud auto-provisions `LOVABLE_API_KEY` (used for Claude via gateway — no separate Anthropic key needed).
 
 You'll add later (placeholders, not blocking MVP):
+
 - `STRIPE_SECRET_KEY` (when wiring real billing)
 - `STRIPE_WEBHOOK_SECRET`
 - `RESEND_API_KEY` (transactional email)
@@ -115,4 +117,3 @@ You'll add later (placeholders, not blocking MVP):
 - **Type safety** — generated `Database` type flows through queries and function payloads
 - **Roles** — `user_roles` table + `has_role()` definer (never on profiles)
 - **`mock.ts`** kept only as static tool catalog (names/icons); all dynamic arrays removed
-

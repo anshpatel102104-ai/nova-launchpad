@@ -12,10 +12,7 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-subscription-cancelled"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse Cancellation Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Should Skip?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
+      "position": [680, 300]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return 200 Skipped",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        900,
-        480
-      ]
+      "position": [900, 480]
     },
     {
       "parameters": {
@@ -106,10 +94,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        900,
-        300
-      ],
+      "position": [900, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -125,10 +110,7 @@
       "name": "Merge User Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
+      "position": [1120, 300]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "Update User Cancelled",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -229,10 +208,7 @@
       "name": "Revoke Paid Feature Flags",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ],
+      "position": [1560, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -272,10 +248,7 @@
       "name": "Send Cancellation Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        300
-      ]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -305,10 +278,7 @@
       "name": "Log to billing_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2000,
-        300
-      ],
+      "position": [2000, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -336,10 +306,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        2220,
-        300
-      ]
+      "position": [2220, 300]
     },
     {
       "parameters": {
@@ -350,10 +317,7 @@
       "name": "Wait 7 Days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [
-        2000,
-        520
-      ],
+      "position": [2000, 520],
       "webhookId": "wait-7-day-winback"
     },
     {
@@ -388,10 +352,7 @@
       "name": "Send Win-Back Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2220,
-        520
-      ]
+      "position": [2220, 520]
     }
   ],
   "connections": {
@@ -526,13 +487,7 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "cancellation",
-    "win-back",
-    "billing"
-  ],
+  "tags": ["nova-ops", "stripe", "cancellation", "win-back", "billing"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
   "versionId": "nova-ops-cancelled-voluntary-v1"
