@@ -83,10 +83,7 @@ function AppLayout() {
                 <Outlet />
               </div>
             ) : (
-              <div
-                key={path}
-                className="page-in w-full px-5 py-5 md:px-7 md:py-6"
-              >
+              <div key={path} className="page-in w-full px-5 py-5 md:px-7 md:py-6">
                 <Outlet />
               </div>
             )}

@@ -259,7 +259,8 @@ function Leads() {
         onCreate={async (lead) => {
           if (blockIfGuest("Sign up to add leads.")) return;
           if (!currentOrgId || !user) return;
-          const { error } = await supabase.from("leads").insert({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error } = await (supabase as any).from("leads").insert({
             ...lead,
             organization_id: currentOrgId,
           });
@@ -385,11 +386,7 @@ function CreateLeadSheet({
               </div>
             </Field>
             <Field label="Close Date">
-              <Input
-                type="date"
-                value={closeDate}
-                onChange={(e) => setCloseDate(e.target.value)}
-              />
+              <Input type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} />
             </Field>
           </div>
           <Button
