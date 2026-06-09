@@ -9,14 +9,14 @@ import type { PALCallOptions, PALResult, ProviderName } from "./types.ts";
 // ─── Cost rates (mirrors ai_model_catalog seed data) ──────────────────────
 // Cost in USD per 1 000 tokens.
 const MODEL_COSTS: Record<string, { input: number; output: number }> = {
-  "claude-haiku-4-5-20251001": { input: 0.0008,  output: 0.0040 },
-  "claude-sonnet-4-6":         { input: 0.0030,  output: 0.0150 },
-  "claude-opus-4-7":           { input: 0.0150,  output: 0.0750 },
-  "gpt-4o":                    { input: 0.0050,  output: 0.0150 },
-  "gpt-4o-mini":               { input: 0.00015, output: 0.0006 },
-  "grok-2":                    { input: 0.0020,  output: 0.0100 },
-  "deepseek-chat":             { input: 0.00014, output: 0.00028 },
-  "gemini-2.0-flash":          { input: 0.000075,output: 0.0003 },
+  "claude-haiku-4-5-20251001": { input: 0.0008, output: 0.004 },
+  "claude-sonnet-4-6": { input: 0.003, output: 0.015 },
+  "claude-opus-4-7": { input: 0.015, output: 0.075 },
+  "gpt-4o": { input: 0.005, output: 0.015 },
+  "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
+  "grok-2": { input: 0.002, output: 0.01 },
+  "deepseek-chat": { input: 0.00014, output: 0.00028 },
+  "gemini-2.0-flash": { input: 0.000075, output: 0.0003 },
 };
 
 // Tool keys that warrant a more capable model tier.
@@ -41,11 +41,16 @@ const CRITICAL_TOOL_KEYS = new Set(["operator-deep-analysis", "operator"]);
 // Map canonical plan names to base model tier.
 function planBaseModel(plan: string): string {
   switch (plan) {
-    case "starter":  return CLAUDE_HAIKU_MODEL;
-    case "launch":   return CLAUDE_MODEL;
-    case "operate":  return CLAUDE_MODEL;
-    case "scale":    return CLAUDE_MODEL;
-    default:         return CLAUDE_MODEL;
+    case "starter":
+      return CLAUDE_HAIKU_MODEL;
+    case "launch":
+      return CLAUDE_MODEL;
+    case "operate":
+      return CLAUDE_MODEL;
+    case "scale":
+      return CLAUDE_MODEL;
+    default:
+      return CLAUDE_MODEL;
   }
 }
 
@@ -64,7 +69,8 @@ function estimateInputComplexity(input?: string): number {
   let score = 0;
   if (len > 300) score += 1;
   if (len > 800) score += 1;
-  const complexTerms = /\b(strateg|financ|invest|revenue|competi|market\s+size|valuat|fundr|pitch\s+deck|unit\s+econom|gtm|go-to-market)\b/i;
+  const complexTerms =
+    /\b(strateg|financ|invest|revenue|competi|market\s+size|valuat|fundr|pitch\s+deck|unit\s+econom|gtm|go-to-market)\b/i;
   if (complexTerms.test(input)) score += 1;
   return Math.min(score, 2);
 }
@@ -112,11 +118,13 @@ async function callAnthropic(
   };
 
   if (opts.tool) {
-    body.tools = [{
-      name: opts.tool.name,
-      description: opts.tool.description,
-      input_schema: opts.tool.parameters,
-    }];
+    body.tools = [
+      {
+        name: opts.tool.name,
+        description: opts.tool.description,
+        input_schema: opts.tool.parameters,
+      },
+    ];
     body.tool_choice = { type: "tool", name: opts.tool.name };
   }
 
@@ -152,8 +160,12 @@ async function callAnthropic(
     return {
       content: "",
       toolResult: toolBlock.input,
-      tokensIn, tokensOut, model, provider: "anthropic",
-      latencyMs, actualCostUsd: calcCostUsd(model, tokensIn, tokensOut),
+      tokensIn,
+      tokensOut,
+      model,
+      provider: "anthropic",
+      latencyMs,
+      actualCostUsd: calcCostUsd(model, tokensIn, tokensOut),
       credits: calcCredits(tokensIn, tokensOut),
     };
   }
@@ -161,8 +173,12 @@ async function callAnthropic(
   const textBlock = data.content.find((b) => b.type === "text");
   return {
     content: textBlock?.text ?? "",
-    tokensIn, tokensOut, model, provider: "anthropic",
-    latencyMs, actualCostUsd: calcCostUsd(model, tokensIn, tokensOut),
+    tokensIn,
+    tokensOut,
+    model,
+    provider: "anthropic",
+    latencyMs,
+    actualCostUsd: calcCostUsd(model, tokensIn, tokensOut),
     credits: calcCredits(tokensIn, tokensOut),
   };
 }
@@ -228,7 +244,7 @@ async function callOllama(
       provider: "ollama",
       latencyMs: Date.now() - t0,
       actualCostUsd: 0, // local inference — zero cost
-      credits: 1,       // always minimum 1 credit
+      credits: 1, // always minimum 1 credit
       routingReason: "ollama_private",
     };
   } catch (e) {
@@ -249,9 +265,8 @@ export async function callPAL(
   ollamaModel?: string,
 ): Promise<PALResult> {
   // Derive raw text for complexity scoring: prefer explicit rawInput, else last user message.
-  const inputText = rawInput
-    ?? opts.userPrompt
-    ?? opts.messages?.filter((m) => m.role === "user").at(-1)?.content;
+  const inputText =
+    rawInput ?? opts.userPrompt ?? opts.messages?.filter((m) => m.role === "user").at(-1)?.content;
 
   // ── Ollama private routing: org-configured endpoint, no tool_use required ──
   // Try Ollama first; fall back to Anthropic silently on any error.
@@ -271,9 +286,7 @@ export async function callPAL(
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
 
   // Retry with Haiku fallback on rate-limit or transient errors.
-  const models = model === CLAUDE_HAIKU_MODEL
-    ? [CLAUDE_HAIKU_MODEL]
-    : [model, CLAUDE_HAIKU_MODEL];
+  const models = model === CLAUDE_HAIKU_MODEL ? [CLAUDE_HAIKU_MODEL] : [model, CLAUDE_HAIKU_MODEL];
 
   let lastError: Error | null = null;
   for (const m of models) {
@@ -293,13 +306,16 @@ export async function callPAL(
 // ─── Credit helper ────────────────────────────────────────────────────────
 
 /** Build credit_ledger + usage_events rows from a PALResult. Call fire-and-forget. */
-export function buildUsageRows(result: PALResult, opts: {
-  userId: string;
-  orgId: string | null;
-  workspaceId: string | null;
-  eventType: string;
-  resourceKey: string;
-}): {
+export function buildUsageRows(
+  result: PALResult,
+  opts: {
+    userId: string;
+    orgId: string | null;
+    workspaceId: string | null;
+    eventType: string;
+    resourceKey: string;
+  },
+): {
   creditRow: Record<string, unknown>;
   usageRow: Record<string, unknown> | null;
 } {

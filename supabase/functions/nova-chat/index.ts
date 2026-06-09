@@ -12,9 +12,9 @@ const corsHeaders = {
 
 // Cost per 1k tokens (matches ai_model_catalog seed)
 const COST_PER_1K: Record<string, { input: number; output: number }> = {
-  "claude-haiku-4-5-20251001": { input: 0.0008,  output: 0.004  },
-  "claude-sonnet-4-6":         { input: 0.003,   output: 0.015  },
-  "claude-opus-4-7":           { input: 0.015,   output: 0.075  },
+  "claude-haiku-4-5-20251001": { input: 0.0008, output: 0.004 },
+  "claude-sonnet-4-6": { input: 0.003, output: 0.015 },
+  "claude-opus-4-7": { input: 0.015, output: 0.075 },
 };
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova, an AI-native founder platform. You are a persistent AI co-founder, startup execution engine, automation operator, and growth intelligence system. You eliminate friction between thinking and execution.
@@ -108,8 +108,15 @@ Deno.serve(async (req: Request) => {
 
   if (Object.keys(user_context).length > 0) {
     const {
-      name, idea, challenge, stage, lane, plan,
-      current_mission, tools_completed, recent_tools,
+      name,
+      idea,
+      challenge,
+      stage,
+      lane,
+      plan,
+      current_mission,
+      tools_completed,
+      recent_tools,
     } = user_context as Record<string, string>;
     if (name) contextLines.push(`Founder name: ${name}`);
     if (idea) contextLines.push(`What they're building: ${idea}`);
@@ -140,10 +147,7 @@ Deno.serve(async (req: Request) => {
 
   const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}`;
 
-  const messages = [
-    ...conversation_history.slice(-20),
-    { role: "user", content: message },
-  ];
+  const messages = [...conversation_history.slice(-20), { role: "user", content: message }];
 
   // Determine Claude endpoint
   const cfGatewayUrl = Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL");

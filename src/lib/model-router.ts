@@ -7,7 +7,15 @@
 
 export type Plan = "starter" | "launch" | "operate" | "scale";
 export type TaskComplexity = "simple" | "standard" | "complex" | "critical";
-export type ProviderName = "anthropic" | "openai" | "grok" | "deepseek" | "perplexity" | "gemini" | "openrouter" | "ollama";
+export type ProviderName =
+  | "anthropic"
+  | "openai"
+  | "grok"
+  | "deepseek"
+  | "perplexity"
+  | "gemini"
+  | "openrouter"
+  | "ollama";
 
 export type ClaudeModel = "claude-haiku-4-5-20251001" | "claude-sonnet-4-6" | "claude-opus-4-7";
 
@@ -23,15 +31,15 @@ export interface ProviderModelPair extends ModelConfig {
 
 const PLAN_MODELS: Record<Plan, ClaudeModel> = {
   starter: "claude-haiku-4-5-20251001",
-  launch:  "claude-sonnet-4-6",
+  launch: "claude-sonnet-4-6",
   operate: "claude-sonnet-4-6",
-  scale:   "claude-sonnet-4-6",
+  scale: "claude-sonnet-4-6",
 };
 
 const COMPLEXITY_ESCALATION: Record<TaskComplexity, number> = {
-  simple:   0,
+  simple: 0,
   standard: 0,
-  complex:  1,
+  complex: 1,
   critical: 2,
 };
 
@@ -42,9 +50,13 @@ const MODEL_TIER: ClaudeModel[] = [
 ];
 
 const MODEL_CONFIGS: Record<ClaudeModel, ModelConfig> = {
-  "claude-haiku-4-5-20251001": { model: "claude-haiku-4-5-20251001", maxTokens: 1024,  label: "Fast" },
-  "claude-sonnet-4-6":         { model: "claude-sonnet-4-6",         maxTokens: 4096,  label: "Balanced" },
-  "claude-opus-4-7":           { model: "claude-opus-4-7",           maxTokens: 8192,  label: "Expert" },
+  "claude-haiku-4-5-20251001": {
+    model: "claude-haiku-4-5-20251001",
+    maxTokens: 1024,
+    label: "Fast",
+  },
+  "claude-sonnet-4-6": { model: "claude-sonnet-4-6", maxTokens: 4096, label: "Balanced" },
+  "claude-opus-4-7": { model: "claude-opus-4-7", maxTokens: 8192, label: "Expert" },
 };
 
 const COMPLEX_TOOL_KEYS = new Set([

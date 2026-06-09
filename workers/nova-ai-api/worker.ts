@@ -16,7 +16,7 @@ const ALLOWED_ORIGIN = "https://app.launchpad.nova-ops.space";
 const MODEL = "claude-sonnet-4-6";
 
 // Cost per 1k tokens (matches ai_model_catalog)
-const COST_INPUT_PER_1K  = 0.003;
+const COST_INPUT_PER_1K = 0.003;
 const COST_OUTPUT_PER_1K = 0.015;
 
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova.
@@ -64,15 +64,17 @@ function cors() {
 }
 
 /** Fire-and-forget: write credit_ledger + usage_events to Supabase via REST. */
-async function recordUsage(env: Env, opts: {
-  userId: string;
-  tokensIn: number;
-  tokensOut: number;
-  latencyMs: number;
-}) {
+async function recordUsage(
+  env: Env,
+  opts: {
+    userId: string;
+    tokensIn: number;
+    tokensOut: number;
+    latencyMs: number;
+  },
+) {
   const actualCostUsd =
-    (opts.tokensIn / 1000) * COST_INPUT_PER_1K +
-    (opts.tokensOut / 1000) * COST_OUTPUT_PER_1K;
+    (opts.tokensIn / 1000) * COST_INPUT_PER_1K + (opts.tokensOut / 1000) * COST_OUTPUT_PER_1K;
   const credits = Math.max(1, Math.ceil((opts.tokensIn + opts.tokensOut * 2) / 1000));
 
   const headers = {
