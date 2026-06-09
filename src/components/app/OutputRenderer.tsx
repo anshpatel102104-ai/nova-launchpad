@@ -217,12 +217,26 @@ export function MarkdownReport({ content }: { content: string }) {
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) parts.push(text.slice(last, m.index));
       if (m[2] !== undefined)
-        parts.push(<strong key={m.index} style={{ color: "var(--foreground)", fontWeight: 600 }}>{m[2]}</strong>);
-      else if (m[3] !== undefined)
-        parts.push(<em key={m.index}>{m[3]}</em>);
+        parts.push(
+          <strong key={m.index} style={{ color: "var(--foreground)", fontWeight: 600 }}>
+            {m[2]}
+          </strong>,
+        );
+      else if (m[3] !== undefined) parts.push(<em key={m.index}>{m[3]}</em>);
       else if (m[4] !== undefined)
         parts.push(
-          <code key={m.index} style={{ background: "var(--surface-3, var(--surface-2))", borderRadius: 4, padding: "1px 5px", fontSize: "0.85em", color: "var(--primary)" }}>{m[4]}</code>
+          <code
+            key={m.index}
+            style={{
+              background: "var(--surface-3, var(--surface-2))",
+              borderRadius: 4,
+              padding: "1px 5px",
+              fontSize: "0.85em",
+              color: "var(--primary)",
+            }}
+          >
+            {m[4]}
+          </code>,
         );
       last = m.index + m[0].length;
     }
@@ -232,7 +246,10 @@ export function MarkdownReport({ content }: { content: string }) {
 
   // Table row parser
   function parseTableRow(line: string): string[] {
-    return line.split("|").map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+    return line
+      .split("|")
+      .map((c) => c.trim())
+      .filter((_, i, a) => i > 0 && i < a.length - 1);
   }
 
   const lines = content.split("\n");
@@ -244,45 +261,77 @@ export function MarkdownReport({ content }: { content: string }) {
     const trimmed = line.trim();
 
     // Skip empty lines between blocks
-    if (!trimmed) { i++; continue; }
+    if (!trimmed) {
+      i++;
+      continue;
+    }
 
     // Horizontal rule
     if (/^---+$/.test(trimmed)) {
       elements.push(
-        <hr key={i} style={{ border: "none", borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)", margin: "4px 0" }} />
+        <hr
+          key={i}
+          style={{
+            border: "none",
+            borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+            margin: "4px 0",
+          }}
+        />,
       );
-      i++; continue;
+      i++;
+      continue;
     }
 
     // H2 heading
     if (trimmed.startsWith("## ")) {
       const text = trimmed.slice(3);
       elements.push(
-        <h2 key={i} style={{
-          fontSize: "13px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-          color: "var(--primary)", marginTop: elements.length ? "20px" : 0, marginBottom: "6px",
-        }}>
+        <h2
+          key={i}
+          style={{
+            fontSize: "13px",
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "var(--primary)",
+            marginTop: elements.length ? "20px" : 0,
+            marginBottom: "6px",
+          }}
+        >
           {renderInline(text)}
-        </h2>
+        </h2>,
       );
-      i++; continue;
+      i++;
+      continue;
     }
 
     // H3 heading
     if (trimmed.startsWith("### ")) {
       const text = trimmed.slice(4);
       elements.push(
-        <h3 key={i} style={{
-          fontSize: "13px", fontWeight: 700, color: "var(--foreground)", marginTop: "14px", marginBottom: "4px",
-        }}>
+        <h3
+          key={i}
+          style={{
+            fontSize: "13px",
+            fontWeight: 700,
+            color: "var(--foreground)",
+            marginTop: "14px",
+            marginBottom: "4px",
+          }}
+        >
           {renderInline(text)}
-        </h3>
+        </h3>,
       );
-      i++; continue;
+      i++;
+      continue;
     }
 
     // Table — collect header + separator + rows
-    if (trimmed.startsWith("|") && i + 1 < lines.length && /^\|[-| :]+\|$/.test(lines[i + 1].trim())) {
+    if (
+      trimmed.startsWith("|") &&
+      i + 1 < lines.length &&
+      /^\|[-| :]+\|$/.test(lines[i + 1].trim())
+    ) {
       const headers = parseTableRow(trimmed);
       i += 2; // skip header + separator
       const rows: string[][] = [];
@@ -291,12 +340,27 @@ export function MarkdownReport({ content }: { content: string }) {
         i++;
       }
       elements.push(
-        <div key={`table-${i}`} style={{ overflowX: "auto", marginTop: "8px", marginBottom: "8px" }}>
+        <div
+          key={`table-${i}`}
+          style={{ overflowX: "auto", marginTop: "8px", marginBottom: "8px" }}
+        >
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12.5px" }}>
             <thead>
-              <tr style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--surface-2))" }}>
+              <tr
+                style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--surface-2))" }}
+              >
                 {headers.map((h, hi) => (
-                  <th key={hi} style={{ padding: "7px 12px", textAlign: "left", fontWeight: 600, color: "var(--foreground)", borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)", whiteSpace: "nowrap" }}>
+                  <th
+                    key={hi}
+                    style={{
+                      padding: "7px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "var(--foreground)",
+                      borderBottom: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {renderInline(h)}
                   </th>
                 ))}
@@ -304,9 +368,21 @@ export function MarkdownReport({ content }: { content: string }) {
             </thead>
             <tbody>
               {rows.map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 35%, transparent)" }}>
+                <tr
+                  key={ri}
+                  style={{
+                    borderBottom: "1px solid color-mix(in oklab, var(--border) 35%, transparent)",
+                  }}
+                >
                   {row.map((cell, ci) => (
-                    <td key={ci} style={{ padding: "6px 12px", color: "color-mix(in oklab, var(--foreground) 85%, transparent)", verticalAlign: "top" }}>
+                    <td
+                      key={ci}
+                      style={{
+                        padding: "6px 12px",
+                        color: "color-mix(in oklab, var(--foreground) 85%, transparent)",
+                        verticalAlign: "top",
+                      }}
+                    >
                       {renderInline(cell)}
                     </td>
                   ))}
@@ -314,7 +390,7 @@ export function MarkdownReport({ content }: { content: string }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </div>,
       );
       continue;
     }
@@ -329,11 +405,19 @@ export function MarkdownReport({ content }: { content: string }) {
       elements.push(
         <ul key={`ul-${i}`} style={{ paddingLeft: "16px", margin: "4px 0 8px" }}>
           {items.map((item, ii) => (
-            <li key={ii} style={{ fontSize: "13px", color: "color-mix(in oklab, var(--foreground) 90%, transparent)", marginBottom: "3px", lineHeight: 1.55 }}>
+            <li
+              key={ii}
+              style={{
+                fontSize: "13px",
+                color: "color-mix(in oklab, var(--foreground) 90%, transparent)",
+                marginBottom: "3px",
+                lineHeight: 1.55,
+              }}
+            >
               {renderInline(item)}
             </li>
           ))}
-        </ul>
+        </ul>,
       );
       continue;
     }
@@ -348,11 +432,19 @@ export function MarkdownReport({ content }: { content: string }) {
       elements.push(
         <ol key={`ol-${i}`} style={{ paddingLeft: "18px", margin: "4px 0 8px" }}>
           {items.map((item, ii) => (
-            <li key={ii} style={{ fontSize: "13px", color: "color-mix(in oklab, var(--foreground) 90%, transparent)", marginBottom: "3px", lineHeight: 1.55 }}>
+            <li
+              key={ii}
+              style={{
+                fontSize: "13px",
+                color: "color-mix(in oklab, var(--foreground) 90%, transparent)",
+                marginBottom: "3px",
+                lineHeight: 1.55,
+              }}
+            >
               {renderInline(item)}
             </li>
           ))}
-        </ol>
+        </ol>,
       );
       continue;
     }
@@ -365,21 +457,41 @@ export function MarkdownReport({ content }: { content: string }) {
         i++;
       }
       elements.push(
-        <blockquote key={`bq-${i}`} style={{
-          borderLeft: "3px solid var(--primary)", paddingLeft: "14px", margin: "8px 0",
-          color: "color-mix(in oklab, var(--foreground) 80%, transparent)", fontStyle: "italic", fontSize: "13px", lineHeight: 1.6,
-        }}>
-          {quoteLines.map((ql, qi) => <p key={qi} style={{ margin: "3px 0" }}>{renderInline(ql)}</p>)}
-        </blockquote>
+        <blockquote
+          key={`bq-${i}`}
+          style={{
+            borderLeft: "3px solid var(--primary)",
+            paddingLeft: "14px",
+            margin: "8px 0",
+            color: "color-mix(in oklab, var(--foreground) 80%, transparent)",
+            fontStyle: "italic",
+            fontSize: "13px",
+            lineHeight: 1.6,
+          }}
+        >
+          {quoteLines.map((ql, qi) => (
+            <p key={qi} style={{ margin: "3px 0" }}>
+              {renderInline(ql)}
+            </p>
+          ))}
+        </blockquote>,
       );
       continue;
     }
 
     // Paragraph
     elements.push(
-      <p key={i} style={{ fontSize: "13px", lineHeight: 1.6, color: "color-mix(in oklab, var(--foreground) 88%, transparent)", margin: "4px 0 6px" }}>
+      <p
+        key={i}
+        style={{
+          fontSize: "13px",
+          lineHeight: 1.6,
+          color: "color-mix(in oklab, var(--foreground) 88%, transparent)",
+          margin: "4px 0 6px",
+        }}
+      >
         {renderInline(trimmed)}
-      </p>
+      </p>,
     );
     i++;
   }
@@ -1496,19 +1608,23 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
 
   // market_opportunity: object like {TAM: "...", SAM: "...", SOM: "..."}
   const marketObj =
-    o.market_opportunity && typeof o.market_opportunity === "object" && !Array.isArray(o.market_opportunity)
+    o.market_opportunity &&
+    typeof o.market_opportunity === "object" &&
+    !Array.isArray(o.market_opportunity)
       ? (o.market_opportunity as Record<string, unknown>)
       : null;
 
   // revenue_projections: object like {"Year 1": "...", "Year 2": "...", ...}
   const revenueObj =
-    o.revenue_projections && typeof o.revenue_projections === "object" && !Array.isArray(o.revenue_projections)
+    o.revenue_projections &&
+    typeof o.revenue_projections === "object" &&
+    !Array.isArray(o.revenue_projections)
       ? (o.revenue_projections as Record<string, unknown>)
       : null;
 
   // Fallback: parse TAM/SAM/SOM from full_report markdown if structured object missing
-  function parseMarketFromMarkdown(md: string): Array<{key: string; val: string}> {
-    const result: Array<{key: string; val: string}> = [];
+  function parseMarketFromMarkdown(md: string): Array<{ key: string; val: string }> {
+    const result: Array<{ key: string; val: string }> = [];
     const lines = md.split("\n");
     for (const line of lines) {
       const m = line.match(/^\*{0,2}(TAM|SAM|SOM)\*{0,2}[:\s]+(.+)/i);
@@ -1518,8 +1634,8 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
   }
 
   // Fallback: parse Year N projections from full_report markdown if structured object missing
-  function parseRevenueFromMarkdown(md: string): Array<{year: string; val: string}> {
-    const result: Array<{year: string; val: string}> = [];
+  function parseRevenueFromMarkdown(md: string): Array<{ year: string; val: string }> {
+    const result: Array<{ year: string; val: string }> = [];
     const lines = md.split("\n");
     for (const line of lines) {
       // Matches "Year 1: $360K ARR..." or "| Year 1 | $360K |..."
@@ -1564,10 +1680,16 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
             borderLeft: "3px solid var(--primary)",
           }}
         >
-          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--primary)" }}>
+          <div
+            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
+            style={{ color: "var(--primary)" }}
+          >
             Executive Summary
           </div>
-          <div className="text-[13.5px] leading-relaxed" style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}>
+          <div
+            className="text-[13.5px] leading-relaxed"
+            style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}
+          >
             {exec}
           </div>
         </div>
@@ -1576,10 +1698,16 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       {/* Market Opportunity — TAM / SAM / SOM cards */}
       {marketCards.length > 0 && (
         <div>
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted-foreground)" }}>
+          <div
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Market Opportunity
           </div>
-          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${marketCards.length}, minmax(0, 1fr))` }}>
+          <div
+            className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${marketCards.length}, minmax(0, 1fr))` }}
+          >
             {marketCards.map(({ key, val }, i) => {
               const color = marketColors[i] ?? "var(--primary)";
               const { figure, desc } = splitMarketStat(val);
@@ -1592,14 +1720,23 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
                     border: `1px solid color-mix(in oklab, ${color} 22%, transparent)`,
                   }}
                 >
-                  <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color }}>
+                  <div
+                    className="text-[9.5px] font-bold uppercase tracking-[0.14em]"
+                    style={{ color }}
+                  >
                     {key}
                   </div>
-                  <div className="font-display text-[1.4rem] font-bold leading-none tabular-nums" style={{ color }}>
+                  <div
+                    className="font-display text-[1.4rem] font-bold leading-none tabular-nums"
+                    style={{ color }}
+                  >
                     {figure}
                   </div>
                   {desc && (
-                    <div className="text-[11px] leading-snug" style={{ color: "var(--muted-foreground)" }}>
+                    <div
+                      className="text-[11px] leading-snug"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {desc}
                     </div>
                   )}
@@ -1614,33 +1751,53 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       {revenueRows.length > 0 && (
         <div
           className="overflow-hidden rounded-xl"
-          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
         >
           <div
             className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              color: "var(--muted-foreground)",
+            }}
           >
             Revenue Projections
           </div>
-          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+          <div
+            className="divide-y"
+            style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}
+          >
             {revenueRows.map(({ year, val }, i) => {
               const arrMatch = val.match(/\$([\d.,]+[BMKT]*)\s*ARR/i);
               const arrFigure = arrMatch ? `$${arrMatch[1]} ARR` : "";
-              const detail = arrFigure ? val.replace(arrMatch![0], "").replace(/^[\s–—-]+/, "") : val;
+              const detail = arrFigure
+                ? val.replace(arrMatch![0], "").replace(/^[\s–—-]+/, "")
+                : val;
               const pct = Math.min(100, 20 + i * 35);
               return (
                 <div key={year} className="px-4 py-3">
                   <div className="flex items-baseline justify-between mb-1.5">
-                    <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--muted-foreground)" }}>
+                    <span
+                      className="text-[10.5px] font-semibold uppercase tracking-[0.1em]"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {year}
                     </span>
                     {arrFigure && (
-                      <span className="font-mono text-[13px] font-bold" style={{ color: "var(--success)" }}>
+                      <span
+                        className="font-mono text-[13px] font-bold"
+                        style={{ color: "var(--success)" }}
+                      >
                         {arrFigure}
                       </span>
                     )}
                   </div>
-                  <div className="h-1 rounded-full overflow-hidden mb-1.5" style={{ background: "var(--surface-offset)" }}>
+                  <div
+                    className="h-1 rounded-full overflow-hidden mb-1.5"
+                    style={{ background: "var(--surface-offset)" }}
+                  >
                     <div
                       className="h-full rounded-full"
                       style={{
@@ -1671,11 +1828,17 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
       {fullReport && (
         <div
           className="overflow-hidden rounded-xl"
-          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+          style={{
+            background: "var(--surface-2)",
+            border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)",
+          }}
         >
           <div
             className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}
+            style={{
+              borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)",
+              color: "var(--muted-foreground)",
+            }}
           >
             Full Business Plan
           </div>
