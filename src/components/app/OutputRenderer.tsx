@@ -504,6 +504,7 @@ export function OutputBody({ toolKey, output }: { toolKey: string; output: Out }
     case "first-10-customers":
       return <FirstTenOut o={o} />;
     case "business-plan":
+    case "business-plan-generator":
       return <BusinessPlanOut o={o} />;
     case "investor-emails":
       return <InvestorEmailsOut o={o} />;
@@ -1490,17 +1491,14 @@ function FirstTenOut({ o }: { o: Record<string, unknown> }) {
 
 function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
   const exec = str(o.executive_summary ?? o.summary);
-  // Edge function returns market_opportunity object, not market_analysis string
-  const market = str(o.market_analysis ?? o.market ?? JSON.stringify(o.market_opportunity ?? {}));
-  const competitive = str(o.competitive_landscape ?? o.competition);
-  const revenue = str(o.revenue_model ?? o.business_model);
-  const gtm = str(o.go_to_market ?? o.gtm);
-  const ops = str(o.operations ?? o.operational_plan);
-  const financials = str(o.financial_projections ?? o.financials);
-  const risks = arr(o.risks ?? o.key_risks);
   const fullReport = str(o.full_report);
+  // Only show structured side-fields if they're real strings (not JSON blobs)
+  const competitive = str(o.competitive_landscape ?? o.competition);
+  const risks = arr(o.risks ?? o.key_risks);
+
   return (
     <div className="space-y-3">
+      {/* Executive summary — prominent pull-quote style */}
       {exec && (
         <div
           className="rounded-xl p-5"
@@ -1514,7 +1512,7 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
             className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
             style={{ color: "var(--primary)" }}
           >
-            Executive summary
+            Executive Summary
           </div>
           <div
             className="text-[13.5px] leading-relaxed"
@@ -1524,34 +1522,19 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
           </div>
         </div>
       )}
-      <div className="grid gap-3 md:grid-cols-2">
-        {market && <Block title="Market analysis">{market}</Block>}
-        {competitive && <Block title="Competitive landscape">{competitive}</Block>}
-        {revenue && (
-          <Block title="Revenue model" accent="success">
-            {revenue}
-          </Block>
-        )}
-        {gtm && (
-          <Block title="Go-to-market" accent="primary">
-            {gtm}
-          </Block>
-        )}
-        {ops && <Block title="Operations">{ops}</Block>}
-        {financials && (
-          <Block title="Financial projections" accent="accent">
-            {financials}
-          </Block>
-        )}
-      </div>
+      {/* Full report — always render if present; this is the complete document */}
+      {fullReport && (
+        <Block title="Full Business Plan">
+          <MarkdownReport content={fullReport} />
+        </Block>
+      )}
+      {/* Supplemental structured fields only if they exist as real strings */}
+      {competitive && !fullReport && (
+        <Block title="Competitive landscape">{competitive}</Block>
+      )}
       {risks.length > 0 && (
         <Block title="Key risks" accent="destructive">
           <BulletList items={risks} accent="destructive" />
-        </Block>
-      )}
-      {fullReport && !exec && risks.length === 0 && (
-        <Block title="Business Plan">
-          <MarkdownReport content={fullReport} />
         </Block>
       )}
     </div>
