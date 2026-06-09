@@ -58,7 +58,7 @@ interface NavGroup {
 const NAV_GROUPS: NavGroup[] = [
   {
     id: "command",
-    label: "Dashboard",
+    label: "Command",
     icon: LayoutDashboard,
     to: "/app/dashboard",
     match: (p) => p === "/app/dashboard",
@@ -130,7 +130,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "operate",
-    label: "CRM",
+    label: "Operate",
     icon: TrendingUp,
     to: "/app/nova/crm",
     match: (p) =>
@@ -204,7 +204,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "monitoring",
-    label: "Analytics",
+    label: "Monitoring",
     icon: Activity,
     to: "/app/monitoring",
     match: (p) => p === "/app/monitoring",
@@ -219,7 +219,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "intelligence",
-    label: "AI Hub",
+    label: "Intelligence",
     icon: BarChart3,
     to: "/app/ai-dashboard",
     match: (p) => p.startsWith("/app/ai-dashboard") || p === "/app/mentor",
@@ -243,9 +243,9 @@ const NAV_GROUPS: NavGroup[] = [
 /* Which group IDs begin a new named section */
 const SECTION_STARTS: Record<string, string> = {
   build: "Build",
-  operate: "CRM & Sales",
+  operate: "Operate",
   automate: "Automate",
-  monitoring: "Insights",
+  monitoring: "Monitoring",
 };
 
 const STORAGE = "nova-sidebar-collapsed";
