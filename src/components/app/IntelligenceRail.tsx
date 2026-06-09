@@ -511,8 +511,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                     background: msg.role === "user" ? "var(--primary)" : "var(--surface-2)",
                     color: msg.role === "user" ? "#fff" : "var(--foreground)",
                     border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
-                    borderRadius:
-                      msg.role === "user" ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
+                    borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
                   }}
                 >
                   {msg.pending && !msg.content ? (
@@ -620,8 +619,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                       : "transparent",
                   color: input.trim() && !streaming ? "#fff" : "var(--muted-foreground)",
                   cursor: input.trim() && !streaming ? "pointer" : "not-allowed",
-                  boxShadow:
-                    input.trim() && !streaming ? "0 2px 8px rgba(255,107,26,0.4)" : "none",
+                  boxShadow: input.trim() && !streaming ? "0 2px 8px rgba(255,107,26,0.4)" : "none",
                 }}
               >
                 <Send className="h-3 w-3" />

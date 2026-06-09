@@ -1,23 +1,39 @@
 // TASK-085 · Model routing
 // Selects the appropriate Claude model based on the user's plan and task complexity.
 // Higher plans get more capable models; complex reasoning tasks also escalate.
+//
+// Plan names match the canonical DB plan_tier enum: starter | launch | operate | scale.
+// (Previously used growth/pro/accelerator — those were wrong and are fixed here.)
 
-export type Plan = "starter" | "growth" | "pro" | "accelerator";
+export type Plan = "starter" | "launch" | "operate" | "scale";
 export type TaskComplexity = "simple" | "standard" | "complex" | "critical";
+export type ProviderName =
+  | "anthropic"
+  | "openai"
+  | "grok"
+  | "deepseek"
+  | "perplexity"
+  | "gemini"
+  | "openrouter"
+  | "ollama";
 
 export type ClaudeModel = "claude-haiku-4-5-20251001" | "claude-sonnet-4-6" | "claude-opus-4-7";
 
-interface ModelConfig {
+export interface ModelConfig {
   model: ClaudeModel;
   maxTokens: number;
   label: string;
 }
 
+export interface ProviderModelPair extends ModelConfig {
+  provider: ProviderName;
+}
+
 const PLAN_MODELS: Record<Plan, ClaudeModel> = {
   starter: "claude-haiku-4-5-20251001",
-  growth: "claude-sonnet-4-6",
-  pro: "claude-sonnet-4-6",
-  accelerator: "claude-opus-4-7",
+  launch: "claude-sonnet-4-6",
+  operate: "claude-sonnet-4-6",
+  scale: "claude-sonnet-4-6",
 };
 
 const COMPLEXITY_ESCALATION: Record<TaskComplexity, number> = {
@@ -46,9 +62,12 @@ const MODEL_CONFIGS: Record<ClaudeModel, ModelConfig> = {
 const COMPLEX_TOOL_KEYS = new Set([
   "generate-gtm-strategy",
   "business-plan",
+  "business-plan-generator",
   "investor-emails",
+  "investor-email-writer",
   "idea-vs-idea",
   "funding-score",
+  "funding-readiness-score",
   "kill-my-idea",
 ]);
 
@@ -72,6 +91,15 @@ export function routeModel(
   const model = MODEL_TIER[targetIdx];
 
   return MODEL_CONFIGS[model];
+}
+
+/** Returns model config plus the provider name. Phase 1: always Anthropic. */
+export function routeModelWithProvider(
+  plan: Plan = "starter",
+  toolKey?: string,
+  complexity?: TaskComplexity,
+): ProviderModelPair {
+  return { ...routeModel(plan, toolKey, complexity), provider: "anthropic" };
 }
 
 export function getModelForPlan(plan: Plan): ClaudeModel {

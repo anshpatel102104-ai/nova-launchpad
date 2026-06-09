@@ -10,6 +10,13 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Cost per 1k tokens (matches ai_model_catalog seed)
+const COST_PER_1K: Record<string, { input: number; output: number }> = {
+  "claude-haiku-4-5-20251001": { input: 0.0008, output: 0.004 },
+  "claude-sonnet-4-6": { input: 0.003, output: 0.015 },
+  "claude-opus-4-7": { input: 0.015, output: 0.075 },
+};
+
 const NOVA_SYSTEM_PROMPT = `You are Nova — the AI operating system powering Launchpad Nova, an AI-native founder platform. You are a persistent AI co-founder, startup execution engine, automation operator, and growth intelligence system. You eliminate friction between thinking and execution.
 
 ## Identity
@@ -100,7 +107,6 @@ Deno.serve(async (req: Request) => {
   let contextLines: string[] = [];
 
   if (Object.keys(user_context).length > 0) {
-    // Structured context sent from the frontend (preferred)
     const {
       name,
       idea,
@@ -122,7 +128,6 @@ Deno.serve(async (req: Request) => {
     if (tools_completed) contextLines.push(`Launchpad tools completed: ${tools_completed}`);
     if (recent_tools) contextLines.push(`Recently used tools: ${recent_tools}`);
   } else if (org_id) {
-    // Fallback: pull from organizations table
     const { data: org } = await supabase
       .from("organizations")
       .select("name, niche, stage, target_customer, offer, goal")
@@ -142,14 +147,12 @@ Deno.serve(async (req: Request) => {
 
   const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}`;
 
-  const messages = [
-    ...conversation_history.slice(-20), // keep last 20 messages for context
-    { role: "user", content: message },
-  ];
+  const messages = [...conversation_history.slice(-20), { role: "user", content: message }];
 
   // Determine Claude endpoint
   const cfGatewayUrl = Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL");
   const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")!;
+  const model = CLAUDE_MODEL;
 
   const endpoint = cfGatewayUrl
     ? `${cfGatewayUrl}/anthropic/v1/messages`
@@ -163,7 +166,7 @@ Deno.serve(async (req: Request) => {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: CLAUDE_MODEL,
+      model,
       max_tokens: 2048,
       stream: true,
       system: systemPrompt,
@@ -179,9 +182,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // Stream SSE response + save conversation async
   const sid = session_id ?? crypto.randomUUID();
   let fullText = "";
+  let tokensIn = 0;
+  let tokensOut = 0;
+  const t0 = Date.now();
 
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
@@ -203,6 +208,15 @@ Deno.serve(async (req: Request) => {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
+
+            // Extract token counts from Anthropic streaming events
+            if (parsed.type === "message_start" && parsed.message?.usage) {
+              tokensIn = parsed.message.usage.input_tokens ?? 0;
+            }
+            if (parsed.type === "message_delta" && parsed.usage) {
+              tokensOut = parsed.usage.output_tokens ?? 0;
+            }
+
             const text = parsed.delta?.text ?? "";
             if (text) {
               fullText += text;
@@ -217,31 +231,68 @@ Deno.serve(async (req: Request) => {
       await writer.close();
     }
 
-    // Persist conversation (fire-and-forget)
+    const latencyMs = Date.now() - t0;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
     if (serviceKey && fullText) {
-      const updatedMessages = [
-        ...conversation_history,
-        { role: "user", content: message },
-        { role: "assistant", content: fullText },
-      ];
-      await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/nova_conversations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          Prefer: "resolution=merge-duplicates",
-        },
-        body: JSON.stringify({
+      const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
+      const rates = COST_PER_1K[model] ?? COST_PER_1K["claude-sonnet-4-6"];
+      const actualCostUsd = (tokensIn / 1000) * rates.input + (tokensOut / 1000) * rates.output;
+      const credits = Math.max(1, Math.ceil((tokensIn + tokensOut * 2) / 1000));
+
+      await Promise.allSettled([
+        // Save conversation
+        fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/nova_conversations`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            Prefer: "resolution=merge-duplicates",
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            session_id: sid,
+            messages: [
+              ...conversation_history,
+              { role: "user", content: message },
+              { role: "assistant", content: fullText },
+            ],
+            updated_at: new Date().toISOString(),
+          }),
+        }).catch(() => {}),
+
+        // Deduct credits
+        admin.from("credit_ledger").insert({
           user_id: user.id,
-          session_id: sid,
-          messages: updatedMessages,
-          updated_at: new Date().toISOString(),
+          tool: "nova_chat",
+          cost: credits,
+          status: "confirmed",
+          actual_cost_usd: actualCostUsd,
+          provider_name: "anthropic",
+          model_id: model,
+          meta: { tokens_in: tokensIn, tokens_out: tokensOut, latency_ms: latencyMs },
         }),
-      }).catch(() => {
-        /* non-blocking */
-      });
+
+        // Log usage event (org_id may not be available here — only if passed in body)
+        org_id
+          ? admin.from("usage_events").insert({
+              user_id: user.id,
+              organization_id: org_id,
+              event_type: "operator_message",
+              resource_key: "nova_chat",
+              credits_used: credits,
+              tokens_in: tokensIn,
+              tokens_out: tokensOut,
+              model,
+              duration_ms: latencyMs,
+              status: "succeeded",
+              provider_name: "anthropic",
+              actual_cost_usd: actualCostUsd,
+              routing_reason: "plan_default",
+            })
+          : Promise.resolve(),
+      ]);
     }
   })();
 
