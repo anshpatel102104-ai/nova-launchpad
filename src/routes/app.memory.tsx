@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { BusinessMemory } from "@/components/app/BusinessMemory";
 import {
   Brain,
   Plus,
@@ -103,7 +104,7 @@ function MemoryPage() {
 
   const [queryText, setQueryText] = useState("");
   const [queryAnswer, setQueryAnswer] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"sources" | "artifacts" | "query">("sources");
+  const [activeTab, setActiveTab] = useState<"business" | "sources" | "artifacts" | "query">("business");
   const [urlInput, setUrlInput] = useState("");
   const [searchArtifacts, setSearchArtifacts] = useState("");
 
@@ -259,7 +260,7 @@ function MemoryPage() {
           width: "fit-content",
         }}
       >
-        {(["sources", "artifacts", "query"] as const).map((tab) => (
+        {(["business", "sources", "artifacts", "query"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -274,7 +275,7 @@ function MemoryPage() {
                 : { color: "var(--muted-foreground)" }
             }
           >
-            {tab === "query" ? "Ask AI" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === "query" ? "Ask AI" : tab === "business" ? "Business Memory" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === "sources" && sources.length > 0 && (
               <span
                 className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold"
@@ -294,6 +295,11 @@ function MemoryPage() {
           </button>
         ))}
       </div>
+
+      {/* ── BUSINESS MEMORY TAB ── */}
+      {activeTab === "business" && user && (
+        <BusinessMemory userId={user.id} orgId={currentOrgId ?? ""} />
+      )}
 
       {/* ── SOURCES TAB ── */}
       {activeTab === "sources" && (

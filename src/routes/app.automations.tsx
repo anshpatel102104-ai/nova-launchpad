@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useEntitlement } from "@/hooks/use-entitlements";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Workflow,
   Mail,
@@ -17,11 +19,20 @@ import {
   Loader2,
   ToggleLeft,
   ToggleRight,
-  Clock,
   CheckCircle2,
   XCircle,
   AlertCircle,
   Zap,
+  Blocks,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  RefreshCw,
+  Brain,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/automations")({ component: AutomationsPage });
@@ -44,6 +55,322 @@ interface AutomationLog {
   message: string;
   created_at: string;
   trigger_payload?: Record<string, unknown>;
+}
+
+type OutcomeTrend = "up" | "down" | "flat";
+
+interface AutomationOutcome {
+  slug: string;
+  goal: string;
+  result: string;
+  trend: OutcomeTrend;
+  metric_value: string;
+  period: string;
+  note: string;
+  recorded_at: string;
+}
+
+/* ─── Outcome tracking per automation ───────────────────── */
+const AUTOMATION_GOALS: Record<string, string> = {
+  "ai-appointment-setting": "Calls booked per week",
+  "ai-followup-sequences": "Reply rate on follow-ups",
+  "crm-automation": "Deals updated automatically",
+  "lead-qualification": "Leads qualified per day",
+  "sms-automation": "SMS response rate",
+  "voice-ai": "Calls answered and converted",
+};
+
+function OutcomePanel({
+  slug,
+  orgId,
+  userId,
+  onClose,
+}: {
+  slug: string;
+  orgId: string;
+  userId: string;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [metricValue, setMetricValue] = useState("");
+  const [trend, setTrend] = useState<OutcomeTrend>("flat");
+  const [note, setNote] = useState("");
+  const [optimizing, setOptimizing] = useState(false);
+  const [optimizeSuggestion, setOptimizeSuggestion] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const goal = AUTOMATION_GOALS[slug] ?? "Outcome metric";
+  const automation = AUTOMATIONS.find((a) => a.slug === slug);
+
+  const outcomesQ = useQuery({
+    queryKey: ["automation_outcomes", orgId, slug],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("operator_memory")
+        .select("id, content, tags, created_at")
+        .eq("user_id", userId)
+        .eq("memory_type", "automation_outcome")
+        .order("created_at", { ascending: false });
+      type Row = { id: string; content: string; tags: string[]; created_at: string };
+      return ((data as unknown as Row[]) ?? []).filter((d) => d.tags?.includes(slug)).slice(0, 5);
+    },
+    enabled: !!orgId && !!userId,
+  });
+
+  const saveOutcome = async () => {
+    if (!metricValue.trim()) { toast.error("Enter a metric value first"); return; }
+    setSaving(true);
+    try {
+      const content = [
+        `Automation: ${automation?.name ?? slug}`,
+        `Goal: ${goal}`,
+        `Result: ${metricValue}`,
+        `Trend: ${trend}`,
+        note ? `Note: ${note}` : "",
+      ].filter(Boolean).join("\n");
+
+      await supabase.from("operator_memory").insert({
+        user_id: userId,
+        memory_type: "automation_outcome",
+        content,
+        tags: [slug, trend, "automation_result"],
+        pruned: false,
+      });
+      toast.success("Outcome saved — Nova will remember this");
+      qc.invalidateQueries({ queryKey: ["automation_outcomes", orgId, slug] });
+      setMetricValue("");
+      setNote("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOptimize = async () => {
+    setOptimizing(true);
+    setOptimizeSuggestion(null);
+    try {
+      const history = (outcomesQ.data ?? []).map((d) => d.content).join("\n\n");
+      const { data, error } = await supabase.functions.invoke("nova-chat", {
+        body: {
+          messages: [{
+            role: "user",
+            content: `I'm running the "${automation?.name}" automation. Goal: ${goal}. Here are my recent outcomes:\n\n${history || "No history yet."}\n\nCurrent metric: ${metricValue} (trend: ${trend}).\n\nGive me 2-3 specific, actionable suggestions to improve this automation's performance. Be concrete — mention specific config changes, timing adjustments, or message improvements. Keep it under 150 words.`,
+          }],
+          orgId,
+          model: "claude-sonnet-4-6",
+          maxTokens: 300,
+        },
+      });
+      if (error) throw error;
+      setOptimizeSuggestion(data?.content ?? data?.message ?? "No suggestions returned.");
+    } catch {
+      toast.error("Optimization failed — try again");
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="relative ml-auto flex h-full w-full max-w-md flex-col bg-background border-l border-border"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 shrink-0 border-b border-border">
+          <div>
+            <div className="font-bold text-[14px] text-foreground flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" /> Track outcome
+            </div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">{automation?.name}</div>
+          </div>
+          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* What we're measuring */}
+          <div className="rounded-xl border border-border bg-surface-1/40 p-4">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Goal</div>
+            <div className="text-[14px] font-semibold text-foreground">{goal}</div>
+          </div>
+
+          {/* Log result */}
+          <div>
+            <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Log this period's result</div>
+
+            <div className="space-y-3">
+              <input
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                placeholder={`e.g. "8 calls booked", "22% reply rate"`}
+                value={metricValue}
+                onChange={(e) => setMetricValue(e.target.value)}
+              />
+
+              <div>
+                <div className="text-[11.5px] font-medium text-muted-foreground mb-1.5">Compared to last period:</div>
+                <div className="flex gap-2">
+                  {(["up", "flat", "down"] as OutcomeTrend[]).map((t) => {
+                    const Icon = t === "up" ? TrendingUp : t === "down" ? TrendingDown : Minus;
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => setTrend(t)}
+                        className={cn(
+                          "flex-1 flex items-center justify-center gap-1.5 rounded-xl border py-2 text-[12px] font-medium transition-all",
+                          trend === t
+                            ? t === "up" ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                            : t === "down" ? "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-950/40 dark:text-red-300"
+                            : "border-primary/30 bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/30",
+                        )}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {t === "up" ? "Better" : t === "down" ? "Worse" : "Same"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <textarea
+                rows={2}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none"
+                placeholder="Any notes? What do you think caused this result?"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+
+              <button
+                onClick={saveOutcome}
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                Save outcome to memory
+              </button>
+            </div>
+          </div>
+
+          {/* Re-optimize */}
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <div className="text-[13px] font-bold text-foreground">Re-optimize with AI</div>
+            </div>
+            <div className="text-[12.5px] text-muted-foreground mb-3">
+              Nova will review your history and suggest specific improvements to this automation.
+            </div>
+
+            {optimizeSuggestion ? (
+              <div className="rounded-xl bg-background border border-border p-3 mb-3">
+                <div className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-line">{optimizeSuggestion}</div>
+              </div>
+            ) : null}
+
+            <button
+              onClick={handleOptimize}
+              disabled={optimizing}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-2.5 text-[13px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50 transition-all"
+            >
+              {optimizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {optimizeSuggestion ? "Get new suggestions" : "Get optimization suggestions"}
+            </button>
+          </div>
+
+          {/* Past outcomes */}
+          {outcomesQ.data && outcomesQ.data.length > 0 && (
+            <div>
+              <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Past outcomes</div>
+              <div className="space-y-2">
+                {outcomesQ.data.map((d) => {
+                  const tags = d.tags as string[] ?? [];
+                  const t = (tags.find((tag) => ["up","down","flat"].includes(tag)) ?? "flat") as OutcomeTrend;
+                  const Icon = t === "up" ? TrendingUp : t === "down" ? TrendingDown : Minus;
+                  const color = t === "up" ? "text-emerald-600" : t === "down" ? "text-red-500" : "text-muted-foreground";
+                  return (
+                    <div key={d.id} className="flex items-start gap-2.5 rounded-xl border border-border bg-surface-1/40 p-3">
+                      <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", color)} />
+                      <div className="text-[12px] text-foreground leading-relaxed whitespace-pre-line flex-1">
+                        {d.content}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Outcome CTA on card ────────────────────────────────── */
+function OutcomeMiniBar({ slug, orgId, userId }: { slug: string; orgId: string; userId: string }) {
+  const [open, setOpen] = useState(false);
+
+  const lastOutcomeQ = useQuery({
+    queryKey: ["automation_last_outcome", userId, slug],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("operator_memory")
+        .select("content, tags, created_at")
+        .eq("user_id", userId)
+        .eq("memory_type", "automation_outcome")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      const rows = (data ?? []) as Array<{ content: string; tags: string[]; created_at: string }>;
+      return rows.find((r) => r.tags?.includes(slug)) ?? null;
+    },
+    enabled: !!userId && !!orgId,
+  });
+
+  const last = lastOutcomeQ.data;
+  const tags = last?.tags as string[] ?? [];
+  const trend = (tags.find((t) => ["up","down","flat"].includes(t)) ?? null) as OutcomeTrend | null;
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium transition-all",
+          last
+            ? cn("border", trend === "up" ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30" : trend === "down" ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30" : "border-border bg-surface-1/50")
+            : "border border-dashed border-border text-muted-foreground hover:border-primary/30 hover:text-primary",
+        )}
+      >
+        {last ? (
+          <>
+            <TrendIcon className={cn("h-3.5 w-3.5", trendColor)} />
+            <span className={trendColor}>Results tracked</span>
+          </>
+        ) : (
+          <>
+            <Target className="h-3.5 w-3.5" />
+            Track outcome
+          </>
+        )}
+      </button>
+
+      {open && (
+        <OutcomePanel
+          slug={slug}
+          orgId={orgId}
+          userId={userId}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
 }
 
 /* ─── Automation definitions ─── */
@@ -206,7 +533,7 @@ async function toggleAutomation(orgId: string, slug: string, isActive: boolean):
 
 /* ─── Main Page ─── */
 function AutomationsPage() {
-  const { currentOrgId } = useAuth();
+  const { currentOrgId, user } = useAuth();
   const qc = useQueryClient();
   const [configSlug, setConfigSlug] = useState<string | null>(null);
   const [logsSlug, setLogsSlug] = useState<string | null>(null);
@@ -260,6 +587,23 @@ function AutomationsPage() {
           </h1>
           <p className="text-[13px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
             {activeCount} of {AUTOMATIONS.length} systems active
+          </p>
+        </div>
+        <Link
+          to="/app/builder"
+          className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-[13px] font-semibold text-primary hover:bg-primary/20 transition-all"
+        >
+          <Blocks className="h-4 w-4" /> Build custom workflow <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+
+      {/* Closed-loop guidance banner */}
+      <div className="rounded-2xl border border-border bg-surface-1/40 p-4 flex items-start gap-3">
+        <Target className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+        <div className="flex-1">
+          <div className="text-[13px] font-bold text-foreground mb-0.5">Track outcomes to improve over time</div>
+          <p className="text-[12.5px] text-muted-foreground">
+            After enabling an automation, use the <strong>Track outcome</strong> button on each card to log results. Nova remembers your results and suggests specific improvements each time you check.
           </p>
         </div>
       </div>
@@ -375,7 +719,7 @@ function AutomationsPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setConfigSlug(automation.slug)}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors"
@@ -413,6 +757,13 @@ function AutomationsPage() {
                   <ScrollText className="h-3.5 w-3.5" />
                   Logs
                 </button>
+                {active && user && (
+                  <OutcomeMiniBar
+                    slug={automation.slug}
+                    orgId={currentOrgId}
+                    userId={user.id}
+                  />
+                )}
               </div>
             </div>
           );
