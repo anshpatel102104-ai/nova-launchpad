@@ -201,6 +201,7 @@ IMPORTANT rules:
         agent_id,
         session_id: mentorSessionId,
         credits_used: palResult.credits,
+        // model + provider intentionally omitted
       });
     } catch (e) {
       return json({ success: false, error: e instanceof Error ? e.message : "AI error" }, 500);
@@ -266,7 +267,7 @@ IMPORTANT rules:
     if (output?.reply) conversationHistory.push({ role: "assistant", content: output.reply });
   }
 
-  // ── Call PAL (Anthropic, plan-routed) ──────────────────────────────────
+  // ── Call PAL (plan + input-complexity routed) ─────────────────────────
   let palResult;
   try {
     palResult = await callPAL(
@@ -277,6 +278,8 @@ IMPORTANT rules:
       },
       { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
       plan,
+      "operator",
+      message, // raw input for complexity scoring
     );
   } catch (e) {
     return json({ status: "error", error: (e as Error).message }, 500);
@@ -334,7 +337,6 @@ IMPORTANT rules:
     reply,
     credits_used: palResult.credits,
     credits_remaining: newCreditsRemaining,
-    model: palResult.model,
-    provider: palResult.provider,
+    // model + provider intentionally omitted — internal routing only
   });
 });

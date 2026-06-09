@@ -19,7 +19,7 @@ const MODEL_COSTS: Record<string, { input: number; output: number }> = {
   "gemini-2.0-flash":          { input: 0.000075,output: 0.0003 },
 };
 
-// Tool keys that require a more capable model.
+// Tool keys that warrant a more capable model tier.
 const COMPLEX_TOOL_KEYS = new Set([
   "generate-gtm-strategy",
   "business-plan",
@@ -30,11 +30,15 @@ const COMPLEX_TOOL_KEYS = new Set([
   "funding-score",
   "funding-readiness-score",
   "kill-my-idea",
+  "competitor-scanner",
+  "persona-builder",
+  "pricing-calculator",
+  "pitch-generator",
 ]);
 
-const CRITICAL_TOOL_KEYS = new Set(["operator-deep-analysis"]);
+const CRITICAL_TOOL_KEYS = new Set(["operator-deep-analysis", "operator"]);
 
-// Map canonical plan names (starter/launch/operate/scale) to base Claude model.
+// Map canonical plan names to base model tier.
 function planBaseModel(plan: string): string {
   switch (plan) {
     case "starter":  return CLAUDE_HAIKU_MODEL;
@@ -47,13 +51,33 @@ function planBaseModel(plan: string): string {
 
 const MODEL_TIER = [CLAUDE_HAIKU_MODEL, CLAUDE_MODEL, "claude-opus-4-7"] as const;
 
-function selectModel(plan: string, toolKey?: string): string {
+/**
+ * Estimates input complexity from the raw text. Returns 0-2 escalation steps.
+ * Escalation triggers:
+ *   +1  message > 300 chars (detailed context = needs reasoning)
+ *   +1  message > 800 chars (long-form analysis)
+ *   +1  contains strategy/financial keywords (complex domain)
+ */
+function estimateInputComplexity(input?: string): number {
+  if (!input) return 0;
+  const len = input.length;
+  let score = 0;
+  if (len > 300) score += 1;
+  if (len > 800) score += 1;
+  const complexTerms = /\b(strateg|financ|invest|revenue|competi|market\s+size|valuat|fundr|pitch\s+deck|unit\s+econom|gtm|go-to-market)\b/i;
+  if (complexTerms.test(input)) score += 1;
+  return Math.min(score, 2);
+}
+
+function selectModel(plan: string, toolKey?: string, rawInput?: string): string {
   const base = planBaseModel(plan);
   const baseIdx = MODEL_TIER.indexOf(base as (typeof MODEL_TIER)[number]);
 
+  // Tool-based escalation takes priority over input-based.
   let escalation = 0;
   if (toolKey && CRITICAL_TOOL_KEYS.has(toolKey)) escalation = 2;
   else if (toolKey && COMPLEX_TOOL_KEYS.has(toolKey)) escalation = 1;
+  else escalation = estimateInputComplexity(rawInput);
 
   return MODEL_TIER[Math.min(baseIdx + escalation, MODEL_TIER.length - 1)];
 }
@@ -150,8 +174,14 @@ export async function callPAL(
   env: { ANTHROPIC_API_KEY?: string },
   plan = "starter",
   toolKey?: string,
+  rawInput?: string,
 ): Promise<PALResult> {
-  const model = opts.model ?? selectModel(plan, toolKey);
+  // Derive raw text for complexity scoring: prefer explicit rawInput, else last user message.
+  const inputText = rawInput
+    ?? opts.userPrompt
+    ?? opts.messages?.filter((m) => m.role === "user").at(-1)?.content;
+
+  const model = opts.model ?? selectModel(plan, toolKey, inputText);
   const provider: ProviderName = "anthropic"; // Phase 1: always Anthropic
 
   const apiKey = env.ANTHROPIC_API_KEY;

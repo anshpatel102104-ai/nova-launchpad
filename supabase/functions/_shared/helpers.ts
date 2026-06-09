@@ -157,6 +157,7 @@ export async function callClaudeTracked(
     { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
     plan,
     toolKey,
+    userPrompt, // raw input for complexity scoring
   );
 }
 
