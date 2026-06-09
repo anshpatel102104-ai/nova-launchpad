@@ -81,6 +81,7 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/assets" ||
       p === "/app/launch-control" ||
       p === "/app/templates" ||
+      p === "/app/sop-library" ||
       p.startsWith("/app/mission"),
     children: [
       {
@@ -118,6 +119,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/templates",
         icon: LayoutTemplate,
         match: (p) => p === "/app/templates",
+      },
+      {
+        label: "SOP Library",
+        to: "/app/sop-library",
+        icon: BookOpen,
+        match: (p) => p === "/app/sop-library",
       },
     ],
   },

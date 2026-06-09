@@ -1375,3 +1375,104 @@ export const roiAnalyticsQuery = (orgId: string) =>
     },
     staleTime: 120_000,
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOP documents
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SopStatus = "draft" | "published" | "archived";
+
+export interface SopDocument {
+  id: string;
+  organization_id: string;
+  created_by: string | null;
+  title: string;
+  category: string | null;
+  content: string;
+  related_tool_keys: string[];
+  related_module_ids: string[];
+  status: SopStatus;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export const sopDocumentsQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["sop_documents", orgId],
+    queryFn: async () => {
+      if (!orgId || isGuest()) return [] as SopDocument[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data, error } = await sb
+        .from("sop_documents")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as SopDocument[];
+    },
+    staleTime: 60_000,
+  });
+
+export async function upsertSopDocument(
+  orgId: string,
+  userId: string,
+  fields: {
+    id?: string;
+    title: string;
+    category?: string;
+    content?: string;
+    status?: SopStatus;
+    related_tool_keys?: string[];
+    related_module_ids?: string[];
+  },
+): Promise<SopDocument> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const payload = {
+    organization_id: orgId,
+    created_by: userId,
+    ...fields,
+  };
+  const { data, error } = fields.id
+    ? await sb.from("sop_documents").update(payload).eq("id", fields.id).select().single()
+    : await sb.from("sop_documents").insert(payload).select().single();
+  if (error) throw error;
+  return data as SopDocument;
+}
+
+export async function deleteSopDocument(id: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  const { error } = await sb.from("sop_documents").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audit log (admin-only)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AuditLogEntry {
+  id: string;
+  user_id: string | null;
+  email: string | null;
+  event_type: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export const auditLogQuery = (limit = 200) =>
+  queryOptions({
+    queryKey: ["admin_audit_log", limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as AuditLogEntry[];
+    },
+    staleTime: 30_000,
+  });

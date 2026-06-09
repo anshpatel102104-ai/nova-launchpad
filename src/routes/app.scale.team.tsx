@@ -2,11 +2,30 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { organizationQuery } from "@/lib/queries";
-import { Users, Crown, Mail, Shield } from "lucide-react";
+import { Users, Crown, Mail, Shield, CheckCircle2, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/app/scale/team")({
   component: ScaleTeam,
 });
+
+const CAPABILITIES = [
+  { key: "run_tools", label: "Run AI Tools", description: "Generate content, analyze, plan", access: "all" },
+  { key: "view_reports", label: "View Reports", description: "Access analytics and ROI data", access: "all" },
+  { key: "view_pipeline", label: "View Pipeline", description: "See leads and contacts", access: "all" },
+  { key: "edit_automations", label: "Edit Automations", description: "Toggle and configure systems", access: "admin" },
+  { key: "approve_spend", label: "Approve Spend", description: "Approve budget-spend requests", access: "admin" },
+  { key: "invite_members", label: "Invite Members", description: "Add team members", access: "owner" },
+  { key: "edit_settings", label: "Edit Settings", description: "Manage workspace settings", access: "owner" },
+  { key: "manage_billing", label: "Manage Billing", description: "Subscription and payment", access: "owner" },
+] as const;
+
+type AccessLevel = "all" | "admin" | "owner";
+
+const ACCESS_STYLES: Record<AccessLevel, { label: string; color: string; icon: typeof Crown }> = {
+  all: { label: "All members", color: "#34D399", icon: Shield },
+  admin: { label: "Admin +", color: "#A78BFA", icon: Shield },
+  owner: { label: "Owner only", color: "#F5A623", icon: Crown },
+};
 
 function ScaleTeam() {
   const { currentOrgId, user, profile } = useAuth();
@@ -109,7 +128,7 @@ function ScaleTeam() {
           </div>
         )}
 
-        {/* Placeholder for future team members */}
+        {/* Invitation placeholder */}
         <div
           className="rounded-xl p-6 text-center"
           style={{
@@ -122,45 +141,71 @@ function ScaleTeam() {
             Team invitations coming soon
           </div>
           <p className="text-[12px] max-w-xs mx-auto" style={{ color: "var(--muted-foreground)" }}>
-            Invite collaborators to your workspace when team features launch.
+            Invite collaborators to your workspace. The permissions system below is already wired — roles and granular capability flags will apply automatically when you add members.
           </p>
         </div>
       </div>
 
-      {/* Permissions overview */}
+      {/* Permission capabilities matrix */}
       <div className="rounded-xl p-5 nova-card">
-        <div
-          className="text-[10px] font-bold uppercase tracking-widest mb-4"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          Workspace Permissions
+        <div className="flex items-center justify-between mb-4">
+          <div
+            className="text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            Capability Matrix
+          </div>
+          <div className="flex items-center gap-3 text-[10px]">
+            {(["all", "admin", "owner"] as AccessLevel[]).map((lvl) => {
+              const s = ACCESS_STYLES[lvl];
+              return (
+                <div key={lvl} className="flex items-center gap-1" style={{ color: s.color }}>
+                  <s.icon className="h-2.5 w-2.5" />
+                  <span>{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="space-y-3">
-          {[
-            { label: "Run AI Tools", access: "All members", icon: Shield, color: "#34D399" },
-            { label: "View Reports", access: "All members", icon: Shield, color: "#34D399" },
-            { label: "Manage Automations", access: "Owner only", icon: Crown, color: "#F5A623" },
-            { label: "Edit Settings", access: "Owner only", icon: Crown, color: "#F5A623" },
-            { label: "Manage Billing", access: "Owner only", icon: Crown, color: "#FF6B1A" },
-          ].map((perm) => (
-            <div
-              key={perm.label}
-              className="flex items-center justify-between py-2 border-b last:border-0"
-              style={{ borderColor: "var(--border)" }}
-            >
-              <span className="text-[12.5px]" style={{ color: "var(--foreground)" }}>
-                {perm.label}
-              </span>
+        <div className="space-y-2">
+          {CAPABILITIES.map((cap) => {
+            const s = ACCESS_STYLES[cap.access];
+            const isOwnerCapability = cap.access === "owner";
+            const isAdminCapability = cap.access === "admin";
+            return (
               <div
-                className="flex items-center gap-1.5 text-[11px] font-medium"
-                style={{ color: perm.color }}
+                key={cap.key}
+                className="flex items-center gap-3 py-2.5 border-b last:border-0"
+                style={{ borderColor: "var(--border)" }}
               >
-                <perm.icon className="h-3 w-3" />
-                {perm.access}
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12.5px] font-medium">{cap.label}</div>
+                  <div className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+                    {cap.description}
+                  </div>
+                </div>
+                {/* Access indicator for each role column */}
+                <div className="flex items-center gap-4 shrink-0">
+                  {/* All members */}
+                  <span title="Member" style={{ color: "#34D399" }}>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </span>
+                  {/* Admin */}
+                  <span title="Admin" style={{ color: isOwnerCapability ? "var(--muted-foreground)" : "#A78BFA", opacity: isOwnerCapability ? 0.3 : 1 }}>
+                    {isOwnerCapability ? <Lock className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  </span>
+                  {/* Owner */}
+                  <span title="Owner" style={{ color: s.color }}>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+        <p className="mt-4 text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
+          Granular overrides are stored per member in the <code className="font-mono">permissions</code> field — admin and owner roles have all capabilities by default, with per-member flags available as a team grows.
+        </p>
       </div>
     </div>
   );

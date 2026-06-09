@@ -17,7 +17,9 @@ import {
   Zap,
   BarChart3,
   Circle,
+  ClipboardList,
 } from "lucide-react";
+import { auditLogQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -39,7 +41,7 @@ export const Route = createFileRoute("/app/admin")({
   component: AdminHub,
 });
 
-type TabKey = "overview" | "users" | "orgs" | "subs" | "runs";
+type TabKey = "overview" | "users" | "orgs" | "subs" | "runs" | "audit";
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-muted text-muted-foreground",
@@ -119,11 +121,14 @@ function AdminHub() {
     },
   });
 
+  const auditQ = useQuery({ ...auditLogQuery(200) });
+
   const profiles = profilesQ.data ?? [];
   const orgs = orgsQ.data ?? [];
   const subs = subsQ.data ?? [];
   const runs = runsQ.data ?? [];
   const roles = rolesQ.data ?? [];
+  const auditEntries = auditQ.data ?? [];
 
   const adminIds = useMemo(
     () => new Set(roles.filter((r) => r.role === "admin").map((r) => r.user_id)),
@@ -180,6 +185,7 @@ function AdminHub() {
     { key: "orgs", label: "Workspaces", icon: Building2, count: totalOrgs },
     { key: "subs", label: "Subscriptions", icon: CreditCard, count: subs.length },
     { key: "runs", label: "Tool Runs", icon: TrendingUp, count: runs.length },
+    { key: "audit", label: "Audit Log", icon: ClipboardList, count: auditEntries.length },
   ];
 
   return (
@@ -734,6 +740,66 @@ function AdminHub() {
                   <tr>
                     <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                       No runs yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── Audit Log tab ── */}
+        {tab === "audit" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[12px]">
+              <thead>
+                <tr className="border-b border-border bg-surface text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-2.5 font-semibold">Event</th>
+                  <th className="px-4 py-2.5 font-semibold">Actor</th>
+                  <th className="px-4 py-2.5 font-semibold">Metadata</th>
+                  <th className="px-4 py-2.5 font-semibold">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {auditEntries.map((entry) => (
+                  <tr key={entry.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <span
+                        className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          background: "rgba(167,139,250,0.1)",
+                          color: "#A78BFA",
+                        }}
+                      >
+                        {entry.event_type}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {entry.email ?? entry.user_id?.slice(0, 8) ?? "system"}
+                    </td>
+                    <td className="px-4 py-3 max-w-xs">
+                      {entry.metadata ? (
+                        <span className="truncate text-muted-foreground font-mono text-[10.5px]">
+                          {JSON.stringify(entry.metadata).slice(0, 80)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground opacity-40">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                      {new Date(entry.created_at).toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+                {auditEntries.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                      No audit events yet.
                     </td>
                   </tr>
                 )}
