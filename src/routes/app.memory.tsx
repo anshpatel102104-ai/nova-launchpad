@@ -104,7 +104,9 @@ function MemoryPage() {
 
   const [queryText, setQueryText] = useState("");
   const [queryAnswer, setQueryAnswer] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"business" | "sources" | "artifacts" | "query">("business");
+  const [activeTab, setActiveTab] = useState<"business" | "sources" | "artifacts" | "query">(
+    "business",
+  );
   const [urlInput, setUrlInput] = useState("");
   const [searchArtifacts, setSearchArtifacts] = useState("");
 
@@ -275,7 +277,11 @@ function MemoryPage() {
                 : { color: "var(--muted-foreground)" }
             }
           >
-            {tab === "query" ? "Ask AI" : tab === "business" ? "Business Memory" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === "query"
+              ? "Ask AI"
+              : tab === "business"
+                ? "Business Memory"
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {tab === "sources" && sources.length > 0 && (
               <span
                 className="ml-1.5 rounded-full px-1.5 py-px text-[9px] font-semibold"
