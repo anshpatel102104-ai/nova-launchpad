@@ -69,24 +69,23 @@ function AppLayout() {
   const isGalaxy = path === "/app/galaxy";
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <AppSidebar onOpenRail={() => setRailOpen(true)} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AppTopbar onToggleRail={toggleRail} railOpen={railOpen && !hideRail} />
         <NovaBar />
 
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-x-hidden overflow-y-auto pb-20 lg:pb-0">
             {isGalaxy ? (
-              // Galaxy map gets full canvas — no padding/max-width wrapper
               <div key={path} className="page-in h-full w-full">
                 <Outlet />
               </div>
             ) : (
               <div
                 key={path}
-                className="page-in mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8"
+                className="page-in w-full px-5 py-5 md:px-7 md:py-6"
               >
                 <Outlet />
               </div>
