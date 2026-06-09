@@ -52,7 +52,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "welcome",
     title: "Welcome to Nova — Platform Overview",
-    description: "Get a complete tour of the Nova AI Operating System and learn what each section does.",
+    description:
+      "Get a complete tour of the Nova AI Operating System and learn what each section does.",
     category: "Getting Started",
     duration: "5:00",
     difficulty: "Beginner",
@@ -91,7 +92,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "crm-intro",
     title: "CRM Overview: Contacts, Deals & Pipeline",
-    description: "Master the full CRM system — adding contacts, creating deals, and managing your pipeline.",
+    description:
+      "Master the full CRM system — adding contacts, creating deals, and managing your pipeline.",
     category: "CRM & Pipeline",
     duration: "8:30",
     difficulty: "Beginner",
@@ -101,7 +103,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "kanban-dnd",
     title: "Drag & Drop Kanban Board",
-    description: "Learn to move deals between pipeline stages using the drag-and-drop Kanban board.",
+    description:
+      "Learn to move deals between pipeline stages using the drag-and-drop Kanban board.",
     category: "CRM & Pipeline",
     duration: "4:00",
     difficulty: "Beginner",
@@ -110,7 +113,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "tags-scoring",
     title: "Tags, Lead Scoring & Priority",
-    description: "Organize deals with tags, set lead scores, and use priority levels for better focus.",
+    description:
+      "Organize deals with tags, set lead scores, and use priority levels for better focus.",
     category: "CRM & Pipeline",
     duration: "5:15",
     difficulty: "Intermediate",
@@ -119,7 +123,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "pipeline-views",
     title: "Pipeline Views: Kanban, Table, List & Forecast",
-    description: "Switch between different pipeline views to analyze your deals from multiple angles.",
+    description:
+      "Switch between different pipeline views to analyze your deals from multiple angles.",
     category: "CRM & Pipeline",
     duration: "5:45",
     difficulty: "Beginner",
@@ -128,7 +133,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "bulk-actions",
     title: "Bulk Actions & Team Operations",
-    description: "Select multiple deals and perform batch operations — stage updates, tagging, deletion.",
+    description:
+      "Select multiple deals and perform batch operations — stage updates, tagging, deletion.",
     category: "CRM & Pipeline",
     duration: "3:30",
     difficulty: "Intermediate",
@@ -155,7 +161,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "crm-settings",
     title: "CRM Display Settings & Custom Views",
-    description: "Customize which columns, metrics, and cards appear using the display settings panel.",
+    description:
+      "Customize which columns, metrics, and cards appear using the display settings panel.",
     category: "CRM & Pipeline",
     duration: "3:15",
     difficulty: "Beginner",
@@ -166,7 +173,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "workflow-builder",
     title: "Building Your First Automation Workflow",
-    description: "Create a trigger-based automation workflow from scratch using the visual builder.",
+    description:
+      "Create a trigger-based automation workflow from scratch using the visual builder.",
     category: "Automations",
     duration: "9:00",
     difficulty: "Intermediate",
@@ -176,7 +184,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "trigger-types",
     title: "Trigger Types: Forms, Stage Changes & More",
-    description: "Learn all available automation triggers — form submission, stage change, time-based, etc.",
+    description:
+      "Learn all available automation triggers — form submission, stage change, time-based, etc.",
     category: "Automations",
     duration: "7:30",
     difficulty: "Intermediate",
@@ -194,7 +203,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "integrations",
     title: "Connecting Third-Party Integrations",
-    description: "Set up integrations with Gmail, Slack, and other tools in the Integrations panel.",
+    description:
+      "Set up integrations with Gmail, Slack, and other tools in the Integrations panel.",
     category: "Automations",
     duration: "6:00",
     difficulty: "Intermediate",
@@ -234,7 +244,8 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "reports-overview",
     title: "Reports Overview",
-    description: "Learn to read and interpret pipeline reports, activity summaries, and revenue data.",
+    description:
+      "Learn to read and interpret pipeline reports, activity summaries, and revenue data.",
     category: "Reports & Analytics",
     duration: "5:00",
     difficulty: "Beginner",
@@ -291,7 +302,10 @@ const TUTORIALS: Tutorial[] = [
 ];
 
 /* ── Category config ─────────────────────────────────────────── */
-const CATEGORY_CONFIG: Record<Exclude<TutorialCategory, "All">, { icon: React.ElementType; color: string; bg: string }> = {
+const CATEGORY_CONFIG: Record<
+  Exclude<TutorialCategory, "All">,
+  { icon: React.ElementType; color: string; bg: string }
+> = {
   "Getting Started": { icon: BookOpen, color: "#059669", bg: "rgba(5,150,105,0.10)" },
   "CRM & Pipeline": { icon: LayoutGrid, color: "#3B82F6", bg: "rgba(59,130,246,0.10)" },
   Automations: { icon: Zap, color: "#7C3AED", bg: "rgba(124,58,237,0.10)" },
@@ -325,14 +339,20 @@ function TutorialsPage() {
     try {
       const raw = localStorage.getItem("nova-tutorials-watched");
       return raw ? new Set(JSON.parse(raw)) : new Set();
-    } catch { return new Set(); }
+    } catch {
+      return new Set();
+    }
   });
 
   const markWatched = (id: string) => {
     setWatched((prev) => {
       const next = new Set(prev);
       next.add(id);
-      try { localStorage.setItem("nova-tutorials-watched", JSON.stringify(Array.from(next))); } catch { /* */ }
+      try {
+        localStorage.setItem("nova-tutorials-watched", JSON.stringify(Array.from(next)));
+      } catch {
+        /* */
+      }
       return next;
     });
   };
@@ -342,7 +362,12 @@ function TutorialsPage() {
     if (category !== "All") arr = arr.filter((t) => t.category === category);
     if (search.trim()) {
       const s = search.toLowerCase();
-      arr = arr.filter((t) => t.title.toLowerCase().includes(s) || t.description.toLowerCase().includes(s) || t.category.toLowerCase().includes(s));
+      arr = arr.filter(
+        (t) =>
+          t.title.toLowerCase().includes(s) ||
+          t.description.toLowerCase().includes(s) ||
+          t.category.toLowerCase().includes(s),
+      );
     }
     return arr;
   }, [category, search]);
@@ -355,33 +380,65 @@ function TutorialsPage() {
   return (
     <div className="max-w-[1100px] mx-auto space-y-8">
       {/* ── Hero header ── */}
-      <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: "var(--primary-soft)", border: "1px solid var(--primary-border)" }}>
+      <div
+        className="rounded-2xl p-6 relative overflow-hidden"
+        style={{ background: "var(--primary-soft)", border: "1px solid var(--primary-border)" }}
+      >
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="font-display text-[26px] font-bold tracking-tight mb-2" style={{ color: "var(--primary)" }}>
+              <h1
+                className="font-display text-[26px] font-bold tracking-tight mb-2"
+                style={{ color: "var(--primary)" }}
+              >
                 Platform Tutorials
               </h1>
               <p className="text-[14px] max-w-lg" style={{ color: "var(--primary)", opacity: 0.8 }}>
-                Step-by-step video guides showing you exactly how to use every feature in Nova. Master the platform at your own pace.
+                Step-by-step video guides showing you exactly how to use every feature in Nova.
+                Master the platform at your own pace.
               </p>
             </div>
             <div className="shrink-0 hidden sm:block">
               <div className="text-center">
-                <div className="font-display text-[32px] font-bold" style={{ color: "var(--primary)" }}>{completedCount}/{totalCount}</div>
-                <div className="text-[12px]" style={{ color: "var(--primary)", opacity: 0.7 }}>tutorials completed</div>
-                <div className="mt-2 h-2 rounded-full w-32" style={{ background: "color-mix(in oklab, var(--primary) 20%, transparent)" }}>
-                  <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, background: "var(--primary)" }} />
+                <div
+                  className="font-display text-[32px] font-bold"
+                  style={{ color: "var(--primary)" }}
+                >
+                  {completedCount}/{totalCount}
+                </div>
+                <div className="text-[12px]" style={{ color: "var(--primary)", opacity: 0.7 }}>
+                  tutorials completed
+                </div>
+                <div
+                  className="mt-2 h-2 rounded-full w-32"
+                  style={{ background: "color-mix(in oklab, var(--primary) 20%, transparent)" }}
+                >
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${progressPct}%`, background: "var(--primary)" }}
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quick stats */}
-          <div className="flex gap-4 mt-4 text-[12.5px]" style={{ color: "var(--primary)", opacity: 0.8 }}>
-            <span className="flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{totalCount} videos</span>
-            <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />~4.5 hours total</span>
-            <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" />{TUTORIALS.filter((t) => t.difficulty === "Beginner").length} beginner-friendly</span>
+          <div
+            className="flex gap-4 mt-4 text-[12.5px]"
+            style={{ color: "var(--primary)", opacity: 0.8 }}
+          >
+            <span className="flex items-center gap-1.5">
+              <Video className="h-3.5 w-3.5" />
+              {totalCount} videos
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              ~4.5 hours total
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5" />
+              {TUTORIALS.filter((t) => t.difficulty === "Beginner").length} beginner-friendly
+            </span>
           </div>
         </div>
       </div>
@@ -389,10 +446,24 @@ function TutorialsPage() {
       {/* ── Featured tutorials ── */}
       {category === "All" && !search && (
         <div>
-          <h2 className="font-display text-[16px] font-bold mb-3" style={{ color: "var(--foreground)" }}>Featured Tutorials</h2>
+          <h2
+            className="font-display text-[16px] font-bold mb-3"
+            style={{ color: "var(--foreground)" }}
+          >
+            Featured Tutorials
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {featured.map((t) => (
-              <TutorialCard key={t.id} tutorial={t} watched={watched.has(t.id)} featured onClick={() => { setPlaying(t); markWatched(t.id); }} />
+              <TutorialCard
+                key={t.id}
+                tutorial={t}
+                watched={watched.has(t.id)}
+                featured
+                onClick={() => {
+                  setPlaying(t);
+                  markWatched(t.id);
+                }}
+              />
             ))}
           </div>
         </div>
@@ -401,16 +472,26 @@ function TutorialsPage() {
       {/* ── Search + category filters ── */}
       <div className="space-y-3">
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: "var(--muted-foreground)" }} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
+            style={{ color: "var(--muted-foreground)" }}
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tutorials…"
             className="w-full h-10 rounded-xl pl-10 pr-3 text-[13px] outline-none"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--foreground)" }}
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            }}
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            >
               <X className="h-3.5 w-3.5" style={{ color: "var(--muted-foreground)" }} />
             </button>
           )}
@@ -425,12 +506,23 @@ function TutorialsPage() {
                 key={cat}
                 onClick={() => setCategory(cat)}
                 className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-all"
-                style={isA ? { background: cfg?.color ?? "var(--foreground)", color: "white" } : { background: "var(--surface-2)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+                style={
+                  isA
+                    ? { background: cfg?.color ?? "var(--foreground)", color: "white" }
+                    : {
+                        background: "var(--surface-2)",
+                        color: "var(--muted-foreground)",
+                        border: "1px solid var(--border)",
+                      }
+                }
               >
                 {cfg && <cfg.icon className="h-3.5 w-3.5" />}
                 {cat}
                 {cat !== "All" && (
-                  <span className="rounded-full px-1.5 text-[10px] font-bold" style={{ background: isA ? "rgba(255,255,255,0.25)" : "var(--surface-2)" }}>
+                  <span
+                    className="rounded-full px-1.5 text-[10px] font-bold"
+                    style={{ background: isA ? "rgba(255,255,255,0.25)" : "var(--surface-2)" }}
+                  >
                     {TUTORIALS.filter((t) => t.category === cat).length}
                   </span>
                 )}
@@ -443,22 +535,45 @@ function TutorialsPage() {
       {/* ── Tutorial grid ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center">
-          <Video className="h-10 w-10 mb-3" style={{ color: "var(--muted-foreground)", opacity: 0.3 }} />
-          <p className="text-[14px] font-medium" style={{ color: "var(--foreground)" }}>No tutorials found</p>
-          <p className="text-[12.5px] mt-1" style={{ color: "var(--muted-foreground)" }}>Try adjusting your search or category filter</p>
+          <Video
+            className="h-10 w-10 mb-3"
+            style={{ color: "var(--muted-foreground)", opacity: 0.3 }}
+          />
+          <p className="text-[14px] font-medium" style={{ color: "var(--foreground)" }}>
+            No tutorials found
+          </p>
+          <p className="text-[12.5px] mt-1" style={{ color: "var(--muted-foreground)" }}>
+            Try adjusting your search or category filter
+          </p>
         </div>
       ) : (
         <>
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display text-[16px] font-bold" style={{ color: "var(--foreground)" }}>
+              <h2
+                className="font-display text-[16px] font-bold"
+                style={{ color: "var(--foreground)" }}
+              >
                 {category === "All" ? "All Tutorials" : category}
-                <span className="ml-2 text-[14px] font-normal" style={{ color: "var(--muted-foreground)" }}>({filtered.length})</span>
+                <span
+                  className="ml-2 text-[14px] font-normal"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  ({filtered.length})
+                </span>
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((t) => (
-                <TutorialCard key={t.id} tutorial={t} watched={watched.has(t.id)} onClick={() => { setPlaying(t); markWatched(t.id); }} />
+                <TutorialCard
+                  key={t.id}
+                  tutorial={t}
+                  watched={watched.has(t.id)}
+                  onClick={() => {
+                    setPlaying(t);
+                    markWatched(t.id);
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -466,18 +581,22 @@ function TutorialsPage() {
       )}
 
       {/* ── Video modal ── */}
-      {playing && (
-        <VideoModal tutorial={playing} onClose={() => setPlaying(null)} />
-      )}
+      {playing && <VideoModal tutorial={playing} onClose={() => setPlaying(null)} />}
     </div>
   );
 }
 
 /* ── Tutorial card ───────────────────────────────────────────── */
 function TutorialCard({
-  tutorial, watched, featured = false, onClick,
+  tutorial,
+  watched,
+  featured = false,
+  onClick,
 }: {
-  tutorial: Tutorial; watched: boolean; featured?: boolean; onClick: () => void;
+  tutorial: Tutorial;
+  watched: boolean;
+  featured?: boolean;
+  onClick: () => void;
 }) {
   const catCfg = CATEGORY_CONFIG[tutorial.category];
   const diffCfg = DIFFICULTY_CONFIG[tutorial.difficulty];
@@ -492,11 +611,20 @@ function TutorialCard({
         border: "1px solid var(--border)",
         boxShadow: "var(--shadow-xs)",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-md)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-xs)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-md)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-xs)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+      }}
     >
       {/* Thumbnail area */}
-      <div className="relative aspect-video flex items-center justify-center overflow-hidden" style={{ background: `linear-gradient(135deg, ${catCfg.color}30, ${catCfg.color}10)` }}>
+      <div
+        className="relative aspect-video flex items-center justify-center overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${catCfg.color}30, ${catCfg.color}10)` }}
+      >
         {hasVideo ? (
           <img
             src={`https://img.youtube.com/vi/${tutorial.youtubeId}/mqdefault.jpg`}
@@ -506,7 +634,12 @@ function TutorialCard({
         ) : (
           <div className="flex flex-col items-center gap-2">
             <catCfg.icon className="h-10 w-10" style={{ color: catCfg.color, opacity: 0.6 }} />
-            <span className="text-[11px] font-medium rounded-full px-2.5 py-1" style={{ background: catCfg.bg, color: catCfg.color }}>Coming Soon</span>
+            <span
+              className="text-[11px] font-medium rounded-full px-2.5 py-1"
+              style={{ background: catCfg.bg, color: catCfg.color }}
+            >
+              Coming Soon
+            </span>
           </div>
         )}
 
@@ -525,14 +658,22 @@ function TutorialCard({
         )}
 
         {/* Duration */}
-        <div className="absolute bottom-2 right-2 rounded-md px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: "rgba(0,0,0,0.6)", color: "white" }}>
-          <Clock className="h-2.5 w-2.5 inline mr-0.5" />{tutorial.duration}
+        <div
+          className="absolute bottom-2 right-2 rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+          style={{ background: "rgba(0,0,0,0.6)", color: "white" }}
+        >
+          <Clock className="h-2.5 w-2.5 inline mr-0.5" />
+          {tutorial.duration}
         </div>
 
         {/* Featured star */}
         {featured && (
-          <div className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-bold flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", color: "#FCD34D" }}>
-            <Star className="h-2.5 w-2.5" />Featured
+          <div
+            className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-bold flex items-center gap-1"
+            style={{ background: "rgba(0,0,0,0.6)", color: "#FCD34D" }}
+          >
+            <Star className="h-2.5 w-2.5" />
+            Featured
           </div>
         )}
       </div>
@@ -540,15 +681,29 @@ function TutorialCard({
       {/* Card body */}
       <div className="flex-1 p-3.5">
         <div className="flex items-center gap-1.5 mb-2">
-          <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: catCfg.bg, color: catCfg.color }}>
-            <catCfg.icon className="h-2.5 w-2.5" />{tutorial.category}
+          <span
+            className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style={{ background: catCfg.bg, color: catCfg.color }}
+          >
+            <catCfg.icon className="h-2.5 w-2.5" />
+            {tutorial.category}
           </span>
-          <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: diffCfg.bg, color: diffCfg.color }}>
+          <span
+            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style={{ background: diffCfg.bg, color: diffCfg.color }}
+          >
             {tutorial.difficulty}
           </span>
         </div>
-        <h3 className="font-semibold text-[13px] leading-snug mb-1.5" style={{ color: "var(--foreground)" }}>{tutorial.title}</h3>
-        <p className="text-[11.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{tutorial.description}</p>
+        <h3
+          className="font-semibold text-[13px] leading-snug mb-1.5"
+          style={{ color: "var(--foreground)" }}
+        >
+          {tutorial.title}
+        </h3>
+        <p className="text-[11.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+          {tutorial.description}
+        </p>
       </div>
     </div>
   );
@@ -562,7 +717,10 @@ function VideoModal({ tutorial, onClose }: { tutorial: Tutorial; onClose: () => 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+      <div
+        className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      >
         {/* Video area */}
         <div className="aspect-video bg-black">
           {hasVideo ? (
@@ -574,13 +732,22 @@ function VideoModal({ tutorial, onClose }: { tutorial: Tutorial; onClose: () => 
               allowFullScreen
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center" style={{ background: `linear-gradient(135deg, ${catCfg.color}20, ${catCfg.color}05)` }}>
-              <div className="h-20 w-20 rounded-2xl flex items-center justify-center mb-4" style={{ background: catCfg.bg }}>
+            <div
+              className="w-full h-full flex flex-col items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, ${catCfg.color}20, ${catCfg.color}05)`,
+              }}
+            >
+              <div
+                className="h-20 w-20 rounded-2xl flex items-center justify-center mb-4"
+                style={{ background: catCfg.bg }}
+              >
                 <PlayCircle className="h-10 w-10" style={{ color: catCfg.color }} />
               </div>
               <h3 className="text-white text-[18px] font-bold mb-2">Video Coming Soon</h3>
               <p className="text-[14px] text-white/70 text-center max-w-sm px-4">
-                This tutorial video is being recorded. Check back soon for step-by-step guidance on {tutorial.title.toLowerCase()}.
+                This tutorial video is being recorded. Check back soon for step-by-step guidance on{" "}
+                {tutorial.title.toLowerCase()}.
               </p>
             </div>
           )}
@@ -590,15 +757,33 @@ function VideoModal({ tutorial, onClose }: { tutorial: Tutorial; onClose: () => 
         <div className="p-4 flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: catCfg.bg, color: catCfg.color }}>
-                <catCfg.icon className="h-2.5 w-2.5" />{tutorial.category}
+              <span
+                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                style={{ background: catCfg.bg, color: catCfg.color }}
+              >
+                <catCfg.icon className="h-2.5 w-2.5" />
+                {tutorial.category}
               </span>
-              <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}><Clock className="h-2.5 w-2.5 inline mr-1" />{tutorial.duration}</span>
+              <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                <Clock className="h-2.5 w-2.5 inline mr-1" />
+                {tutorial.duration}
+              </span>
             </div>
-            <h2 className="font-display text-[17px] font-bold" style={{ color: "var(--foreground)" }}>{tutorial.title}</h2>
-            <p className="text-[13px] mt-1" style={{ color: "var(--muted-foreground)" }}>{tutorial.description}</p>
+            <h2
+              className="font-display text-[17px] font-bold"
+              style={{ color: "var(--foreground)" }}
+            >
+              {tutorial.title}
+            </h2>
+            <p className="text-[13px] mt-1" style={{ color: "var(--muted-foreground)" }}>
+              {tutorial.description}
+            </p>
           </div>
-          <button onClick={onClose} className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}>
+          <button
+            onClick={onClose}
+            className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
