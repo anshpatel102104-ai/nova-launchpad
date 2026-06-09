@@ -1492,13 +1492,44 @@ function FirstTenOut({ o }: { o: Record<string, unknown> }) {
 function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
   const exec = str(o.executive_summary ?? o.summary);
   const fullReport = str(o.full_report);
-  // Only show structured side-fields if they're real strings (not JSON blobs)
-  const competitive = str(o.competitive_landscape ?? o.competition);
   const risks = arr(o.risks ?? o.key_risks);
+
+  // market_opportunity: object like {TAM: "...", SAM: "...", SOM: "..."}
+  const marketObj =
+    o.market_opportunity && typeof o.market_opportunity === "object" && !Array.isArray(o.market_opportunity)
+      ? (o.market_opportunity as Record<string, unknown>)
+      : null;
+
+  // revenue_projections: object like {"Year 1": "...", "Year 2": "...", ...}
+  const revenueObj =
+    o.revenue_projections && typeof o.revenue_projections === "object" && !Array.isArray(o.revenue_projections)
+      ? (o.revenue_projections as Record<string, unknown>)
+      : null;
+
+  const marketCards = marketObj
+    ? Object.entries(marketObj).map(([key, val]) => ({ key, val: String(val) }))
+    : [];
+
+  const revenueRows = revenueObj
+    ? Object.entries(revenueObj).map(([year, val]) => ({ year, val: String(val) }))
+    : [];
+
+  // Extract the dollar figure and description from a market string like "$500B – description"
+  function splitMarketStat(s: string): { figure: string; desc: string } {
+    const match = s.match(/^(\$[\d.,]+[BMKT%]*)/i);
+    if (match) return { figure: match[1], desc: s.slice(match[0].length).replace(/^[\s–—-]+/, "") };
+    return { figure: s, desc: "" };
+  }
+
+  const marketColors: string[] = [
+    "var(--primary)",
+    "color-mix(in oklab, var(--primary) 70%, var(--accent))",
+    "var(--accent)",
+  ];
 
   return (
     <div className="space-y-3">
-      {/* Executive summary — prominent pull-quote style */}
+      {/* Executive summary */}
       {exec && (
         <div
           className="rounded-xl p-5"
@@ -1508,34 +1539,125 @@ function BusinessPlanOut({ o }: { o: Record<string, unknown> }) {
             borderLeft: "3px solid var(--primary)",
           }}
         >
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2"
-            style={{ color: "var(--primary)" }}
-          >
+          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--primary)" }}>
             Executive Summary
           </div>
-          <div
-            className="text-[13.5px] leading-relaxed"
-            style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}
-          >
+          <div className="text-[13.5px] leading-relaxed" style={{ color: "color-mix(in oklab, var(--foreground) 90%, transparent)" }}>
             {exec}
           </div>
         </div>
       )}
-      {/* Full report — always render if present; this is the complete document */}
-      {fullReport && (
-        <Block title="Full Business Plan">
-          <MarkdownReport content={fullReport} />
-        </Block>
+
+      {/* Market Opportunity — TAM / SAM / SOM cards */}
+      {marketCards.length > 0 && (
+        <div>
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted-foreground)" }}>
+            Market Opportunity
+          </div>
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${marketCards.length}, minmax(0, 1fr))` }}>
+            {marketCards.map(({ key, val }, i) => {
+              const color = marketColors[i] ?? "var(--primary)";
+              const { figure, desc } = splitMarketStat(val);
+              return (
+                <div
+                  key={key}
+                  className="rounded-xl p-4 flex flex-col gap-1"
+                  style={{
+                    background: `color-mix(in oklab, ${color} 8%, var(--surface-2))`,
+                    border: `1px solid color-mix(in oklab, ${color} 22%, transparent)`,
+                  }}
+                >
+                  <div className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color }}>
+                    {key}
+                  </div>
+                  <div className="font-display text-[1.4rem] font-bold leading-none tabular-nums" style={{ color }}>
+                    {figure}
+                  </div>
+                  {desc && (
+                    <div className="text-[11px] leading-snug" style={{ color: "var(--muted-foreground)" }}>
+                      {desc}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
-      {/* Supplemental structured fields only if they exist as real strings */}
-      {competitive && !fullReport && (
-        <Block title="Competitive landscape">{competitive}</Block>
+
+      {/* Revenue Projections — year-by-year visual timeline */}
+      {revenueRows.length > 0 && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+        >
+          <div
+            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}
+          >
+            Revenue Projections
+          </div>
+          <div className="divide-y" style={{ borderColor: "color-mix(in oklab, var(--border) 50%, transparent)" }}>
+            {revenueRows.map(({ year, val }, i) => {
+              const arrMatch = val.match(/\$([\d.,]+[BMKT]*)\s*ARR/i);
+              const arrFigure = arrMatch ? `$${arrMatch[1]} ARR` : "";
+              const detail = arrFigure ? val.replace(arrMatch![0], "").replace(/^[\s–—-]+/, "") : val;
+              const pct = Math.min(100, 20 + i * 35);
+              return (
+                <div key={year} className="px-4 py-3">
+                  <div className="flex items-baseline justify-between mb-1.5">
+                    <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--muted-foreground)" }}>
+                      {year}
+                    </span>
+                    {arrFigure && (
+                      <span className="font-mono text-[13px] font-bold" style={{ color: "var(--success)" }}>
+                        {arrFigure}
+                      </span>
+                    )}
+                  </div>
+                  <div className="h-1 rounded-full overflow-hidden mb-1.5" style={{ background: "var(--surface-offset)" }}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${pct}%`,
+                        background: "linear-gradient(90deg, var(--primary), var(--success))",
+                        boxShadow: "0 0 6px var(--success)",
+                      }}
+                    />
+                  </div>
+                  <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                    {detail || val}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
+
+      {/* Key risks */}
       {risks.length > 0 && (
         <Block title="Key risks" accent="destructive">
           <BulletList items={risks} accent="destructive" />
         </Block>
+      )}
+
+      {/* Full business plan — rendered markdown */}
+      {fullReport && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ background: "var(--surface-2)", border: "1px solid color-mix(in oklab, var(--border) 70%, transparent)" }}
+        >
+          <div
+            className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ borderBottom: "1px solid color-mix(in oklab, var(--border) 50%, transparent)", color: "var(--muted-foreground)" }}
+          >
+            Full Business Plan
+          </div>
+          <div className="px-4 py-4">
+            <MarkdownReport content={fullReport} />
+          </div>
+        </div>
       )}
     </div>
   );
