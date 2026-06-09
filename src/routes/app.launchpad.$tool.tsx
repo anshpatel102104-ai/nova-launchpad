@@ -1310,7 +1310,10 @@ function ToolPage() {
     const profile = loadWorkspaceProfile();
     setWorkspaceProfile(profile);
     const profileFills = toolFieldDefs
-      ? getProfilePrefills(toolFieldDefs.map((f) => f.key), profile)
+      ? getProfilePrefills(
+          toolFieldDefs.map((f) => f.key),
+          profile,
+        )
       : {};
 
     if (search?.context || search?.title) {
@@ -1656,9 +1659,21 @@ function ToolPage() {
                 <div className="grid gap-2 sm:grid-cols-2">
                   {(
                     [
-                      { key: "business_name", label: "Business name", placeholder: "e.g. Northwind Labs" },
-                      { key: "target_market", label: "Target market", placeholder: "e.g. B2B SaaS founders" },
-                      { key: "revenue_model", label: "Revenue model", placeholder: "e.g. SaaS subscription" },
+                      {
+                        key: "business_name",
+                        label: "Business name",
+                        placeholder: "e.g. Northwind Labs",
+                      },
+                      {
+                        key: "target_market",
+                        label: "Target market",
+                        placeholder: "e.g. B2B SaaS founders",
+                      },
+                      {
+                        key: "revenue_model",
+                        label: "Revenue model",
+                        placeholder: "e.g. SaaS subscription",
+                      },
                       { key: "stage", label: "Stage", placeholder: "e.g. Pre-seed, Seed" },
                     ] as Array<{ key: keyof WorkspaceProfile; label: string; placeholder: string }>
                   ).map((pf) => (

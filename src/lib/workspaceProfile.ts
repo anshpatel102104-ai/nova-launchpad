@@ -56,8 +56,7 @@ export function extractAndSaveProfileFromFields(fields: Record<string, string>):
     updated.business_name = fields.company_name.trim();
 
   // Description
-  if (fields.idea && fields.idea.trim().length > 20)
-    updated.description = fields.idea.trim();
+  if (fields.idea && fields.idea.trim().length > 20) updated.description = fields.idea.trim();
   else if (fields.product && fields.product.trim().length > 20)
     updated.description = fields.product.trim();
   else if (fields.business_description && fields.business_description.trim().length > 20)
@@ -82,8 +81,7 @@ export function extractAndSaveProfileFromFields(fields: Record<string, string>):
     updated.revenue_model = fields.revenue_model.trim();
 
   // Stage
-  if (fields.stage && fields.stage.trim())
-    updated.stage = fields.stage.trim();
+  if (fields.stage && fields.stage.trim()) updated.stage = fields.stage.trim();
 
   saveWorkspaceProfile(updated);
 }
