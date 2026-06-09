@@ -278,7 +278,9 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
     try {
       const v = localStorage.getItem(STORAGE);
       if (v === "1") setCollapsed(true);
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
   }, []);
 
   useEffect(() => {
@@ -295,7 +297,11 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
   const toggle = () => {
     setCollapsed((c) => {
       const n = !c;
-      try { localStorage.setItem(STORAGE, n ? "1" : "0"); } catch { /* */ }
+      try {
+        localStorage.setItem(STORAGE, n ? "1" : "0");
+      } catch {
+        /* */
+      }
       return n;
     });
   };
@@ -346,7 +352,9 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
       >
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-bold tracking-tight"
-          style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--orbit-accent) 100%)" }}
+          style={{
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--orbit-accent) 100%)",
+          }}
         >
           LN
         </div>
@@ -408,9 +416,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-all duration-100",
                       collapsed && "justify-center px-0 w-8 mx-auto",
-                      isActive
-                        ? "font-semibold"
-                        : "hover:bg-surface-2",
+                      isActive ? "font-semibold" : "hover:bg-surface-2",
                     )}
                     style={
                       isActive
@@ -438,9 +444,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                     className={cn(
                       "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
                       collapsed && "justify-center px-0 w-8 mx-auto",
-                      isActive
-                        ? "font-semibold"
-                        : "hover:bg-surface-2",
+                      isActive ? "font-semibold" : "hover:bg-surface-2",
                     )}
                     style={
                       isActive
@@ -503,10 +507,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
       </nav>
 
       {/* ── Footer ── */}
-      <div
-        className="shrink-0"
-        style={{ borderTop: "1px solid var(--sidebar-border)" }}
-      >
+      <div className="shrink-0" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
         {/* Footer nav links */}
         <div className={cn("p-2 space-y-px", collapsed && "px-1.5")}>
           {isGuest && (

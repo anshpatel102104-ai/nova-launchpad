@@ -154,11 +154,17 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
               <span className="text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
                 {sectionLabel}
               </span>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-40" style={{ color: "var(--muted-foreground)" }} />
+              <ChevronRight
+                className="h-3.5 w-3.5 shrink-0 opacity-40"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </>
           )}
           {pageTitle && (
-            <span className="text-[13px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+            <span
+              className="text-[13px] font-semibold truncate"
+              style={{ color: "var(--foreground)" }}
+            >
               {pageTitle}
             </span>
           )}
@@ -197,7 +203,6 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
 
         {/* ── Right controls ── */}
         <div className="flex items-center gap-0.5">
-
           {/* New / Quick add */}
           <button
             className="hidden sm:flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-semibold transition-colors mr-1"
@@ -254,15 +259,26 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                 ).map(({ id, label, Icon }) => (
                   <button
                     key={id}
-                    onClick={() => { setTheme(id); setThemeOpen(false); }}
+                    onClick={() => {
+                      setTheme(id);
+                      setThemeOpen(false);
+                    }}
                     className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] transition-colors"
-                    style={{ color: theme === id ? "var(--foreground)" : "var(--muted-foreground)" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                    style={{
+                      color: theme === id ? "var(--foreground)" : "var(--muted-foreground)",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
+                    }}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     <span className="flex-1 text-left">{label}</span>
-                    {theme === id && <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />}
+                    {theme === id && (
+                      <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+                    )}
                   </button>
                 ))}
               </div>
@@ -288,10 +304,12 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                     }
               }
               onMouseEnter={(e) => {
-                if (!railOpen) (e.currentTarget as HTMLElement).style.background = "var(--primary-border)";
+                if (!railOpen)
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-border)";
               }}
               onMouseLeave={(e) => {
-                if (!railOpen) (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+                if (!railOpen)
+                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
               }}
             >
               <Zap className="h-3.5 w-3.5" />
@@ -304,8 +322,12 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
             <button
               onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-2 h-8 rounded-lg px-2 transition-colors"
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-2)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+              }}
             >
               <span
                 className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white shrink-0"
@@ -327,7 +349,10 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                   Demo
                 </span>
               )}
-              <ChevronDown className="h-3 w-3 shrink-0 opacity-50" style={{ color: "var(--muted-foreground)" }} />
+              <ChevronDown
+                className="h-3 w-3 shrink-0 opacity-50"
+                style={{ color: "var(--muted-foreground)" }}
+              />
             </button>
 
             {menuOpen && (
@@ -350,10 +375,16 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
                       {initials}
                     </span>
                     <div className="min-w-0">
-                      <div className="text-[13px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                      <div
+                        className="text-[13px] font-semibold truncate"
+                        style={{ color: "var(--foreground)" }}
+                      >
                         {profile?.full_name || "Account"}
                       </div>
-                      <div className="text-[11px] truncate" style={{ color: "var(--muted-foreground)" }}>
+                      <div
+                        className="text-[11px] truncate"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
                         {user?.email}
                       </div>
                     </div>
@@ -362,10 +393,22 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
 
                 {/* Menu items */}
                 <div className="p-1.5">
-                  <TopbarMenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={UserIcon}>
+                  <TopbarMenuItem
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate({ to: "/app/settings" });
+                    }}
+                    icon={UserIcon}
+                  >
                     Profile
                   </TopbarMenuItem>
-                  <TopbarMenuItem onClick={() => { setMenuOpen(false); navigate({ to: "/app/settings" }); }} icon={SettingsIcon}>
+                  <TopbarMenuItem
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate({ to: "/app/settings" });
+                    }}
+                    icon={SettingsIcon}
+                  >
                     Settings
                   </TopbarMenuItem>
                   <div className="my-1 h-px" style={{ background: "var(--border)" }} />
