@@ -59,7 +59,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "apply_template",
     label: "Apply a business template",
-    description: "Pick the template that matches your business type. It sets up your tools and automations automatically.",
+    description:
+      "Pick the template that matches your business type. It sets up your tools and automations automatically.",
     to: "/app/templates",
     icon: LayoutTemplate,
     color: "text-purple-600",
@@ -70,7 +71,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "run_first_tool",
     label: "Run your first Launchpad tool",
-    description: "Validate your idea, build your ICP, or create a GTM strategy — takes under 20 minutes.",
+    description:
+      "Validate your idea, build your ICP, or create a GTM strategy — takes under 20 minutes.",
     to: "/app/launchpad",
     icon: Sparkles,
     color: "text-primary",
@@ -81,7 +83,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "run_research",
     label: "Research your market",
-    description: "Get a full competitive analysis, ICP breakdown, and acquisition strategy for your idea.",
+    description:
+      "Get a full competitive analysis, ICP breakdown, and acquisition strategy for your idea.",
     to: "/app/research",
     icon: Search,
     color: "text-emerald-600",
@@ -92,7 +95,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "add_first_lead",
     label: "Add your first lead",
-    description: "Start tracking potential customers so you can follow up and close your first deal.",
+    description:
+      "Start tracking potential customers so you can follow up and close your first deal.",
     to: "/app/nova/crm",
     icon: Users,
     color: "text-rose-600",
@@ -103,7 +107,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "enable_automation",
     label: "Enable your first automation",
-    description: "Turn on lead qualification or follow-up sequences so no lead falls through the cracks.",
+    description:
+      "Turn on lead qualification or follow-up sequences so no lead falls through the cracks.",
     to: "/app/automations",
     icon: Zap,
     color: "text-amber-600",
@@ -125,7 +130,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "scale_up",
     label: "Scale your systems",
-    description: "You have traction. Now build the infrastructure to grow without adding more work.",
+    description:
+      "You have traction. Now build the infrastructure to grow without adding more work.",
     to: "/app/scale",
     icon: TrendingUp,
     color: "text-emerald-600",
@@ -147,7 +153,8 @@ const ALL_ACTIONS: GuidanceAction[] = [
   {
     id: "review_playbook",
     label: "Review your playbook",
-    description: "See the full step-by-step path for your business stage and check off completed milestones.",
+    description:
+      "See the full step-by-step path for your business stage and check off completed milestones.",
     to: "/app/playbook",
     icon: BookOpen,
     color: "text-muted-foreground",
@@ -158,11 +165,17 @@ const ALL_ACTIONS: GuidanceAction[] = [
 ];
 
 /* ─── Data fetching ──────────────────────────────────────── */
-function useBusinessContext(orgId: string, userId: string): { data: BusinessContext; isLoading: boolean } {
+function useBusinessContext(
+  orgId: string,
+  userId: string,
+): { data: BusinessContext; isLoading: boolean } {
   const toolRunsQ = useQuery({
     queryKey: ["guidance_tool_runs", orgId],
     queryFn: async () => {
-      const { count } = await supabase.from("tool_runs").select("*", { count: "exact", head: true }).eq("organization_id", orgId);
+      const { count } = await supabase
+        .from("tool_runs")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", orgId);
       return count ?? 0;
     },
     enabled: !!orgId,
@@ -171,7 +184,10 @@ function useBusinessContext(orgId: string, userId: string): { data: BusinessCont
   const leadsQ = useQuery({
     queryKey: ["guidance_leads", orgId],
     queryFn: async () => {
-      const { count } = await supabase.from("leads").select("*", { count: "exact", head: true }).eq("organization_id", orgId);
+      const { count } = await supabase
+        .from("leads")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", orgId);
       return count ?? 0;
     },
     enabled: !!orgId,
@@ -181,7 +197,11 @@ function useBusinessContext(orgId: string, userId: string): { data: BusinessCont
     queryKey: ["guidance_automations", orgId],
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { count } = await (supabase as any).from("automation_configs").select("*", { count: "exact", head: true }).eq("organization_id", orgId).eq("is_active", true);
+      const { count } = await (supabase as any)
+        .from("automation_configs")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", orgId)
+        .eq("is_active", true);
       return count ?? 0;
     },
     enabled: !!orgId,
@@ -204,7 +224,11 @@ function useBusinessContext(orgId: string, userId: string): { data: BusinessCont
   const templateQ = useQuery({
     queryKey: ["guidance_templates", orgId],
     queryFn: async () => {
-      const { count } = await supabase.from("template_applications").select("*", { count: "exact", head: true }).eq("organization_id", orgId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { count } = await (supabase as any)
+        .from("template_applications")
+        .select("*", { count: "exact", head: true })
+        .eq("organization_id", orgId);
       return (count ?? 0) > 0;
     },
     enabled: !!orgId,
@@ -213,7 +237,11 @@ function useBusinessContext(orgId: string, userId: string): { data: BusinessCont
   const builderQ = useQuery({
     queryKey: ["guidance_builder", userId],
     queryFn: async () => {
-      const { count } = await supabase.from("workflow_builders").select("*", { count: "exact", head: true }).eq("user_id", userId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { count } = await (supabase as any)
+        .from("workflow_builders")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
       return (count ?? 0) > 0;
     },
     enabled: !!userId,
@@ -261,12 +289,19 @@ function ContextBar({ ctx }: { ctx: BusinessContext }) {
 }
 
 /* ─── Main Component ─────────────────────────────────────── */
-export function AdaptiveGuidance({ orgId, userId, stageIdx }: { orgId: string; userId: string; stageIdx: number }) {
+export function AdaptiveGuidance({
+  orgId,
+  userId,
+  stageIdx,
+}: {
+  orgId: string;
+  userId: string;
+  stageIdx: number;
+}) {
   const { data: ctx, isLoading } = useBusinessContext(orgId, userId);
   const contextWithStage = { ...ctx, stageIdx };
 
-  const actions = ALL_ACTIONS
-    .filter((a) => a.condition(contextWithStage))
+  const actions = ALL_ACTIONS.filter((a) => a.condition(contextWithStage))
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 3);
 
@@ -282,7 +317,10 @@ export function AdaptiveGuidance({ orgId, userId, stageIdx }: { orgId: string; u
             <Target className="h-4 w-4 text-primary" />
             <span className="text-[13px] font-bold text-foreground">What to do next</span>
           </div>
-          <Link to="/app/playbook" className="flex items-center gap-1 text-[11.5px] text-muted-foreground hover:text-primary transition-colors">
+          <Link
+            to="/app/playbook"
+            className="flex items-center gap-1 text-[11.5px] text-muted-foreground hover:text-primary transition-colors"
+          >
             Full playbook <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
@@ -305,7 +343,12 @@ export function AdaptiveGuidance({ orgId, userId, stageIdx }: { orgId: string; u
               </div>
 
               {/* Icon */}
-              <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", action.bg)}>
+              <div
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                  action.bg,
+                )}
+              >
                 <Icon className={cn("h-4.5 w-4.5", action.color)} />
               </div>
 
@@ -329,7 +372,8 @@ export function AdaptiveGuidance({ orgId, userId, stageIdx }: { orgId: string; u
       <div className="px-5 py-3 border-t border-border/60 bg-surface-1/30">
         <div className="text-[11.5px] text-muted-foreground flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
-          These suggestions update automatically as you complete steps and add data to your workspace.
+          These suggestions update automatically as you complete steps and add data to your
+          workspace.
         </div>
       </div>
     </div>

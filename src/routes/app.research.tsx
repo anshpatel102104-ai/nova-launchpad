@@ -69,10 +69,34 @@ const STAGE_OPTIONS = [
 ] as const;
 
 const VERDICT_CONFIG = {
-  strong: { label: "Strong Opportunity", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-800", icon: CheckCircle2 },
-  viable: { label: "Viable Opportunity", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/40", border: "border-blue-200 dark:border-blue-800", icon: TrendingUp },
-  risky: { label: "Risky — Proceed Carefully", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/40", border: "border-amber-200 dark:border-amber-800", icon: AlertTriangle },
-  rethink: { label: "Needs Rethinking", color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/40", border: "border-red-200 dark:border-red-800", icon: RotateCcw },
+  strong: {
+    label: "Strong Opportunity",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    border: "border-emerald-200 dark:border-emerald-800",
+    icon: CheckCircle2,
+  },
+  viable: {
+    label: "Viable Opportunity",
+    color: "text-blue-600",
+    bg: "bg-blue-50 dark:bg-blue-950/40",
+    border: "border-blue-200 dark:border-blue-800",
+    icon: TrendingUp,
+  },
+  risky: {
+    label: "Risky — Proceed Carefully",
+    color: "text-amber-600",
+    bg: "bg-amber-50 dark:bg-amber-950/40",
+    border: "border-amber-200 dark:border-amber-800",
+    icon: AlertTriangle,
+  },
+  rethink: {
+    label: "Needs Rethinking",
+    color: "text-red-600",
+    bg: "bg-red-50 dark:bg-red-950/40",
+    border: "border-red-200 dark:border-red-800",
+    icon: RotateCcw,
+  },
 };
 
 /* ─── Saved research query ───────────────────────────────── */
@@ -140,7 +164,12 @@ Return ONLY a valid JSON object (no markdown, no code fences) with this exact st
 }
 
 /* ─── Section card wrapper ───────────────────────────────── */
-function Section({ icon: Icon, title, color = "text-foreground", children }: {
+function Section({
+  icon: Icon,
+  title,
+  color = "text-foreground",
+  children,
+}: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   color?: string;
@@ -157,23 +186,44 @@ function Section({ icon: Icon, title, color = "text-foreground", children }: {
   );
 }
 
-function Pill({ children, variant = "default" }: { children: React.ReactNode; variant?: "default" | "green" | "amber" | "red" | "blue" }) {
+function Pill({
+  children,
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "green" | "amber" | "red" | "blue";
+}) {
   const colors = {
     default: "bg-surface-1 text-muted-foreground border-border",
-    green: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
-    amber: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
+    green:
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
+    amber:
+      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
     red: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800",
     blue: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-[12px] font-medium", colors[variant])}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-[12px] font-medium",
+        colors[variant],
+      )}
+    >
       {children}
     </span>
   );
 }
 
 /* ─── Strategy Output Component ─────────────────────────── */
-function StrategyResult({ data, onSave, saving }: { data: StrategyOutput; onSave: () => void; saving: boolean }) {
+function StrategyResult({
+  data,
+  onSave,
+  saving,
+}: {
+  data: StrategyOutput;
+  onSave: () => void;
+  saving: boolean;
+}) {
   const verdict = VERDICT_CONFIG[data.verdict];
   const VerdictIcon = verdict.icon;
 
@@ -204,12 +254,16 @@ function StrategyResult({ data, onSave, saving }: { data: StrategyOutput; onSave
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Market Overview */}
         <Section icon={Globe} title="Market Overview" color="text-blue-500">
-          <p className="text-[13.5px] text-foreground leading-relaxed mb-3">{data.marketOverview}</p>
+          <p className="text-[13.5px] text-foreground leading-relaxed mb-3">
+            {data.marketOverview}
+          </p>
           <div className="text-[12px] font-semibold text-muted-foreground mb-1.5">MARKET SIZE</div>
           <Pill variant="blue">{data.marketSize}</Pill>
           {data.demandSignals.length > 0 && (
             <div className="mt-3 space-y-1.5">
-              <div className="text-[12px] font-semibold text-muted-foreground mb-1">DEMAND SIGNALS</div>
+              <div className="text-[12px] font-semibold text-muted-foreground mb-1">
+                DEMAND SIGNALS
+              </div>
               {data.demandSignals.map((s, i) => (
                 <div key={i} className="flex items-start gap-2 text-[13px] text-foreground">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald-500" />
@@ -224,21 +278,33 @@ function StrategyResult({ data, onSave, saving }: { data: StrategyOutput; onSave
         <Section icon={Users} title="Ideal Customer Profile" color="text-purple-500">
           <div className="space-y-3">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">WHO THEY ARE</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+                WHO THEY ARE
+              </div>
               <p className="text-[13.5px] text-foreground">{data.icp.who}</p>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">DAILY PAIN</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+                DAILY PAIN
+              </div>
               <p className="text-[13.5px] text-foreground">{data.icp.pain}</p>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">WHAT THEY WANT</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+                WHAT THEY WANT
+              </div>
               <p className="text-[13.5px] text-foreground">{data.icp.desired}</p>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">BUY TRIGGERS</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+                BUY TRIGGERS
+              </div>
               <div className="flex flex-wrap gap-1.5">
-                {data.icp.triggers.map((t, i) => <Pill key={i} variant="green">{t}</Pill>)}
+                {data.icp.triggers.map((t, i) => (
+                  <Pill key={i} variant="green">
+                    {t}
+                  </Pill>
+                ))}
               </div>
             </div>
           </div>
@@ -250,7 +316,9 @@ function StrategyResult({ data, onSave, saving }: { data: StrategyOutput; onSave
             "{data.positioningAngle}"
           </div>
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">PRICING DIRECTION</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+              PRICING DIRECTION
+            </div>
             <p className="text-[13.5px] text-foreground">{data.pricingDirection}</p>
           </div>
         </Section>
@@ -264,7 +332,9 @@ function StrategyResult({ data, onSave, saving }: { data: StrategyOutput; onSave
                 <div className="text-[12px] text-muted-foreground mb-1.5">{c.angle}</div>
                 <div className="flex items-start gap-1.5">
                   <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
-                  <span className="text-[12px] text-amber-700 dark:text-amber-300">{c.weakness}</span>
+                  <span className="text-[12px] text-amber-700 dark:text-amber-300">
+                    {c.weakness}
+                  </span>
                 </div>
               </div>
             ))}
@@ -357,7 +427,8 @@ function ResearchPage() {
       const { data, error } = await supabase.functions.invoke("nova-chat", {
         body: {
           messages: [{ role: "user", content: prompt }],
-          system: "You are a senior business strategist. Return only valid JSON, no commentary, no code blocks.",
+          system:
+            "You are a senior business strategist. Return only valid JSON, no commentary, no code blocks.",
           orgId,
           model: "claude-sonnet-4-6",
           maxTokens: 3000,
@@ -365,7 +436,10 @@ function ResearchPage() {
       });
       if (error) throw error;
       const raw: string = data?.content ?? data?.message ?? "";
-      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const cleaned = raw
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       let parsed: StrategyOutput;
       try {
         parsed = JSON.parse(cleaned);
@@ -388,7 +462,10 @@ function ResearchPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (blockIfGuest("Sign up to run AI market research.")) return;
-    if (!form.idea.trim()) { toast.error("Please describe your business idea."); return; }
+    if (!form.idea.trim()) {
+      toast.error("Please describe your business idea.");
+      return;
+    }
     setRawInput(form);
     researchMutation.mutate(form);
   };
@@ -438,7 +515,8 @@ function ResearchPage() {
           <h1 className="text-[22px] font-bold text-foreground">Research & Strategy</h1>
         </div>
         <p className="text-[14px] text-muted-foreground">
-          Enter your business idea and get a full market analysis, competitor breakdown, positioning angle, and step-by-step action plan — powered by AI.
+          Enter your business idea and get a full market analysis, competitor breakdown, positioning
+          angle, and step-by-step action plan — powered by AI.
         </p>
       </div>
 
@@ -448,9 +526,14 @@ function ResearchPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[13px] font-semibold text-foreground">{rawInput?.idea}</div>
-              <div className="text-[12px] text-muted-foreground">{rawInput?.niche} · {rawInput?.stage}</div>
+              <div className="text-[12px] text-muted-foreground">
+                {rawInput?.niche} · {rawInput?.stage}
+              </div>
             </div>
-            <button onClick={reset} className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all">
+            <button
+              onClick={reset}
+              className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all"
+            >
               <RotateCcw className="h-3.5 w-3.5" /> New research
             </button>
           </div>
@@ -580,11 +663,22 @@ function ResearchPage() {
           {isLoading && (
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-[13px] text-muted-foreground space-y-1.5">
               <div className="font-semibold text-foreground flex items-center gap-2">
-                <Brain className="h-4 w-4 text-primary animate-pulse" /> What Nova is doing right now:
+                <Brain className="h-4 w-4 text-primary animate-pulse" /> What Nova is doing right
+                now:
               </div>
-              {["Analyzing market demand for your niche", "Identifying your ideal customer profile", "Scanning the competitive landscape", "Building your positioning angle", "Finding the best acquisition channels", "Defining your top 3 next actions"].map((step, i) => (
+              {[
+                "Analyzing market demand for your niche",
+                "Identifying your ideal customer profile",
+                "Scanning the competitive landscape",
+                "Building your positioning angle",
+                "Finding the best acquisition channels",
+                "Defining your top 3 next actions",
+              ].map((step, i) => (
                 <div key={i} className="flex items-center gap-2 text-[12.5px]">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
+                  <div
+                    className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse"
+                    style={{ animationDelay: `${i * 200}ms` }}
+                  />
                   {step}
                 </div>
               ))}
@@ -602,11 +696,18 @@ function ResearchPage() {
           </div>
           <div className="space-y-2">
             {historyQ.data.map((item) => {
-              let parsedContent: { summary?: Record<string, string>; strategy?: StrategyOutput } = {};
-              try { parsedContent = JSON.parse(item.content ?? "{}"); } catch { /* ignore */ }
+              let parsedContent: { summary?: Record<string, string>; strategy?: StrategyOutput } =
+                {};
+              try {
+                parsedContent = JSON.parse(item.content ?? "{}");
+              } catch {
+                /* ignore */
+              }
               const summary = parsedContent.summary ?? {};
               const tags = (item.tags as string[] | null) ?? [];
-              const verdict = (summary.verdict ?? tags.find((t) => ["strong","viable","risky","rethink"].includes(t)) ?? "viable") as keyof typeof VERDICT_CONFIG;
+              const verdict = (summary.verdict ??
+                tags.find((t) => ["strong", "viable", "risky", "rethink"].includes(t)) ??
+                "viable") as keyof typeof VERDICT_CONFIG;
               const vc = VERDICT_CONFIG[verdict] ?? VERDICT_CONFIG.viable;
               return (
                 <button
@@ -615,17 +716,40 @@ function ResearchPage() {
                     try {
                       if (parsedContent.strategy) {
                         setResult(parsedContent.strategy);
-                        setRawInput({ idea: summary.idea ?? "", niche: summary.niche ?? "", targetCustomer: "", problem: "", competitors: "", stage: (summary.stage as ResearchForm["stage"]) ?? "idea" });
+                        setRawInput({
+                          idea: summary.idea ?? "",
+                          niche: summary.niche ?? "",
+                          targetCustomer: "",
+                          problem: "",
+                          competitors: "",
+                          stage: (summary.stage as ResearchForm["stage"]) ?? "idea",
+                        });
                       }
-                    } catch { toast.error("Could not load saved research"); }
+                    } catch {
+                      toast.error("Could not load saved research");
+                    }
                   }}
                   className="w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-4 hover:border-primary/30 text-left transition-all"
                 >
                   <div className="min-w-0">
-                    <div className="text-[13.5px] font-semibold text-foreground truncate">{summary.idea ?? "Research"}</div>
-                    <div className="text-[12px] text-muted-foreground">{summary.niche} · {new Date(item.created_at ?? "").toLocaleDateString()}</div>
+                    <div className="text-[13.5px] font-semibold text-foreground truncate">
+                      {summary.idea ?? "Research"}
+                    </div>
+                    <div className="text-[12px] text-muted-foreground">
+                      {summary.niche} · {new Date(item.created_at ?? "").toLocaleDateString()}
+                    </div>
                   </div>
-                  <Pill variant={verdict === "strong" ? "green" : verdict === "risky" ? "amber" : verdict === "rethink" ? "red" : "blue"}>
+                  <Pill
+                    variant={
+                      verdict === "strong"
+                        ? "green"
+                        : verdict === "risky"
+                          ? "amber"
+                          : verdict === "rethink"
+                            ? "red"
+                            : "blue"
+                    }
+                  >
                     {vc.label}
                   </Pill>
                 </button>

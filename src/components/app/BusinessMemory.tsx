@@ -53,7 +53,13 @@ interface CategoryConfig {
   description: string;
   addLabel: string;
   placeholder: string;
-  fields?: Array<{ key: string; label: string; placeholder?: string; type: "text" | "textarea" | "select"; options?: string[] }>;
+  fields?: Array<{
+    key: string;
+    label: string;
+    placeholder?: string;
+    type: "text" | "textarea" | "select";
+    options?: string[];
+  }>;
 }
 
 const CATEGORIES: CategoryConfig[] = [
@@ -68,11 +74,50 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Update profile",
     placeholder: "Describe your company, model, and mission",
     fields: [
-      { key: "company_name", label: "Company name", type: "text", placeholder: "e.g. Northwind Labs" },
-      { key: "business_model", label: "Business model", type: "select", options: ["SaaS", "Services / Agency", "Info product / Course", "E-commerce", "Local service", "Marketplace", "Other"] },
-      { key: "stage", label: "Current stage", type: "select", options: ["Idea", "Pre-revenue", "Early revenue ($0–$10K MRR)", "Growing ($10K–$100K MRR)", "Scaling ($100K+ MRR)"] },
-      { key: "icp", label: "Ideal customer", type: "text", placeholder: "e.g. B2B SaaS founders, 10-50 employee companies" },
-      { key: "core_problem", label: "Problem you solve", type: "textarea", placeholder: "What is broken today that you fix?" },
+      {
+        key: "company_name",
+        label: "Company name",
+        type: "text",
+        placeholder: "e.g. Northwind Labs",
+      },
+      {
+        key: "business_model",
+        label: "Business model",
+        type: "select",
+        options: [
+          "SaaS",
+          "Services / Agency",
+          "Info product / Course",
+          "E-commerce",
+          "Local service",
+          "Marketplace",
+          "Other",
+        ],
+      },
+      {
+        key: "stage",
+        label: "Current stage",
+        type: "select",
+        options: [
+          "Idea",
+          "Pre-revenue",
+          "Early revenue ($0–$10K MRR)",
+          "Growing ($10K–$100K MRR)",
+          "Scaling ($100K+ MRR)",
+        ],
+      },
+      {
+        key: "icp",
+        label: "Ideal customer",
+        type: "text",
+        placeholder: "e.g. B2B SaaS founders, 10-50 employee companies",
+      },
+      {
+        key: "core_problem",
+        label: "Problem you solve",
+        type: "textarea",
+        placeholder: "What is broken today that you fix?",
+      },
     ],
   },
   {
@@ -86,9 +131,24 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Add strategy note",
     placeholder: "e.g. We're doubling down on outbound for Q3. Target: 50 demos.",
     fields: [
-      { key: "title", label: "What is the strategy?", type: "text", placeholder: "e.g. Focus on outbound sales for Q3" },
-      { key: "rationale", label: "Why this strategy?", type: "textarea", placeholder: "What data or insight led to this decision?" },
-      { key: "success_metric", label: "How will you know it worked?", type: "text", placeholder: "e.g. 50 demos booked, 10 new customers" },
+      {
+        key: "title",
+        label: "What is the strategy?",
+        type: "text",
+        placeholder: "e.g. Focus on outbound sales for Q3",
+      },
+      {
+        key: "rationale",
+        label: "Why this strategy?",
+        type: "textarea",
+        placeholder: "What data or insight led to this decision?",
+      },
+      {
+        key: "success_metric",
+        label: "How will you know it worked?",
+        type: "text",
+        placeholder: "e.g. 50 demos booked, 10 new customers",
+      },
     ],
   },
   {
@@ -102,10 +162,35 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Log experiment",
     placeholder: "e.g. Tested cold email with personalized first lines",
     fields: [
-      { key: "what", label: "What did you try?", type: "text", placeholder: "e.g. Cold outreach with personalised video" },
-      { key: "hypothesis", label: "What did you expect?", type: "text", placeholder: "e.g. Higher reply rate than plain text" },
-      { key: "result", label: "What actually happened?", type: "textarea", placeholder: "e.g. 12% reply rate vs 4% baseline — 3x better" },
-      { key: "outcome", label: "Outcome", type: "select", options: ["Winner — keep doing this", "Promising — needs refinement", "Mixed — context-dependent", "Failed — don't repeat this"] },
+      {
+        key: "what",
+        label: "What did you try?",
+        type: "text",
+        placeholder: "e.g. Cold outreach with personalised video",
+      },
+      {
+        key: "hypothesis",
+        label: "What did you expect?",
+        type: "text",
+        placeholder: "e.g. Higher reply rate than plain text",
+      },
+      {
+        key: "result",
+        label: "What actually happened?",
+        type: "textarea",
+        placeholder: "e.g. 12% reply rate vs 4% baseline — 3x better",
+      },
+      {
+        key: "outcome",
+        label: "Outcome",
+        type: "select",
+        options: [
+          "Winner — keep doing this",
+          "Promising — needs refinement",
+          "Mixed — context-dependent",
+          "Failed — don't repeat this",
+        ],
+      },
     ],
   },
   {
@@ -119,9 +204,24 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Log a win",
     placeholder: "e.g. Closed first $5K deal with XYZ Corp",
     fields: [
-      { key: "what_happened", label: "What was the win?", type: "text", placeholder: "e.g. Closed first $5K deal" },
-      { key: "how", label: "How did it happen?", type: "textarea", placeholder: "What led to this win? What can be repeated?" },
-      { key: "impact", label: "Impact", type: "text", placeholder: "e.g. $5K MRR, 1 new enterprise logo" },
+      {
+        key: "what_happened",
+        label: "What was the win?",
+        type: "text",
+        placeholder: "e.g. Closed first $5K deal",
+      },
+      {
+        key: "how",
+        label: "How did it happen?",
+        type: "textarea",
+        placeholder: "What led to this win? What can be repeated?",
+      },
+      {
+        key: "impact",
+        label: "Impact",
+        type: "text",
+        placeholder: "e.g. $5K MRR, 1 new enterprise logo",
+      },
     ],
   },
   {
@@ -135,9 +235,24 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Log a lesson",
     placeholder: "e.g. Launched to wrong audience — too broad",
     fields: [
-      { key: "what_failed", label: "What didn't work?", type: "text", placeholder: "e.g. Outbound to HR directors didn't convert" },
-      { key: "why", label: "Why do you think it failed?", type: "textarea", placeholder: "Root cause analysis" },
-      { key: "lesson", label: "What will you do differently?", type: "text", placeholder: "e.g. Target ops leaders instead of HR" },
+      {
+        key: "what_failed",
+        label: "What didn't work?",
+        type: "text",
+        placeholder: "e.g. Outbound to HR directors didn't convert",
+      },
+      {
+        key: "why",
+        label: "Why do you think it failed?",
+        type: "textarea",
+        placeholder: "Root cause analysis",
+      },
+      {
+        key: "lesson",
+        label: "What will you do differently?",
+        type: "text",
+        placeholder: "e.g. Target ops leaders instead of HR",
+      },
     ],
   },
   {
@@ -151,9 +266,32 @@ const CATEGORIES: CategoryConfig[] = [
     addLabel: "Add customer insight",
     placeholder: "e.g. Customers care about speed more than features",
     fields: [
-      { key: "insight", label: "What did you learn?", type: "textarea", placeholder: "e.g. Customers don't want more features — they want less time to value" },
-      { key: "source", label: "How did you learn this?", type: "select", options: ["Customer interview", "Survey", "Support ticket", "Sales call", "Churn reason", "Usage data", "Other"] },
-      { key: "action", label: "What will you change?", type: "text", placeholder: "e.g. Simplify onboarding from 12 steps to 3" },
+      {
+        key: "insight",
+        label: "What did you learn?",
+        type: "textarea",
+        placeholder: "e.g. Customers don't want more features — they want less time to value",
+      },
+      {
+        key: "source",
+        label: "How did you learn this?",
+        type: "select",
+        options: [
+          "Customer interview",
+          "Survey",
+          "Support ticket",
+          "Sales call",
+          "Churn reason",
+          "Usage data",
+          "Other",
+        ],
+      },
+      {
+        key: "action",
+        label: "What will you change?",
+        type: "text",
+        placeholder: "e.g. Simplify onboarding from 12 steps to 3",
+      },
     ],
   },
 ];
@@ -187,7 +325,7 @@ function AddEntryModal({
       const contentParts = fields
         .filter((f) => values[f.key]?.trim())
         .map((f) => `${f.label}: ${values[f.key]}`);
-      const content = contentParts.length > 0 ? contentParts.join("\n") : values["__free"] ?? "";
+      const content = contentParts.length > 0 ? contentParts.join("\n") : (values["__free"] ?? "");
       const tags = [
         category.type,
         values.outcome ?? "",
@@ -215,7 +353,10 @@ function AddEntryModal({
   const Icon = category.icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="relative w-full max-w-lg rounded-2xl border border-border bg-background shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -223,7 +364,14 @@ function AddEntryModal({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", category.bg, "border", category.border)}>
+            <div
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-xl",
+                category.bg,
+                "border",
+                category.border,
+              )}
+            >
               <Icon className={cn("h-5 w-5", category.color)} />
             </div>
             <div>
@@ -231,7 +379,10 @@ function AddEntryModal({
               <div className="text-[11.5px] text-muted-foreground">{category.description}</div>
             </div>
           </div>
-          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors">
+          <button
+            onClick={onClose}
+            className="h-8 w-8 flex items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
@@ -250,7 +401,11 @@ function AddEntryModal({
                   onChange={(e) => set(field.key, e.target.value)}
                 >
                   <option value="">Select…</option>
-                  {field.options?.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {field.options?.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               ) : field.type === "textarea" ? (
                 <textarea
@@ -279,13 +434,22 @@ function AddEntryModal({
             This will be remembered and used in all future AI outputs
           </div>
           <div className="flex gap-2">
-            <button onClick={onClose} className="rounded-xl border border-border px-3 py-2 text-[12.5px] font-medium text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-border px-3 py-2 text-[12.5px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
             <button
               onClick={handleSave}
               disabled={saving}
               className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
             >
-              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
               Save to memory
             </button>
           </div>
@@ -296,7 +460,15 @@ function AddEntryModal({
 }
 
 /* ─── Memory Entry Card ──────────────────────────────────── */
-function EntryCard({ entry, category, onDelete }: { entry: MemoryEntry; category: CategoryConfig; onDelete: (id: string) => void }) {
+function EntryCard({
+  entry,
+  category,
+  onDelete,
+}: {
+  entry: MemoryEntry;
+  category: CategoryConfig;
+  onDelete: (id: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const Icon = category.icon;
   const preview = entry.content.split("\n")[0] ?? entry.content;
@@ -311,12 +483,30 @@ function EntryCard({ entry, category, onDelete }: { entry: MemoryEntry; category
             {expanded ? entry.content : preview}
           </div>
           {hasMore && (
-            <button onClick={() => setExpanded(!expanded)} className={cn("text-[11px] font-medium mt-1 flex items-center gap-0.5", category.color)}>
-              {expanded ? <><ChevronDown className="h-3 w-3" /> Less</> : <><ChevronRight className="h-3 w-3" /> More</>}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className={cn(
+                "text-[11px] font-medium mt-1 flex items-center gap-0.5",
+                category.color,
+              )}
+            >
+              {expanded ? (
+                <>
+                  <ChevronDown className="h-3 w-3" /> Less
+                </>
+              ) : (
+                <>
+                  <ChevronRight className="h-3 w-3" /> More
+                </>
+              )}
             </button>
           )}
           <div className="text-[11px] text-muted-foreground mt-1.5">
-            {new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            {new Date(entry.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </div>
         </div>
         <button
@@ -332,28 +522,50 @@ function EntryCard({ entry, category, onDelete }: { entry: MemoryEntry; category
 
 /* ─── Completeness Score ─────────────────────────────────── */
 function CompletenessScore({ entries }: { entries: MemoryEntry[] }) {
-  const categories: MemoryCategory[] = ["company_profile", "strategy", "experiment", "win", "customer_insight"];
+  const categories: MemoryCategory[] = [
+    "company_profile",
+    "strategy",
+    "experiment",
+    "win",
+    "customer_insight",
+  ];
   const filledCats = new Set(entries.map((e) => e.memory_type as MemoryCategory));
   const score = Math.round((filledCats.size / categories.length) * 100);
   const missing = categories.filter((c) => !filledCats.has(c));
   const catMap = Object.fromEntries(CATEGORIES.map((c) => [c.type, c]));
 
   return (
-    <div className={cn(
-      "rounded-2xl border p-4",
-      score >= 80 ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30" : "border-primary/20 bg-primary/5",
-    )}>
+    <div
+      className={cn(
+        "rounded-2xl border p-4",
+        score >= 80
+          ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
+          : "border-primary/20 bg-primary/5",
+      )}
+    >
       <div className="flex items-center justify-between gap-4 mb-3">
         <div>
-          <div className={cn("text-[13px] font-bold", score >= 80 ? "text-emerald-700 dark:text-emerald-300" : "text-primary")}>
+          <div
+            className={cn(
+              "text-[13px] font-bold",
+              score >= 80 ? "text-emerald-700 dark:text-emerald-300" : "text-primary",
+            )}
+          >
             Business context: {score}% complete
           </div>
           <div className="text-[12px] text-muted-foreground mt-0.5">
-            {score >= 80 ? "Great! Nova has strong context about your business." : "The more you add, the smarter every AI output gets."}
+            {score >= 80
+              ? "Great! Nova has strong context about your business."
+              : "The more you add, the smarter every AI output gets."}
           </div>
         </div>
         <div className="shrink-0">
-          <div className="text-[22px] font-black" style={{ color: score >= 80 ? "#34D399" : "var(--primary)" }}>{score}%</div>
+          <div
+            className="text-[22px] font-black"
+            style={{ color: score >= 80 ? "#34D399" : "var(--primary)" }}
+          >
+            {score}%
+          </div>
         </div>
       </div>
 
@@ -372,7 +584,10 @@ function CompletenessScore({ entries }: { entries: MemoryEntry[] }) {
             const cat = catMap[type];
             if (!cat) return null;
             return (
-              <span key={type} className="text-[11px] font-medium text-muted-foreground border border-border/60 rounded-full px-2 py-0.5">
+              <span
+                key={type}
+                className="text-[11px] font-medium text-muted-foreground border border-border/60 rounded-full px-2 py-0.5"
+              >
                 {cat.label}
               </span>
             );
@@ -415,9 +630,11 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
   });
 
   const entries = entriesQ.data ?? [];
-  const filtered = activeFilter === "all" ? entries : entries.filter((e) => e.memory_type === activeFilter);
+  const filtered =
+    activeFilter === "all" ? entries : entries.filter((e) => e.memory_type === activeFilter);
 
-  const getCategoryEntries = (type: MemoryCategory) => entries.filter((e) => e.memory_type === type);
+  const getCategoryEntries = (type: MemoryCategory) =>
+    entries.filter((e) => e.memory_type === type);
 
   return (
     <div className="space-y-6">
@@ -428,16 +645,22 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
       <div className="rounded-2xl border border-border bg-background p-4 flex items-start gap-3">
         <Sparkles className="h-5 w-5 shrink-0 text-primary mt-0.5" />
         <div>
-          <div className="text-[13px] font-bold text-foreground mb-1">What business memory does</div>
+          <div className="text-[13px] font-bold text-foreground mb-1">
+            What business memory does
+          </div>
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
-            Every entry you add here is remembered by Nova and used automatically in your Launchpad tools, research, and strategy outputs. The more context you give, the more personalized every AI output becomes.
+            Every entry you add here is remembered by Nova and used automatically in your Launchpad
+            tools, research, and strategy outputs. The more context you give, the more personalized
+            every AI output becomes.
           </p>
         </div>
       </div>
 
       {/* Category grid */}
       <div>
-        <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">Add to your memory</div>
+        <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
+          Add to your memory
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {CATEGORIES.map((cat) => {
             const count = getCategoryEntries(cat.type).length;
@@ -455,16 +678,29 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
                 <div className="flex w-full items-start justify-between">
                   <Icon className={cn("h-5 w-5", cat.color)} />
                   {count > 0 && (
-                    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", cat.bg, cat.color)}>
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                        cat.bg,
+                        cat.color,
+                      )}
+                    >
                       {count}
                     </span>
                   )}
                 </div>
                 <div>
                   <div className={cn("text-[13px] font-bold", cat.color)}>{cat.label}</div>
-                  <div className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">{cat.description}</div>
+                  <div className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
+                    {cat.description}
+                  </div>
                 </div>
-                <div className={cn("flex items-center gap-1 text-[11px] font-semibold mt-auto", cat.color)}>
+                <div
+                  className={cn(
+                    "flex items-center gap-1 text-[11px] font-semibold mt-auto",
+                    cat.color,
+                  )}
+                >
                   <Plus className="h-3 w-3" /> {cat.addLabel}
                 </div>
               </button>
@@ -477,20 +713,35 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
       {entries.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60">Memory timeline</div>
+            <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60">
+              Memory timeline
+            </div>
             <div className="flex-1 h-px bg-border/60" />
           </div>
 
           {/* Filter */}
           <div className="flex gap-1.5 flex-wrap mb-3">
-            <button onClick={() => setActiveFilter("all")} className={cn("rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition-all", activeFilter === "all" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition-all",
+                activeFilter === "all"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
               All ({entries.length})
             </button>
             {CATEGORIES.filter((c) => getCategoryEntries(c.type).length > 0).map((c) => (
               <button
                 key={c.type}
                 onClick={() => setActiveFilter(c.type)}
-                className={cn("rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition-all", activeFilter === c.type ? cn("border-current", c.color, c.bg) : "border-border text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition-all",
+                  activeFilter === c.type
+                    ? cn("border-current", c.color, c.bg)
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
               >
                 {c.label} ({getCategoryEntries(c.type).length})
               </button>
@@ -503,7 +754,9 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading…
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-8 text-[13px] text-muted-foreground">No entries yet in this category.</div>
+              <div className="text-center py-8 text-[13px] text-muted-foreground">
+                No entries yet in this category.
+              </div>
             ) : (
               filtered.map((entry) => {
                 const cat = CATEGORIES.find((c) => c.type === entry.memory_type);
@@ -528,9 +781,12 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
           <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-primary/10 mb-4">
             <BookOpen className="h-8 w-8 text-primary/60" />
           </div>
-          <div className="text-[15px] font-semibold text-foreground mb-1">Your business memory is empty</div>
+          <div className="text-[15px] font-semibold text-foreground mb-1">
+            Your business memory is empty
+          </div>
           <div className="text-[13px] text-muted-foreground max-w-sm mx-auto mb-4">
-            Start by adding your company profile. This gives Nova the context it needs to personalize every output.
+            Start by adding your company profile. This gives Nova the context it needs to
+            personalize every output.
           </div>
           <button
             onClick={() => setAddingCategory(CATEGORIES[0])}
@@ -545,16 +801,30 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
       <div className="rounded-2xl border border-border bg-surface-1/40 p-4 flex items-start gap-3">
         <DollarSign className="h-4.5 w-4.5 shrink-0 text-primary mt-0.5" />
         <div>
-          <div className="text-[12.5px] font-semibold text-foreground mb-0.5">Did something important happen outside this platform?</div>
+          <div className="text-[12.5px] font-semibold text-foreground mb-0.5">
+            Did something important happen outside this platform?
+          </div>
           <p className="text-[12px] text-muted-foreground">
-            Closed a deal, ran a campaign, got a customer insight? Log it here so Nova remembers it and uses it in your strategy.
+            Closed a deal, ran a campaign, got a customer insight? Log it here so Nova remembers it
+            and uses it in your strategy.
           </p>
           <div className="flex gap-2 mt-2">
-            <button onClick={() => setAddingCategory(CATEGORIES.find((c) => c.type === "win") ?? CATEGORIES[0])} className="text-[12px] font-semibold text-emerald-600 hover:underline flex items-center gap-1">
+            <button
+              onClick={() =>
+                setAddingCategory(CATEGORIES.find((c) => c.type === "win") ?? CATEGORIES[0])
+              }
+              className="text-[12px] font-semibold text-emerald-600 hover:underline flex items-center gap-1"
+            >
               <Trophy className="h-3.5 w-3.5" /> Log a win <ArrowRight className="h-3 w-3" />
             </button>
-            <button onClick={() => setAddingCategory(CATEGORIES.find((c) => c.type === "experiment") ?? CATEGORIES[0])} className="text-[12px] font-semibold text-purple-600 hover:underline flex items-center gap-1">
-              <FlaskConical className="h-3.5 w-3.5" /> Log an experiment <ArrowRight className="h-3 w-3" />
+            <button
+              onClick={() =>
+                setAddingCategory(CATEGORIES.find((c) => c.type === "experiment") ?? CATEGORIES[0])
+              }
+              className="text-[12px] font-semibold text-purple-600 hover:underline flex items-center gap-1"
+            >
+              <FlaskConical className="h-3.5 w-3.5" /> Log an experiment{" "}
+              <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>

@@ -44,6 +44,8 @@ import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as AppCommandCenterRouteImport } from './routes/app.command-center'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
+import { Route as AppBuilderRouteImport } from './routes/app.builder'
+import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppApprovalsRouteImport } from './routes/app.approvals'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
@@ -246,6 +248,16 @@ const AppAutomationsRoute = AppAutomationsRouteImport.update({
   path: '/automations',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBuilderRoute = AppBuilderRouteImport.update({
+  id: '/builder',
+  path: '/builder',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResearchRoute = AppResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAssetsRoute = AppAssetsRouteImport.update({
   id: '/assets',
   path: '/assets',
@@ -393,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
@@ -410,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -455,6 +469,7 @@ export interface FileRoutesByTo {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
@@ -472,6 +487,7 @@ export interface FileRoutesByTo {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -519,6 +535,7 @@ export interface FileRoutesById {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
+  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
@@ -536,6 +553,7 @@ export interface FileRoutesById {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -584,6 +602,7 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
+    | '/app/builder'
     | '/app/billing'
     | '/app/command-center'
     | '/app/contacts'
@@ -601,6 +620,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/research'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -646,6 +666,7 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
+    | '/app/builder'
     | '/app/billing'
     | '/app/command-center'
     | '/app/contacts'
@@ -663,6 +684,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/research'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -709,6 +731,7 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
+    | '/app/builder'
     | '/app/billing'
     | '/app/command-center'
     | '/app/contacts'
@@ -726,6 +749,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/research'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -1020,6 +1044,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAutomationsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/builder': {
+      id: '/app/builder'
+      path: '/builder'
+      fullPath: '/app/builder'
+      preLoaderRoute: typeof AppBuilderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/research': {
+      id: '/app/research'
+      path: '/research'
+      fullPath: '/app/research'
+      preLoaderRoute: typeof AppResearchRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/assets': {
       id: '/app/assets'
       path: '/assets'
@@ -1269,6 +1307,8 @@ interface AppRouteChildren {
   AppApprovalsRoute: typeof AppApprovalsRoute
   AppAssetsRoute: typeof AppAssetsRoute
   AppAutomationsRoute: typeof AppAutomationsRoute
+  AppBuilderRoute: typeof AppBuilderRoute
+  AppResearchRoute: typeof AppResearchRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppCommandCenterRoute: typeof AppCommandCenterRoute
   AppContactsRoute: typeof AppContactsRoute
@@ -1313,6 +1353,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppApprovalsRoute: AppApprovalsRoute,
   AppAssetsRoute: AppAssetsRoute,
   AppAutomationsRoute: AppAutomationsRoute,
+  AppBuilderRoute: AppBuilderRoute,
+  AppResearchRoute: AppResearchRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
   AppCommandCenterRoute: AppCommandCenterRoute,
   AppContactsRoute: AppContactsRoute,

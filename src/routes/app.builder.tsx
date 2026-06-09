@@ -11,7 +11,12 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -102,7 +107,13 @@ interface PaletteBlock {
   icon: React.ComponentType<{ className?: string }>;
   category: BlockCategory;
   color: string;
-  configFields: Array<{ key: string; label: string; placeholder?: string; type: "text" | "textarea" | "select"; options?: string[] }>;
+  configFields: Array<{
+    key: string;
+    label: string;
+    placeholder?: string;
+    type: "text" | "textarea" | "select";
+    options?: string[];
+  }>;
 }
 
 const PALETTE_BLOCKS: PaletteBlock[] = [
@@ -115,7 +126,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "trigger",
     color: "orange",
     configFields: [
-      { key: "source", label: "Lead source", type: "select", options: ["Any source", "Website form", "Ad campaign", "Manual entry"] },
+      {
+        key: "source",
+        label: "Lead source",
+        type: "select",
+        options: ["Any source", "Website form", "Ad campaign", "Manual entry"],
+      },
     ],
   },
   {
@@ -126,7 +142,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "trigger",
     color: "orange",
     configFields: [
-      { key: "form_name", label: "Form name or URL", placeholder: "e.g. Contact form, Waitlist form", type: "text" },
+      {
+        key: "form_name",
+        label: "Form name or URL",
+        placeholder: "e.g. Contact form, Waitlist form",
+        type: "text",
+      },
     ],
   },
   {
@@ -137,7 +158,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "trigger",
     color: "orange",
     configFields: [
-      { key: "schedule", label: "When to run", type: "select", options: ["Every day at 9am", "Every Monday", "First of month", "Every hour", "Custom"] },
+      {
+        key: "schedule",
+        label: "When to run",
+        type: "select",
+        options: ["Every day at 9am", "Every Monday", "First of month", "Every hour", "Custom"],
+      },
     ],
   },
   {
@@ -148,7 +174,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "trigger",
     color: "orange",
     configFields: [
-      { key: "endpoint_note", label: "What triggers this?", placeholder: "e.g. Stripe payment, Typeform response", type: "text" },
+      {
+        key: "endpoint_note",
+        label: "What triggers this?",
+        placeholder: "e.g. Stripe payment, Typeform response",
+        type: "text",
+      },
     ],
   },
   {
@@ -159,7 +190,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "trigger",
     color: "orange",
     configFields: [
-      { key: "amount_filter", label: "Minimum amount (optional)", placeholder: "e.g. $100", type: "text" },
+      {
+        key: "amount_filter",
+        label: "Minimum amount (optional)",
+        placeholder: "e.g. $100",
+        type: "text",
+      },
     ],
   },
   /* ACTIONS */
@@ -171,9 +207,24 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "action",
     color: "blue",
     configFields: [
-      { key: "to", label: "Send to", placeholder: "e.g. {{lead.email}} or team@company.com", type: "text" },
-      { key: "subject", label: "Subject line", placeholder: "e.g. Your {{product}} is ready!", type: "text" },
-      { key: "body", label: "Email body", placeholder: "Write the email content here...", type: "textarea" },
+      {
+        key: "to",
+        label: "Send to",
+        placeholder: "e.g. {{lead.email}} or team@company.com",
+        type: "text",
+      },
+      {
+        key: "subject",
+        label: "Subject line",
+        placeholder: "e.g. Your {{product}} is ready!",
+        type: "text",
+      },
+      {
+        key: "body",
+        label: "Email body",
+        placeholder: "Write the email content here...",
+        type: "textarea",
+      },
     ],
   },
   {
@@ -185,7 +236,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: "blue",
     configFields: [
       { key: "to", label: "Phone number", placeholder: "e.g. {{lead.phone}}", type: "text" },
-      { key: "message", label: "Message", placeholder: "Keep it under 160 characters", type: "textarea" },
+      {
+        key: "message",
+        label: "Message",
+        placeholder: "Keep it under 160 characters",
+        type: "textarea",
+      },
     ],
   },
   {
@@ -196,7 +252,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "action",
     color: "blue",
     configFields: [
-      { key: "field", label: "What to update", type: "select", options: ["Lead stage", "Lead score", "Add tag", "Add note", "Assign owner"] },
+      {
+        key: "field",
+        label: "What to update",
+        type: "select",
+        options: ["Lead stage", "Lead score", "Add tag", "Add note", "Assign owner"],
+      },
       { key: "value", label: "New value", placeholder: "e.g. Qualified, Hot lead", type: "text" },
     ],
   },
@@ -208,8 +269,18 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "action",
     color: "blue",
     configFields: [
-      { key: "title", label: "Task title", placeholder: "e.g. Follow up with {{lead.name}}", type: "text" },
-      { key: "due_in", label: "Due in", type: "select", options: ["1 hour", "1 day", "3 days", "1 week"] },
+      {
+        key: "title",
+        label: "Task title",
+        placeholder: "e.g. Follow up with {{lead.name}}",
+        type: "text",
+      },
+      {
+        key: "due_in",
+        label: "Due in",
+        type: "select",
+        options: ["1 hour", "1 day", "3 days", "1 week"],
+      },
     ],
   },
   {
@@ -220,8 +291,18 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "action",
     color: "blue",
     configFields: [
-      { key: "channel", label: "Where to notify", type: "select", options: ["Slack channel", "Email to team", "Both"] },
-      { key: "message", label: "Message", placeholder: "e.g. New hot lead: {{lead.name}} — {{lead.company}}", type: "textarea" },
+      {
+        key: "channel",
+        label: "Where to notify",
+        type: "select",
+        options: ["Slack channel", "Email to team", "Both"],
+      },
+      {
+        key: "message",
+        label: "Message",
+        placeholder: "e.g. New hot lead: {{lead.name}} — {{lead.company}}",
+        type: "textarea",
+      },
     ],
   },
   {
@@ -233,7 +314,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: "blue",
     configFields: [
       { key: "url", label: "Webhook URL", placeholder: "https://...", type: "text" },
-      { key: "note", label: "What this connects to", placeholder: "e.g. Zapier, Make.com, custom app", type: "text" },
+      {
+        key: "note",
+        label: "What this connects to",
+        placeholder: "e.g. Zapier, Make.com, custom app",
+        type: "text",
+      },
     ],
   },
   /* LOGIC */
@@ -245,7 +331,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "logic",
     color: "purple",
     configFields: [
-      { key: "condition", label: "If this is true…", placeholder: "e.g. Lead score > 70, Email opened, Tag = VIP", type: "text" },
+      {
+        key: "condition",
+        label: "If this is true…",
+        placeholder: "e.g. Lead score > 70, Email opened, Tag = VIP",
+        type: "text",
+      },
     ],
   },
   {
@@ -256,7 +347,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "logic",
     color: "purple",
     configFields: [
-      { key: "duration", label: "Wait for", type: "select", options: ["1 hour", "4 hours", "1 day", "2 days", "3 days", "1 week", "Until replied"] },
+      {
+        key: "duration",
+        label: "Wait for",
+        type: "select",
+        options: ["1 hour", "4 hours", "1 day", "2 days", "3 days", "1 week", "Until replied"],
+      },
     ],
   },
   {
@@ -267,7 +363,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "logic",
     color: "purple",
     configFields: [
-      { key: "times", label: "Repeat", type: "select", options: ["2 times", "3 times", "5 times", "Until condition met"] },
+      {
+        key: "times",
+        label: "Repeat",
+        type: "select",
+        options: ["2 times", "3 times", "5 times", "Until condition met"],
+      },
     ],
   },
   /* AI */
@@ -279,8 +380,18 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "ai",
     color: "emerald",
     configFields: [
-      { key: "what_to_classify", label: "What to classify", placeholder: "e.g. Lead intent, Email reply, Support ticket", type: "text" },
-      { key: "categories", label: "Possible labels", placeholder: "e.g. Hot, Warm, Cold — separate with commas", type: "text" },
+      {
+        key: "what_to_classify",
+        label: "What to classify",
+        placeholder: "e.g. Lead intent, Email reply, Support ticket",
+        type: "text",
+      },
+      {
+        key: "categories",
+        label: "Possible labels",
+        placeholder: "e.g. Hot, Warm, Cold — separate with commas",
+        type: "text",
+      },
     ],
   },
   {
@@ -291,8 +402,24 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "ai",
     color: "emerald",
     configFields: [
-      { key: "output_type", label: "What to write", type: "select", options: ["Personalized email", "Follow-up message", "SMS message", "Proposal draft", "Meeting summary"] },
-      { key: "context", label: "Extra context for AI", placeholder: "e.g. Use a friendly, helpful tone. Mention their industry.", type: "textarea" },
+      {
+        key: "output_type",
+        label: "What to write",
+        type: "select",
+        options: [
+          "Personalized email",
+          "Follow-up message",
+          "SMS message",
+          "Proposal draft",
+          "Meeting summary",
+        ],
+      },
+      {
+        key: "context",
+        label: "Extra context for AI",
+        placeholder: "e.g. Use a friendly, helpful tone. Mention their industry.",
+        type: "textarea",
+      },
     ],
   },
   {
@@ -303,8 +430,18 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "ai",
     color: "emerald",
     configFields: [
-      { key: "what_to_score", label: "What to score", placeholder: "e.g. Lead quality, Email engagement", type: "text" },
-      { key: "scale", label: "Score scale", type: "select", options: ["1–10", "1–100", "Low / Medium / High"] },
+      {
+        key: "what_to_score",
+        label: "What to score",
+        placeholder: "e.g. Lead quality, Email engagement",
+        type: "text",
+      },
+      {
+        key: "scale",
+        label: "Score scale",
+        type: "select",
+        options: ["1–10", "1–100", "Low / Medium / High"],
+      },
     ],
   },
   /* MEMORY */
@@ -316,8 +453,24 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "memory",
     color: "rose",
     configFields: [
-      { key: "what_to_save", label: "What to remember", placeholder: "e.g. Customer outcome, Campaign result, Lead insight", type: "text" },
-      { key: "category", label: "Memory category", type: "select", options: ["Customer data", "Campaign result", "Strategy insight", "Experiment result", "General"] },
+      {
+        key: "what_to_save",
+        label: "What to remember",
+        placeholder: "e.g. Customer outcome, Campaign result, Lead insight",
+        type: "text",
+      },
+      {
+        key: "category",
+        label: "Memory category",
+        type: "select",
+        options: [
+          "Customer data",
+          "Campaign result",
+          "Strategy insight",
+          "Experiment result",
+          "General",
+        ],
+      },
     ],
   },
   {
@@ -328,26 +481,81 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     category: "memory",
     color: "rose",
     configFields: [
-      { key: "goal", label: "What is the goal?", placeholder: "e.g. Booked a call, Replied to email, Made a purchase", type: "text" },
-      { key: "if_not_met", label: "If goal not met", type: "select", options: ["Send follow-up", "Re-try from start", "Mark as lost", "Escalate to team"] },
+      {
+        key: "goal",
+        label: "What is the goal?",
+        placeholder: "e.g. Booked a call, Replied to email, Made a purchase",
+        type: "text",
+      },
+      {
+        key: "if_not_met",
+        label: "If goal not met",
+        type: "select",
+        options: ["Send follow-up", "Re-try from start", "Mark as lost", "Escalate to team"],
+      },
     ],
   },
 ];
 
 const CATEGORY_META: Record<BlockCategory, { label: string; color: string; bg: string }> = {
-  trigger: { label: "Triggers", color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800" },
-  action: { label: "Actions", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" },
-  logic: { label: "Logic", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800" },
-  ai: { label: "AI Steps", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800" },
-  memory: { label: "Memory & Goals", color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800" },
+  trigger: {
+    label: "Triggers",
+    color: "text-orange-600",
+    bg: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800",
+  },
+  action: {
+    label: "Actions",
+    color: "text-blue-600",
+    bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
+  },
+  logic: {
+    label: "Logic",
+    color: "text-purple-600",
+    bg: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
+  },
+  ai: {
+    label: "AI Steps",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
+  },
+  memory: {
+    label: "Memory & Goals",
+    color: "text-rose-600",
+    bg: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800",
+  },
 };
 
 const BLOCK_COLOR: Record<string, { bg: string; text: string; border: string; dot: string }> = {
-  orange: { bg: "bg-orange-50 dark:bg-orange-950/40", text: "text-orange-700 dark:text-orange-300", border: "border-orange-200 dark:border-orange-800", dot: "bg-orange-500" },
-  blue: { bg: "bg-blue-50 dark:bg-blue-950/40", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800", dot: "bg-blue-500" },
-  purple: { bg: "bg-purple-50 dark:bg-purple-950/40", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800", dot: "bg-purple-500" },
-  emerald: { bg: "bg-emerald-50 dark:bg-emerald-950/40", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800", dot: "bg-emerald-500" },
-  rose: { bg: "bg-rose-50 dark:bg-rose-950/40", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800", dot: "bg-rose-500" },
+  orange: {
+    bg: "bg-orange-50 dark:bg-orange-950/40",
+    text: "text-orange-700 dark:text-orange-300",
+    border: "border-orange-200 dark:border-orange-800",
+    dot: "bg-orange-500",
+  },
+  blue: {
+    bg: "bg-blue-50 dark:bg-blue-950/40",
+    text: "text-blue-700 dark:text-blue-300",
+    border: "border-blue-200 dark:border-blue-800",
+    dot: "bg-blue-500",
+  },
+  purple: {
+    bg: "bg-purple-50 dark:bg-purple-950/40",
+    text: "text-purple-700 dark:text-purple-300",
+    border: "border-purple-200 dark:border-purple-800",
+    dot: "bg-purple-500",
+  },
+  emerald: {
+    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    text: "text-emerald-700 dark:text-emerald-300",
+    border: "border-emerald-200 dark:border-emerald-800",
+    dot: "bg-emerald-500",
+  },
+  rose: {
+    bg: "bg-rose-50 dark:bg-rose-950/40",
+    text: "text-rose-700 dark:text-rose-300",
+    border: "border-rose-200 dark:border-rose-800",
+    dot: "bg-rose-500",
+  },
 };
 
 function getPaletteBlock(type: BlockType): PaletteBlock {
@@ -362,19 +570,44 @@ function buildSentencePreview(blocks: WorkflowBlock[]): string {
     if (!def) continue;
     const label = block.label || def.label;
     switch (block.type) {
-      case "trigger_new_lead": parts.push(`When a new lead arrives`); break;
-      case "trigger_form_submit": parts.push(`When a form is submitted`); break;
-      case "trigger_schedule": parts.push(`On a schedule`); break;
-      case "trigger_webhook": parts.push(`When a webhook fires`); break;
-      case "trigger_payment": parts.push(`When a payment is received`); break;
-      case "logic_wait": parts.push(`Wait ${block.config.duration || "..."}`); break;
-      case "logic_if_branch": parts.push(`If ${block.config.condition || "condition is met"}`); break;
-      case "ai_classify": parts.push(`AI classifies the ${block.config.what_to_classify || "data"}`); break;
-      case "ai_generate": parts.push(`AI writes a ${block.config.output_type || "message"}`); break;
-      case "ai_score": parts.push(`AI scores the ${block.config.what_to_score || "result"}`); break;
-      case "memory_write": parts.push(`Remember ${block.config.what_to_save || "the result"}`); break;
-      case "goal_check": parts.push(`Check goal: ${block.config.goal || "..."}`); break;
-      default: parts.push(label);
+      case "trigger_new_lead":
+        parts.push(`When a new lead arrives`);
+        break;
+      case "trigger_form_submit":
+        parts.push(`When a form is submitted`);
+        break;
+      case "trigger_schedule":
+        parts.push(`On a schedule`);
+        break;
+      case "trigger_webhook":
+        parts.push(`When a webhook fires`);
+        break;
+      case "trigger_payment":
+        parts.push(`When a payment is received`);
+        break;
+      case "logic_wait":
+        parts.push(`Wait ${block.config.duration || "..."}`);
+        break;
+      case "logic_if_branch":
+        parts.push(`If ${block.config.condition || "condition is met"}`);
+        break;
+      case "ai_classify":
+        parts.push(`AI classifies the ${block.config.what_to_classify || "data"}`);
+        break;
+      case "ai_generate":
+        parts.push(`AI writes a ${block.config.output_type || "message"}`);
+        break;
+      case "ai_score":
+        parts.push(`AI scores the ${block.config.what_to_score || "result"}`);
+        break;
+      case "memory_write":
+        parts.push(`Remember ${block.config.what_to_save || "the result"}`);
+        break;
+      case "goal_check":
+        parts.push(`Check goal: ${block.config.goal || "..."}`);
+        break;
+      default:
+        parts.push(label);
     }
   }
   return parts.join(" → ");
@@ -401,12 +634,18 @@ function PaletteItem({ block }: { block: PaletteBlock }) {
         isDragging && "opacity-40",
       )}
     >
-      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", colors.bg)}>
+      <div
+        className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", colors.bg)}
+      >
         <Icon className={cn("h-4 w-4", colors.text)} />
       </div>
       <div className="min-w-0">
-        <div className={cn("text-[12px] font-semibold leading-tight", colors.text)}>{block.label}</div>
-        <div className="text-[10.5px] text-muted-foreground leading-tight mt-px truncate">{block.description}</div>
+        <div className={cn("text-[12px] font-semibold leading-tight", colors.text)}>
+          {block.label}
+        </div>
+        <div className="text-[10.5px] text-muted-foreground leading-tight mt-px truncate">
+          {block.description}
+        </div>
       </div>
     </div>
   );
@@ -427,7 +666,9 @@ function CanvasBlock({
   isFirst: boolean;
 }) {
   const def = getPaletteBlock(block.type);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: block.id,
+  });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const colors = BLOCK_COLOR[def?.color ?? "blue"];
   const Icon = def?.icon ?? Zap;
@@ -448,7 +689,9 @@ function CanvasBlock({
         className={cn(
           "group relative rounded-xl border-2 p-3 cursor-pointer transition-all select-none",
           colors.bg,
-          isSelected ? "border-primary shadow-md shadow-primary/10" : cn(colors.border, "hover:border-primary/40"),
+          isSelected
+            ? "border-primary shadow-md shadow-primary/10"
+            : cn(colors.border, "hover:border-primary/40"),
           isDragging && "opacity-50 shadow-xl",
           isConnector && "border-dashed",
         )}
@@ -464,14 +707,26 @@ function CanvasBlock({
           </div>
 
           {/* Icon */}
-          <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", colors.bg, "border", colors.border)}>
+          <div
+            className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+              colors.bg,
+              "border",
+              colors.border,
+            )}
+          >
             <Icon className={cn("h-4.5 w-4.5", colors.text)} />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className={cn("text-[11px] font-bold uppercase tracking-widest opacity-60", colors.text)}>
+              <span
+                className={cn(
+                  "text-[11px] font-bold uppercase tracking-widest opacity-60",
+                  colors.text,
+                )}
+              >
                 {def?.category.toUpperCase() ?? "STEP"}
               </span>
             </div>
@@ -487,7 +742,10 @@ function CanvasBlock({
 
           {/* Delete */}
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
           >
             <X className="h-3.5 w-3.5" />
@@ -527,9 +785,12 @@ function CanvasDropZone({ children, isEmpty }: { children: React.ReactNode; isEm
             <Plus className="h-7 w-7 text-primary/60" />
           </div>
           <div>
-            <div className="text-[15px] font-semibold text-foreground">Drag a block here to start</div>
+            <div className="text-[15px] font-semibold text-foreground">
+              Drag a block here to start
+            </div>
             <div className="text-[13px] text-muted-foreground mt-1">
-              Start with a <span className="text-orange-500 font-medium">Trigger</span> — the event that kicks things off.
+              Start with a <span className="text-orange-500 font-medium">Trigger</span> — the event
+              that kicks things off.
             </div>
           </div>
         </div>
@@ -555,12 +816,21 @@ function PropertiesPanel({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className={cn("flex items-center gap-3 rounded-xl border p-3", colors.bg, colors.border)}>
-        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border", colors.border)}>
+      <div
+        className={cn("flex items-center gap-3 rounded-xl border p-3", colors.bg, colors.border)}
+      >
+        <div
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+            colors.border,
+          )}
+        >
           <Icon className={cn("h-5 w-5", colors.text)} />
         </div>
         <div>
-          <div className={cn("text-[11px] font-bold uppercase tracking-widest", colors.text)}>{def.category}</div>
+          <div className={cn("text-[11px] font-bold uppercase tracking-widest", colors.text)}>
+            {def.category}
+          </div>
           <div className="text-[14px] font-semibold text-foreground">{def.label}</div>
         </div>
       </div>
@@ -588,10 +858,16 @@ function PropertiesPanel({
             <select
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
               value={block.config[field.key] ?? ""}
-              onChange={(e) => onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })}
+              onChange={(e) =>
+                onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })
+              }
             >
               <option value="">Choose one…</option>
-              {field.options?.map((o) => <option key={o} value={o}>{o}</option>)}
+              {field.options?.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
             </select>
           ) : field.type === "textarea" ? (
             <textarea
@@ -599,14 +875,18 @@ function PropertiesPanel({
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none"
               placeholder={field.placeholder}
               value={block.config[field.key] ?? ""}
-              onChange={(e) => onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })}
+              onChange={(e) =>
+                onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })
+              }
             />
           ) : (
             <input
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
               placeholder={field.placeholder}
               value={block.config[field.key] ?? ""}
-              onChange={(e) => onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })}
+              onChange={(e) =>
+                onChange(block.id, { config: { ...block.config, [field.key]: e.target.value } })
+              }
             />
           )}
         </div>
@@ -631,7 +911,9 @@ function BuilderPage() {
   const [draggingType, setDraggingType] = useState<BlockType | null>(null);
   const [activePaletteCategory, setActivePaletteCategory] = useState<BlockCategory>("trigger");
   const [saving, setSaving] = useState(false);
-  const [testLogs, setTestLogs] = useState<Array<{ id: string; status: "ok" | "error" | "running"; message: string }>>([]);
+  const [testLogs, setTestLogs] = useState<
+    Array<{ id: string; status: "ok" | "error" | "running"; message: string }>
+  >([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -653,12 +935,16 @@ function BuilderPage() {
   }, []);
 
   const updateBlock = useCallback((id: string, updates: Partial<WorkflowBlock>) => {
-    setBlocks((prev) => prev.map((b) => b.id === id ? { ...b, ...updates, config: { ...b.config, ...updates.config } } : b));
+    setBlocks((prev) =>
+      prev.map((b) =>
+        b.id === id ? { ...b, ...updates, config: { ...b.config, ...updates.config } } : b,
+      ),
+    );
   }, []);
 
   const deleteBlock = useCallback((id: string) => {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
-    setSelectedId((s) => s === id ? null : s);
+    setSelectedId((s) => (s === id ? null : s));
   }, []);
 
   function handleDragStart(event: DragStartEvent) {
@@ -689,33 +975,58 @@ function BuilderPage() {
   }
 
   const runTest = () => {
-    if (blocks.length === 0) { toast.error("Add at least one block first"); return; }
+    if (blocks.length === 0) {
+      toast.error("Add at least one block first");
+      return;
+    }
     setMode("test");
     setTestLogs([]);
     const newLogs: typeof testLogs = [];
     blocks.forEach((block, i) => {
       const def = getPaletteBlock(block.type);
-      setTimeout(() => {
-        newLogs.push({ id: block.id, status: "ok", message: `✓ ${def?.label ?? block.type} — OK` });
-        setTestLogs([...newLogs]);
-      }, (i + 1) * 600);
+      setTimeout(
+        () => {
+          newLogs.push({
+            id: block.id,
+            status: "ok",
+            message: `✓ ${def?.label ?? block.type} — OK`,
+          });
+          setTestLogs([...newLogs]);
+        },
+        (i + 1) * 600,
+      );
     });
-    setTimeout(() => {
-      toast.success("Test complete — all steps passed!");
-    }, (blocks.length + 1) * 600);
+    setTimeout(
+      () => {
+        toast.success("Test complete — all steps passed!");
+      },
+      (blocks.length + 1) * 600,
+    );
   };
 
   const saveWorkflow = async () => {
     if (!currentOrgId) return;
-    if (blocks.length === 0) { toast.error("Add at least one block before saving"); return; }
+    if (blocks.length === 0) {
+      toast.error("Add at least one block before saving");
+      return;
+    }
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
       const payload = {
         user_id: user.id,
         description: workflowName,
-        workflow_json: { name: workflowName, blocks, mode, created_at: new Date().toISOString() },
+        workflow_json: JSON.parse(
+          JSON.stringify({
+            name: workflowName,
+            blocks,
+            mode,
+            created_at: new Date().toISOString(),
+          }),
+        ),
         status: "draft" as const,
       };
       const { error } = await supabase.from("automation_drafts").insert(payload);
@@ -757,13 +1068,21 @@ function BuilderPage() {
             {(["build", "test", "live"] as RunMode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => m === "test" ? runTest() : setMode(m)}
+                onClick={() => (m === "test" ? runTest() : setMode(m))}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium capitalize transition-all",
-                  mode === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  mode === m
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {m === "test" ? <FlaskConical className="h-3.5 w-3.5" /> : m === "live" ? <Radio className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                {m === "test" ? (
+                  <FlaskConical className="h-3.5 w-3.5" />
+                ) : m === "live" ? (
+                  <Radio className="h-3.5 w-3.5" />
+                ) : (
+                  <Play className="h-3.5 w-3.5" />
+                )}
                 {m.charAt(0).toUpperCase() + m.slice(1)}
               </button>
             ))}
@@ -774,7 +1093,11 @@ function BuilderPage() {
             disabled={saving}
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
           >
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
             Save
           </button>
         </div>
@@ -787,7 +1110,10 @@ function BuilderPage() {
             style={{ background: "var(--sidebar)", borderColor: "var(--sidebar-border)" }}
           >
             {/* Category tabs */}
-            <div className="flex flex-col gap-px p-2 border-b" style={{ borderColor: "var(--sidebar-border)" }}>
+            <div
+              className="flex flex-col gap-px p-2 border-b"
+              style={{ borderColor: "var(--sidebar-border)" }}
+            >
               {categories.map((cat) => {
                 const meta = CATEGORY_META[cat];
                 return (
@@ -796,10 +1122,17 @@ function BuilderPage() {
                     onClick={() => setActivePaletteCategory(cat)}
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12.5px] font-medium text-left transition-all",
-                      activePaletteCategory === cat ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground",
+                      activePaletteCategory === cat
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-surface-2 hover:text-foreground",
                     )}
                   >
-                    <div className={cn("h-2 w-2 rounded-full", activePaletteCategory === cat ? "bg-primary" : "bg-muted-foreground/40")} />
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        activePaletteCategory === cat ? "bg-primary" : "bg-muted-foreground/40",
+                      )}
+                    />
                     {meta.label}
                   </button>
                 );
@@ -811,7 +1144,9 @@ function BuilderPage() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1 pb-0.5">
                 Drag onto canvas →
               </div>
-              {visiblePalette.map((block) => <PaletteItem key={block.type} block={block} />)}
+              {visiblePalette.map((block) => (
+                <PaletteItem key={block.type} block={block} />
+              ))}
             </div>
           </div>
 
@@ -823,8 +1158,24 @@ function BuilderPage() {
                   <FlaskConical className="h-3.5 w-3.5 text-blue-500" /> Test run
                 </div>
                 {testLogs.map((log) => (
-                  <div key={log.id} className={cn("flex items-center gap-2 text-[12.5px]", log.status === "ok" ? "text-emerald-600" : log.status === "error" ? "text-destructive" : "text-muted-foreground")}>
-                    {log.status === "running" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : log.status === "ok" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
+                  <div
+                    key={log.id}
+                    className={cn(
+                      "flex items-center gap-2 text-[12.5px]",
+                      log.status === "ok"
+                        ? "text-emerald-600"
+                        : log.status === "error"
+                          ? "text-destructive"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {log.status === "running" ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : log.status === "ok" ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <AlertCircle className="h-3.5 w-3.5" />
+                    )}
                     {log.message}
                   </div>
                 ))}
@@ -868,13 +1219,20 @@ function BuilderPage() {
 
             {/* Mobile palette (shown below canvas on small screens) */}
             <div className="lg:hidden mt-4">
-              <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Add blocks</div>
+              <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Add blocks
+              </div>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActivePaletteCategory(cat)}
-                    className={cn("shrink-0 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-all", activePaletteCategory === cat ? "bg-primary/10 text-primary border-primary/30" : "border-border text-muted-foreground")}
+                    className={cn(
+                      "shrink-0 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-all",
+                      activePaletteCategory === cat
+                        ? "bg-primary/10 text-primary border-primary/30"
+                        : "border-border text-muted-foreground",
+                    )}
                   >
                     {CATEGORY_META[cat].label}
                   </button>
@@ -885,9 +1243,19 @@ function BuilderPage() {
                   const Icon = block.icon;
                   const colors = BLOCK_COLOR[block.color];
                   return (
-                    <button key={block.type} onClick={() => addBlock(block.type)} className={cn("flex items-center gap-2 rounded-lg border p-2.5 text-left", colors.bg, colors.border)}>
+                    <button
+                      key={block.type}
+                      onClick={() => addBlock(block.type)}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg border p-2.5 text-left",
+                        colors.bg,
+                        colors.border,
+                      )}
+                    >
                       <Icon className={cn("h-4 w-4 shrink-0", colors.text)} />
-                      <span className={cn("text-[12px] font-semibold", colors.text)}>{block.label}</span>
+                      <span className={cn("text-[12px] font-semibold", colors.text)}>
+                        {block.label}
+                      </span>
                     </button>
                   );
                 })}
@@ -923,7 +1291,9 @@ function BuilderPage() {
 
             {/* Sentence preview at bottom */}
             <div className="shrink-0 border-t p-3" style={{ borderColor: "var(--sidebar-border)" }}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1.5">What this workflow does</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1.5">
+                What this workflow does
+              </div>
               <div className="text-[12px] text-muted-foreground leading-relaxed">{sentence}</div>
             </div>
           </div>
@@ -932,18 +1302,25 @@ function BuilderPage() {
 
       {/* Drag overlay */}
       <DragOverlay>
-        {draggingType && (() => {
-          const def = getPaletteBlock(draggingType);
-          if (!def) return null;
-          const colors = BLOCK_COLOR[def.color];
-          const Icon = def.icon;
-          return (
-            <div className={cn("flex items-center gap-2.5 rounded-xl border-2 p-3 shadow-xl cursor-grabbing w-[200px]", colors.bg, colors.border)}>
-              <Icon className={cn("h-5 w-5 shrink-0", colors.text)} />
-              <span className={cn("text-[13px] font-semibold", colors.text)}>{def.label}</span>
-            </div>
-          );
-        })()}
+        {draggingType &&
+          (() => {
+            const def = getPaletteBlock(draggingType);
+            if (!def) return null;
+            const colors = BLOCK_COLOR[def.color];
+            const Icon = def.icon;
+            return (
+              <div
+                className={cn(
+                  "flex items-center gap-2.5 rounded-xl border-2 p-3 shadow-xl cursor-grabbing w-[200px]",
+                  colors.bg,
+                  colors.border,
+                )}
+              >
+                <Icon className={cn("h-5 w-5 shrink-0", colors.text)} />
+                <span className={cn("text-[13px] font-semibold", colors.text)}>{def.label}</span>
+              </div>
+            );
+          })()}
       </DragOverlay>
     </DndContext>
   );

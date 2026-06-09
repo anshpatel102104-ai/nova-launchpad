@@ -33,6 +33,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/automations")({ component: AutomationsPage });
@@ -117,7 +118,10 @@ function OutcomePanel({
   });
 
   const saveOutcome = async () => {
-    if (!metricValue.trim()) { toast.error("Enter a metric value first"); return; }
+    if (!metricValue.trim()) {
+      toast.error("Enter a metric value first");
+      return;
+    }
     setSaving(true);
     try {
       const content = [
@@ -126,7 +130,9 @@ function OutcomePanel({
         `Result: ${metricValue}`,
         `Trend: ${trend}`,
         note ? `Note: ${note}` : "",
-      ].filter(Boolean).join("\n");
+      ]
+        .filter(Boolean)
+        .join("\n");
 
       await supabase.from("operator_memory").insert({
         user_id: userId,
@@ -153,10 +159,12 @@ function OutcomePanel({
       const history = (outcomesQ.data ?? []).map((d) => d.content).join("\n\n");
       const { data, error } = await supabase.functions.invoke("nova-chat", {
         body: {
-          messages: [{
-            role: "user",
-            content: `I'm running the "${automation?.name}" automation. Goal: ${goal}. Here are my recent outcomes:\n\n${history || "No history yet."}\n\nCurrent metric: ${metricValue} (trend: ${trend}).\n\nGive me 2-3 specific, actionable suggestions to improve this automation's performance. Be concrete — mention specific config changes, timing adjustments, or message improvements. Keep it under 150 words.`,
-          }],
+          messages: [
+            {
+              role: "user",
+              content: `I'm running the "${automation?.name}" automation. Goal: ${goal}. Here are my recent outcomes:\n\n${history || "No history yet."}\n\nCurrent metric: ${metricValue} (trend: ${trend}).\n\nGive me 2-3 specific, actionable suggestions to improve this automation's performance. Be concrete — mention specific config changes, timing adjustments, or message improvements. Keep it under 150 words.`,
+            },
+          ],
           orgId,
           model: "claude-sonnet-4-6",
           maxTokens: 300,
@@ -172,14 +180,17 @@ function OutcomePanel({
   };
 
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
-  const trendColor = trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+  const trendColor =
+    trend === "up"
+      ? "text-emerald-600"
+      : trend === "down"
+        ? "text-red-500"
+        : "text-muted-foreground";
 
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div
-        className="relative ml-auto flex h-full w-full max-w-md flex-col bg-background border-l border-border"
-      >
+      <div className="relative ml-auto flex h-full w-full max-w-md flex-col bg-background border-l border-border">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 shrink-0 border-b border-border">
           <div>
@@ -188,7 +199,10 @@ function OutcomePanel({
             </div>
             <div className="text-[12px] text-muted-foreground mt-0.5">{automation?.name}</div>
           </div>
-          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors">
+          <button
+            onClick={onClose}
+            className="h-8 w-8 flex items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
@@ -196,13 +210,17 @@ function OutcomePanel({
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* What we're measuring */}
           <div className="rounded-xl border border-border bg-surface-1/40 p-4">
-            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Goal</div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">
+              Goal
+            </div>
             <div className="text-[14px] font-semibold text-foreground">{goal}</div>
           </div>
 
           {/* Log result */}
           <div>
-            <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Log this period's result</div>
+            <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Log this period's result
+            </div>
 
             <div className="space-y-3">
               <input
@@ -213,7 +231,9 @@ function OutcomePanel({
               />
 
               <div>
-                <div className="text-[11.5px] font-medium text-muted-foreground mb-1.5">Compared to last period:</div>
+                <div className="text-[11.5px] font-medium text-muted-foreground mb-1.5">
+                  Compared to last period:
+                </div>
                 <div className="flex gap-2">
                   {(["up", "flat", "down"] as OutcomeTrend[]).map((t) => {
                     const Icon = t === "up" ? TrendingUp : t === "down" ? TrendingDown : Minus;
@@ -224,9 +244,11 @@ function OutcomePanel({
                         className={cn(
                           "flex-1 flex items-center justify-center gap-1.5 rounded-xl border py-2 text-[12px] font-medium transition-all",
                           trend === t
-                            ? t === "up" ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                            : t === "down" ? "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-950/40 dark:text-red-300"
-                            : "border-primary/30 bg-primary/10 text-primary"
+                            ? t === "up"
+                              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                              : t === "down"
+                                ? "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-950/40 dark:text-red-300"
+                                : "border-primary/30 bg-primary/10 text-primary"
                             : "border-border text-muted-foreground hover:border-primary/30",
                         )}
                       >
@@ -251,7 +273,11 @@ function OutcomePanel({
                 disabled={saving}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
                 Save outcome to memory
               </button>
             </div>
@@ -269,7 +295,9 @@ function OutcomePanel({
 
             {optimizeSuggestion ? (
               <div className="rounded-xl bg-background border border-border p-3 mb-3">
-                <div className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-line">{optimizeSuggestion}</div>
+                <div className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-line">
+                  {optimizeSuggestion}
+                </div>
               </div>
             ) : null}
 
@@ -278,7 +306,11 @@ function OutcomePanel({
               disabled={optimizing}
               className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-background px-4 py-2.5 text-[13px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50 transition-all"
             >
-              {optimizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {optimizing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
               {optimizeSuggestion ? "Get new suggestions" : "Get optimization suggestions"}
             </button>
           </div>
@@ -286,15 +318,26 @@ function OutcomePanel({
           {/* Past outcomes */}
           {outcomesQ.data && outcomesQ.data.length > 0 && (
             <div>
-              <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Past outcomes</div>
+              <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Past outcomes
+              </div>
               <div className="space-y-2">
                 {outcomesQ.data.map((d) => {
-                  const tags = d.tags as string[] ?? [];
-                  const t = (tags.find((tag) => ["up","down","flat"].includes(tag)) ?? "flat") as OutcomeTrend;
+                  const tags = (d.tags as string[]) ?? [];
+                  const t = (tags.find((tag) => ["up", "down", "flat"].includes(tag)) ??
+                    "flat") as OutcomeTrend;
                   const Icon = t === "up" ? TrendingUp : t === "down" ? TrendingDown : Minus;
-                  const color = t === "up" ? "text-emerald-600" : t === "down" ? "text-red-500" : "text-muted-foreground";
+                  const color =
+                    t === "up"
+                      ? "text-emerald-600"
+                      : t === "down"
+                        ? "text-red-500"
+                        : "text-muted-foreground";
                   return (
-                    <div key={d.id} className="flex items-start gap-2.5 rounded-xl border border-border bg-surface-1/40 p-3">
+                    <div
+                      key={d.id}
+                      className="flex items-start gap-2.5 rounded-xl border border-border bg-surface-1/40 p-3"
+                    >
                       <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", color)} />
                       <div className="text-[12px] text-foreground leading-relaxed whitespace-pre-line flex-1">
                         {d.content}
@@ -332,10 +375,16 @@ function OutcomeMiniBar({ slug, orgId, userId }: { slug: string; orgId: string; 
   });
 
   const last = lastOutcomeQ.data;
-  const tags = last?.tags as string[] ?? [];
-  const trend = (tags.find((t) => ["up","down","flat"].includes(t)) ?? null) as OutcomeTrend | null;
+  const tags = (last?.tags as string[]) ?? [];
+  const trend = (tags.find((t) => ["up", "down", "flat"].includes(t)) ??
+    null) as OutcomeTrend | null;
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
-  const trendColor = trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-500" : "text-muted-foreground";
+  const trendColor =
+    trend === "up"
+      ? "text-emerald-600"
+      : trend === "down"
+        ? "text-red-500"
+        : "text-muted-foreground";
 
   return (
     <>
@@ -344,7 +393,14 @@ function OutcomeMiniBar({ slug, orgId, userId }: { slug: string; orgId: string; 
         className={cn(
           "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium transition-all",
           last
-            ? cn("border", trend === "up" ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30" : trend === "down" ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30" : "border-border bg-surface-1/50")
+            ? cn(
+                "border",
+                trend === "up"
+                  ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
+                  : trend === "down"
+                    ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
+                    : "border-border bg-surface-1/50",
+              )
             : "border border-dashed border-border text-muted-foreground hover:border-primary/30 hover:text-primary",
         )}
       >
@@ -362,12 +418,7 @@ function OutcomeMiniBar({ slug, orgId, userId }: { slug: string; orgId: string; 
       </button>
 
       {open && (
-        <OutcomePanel
-          slug={slug}
-          orgId={orgId}
-          userId={userId}
-          onClose={() => setOpen(false)}
-        />
+        <OutcomePanel slug={slug} orgId={orgId} userId={userId} onClose={() => setOpen(false)} />
       )}
     </>
   );
@@ -593,7 +644,8 @@ function AutomationsPage() {
           to="/app/builder"
           className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-[13px] font-semibold text-primary hover:bg-primary/20 transition-all"
         >
-          <Blocks className="h-4 w-4" /> Build custom workflow <ArrowRight className="h-3.5 w-3.5" />
+          <Blocks className="h-4 w-4" /> Build custom workflow{" "}
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
 
@@ -601,9 +653,13 @@ function AutomationsPage() {
       <div className="rounded-2xl border border-border bg-surface-1/40 p-4 flex items-start gap-3">
         <Target className="h-5 w-5 shrink-0 text-primary mt-0.5" />
         <div className="flex-1">
-          <div className="text-[13px] font-bold text-foreground mb-0.5">Track outcomes to improve over time</div>
+          <div className="text-[13px] font-bold text-foreground mb-0.5">
+            Track outcomes to improve over time
+          </div>
           <p className="text-[12.5px] text-muted-foreground">
-            After enabling an automation, use the <strong>Track outcome</strong> button on each card to log results. Nova remembers your results and suggests specific improvements each time you check.
+            After enabling an automation, use the <strong>Track outcome</strong> button on each card
+            to log results. Nova remembers your results and suggests specific improvements each time
+            you check.
           </p>
         </div>
       </div>
@@ -758,11 +814,7 @@ function AutomationsPage() {
                   Logs
                 </button>
                 {active && user && (
-                  <OutcomeMiniBar
-                    slug={automation.slug}
-                    orgId={currentOrgId}
-                    userId={user.id}
-                  />
+                  <OutcomeMiniBar slug={automation.slug} orgId={currentOrgId} userId={user.id} />
                 )}
               </div>
             </div>
