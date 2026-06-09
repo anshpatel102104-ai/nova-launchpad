@@ -82,9 +82,11 @@ Deno.serve(async (req) => {
   const { message, workspace_id, session_id, agent_id, business_context } = body;
   if (!message?.trim()) return json({ error: "message is required" }, 400);
 
-  // ── Resolve org + plan ─────────────────────────────────────────────────
+  // ── Resolve org + plan + Ollama settings ──────────────────────────────
   let orgId: string | null = null;
   let plan = "starter";
+  let ollamaEndpoint: string | undefined;
+  let ollamaModel: string | undefined;
 
   const { data: ws } = await admin
     .from("workspaces")
@@ -95,12 +97,15 @@ Deno.serve(async (req) => {
   if (ws?.organization_id) orgId = ws.organization_id as string;
 
   if (orgId) {
-    const { data: sub } = await admin
-      .from("subscriptions")
-      .select("plan")
-      .eq("organization_id", orgId)
-      .maybeSingle();
-    plan = (sub?.plan as string) ?? "starter";
+    const [subResult, orgResult] = await Promise.all([
+      admin.from("subscriptions").select("plan").eq("organization_id", orgId).maybeSingle(),
+      admin.from("organizations").select("ollama_endpoint, ollama_model").eq("id", orgId).maybeSingle(),
+    ]);
+    plan = (subResult.data?.plan as string) ?? "starter";
+    if (orgResult.data?.ollama_endpoint) {
+      ollamaEndpoint = orgResult.data.ollama_endpoint as string;
+      ollamaModel = (orgResult.data.ollama_model as string | null) ?? "llama3.2";
+    }
   }
 
   // ── Credit guard — check balance from credit_ledger ───────────────────
@@ -165,6 +170,10 @@ IMPORTANT rules:
         },
         { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
         plan,
+        undefined,
+        message,
+        ollamaEndpoint,
+        ollamaModel,
       );
       const reply = palResult.content;
 
@@ -267,7 +276,7 @@ IMPORTANT rules:
     if (output?.reply) conversationHistory.push({ role: "assistant", content: output.reply });
   }
 
-  // ── Call PAL (plan + input-complexity routed) ─────────────────────────
+  // ── Call PAL (plan + input-complexity routed; Ollama if org has endpoint) ─
   let palResult;
   try {
     palResult = await callPAL(
@@ -279,7 +288,9 @@ IMPORTANT rules:
       { ANTHROPIC_API_KEY: Deno.env.get("ANTHROPIC_API_KEY") },
       plan,
       "operator",
-      message, // raw input for complexity scoring
+      message,
+      ollamaEndpoint,
+      ollamaModel,
     );
   } catch (e) {
     return json({ status: "error", error: (e as Error).message }, 500);

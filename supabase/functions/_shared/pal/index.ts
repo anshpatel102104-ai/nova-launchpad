@@ -167,6 +167,76 @@ async function callAnthropic(
   };
 }
 
+// ─── Ollama adapter ───────────────────────────────────────────────────────
+// Uses Ollama's OpenAI-compatible /v1/chat/completions endpoint.
+// Tool_use is NOT supported — only conversational routes reach this adapter.
+
+async function callOllama(
+  model: string,
+  opts: PALCallOptions,
+  baseUrl: string,
+): Promise<PALResult> {
+  const t0 = Date.now();
+
+  // Build messages array: system message first, then history/user prompt.
+  const messages: { role: string; content: string }[] = [];
+  if (opts.systemPrompt) messages.push({ role: "system", content: opts.systemPrompt });
+  if (opts.messages) {
+    for (const m of opts.messages) messages.push({ role: m.role, content: m.content });
+  } else if (opts.userPrompt) {
+    messages.push({ role: "user", content: opts.userPrompt });
+  }
+
+  const url = `${baseUrl.replace(/\/$/, "")}/v1/chat/completions`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: opts.maxTokens ?? 800,
+        stream: false,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`Ollama ${resp.status}: ${text}`);
+    }
+
+    const data = (await resp.json()) as {
+      choices: Array<{ message: { content: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    };
+
+    const content = data.choices?.[0]?.message?.content ?? "";
+    const tokensIn = data.usage?.prompt_tokens ?? 0;
+    const tokensOut = data.usage?.completion_tokens ?? 0;
+
+    return {
+      content,
+      tokensIn,
+      tokensOut,
+      model,
+      provider: "ollama",
+      latencyMs: Date.now() - t0,
+      actualCostUsd: 0, // local inference — zero cost
+      credits: 1,       // always minimum 1 credit
+      routingReason: "ollama_private",
+    };
+  } catch (e) {
+    clearTimeout(timeout);
+    throw e;
+  }
+}
+
 // ─── Main PAL entry point ─────────────────────────────────────────────────
 
 export async function callPAL(
@@ -175,14 +245,27 @@ export async function callPAL(
   plan = "starter",
   toolKey?: string,
   rawInput?: string,
+  ollamaEndpoint?: string,
+  ollamaModel?: string,
 ): Promise<PALResult> {
   // Derive raw text for complexity scoring: prefer explicit rawInput, else last user message.
   const inputText = rawInput
     ?? opts.userPrompt
     ?? opts.messages?.filter((m) => m.role === "user").at(-1)?.content;
 
+  // ── Ollama private routing: org-configured endpoint, no tool_use required ──
+  // Try Ollama first; fall back to Anthropic silently on any error.
+  if (ollamaEndpoint && !opts.tool) {
+    const model = ollamaModel ?? "llama3.2";
+    try {
+      return await callOllama(model, opts, ollamaEndpoint);
+    } catch {
+      // Ollama unreachable or returned an error — fall through to Anthropic
+    }
+  }
+
   const model = opts.model ?? selectModel(plan, toolKey, inputText);
-  const provider: ProviderName = "anthropic"; // Phase 1: always Anthropic
+  const provider: ProviderName = "anthropic"; // Phase 1 cloud default
 
   const apiKey = env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
@@ -250,7 +333,7 @@ export function buildUsageRows(result: PALResult, opts: {
         status: "succeeded",
         provider_name: result.provider,
         actual_cost_usd: result.actualCostUsd,
-        routing_reason: "plan_default",
+        routing_reason: result.routingReason ?? "plan_default",
       }
     : null;
 

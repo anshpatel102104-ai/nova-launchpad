@@ -42,4 +42,6 @@ export interface PALResult {
   actualCostUsd: number;
   /** Virtual credits consumed (weights output tokens 2x, minimum 1). */
   credits: number;
+  /** Why this provider/model was selected — stored in usage_events.routing_reason. */
+  routingReason?: string;
 }
