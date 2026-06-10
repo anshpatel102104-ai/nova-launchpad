@@ -4,6 +4,7 @@ import {
   corsHeaders,
   incrementUsage,
   jsonResponse,
+  refundQuota,
 } from "../_shared/helpers.ts";
 import { assembleContext } from "../_shared/context.ts";
 
@@ -165,7 +166,10 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[analyze-website] error", msg);
-    await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run!.id);
+    await Promise.allSettled([
+      ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run!.id),
+      refundQuota(ctx, "analyze-website"),
+    ]);
     if (msg === "RATE_LIMIT") return jsonResponse({ error: "Rate limit exceeded." }, 429);
     if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted." }, 402);
     if (msg === "SITE_TIMEOUT")

@@ -94,13 +94,21 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
-    // INTEGRATIONS_ENCRYPTION_KEY is preferred. Fall back to SUPABASE_SERVICE_ROLE_KEY which
-    // is always auto-injected by Supabase, so the function works without a manual secret.
-    const encKey =
-      Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    // Fail closed: INTEGRATIONS_ENCRYPTION_KEY is REQUIRED. Falling back to the
+    // service-role key (the old behavior) silently downgraded the encryption
+    // model — a leaked service key would also decrypt every stored credential.
+    const encKey = Deno.env.get("INTEGRATIONS_ENCRYPTION_KEY");
     if (!encKey || encKey.length < 16) {
-      console.error("[save-integration] No suitable encryption key available");
-      return json({ error: "Server misconfigured" }, 500);
+      console.error(
+        "[save-integration] INTEGRATIONS_ENCRYPTION_KEY missing/too short — refusing to store credentials",
+      );
+      return json(
+        {
+          error: "Integration storage is not configured. Contact support.",
+          code: "ENC_KEY_MISSING",
+        },
+        503,
+      );
     }
 
     const auth = req.headers.get("Authorization");

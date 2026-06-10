@@ -79,46 +79,86 @@ export async function authenticateAndAuthorize(
     );
   }
 
-  // Quota check against usage_tracking
-  if (monthlyLimit !== null) {
-    const period = new Date().toISOString().slice(0, 7);
-    const { data: usageRows } = await supabase
-      .from("usage_tracking")
-      .select("count")
-      .eq("organization_id", organizationId)
-      .eq("period", period);
-    const total = (usageRows || []).reduce((s, r) => s + (r.count as number), 0);
-    if (total >= monthlyLimit) {
-      return jsonResponse({ error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" }, 429);
+  // Atomic quota consumption — check + count in one advisory-locked function
+  // so concurrent runs can never both squeeze past a nearly-exhausted limit.
+  // Failed runs hand the credit back via refundQuota in the catch paths.
+  const { data: allowed, error: quotaErr } = await supabase.rpc("consume_quota", {
+    p_organization_id: organizationId,
+    p_tool_key: toolKey,
+    p_monthly_limit: monthlyLimit,
+  });
+  if (quotaErr) {
+    // Legacy soft check if the RPC isn't deployed yet — never block on infra lag.
+    console.error("[consume_quota] rpc failed, soft-checking:", quotaErr.message);
+    if (monthlyLimit !== null) {
+      const period = new Date().toISOString().slice(0, 7);
+      const { data: usageRows } = await supabase
+        .from("usage_tracking")
+        .select("count")
+        .eq("organization_id", organizationId)
+        .eq("period", period);
+      const total = (usageRows || []).reduce((s, r) => s + (r.count as number), 0);
+      if (total >= monthlyLimit) {
+        return jsonResponse(
+          { error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" },
+          429,
+        );
+      }
     }
+    await incrementUsageLegacy(supabase, organizationId, toolKey);
+  } else if (allowed === false) {
+    return jsonResponse({ error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" }, 429);
   }
 
   return { supabase, userId, organizationId, plan, allowedTools, monthlyLimit };
 }
 
-export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
+/** Give the quota credit back when a run fails after consume_quota counted it. */
+export async function refundQuota(ctx: AuthCtx, toolKey: string): Promise<void> {
+  await ctx.supabase
+    .rpc("refund_quota", { p_organization_id: ctx.organizationId, p_tool_key: toolKey })
+    .then(
+      () => {},
+      (e: unknown) => console.error("[refund_quota] non-fatal:", e),
+    );
+}
+
+async function incrementUsageLegacy(
+  supabase: SupabaseClient,
+  organizationId: string,
+  toolKey: string,
+) {
   const period = new Date().toISOString().slice(0, 7);
-  const { data: existing } = await ctx.supabase
+  const { data: existing } = await supabase
     .from("usage_tracking")
     .select("id, count")
-    .eq("organization_id", ctx.organizationId)
+    .eq("organization_id", organizationId)
     .eq("period", period)
     .eq("tool_key", toolKey)
     .maybeSingle();
 
   if (existing) {
-    await ctx.supabase
+    await supabase
       .from("usage_tracking")
       .update({ count: (existing.count as number) + 1, updated_at: new Date().toISOString() })
       .eq("id", existing.id);
   } else {
-    await ctx.supabase.from("usage_tracking").insert({
-      organization_id: ctx.organizationId,
+    await supabase.from("usage_tracking").insert({
+      organization_id: organizationId,
       period,
       tool_key: toolKey,
       count: 1,
     });
   }
+}
+
+/**
+ * @deprecated Quota is now consumed atomically inside authenticateAndAuthorize
+ * (consume_quota RPC). Kept as a no-op-compatible export so existing function
+ * code keeps compiling; calling it would double-count.
+ */
+export async function incrementUsage(_ctx: AuthCtx, _toolKey: string) {
+  // intentionally empty — counting happens in consume_quota
 }
 
 // ─── callClaude (legacy — kept for feedback-loop, memory-query) ───────────
@@ -344,7 +384,7 @@ export async function runTool(opts: {
       }),
 
       // Increment quota counter
-      incrementUsage(ctx, opts.toolKey),
+      // (quota already counted atomically in authenticateAndAuthorize)
 
       // Write credits + usage event
       writeUsage(admin, palResult, {
@@ -373,10 +413,14 @@ export async function runTool(opts: {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[tool-run-error:${opts.toolKey}]`, msg);
-    await ctx.supabase
-      .from("tool_runs")
-      .update({ status: "failed", error: msg, completed_at: new Date().toISOString() })
-      .eq("id", run.id);
+    await Promise.allSettled([
+      ctx.supabase
+        .from("tool_runs")
+        .update({ status: "failed", error: msg, completed_at: new Date().toISOString() })
+        .eq("id", run.id),
+      // The run failed — give the consumed quota credit back.
+      refundQuota(ctx, opts.toolKey),
+    ]);
     if (msg === "RATE_LIMIT")
       return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
     if (msg === "PAYMENT_REQUIRED")
