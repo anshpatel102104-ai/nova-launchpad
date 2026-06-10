@@ -10,15 +10,15 @@
 drop policy if exists "workspaces_select_admin" on public.workspaces;
 create policy "workspaces_select_admin"
   on public.workspaces for select
-  using (public.has_role(auth.uid(), 'admin'));
+  using (exists (select 1 from public.user_roles where user_id = auth.uid() and role = 'admin'::public.app_role));
 
 -- prompt_feedback: admins read all + mark suggestions applied.
 drop policy if exists "prompt_feedback_select_admin" on public.prompt_feedback;
 create policy "prompt_feedback_select_admin"
   on public.prompt_feedback for select
-  using (public.has_role(auth.uid(), 'admin'));
+  using (exists (select 1 from public.user_roles where user_id = auth.uid() and role = 'admin'::public.app_role));
 
 drop policy if exists "prompt_feedback_update_admin" on public.prompt_feedback;
 create policy "prompt_feedback_update_admin"
   on public.prompt_feedback for update
-  using (public.has_role(auth.uid(), 'admin'));
+  using (exists (select 1 from public.user_roles where user_id = auth.uid() and role = 'admin'::public.app_role));
