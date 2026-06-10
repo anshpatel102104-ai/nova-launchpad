@@ -630,7 +630,7 @@ function ToolCard({
   return (
     <Link
       to={available ? "/app/launchpad/$tool" : ("/app/launchpad/" as never)}
-      params={available ? { tool: slug } : undefined}
+      params={available ? { tool: slug } : { tool: "" }}
       className="group block"
       style={{ pointerEvents: available ? "auto" : "none" }}
     >

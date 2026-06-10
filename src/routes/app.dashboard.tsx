@@ -933,7 +933,7 @@ function Dashboard() {
 
         {/* Tools Run */}
         <Link
-          to="/app/launchpad/"
+          to="/app/launchpad"
           className="rounded-xl p-4 group transition-all"
           style={{
             background: "var(--surface)",
@@ -1106,7 +1106,7 @@ function Dashboard() {
               </h2>
             </div>
             <Link
-              to="/app/launchpad/"
+              to="/app/launchpad"
               className="inline-flex items-center gap-1.5 rounded-lg transition-colors"
               style={{
                 fontFamily: "var(--font-body)",

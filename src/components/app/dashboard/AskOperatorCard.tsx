@@ -45,7 +45,7 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
       }>("operator", { message: text, workspace_id: workspaceId }, { timeoutMs: 90_000 });
 
       if (data.status === "success") {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: data.reply ?? "" }]);
       } else if (data.status === "credit_insufficient") {
         setMessages((prev) => [
           ...prev,
