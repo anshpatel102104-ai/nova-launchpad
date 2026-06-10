@@ -44,7 +44,12 @@ import {
 } from "@/components/ui/dialog";
 import { blockIfGuest } from "@/lib/guest";
 
-export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
+export const Route = createFileRoute("/app/settings")({
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof s.tab === "string" ? s.tab : undefined,
+  }),
+  component: SettingsPage,
+});
 
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
@@ -58,7 +63,9 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 function SettingsPage() {
-  const [tab, setTab] = useState<TabKey>("profile");
+  const search = Route.useSearch();
+  const initialTab = TABS.some((t) => t.key === search.tab) ? (search.tab as TabKey) : "profile";
+  const [tab, setTab] = useState<TabKey>(initialTab);
 
   return (
     <div className="space-y-6">

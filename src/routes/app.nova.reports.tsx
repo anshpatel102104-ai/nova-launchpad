@@ -1,3 +1,4 @@
+import { WeeklyReviewCard } from "@/components/app/WeeklyReviewCard";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -58,10 +59,12 @@ function Reports() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Nova OS"
+        eyebrow="Insights"
         title="Reporting"
-        description="Workspace activity, AI throughput, pipeline performance, and estimated ROI."
+        description="Your weekly operating review, AI throughput, pipeline performance, and ROI."
       />
+
+      <WeeklyReviewCard />
 
       {/* Summary KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

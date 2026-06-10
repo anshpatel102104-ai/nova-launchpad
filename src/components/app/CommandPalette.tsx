@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Search, ArrowUpRight } from "lucide-react";
 import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 
-type Item = { id: string; label: string; path: string; tag: "page" | "tool" };
+type Item = { id: string; label: string; path: string; tag: "page" | "tool" | "action" };
 
 const NAV_ITEMS: Item[] = [
   { id: "home", label: "Home", path: "/app/dashboard", tag: "page" },
@@ -23,6 +23,24 @@ const NAV_ITEMS: Item[] = [
   { id: "billing", label: "Billing", path: "/app/billing", tag: "page" },
 ];
 
+const ACTION_ITEMS: Item[] = [
+  { id: "act-briefing", label: "Generate AI briefing", path: "/app/dashboard", tag: "action" },
+  {
+    id: "act-context",
+    label: "Update business context",
+    path: "/app/settings?tab=context",
+    tag: "action",
+  },
+  {
+    id: "act-review",
+    label: "Generate weekly review",
+    path: "/app/nova/reports",
+    tag: "action",
+  },
+  { id: "act-automation", label: "Deploy an automation", path: "/app/automations", tag: "action" },
+  { id: "act-mission", label: "Continue my mission", path: "/app/mission-control", tag: "action" },
+];
+
 const TOOL_ITEMS: Item[] = LAUNCHPAD_TOOLS.map((t) => ({
   id: t.slug,
   label: t.name,
@@ -30,7 +48,7 @@ const TOOL_ITEMS: Item[] = LAUNCHPAD_TOOLS.map((t) => ({
   tag: "tool" as const,
 }));
 
-const ALL_ITEMS = [...NAV_ITEMS, ...TOOL_ITEMS];
+const ALL_ITEMS = [...ACTION_ITEMS, ...NAV_ITEMS, ...TOOL_ITEMS];
 
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
@@ -56,7 +74,11 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   const handleSelect = useCallback(
     (path: string) => {
-      navigate({ to: path as never });
+      const [pathname, query] = path.split("?");
+      const searchParams = query
+        ? Object.fromEntries(new URLSearchParams(query).entries())
+        : undefined;
+      navigate({ to: pathname as never, search: searchParams as never });
       onClose();
     },
     [navigate, onClose],
@@ -83,6 +105,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   if (!open) return null;
 
+  const actions = filtered.filter((i) => i.tag === "action");
   const pages = filtered.filter((i) => i.tag === "page");
   const tools = filtered.filter((i) => i.tag === "tool");
 
@@ -111,7 +134,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search pages and tools..."
+            placeholder="Search actions, pages, and tools..."
             className="flex-1 bg-transparent text-[14px] outline-none"
             style={{ color: "var(--foreground)" }}
           />
@@ -134,6 +157,47 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             </div>
           ) : (
             <div className="p-1.5 space-y-3">
+              {actions.length > 0 && (
+                <div>
+                  {query === "" && (
+                    <div
+                      className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      Actions
+                    </div>
+                  )}
+                  {actions.map((item) => {
+                    const globalIdx = filtered.indexOf(item);
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSelect(item.path)}
+                        onMouseEnter={() => setSelected(globalIdx)}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
+                        style={{
+                          background: globalIdx === selected ? "var(--surface-2)" : "transparent",
+                          color: "var(--foreground)",
+                        }}
+                      >
+                        <span
+                          className="text-[10px] font-mono w-8 shrink-0"
+                          style={{ color: "var(--primary)" }}
+                        >
+                          act
+                        </span>
+                        <span className="flex-1">{item.label}</span>
+                        {globalIdx === selected && (
+                          <ArrowUpRight
+                            className="h-3.5 w-3.5 shrink-0"
+                            style={{ color: "var(--muted-foreground)" }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {pages.length > 0 && (
                 <div>
                   {query === "" && (

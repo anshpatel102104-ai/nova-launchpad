@@ -51,3 +51,8 @@ verify_jwt = false
 # created atomically. Replaces the client-orchestrated chain in onboarding.tsx.
 [functions.complete-onboarding]
 verify_jwt = true
+
+# Weekly Operating Review — user-invoked (JWT) or cron (service role).
+# Internal auth check distinguishes the two; gateway JWT off so cron can call.
+[functions.weekly-review]
+verify_jwt = false

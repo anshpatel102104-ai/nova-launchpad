@@ -521,3 +521,30 @@ Dependencies: Phases 2–4. Impact: weekly-loop retention, perceived quality.
 - **PM**: instrument the funnel that already has names (`activation_events`: first_tool_run, first_mission_completed, weekly_return) against Phases 2–4; the success metric for Phase 4 is re-run rate (already captured by feedback-loop) trending down and output thumbs-up trending up.
 
 **Prime directive for all four:** every change must reduce fragmentation (fewer surfaces, one context, one registry, one wrapper) and strengthen the closed loop (every action feeds context; context shapes every recommendation). Anything that adds a new parallel surface, a second source of truth, or an uncontextualized AI call is — by this blueprint — wrong by default.
+
+---
+
+## APPENDIX — IMPLEMENTATION STATUS (2026-06-10)
+
+All six phases implemented on `claude/adoring-gauss-ukfg3e`:
+
+| Phase | Status | Key commits |
+|---|---|---|
+| 1 — UX fixes | ✅ shipped | invokeEdge gateway; 7-destination nav + 15 legacy redirects; AI briefing on Home; aiDashboardQuery crash fix; analyze-website timeout; stuck-run sweep |
+| 2 — Onboarding split | ✅ shipped | Create/Operate fork; per-step persistence (onboarding_sessions); business_context graph; provision_workspace_tx; complete-onboarding saga; repair banner; Settings context tab |
+| 3 — Tool restructuring | ✅ shipped | Workbench recommended strip + outcome groups; context-first tool runner ("Nova knows" strip + server-hydrated prefills); Customers pill nav; Automation Opportunities feed |
+| 4 — AI context | ✅ shipped | assembleContext (graph + related prior outputs + fromRun chaining); output contract (context_used receipt + recommended_next_actions chips); server-side full-content memory; verdict capture; nova-chat budget; analyze-website context |
+| 5 — Reliability | ✅ shipped | RLS on 8 tables; webhook idempotency + retry semantics + alerts; atomic consume_quota/refund_quota; encryption fail-closed; structured log helper; n8n ownership doc |
+| 6 — Polish | ✅ core shipped | Weekly Operating Review (cron + on-demand + Insights card); Cmd-K actions group; settings ?tab deep-links |
+
+### Deliberately deferred (with rationale)
+- **CORS allowlist**: JWT is the auth gate; per-request origin echo requires plumbing `req` through every call site — schedule with the PageShell refactor.
+- **TOOL_FIELDS → catalog move**: pure mechanical relocation (~1,150 lines); do when the tool runner is next touched.
+- **Monolith splits** (OutputRenderer 5.3k, nova.crm 3.2k, mentor 2.3k): split opportunistically when each page is rebuilt — splitting without redesigning doubles the churn.
+- **Landing page rework, embeddings memory, prompt A/B**: Phase 6 backlog per scoring table.
+
+### Deploy checklist (ops)
+1. Apply migrations `20260610100001…100005` (idempotent; pg_cron blocks no-op if extension absent).
+2. Deploy edge functions: `complete-onboarding`, `weekly-review` (new); `run-tool`, `nova-chat`, `analyze-website`, `payments-webhook`, `save-integration` (updated) + `_shared`.
+3. Set `INTEGRATIONS_ENCRYPTION_KEY` secret (save-integration now fails closed without it).
+4. Verify pg_cron jobs: `stuck-run-sweep-10min`, `weekly-review-monday`, existing `feedback-loop-30min`.
