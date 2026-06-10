@@ -536,15 +536,27 @@ All six phases implemented on `claude/adoring-gauss-ukfg3e`:
 | 4 — AI context | ✅ shipped | assembleContext (graph + related prior outputs + fromRun chaining); output contract (context_used receipt + recommended_next_actions chips); server-side full-content memory; verdict capture; nova-chat budget; analyze-website context |
 | 5 — Reliability | ✅ shipped | RLS on 8 tables; webhook idempotency + retry semantics + alerts; atomic consume_quota/refund_quota; encryption fail-closed; structured log helper; n8n ownership doc |
 | 6 — Polish | ✅ core shipped | Weekly Operating Review (cron + on-demand + Insights card); Cmd-K actions group; settings ?tab deep-links |
+| 7 — Loop-closers | ✅ shipped | Admin **Reliability** tab: provisioning repair queue, ops alerts (n8n_error_log), Stripe webhook ledger, prompt-feedback review with mark-applied (§8.7); admin-read policies for workspaces + prompt_feedback |
 
-### Deliberately deferred (with rationale)
-- **CORS allowlist**: JWT is the auth gate; per-request origin echo requires plumbing `req` through every call site — schedule with the PageShell refactor.
-- **TOOL_FIELDS → catalog move**: pure mechanical relocation (~1,150 lines); do when the tool runner is next touched.
-- **Monolith splits** (OutputRenderer 5.3k, nova.crm 3.2k, mentor 2.3k): split opportunistically when each page is rebuilt — splitting without redesigning doubles the churn.
-- **Landing page rework, embeddings memory, prompt A/B**: Phase 6 backlog per scoring table.
+### Remaining backlog (with rationale — not blocking)
+
+**Churn-only — do when the page is next rebuilt, not before** (splitting without redesigning doubles the work):
+- TOOL_FIELDS → catalog move (~1,150 lines, pure relocation).
+- Monolith splits: OutputRenderer 5.3k, nova.crm 3.2k, mentor 2.3k.
+
+**Risky if partial — needs a dedicated pass:**
+- **CORS allowlist**: must touch the `OPTIONS` handler in all ~25 functions at once; a partial rollout breaks every edge call. JWT remains the real auth gate, so this is posture, not a hole. Do as one focused PR with an `ALLOWED_ORIGINS` env + reflective `corsHeadersFor(req)` helper.
+
+**Net-new features beyond the audit scope** (scored in §12/§14 — pull in on request):
+- Approvals queue for agent actions (route exists, needs an agent-action model).
+- Living Business Plan doc engine.
+- User-facing Integration health panel (admin Ops-alerts tab covers the internal view today).
+- Embeddings memory search (deferred — recency + source filtering wins at current scale).
+- Prompt-variant A/B (the feedback pipeline now surfaces to admins; auto-A/B is the next step).
+- Landing page rework.
 
 ### Deploy checklist (ops)
-1. Apply migrations `20260610100001…100005` (idempotent; pg_cron blocks no-op if extension absent).
+1. Apply migrations `20260610100001…100006` (idempotent; pg_cron blocks no-op if extension absent).
 2. Deploy edge functions: `complete-onboarding`, `weekly-review` (new); `run-tool`, `nova-chat`, `analyze-website`, `payments-webhook`, `save-integration` (updated) + `_shared`.
 3. Set `INTEGRATIONS_ENCRYPTION_KEY` secret (save-integration now fails closed without it).
 4. Verify pg_cron jobs: `stuck-run-sweep-10min`, `weekly-review-monday`, existing `feedback-loop-30min`.
