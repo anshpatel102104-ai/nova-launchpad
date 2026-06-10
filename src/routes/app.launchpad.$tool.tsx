@@ -19,7 +19,12 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
-import { toolRunsQuery, subscriptionQuery, planEntitlementsQuery } from "@/lib/queries";
+import {
+  toolRunsQuery,
+  subscriptionQuery,
+  planEntitlementsQuery,
+  businessContextQuery,
+} from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRenderer";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -34,6 +39,7 @@ import {
   saveWorkspaceProfile,
   extractAndSaveProfileFromFields,
   getProfilePrefills,
+  mergeBusinessContextIntoProfile,
   type WorkspaceProfile,
 } from "@/lib/workspaceProfile";
 
@@ -1282,6 +1288,31 @@ function ToolPage() {
   const plansQ = useQuery(planEntitlementsQuery());
   const planTier = subQ.data?.plan ?? "starter";
 
+  // Business Context Graph — hydrates prefills server-side so tools are
+  // context-first on any device, not just after a manual run on this one.
+  const businessCtxQ = useQuery({
+    ...businessContextQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
+  useEffect(() => {
+    if (!businessCtxQ.data) return;
+    const merged = mergeBusinessContextIntoProfile(businessCtxQ.data);
+    setWorkspaceProfile(merged);
+    // Backfill any still-empty form fields from the freshly hydrated profile.
+    if (toolFieldDefs) {
+      const fills = getProfilePrefills(
+        toolFieldDefs.map((f) => f.key),
+        merged,
+      );
+      setFields((prev) => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(fills)) if (!next[k]) next[k] = v;
+        return next;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessCtxQ.data, tool.key]);
+
   const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
   const isToolLocked = !isOwner && !!currentEnt && !currentEnt.allowed_tools.includes(tool.toolKey);
 
@@ -1628,6 +1659,64 @@ function ToolPage() {
                 )}
               </div>
             </div>
+
+            {/* What Nova already knows — the context receipt before the run */}
+            {businessCtxQ.data &&
+              (() => {
+                const block = (b: unknown) =>
+                  b && typeof b === "object" ? (b as Record<string, unknown>) : {};
+                const identity = block(businessCtxQ.data.identity);
+                const customer = block(businessCtxQ.data.customer);
+                const stageB = block(businessCtxQ.data.stage);
+                const chips = [
+                  typeof identity.description === "string" && identity.description
+                    ? String(identity.description).slice(0, 60) +
+                      (String(identity.description).length > 60 ? "…" : "")
+                    : null,
+                  typeof stageB.stage === "string" && stageB.stage ? `${stageB.stage} stage` : null,
+                  typeof stageB.lane === "string" && stageB.lane ? `${stageB.lane} lane` : null,
+                  typeof customer.target === "string" && customer.target
+                    ? `→ ${customer.target}`
+                    : null,
+                ].filter(Boolean) as string[];
+                if (chips.length === 0) return null;
+                return (
+                  <div
+                    className="flex flex-wrap items-center gap-1.5 px-5 py-2.5"
+                    style={{
+                      borderBottom: "1px solid var(--border)",
+                      background: "color-mix(in oklab, var(--primary) 3%, transparent)",
+                    }}
+                  >
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-[0.1em]"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      Nova knows:
+                    </span>
+                    {chips.map((c) => (
+                      <span
+                        key={c}
+                        className="rounded-full px-2 py-0.5 text-[10.5px]"
+                        style={{
+                          background: "var(--surface)",
+                          border: "1px solid var(--border)",
+                          color: "var(--muted-foreground)",
+                        }}
+                      >
+                        {c}
+                      </span>
+                    ))}
+                    <Link
+                      to="/app/settings"
+                      className="ml-auto text-[10.5px] underline-offset-2 hover:underline"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      Edit context
+                    </Link>
+                  </div>
+                );
+              })()}
 
             {/* Workspace Profile Quick-edit panel */}
             {profileModalOpen && (

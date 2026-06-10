@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AutomationOpportunities } from "@/components/app/AutomationOpportunities";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -648,6 +649,9 @@ function AutomationsPage() {
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
+
+      {/* Bottleneck-ranked suggestions from the Business Context Graph */}
+      <AutomationOpportunities />
 
       {/* Closed-loop guidance banner */}
       <div className="rounded-2xl border border-border bg-surface-1/40 p-4 flex items-start gap-3">

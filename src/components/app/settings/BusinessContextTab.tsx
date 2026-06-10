@@ -8,31 +8,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryOptions } from "@tanstack/react-query";
 import { Brain, Loader2, Save, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { generateAiDashboard } from "@/lib/queries";
+import { generateAiDashboard, businessContextQuery } from "@/lib/queries";
 import { EmptyState } from "@/components/app/EmptyState";
 import { toast } from "sonner";
 
 type Block = Record<string, unknown>;
-
-const businessContextQuery = (orgId: string) =>
-  queryOptions({
-    queryKey: ["business_context", orgId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("business_context")
-        .select("*")
-        .eq("organization_id", orgId)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
 
 const s = (block: Block | null | undefined, key: string): string => {
   const v = block?.[key];

@@ -655,6 +655,23 @@ export async function markInsightsRead(orgId: string): Promise<void> {
   if (error) throw error;
 }
 
+/** The Business Context Graph — the canonical context every AI surface reads. */
+export const businessContextQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["business_context", orgId],
+    queryFn: async () => {
+      if (!orgId || isGuest()) return null;
+      const { data, error } = await supabase
+        .from("business_context")
+        .select("*")
+        .eq("organization_id", orgId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 60_000,
+  });
+
 /** Workspace mode + provisioning status — drives mode-aware Home and the repair CTA. */
 export const workspaceStatusQuery = (userId: string) =>
   queryOptions({
