@@ -4,7 +4,7 @@
 // TASK-021: Do This For Me — triggers the operator to auto-apply the recommended action
 
 import React from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { Lightbulb, Sparkles, Zap, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,24 +56,11 @@ const ACTION_CONFIG: Record<
 };
 
 async function callOperator(prompt: string, workspaceId?: string | null): Promise<string> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
-
-  const resp = await fetch(
-    `${(import.meta as { env: { VITE_SUPABASE_URL?: string } }).env.VITE_SUPABASE_URL}/functions/v1/operator`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ message: prompt, workspace_id: workspaceId ?? null }),
-    },
+  const json = await invokeEdge<{ reply?: string; message?: string }>(
+    "operator",
+    { message: prompt, workspace_id: workspaceId ?? null },
+    { timeoutMs: 90_000 },
   );
-  if (!resp.ok) throw new Error("Operator call failed");
-  const json = await resp.json();
   return json.reply ?? json.message ?? JSON.stringify(json);
 }
 

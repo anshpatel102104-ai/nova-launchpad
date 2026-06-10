@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { ErrorState } from "@/components/app/ErrorState";
 import {
   aiDashboardQuery,
   onboardingResponseQuery,
@@ -1049,8 +1050,18 @@ function AiDashboardPage() {
           </div>
         )}
 
+        {/* Query failure — don't silently fall through to the intake form */}
+        {dashboardQ.isError && !isLoading && !isGenerating && (
+          <ErrorState
+            variant="generic"
+            title="Couldn't load your dashboard"
+            description="Your saved dashboard didn't load. It still exists — try again."
+            onRetry={() => dashboardQ.refetch()}
+          />
+        )}
+
         {/* Intake form */}
-        {!isLoading && !isGenerating && (!hasDashboard || showForm) && (
+        {!dashboardQ.isError && !isLoading && !isGenerating && (!hasDashboard || showForm) && (
           <IntakeForm defaults={intakeDefaults} onSubmit={handleSubmit} loading={isGenerating} />
         )}
 

@@ -1399,12 +1399,10 @@ function ToolPage() {
     setFeedback(null);
     try {
       const payload = buildPayload(fields, title);
-      const result = await runTool(
-        effectiveToolKey,
-        payload,
-        { orgId: currentOrgId, userId: user?.id },
-        (chunk) => setStreamText((t) => t + chunk),
-      );
+      const result = await runTool(effectiveToolKey, payload, {
+        orgId: currentOrgId,
+        userId: user?.id,
+      });
       setStreamText("");
       setOutput(result.output);
       if (result.run_id) setRunId(result.run_id);

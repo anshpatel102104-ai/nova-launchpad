@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
+import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -804,6 +805,9 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Section 1.5: AI Briefing (merged from /app/ai-dashboard) ── */}
+      <AiBriefingCard />
 
       {/* ── Section 2: Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

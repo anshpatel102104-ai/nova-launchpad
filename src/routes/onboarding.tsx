@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { NovaChatOnboarding, type OnboardingAnswers } from "@/components/app/NovaChatOnboarding";
 import { classifyLane } from "@/lib/lane-classifier";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboarding")({
@@ -90,29 +91,23 @@ function Onboarding() {
     const lane = classifyLane(stage || "Idea", challenge);
 
     // ── 3. Provision workspace ────────────────────────────────────────
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData.session?.access_token;
-    const supabaseBase = import.meta.env.VITE_SUPABASE_URL;
-
     let workspaceId: string | null = null;
     try {
-      const provisionRes = await fetch(`${supabaseBase}/functions/v1/provision-workspace`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({
+      const d = await invokeEdge<{ workspace_id?: string }>(
+        "provision-workspace",
+        {
           organization_id: orgId,
           name: "My Workspace",
           lane,
           stage: stage || "Idea",
           idea,
-        }),
-      });
-      if (provisionRes.ok) {
-        const d = await provisionRes.json();
-        workspaceId = d.workspace_id ?? null;
-      }
-    } catch {
-      /* non-blocking */
+        },
+        { timeoutMs: 30_000, retries: 2 },
+      );
+      workspaceId = d.workspace_id ?? null;
+    } catch (e) {
+      console.error("[onboarding] provisioning failed:", e);
+      toast.error("Workspace setup hit a snag — you can finish it from your dashboard.");
     }
 
     // ── 4. Save onboarding answers ────────────────────────────────────
@@ -162,10 +157,9 @@ function Onboarding() {
     if (profileErr) throw new Error("Failed to mark onboarding complete: " + profileErr.message);
 
     // ── 6. Generate AI dashboard (non-blocking — happens in background) ──
-    fetch(`${supabaseBase}/functions/v1/generate-ai-dashboard`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({
+    invokeEdge(
+      "generate-ai-dashboard",
+      {
         business: idea,
         niche: target_customer,
         stage,
@@ -174,18 +168,15 @@ function Onboarding() {
         target_customer,
         biggest_blocker: challenge,
         organization_id: orgId,
-      }),
-    }).catch((e) => console.warn("[onboarding] AI dashboard gen failed (non-blocking):", e));
+      },
+      { timeoutMs: 90_000, retries: 1 },
+    ).catch((e) => console.warn("[onboarding] AI dashboard gen failed (non-blocking):", e));
 
     // ── 7. Log activation event ───────────────────────────────────────
-    fetch(`${supabaseBase}/functions/v1/log-activation-event`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({
-        event_name: "onboarding_complete",
-        workspace_id: workspaceId,
-        properties: { lane, stage, challenge, goal, has_idea: idea.length > 0 },
-      }),
+    invokeEdge("log-activation-event", {
+      event_name: "onboarding_complete",
+      workspace_id: workspaceId,
+      properties: { lane, stage, challenge, goal, has_idea: idea.length > 0 },
     }).catch(() => {});
 
     setDone(true);

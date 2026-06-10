@@ -483,14 +483,17 @@ export async function deleteMemorySource(sourceId: string) {
 
 // ── AI Dashboard ─────────────────────────────────────────────────────────────
 
+// All fields optional: the edge function resolves the org from the session and
+// backfills any missing field from the saved onboarding_responses row.
 export type GenerateDashboardInput = {
-  business: string;
+  business?: string;
   niche?: string;
   stage?: string;
   goal?: string;
   current_revenue?: string;
   target_customer?: string;
   biggest_blocker?: string;
+  organization_id?: string;
 };
 
 export const onboardingResponseQuery = (orgId: string) =>
@@ -513,13 +516,16 @@ export const aiDashboardQuery = (orgId: string) =>
     queryKey: ["ai_dashboard", orgId],
     queryFn: async () => {
       if (isGuest()) return null;
+      // generate-ai-dashboard INSERTS a row per generation — always read the latest,
+      // never .maybeSingle() (throws once a dashboard has been regenerated).
       const { data, error } = await supabase
         .from("ai_dashboards")
         .select("*")
         .eq("organization_id", orgId)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(1);
       if (error) throw error;
-      return data;
+      return data?.[0] ?? null;
     },
   });
 

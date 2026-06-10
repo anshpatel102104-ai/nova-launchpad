@@ -6,13 +6,19 @@ import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 type Item = { id: string; label: string; path: string; tag: "page" | "tool" };
 
 const NAV_ITEMS: Item[] = [
-  { id: "dashboard", label: "Command Center", path: "/app/dashboard", tag: "page" },
-  { id: "launchpad", label: "Launchpad", path: "/app/launchpad/", tag: "page" },
-  { id: "contacts", label: "Contacts", path: "/app/contacts", tag: "page" },
-  { id: "memory", label: "Company Memory", path: "/app/memory", tag: "page" },
+  { id: "home", label: "Home", path: "/app/dashboard", tag: "page" },
+  { id: "path", label: "Journey / Path", path: "/app/launchpad-path", tag: "page" },
+  { id: "missions", label: "Missions", path: "/app/mission-control", tag: "page" },
+  { id: "workbench", label: "Workbench (Tools)", path: "/app/launchpad/", tag: "page" },
+  { id: "contacts", label: "Customers · Contacts", path: "/app/contacts", tag: "page" },
+  { id: "pipeline", label: "Customers · Pipeline", path: "/app/nova/crm", tag: "page" },
   { id: "automations", label: "Automations", path: "/app/automations", tag: "page" },
+  { id: "builder", label: "Automation Builder", path: "/app/builder", tag: "page" },
   { id: "integrations", label: "Integrations", path: "/app/integrations", tag: "page" },
-  { id: "activity", label: "Activity Log", path: "/app/activity", tag: "page" },
+  { id: "ai-dashboard", label: "Insights · AI Dashboard", path: "/app/ai-dashboard", tag: "page" },
+  { id: "reports", label: "Insights · Reports", path: "/app/nova/reports", tag: "page" },
+  { id: "assets", label: "Library · Assets", path: "/app/assets", tag: "page" },
+  { id: "memory", label: "Library · Memory", path: "/app/memory", tag: "page" },
   { id: "settings", label: "Settings", path: "/app/settings", tag: "page" },
   { id: "billing", label: "Billing", path: "/app/billing", tag: "page" },
 ];
