@@ -1,3 +1,4 @@
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -841,6 +842,7 @@ function PlaybookPage() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="path" />
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>

@@ -22,6 +22,19 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Design system §9: app components must use theme/domain tokens
+      // (var(--primary), var(--domain-customers), …) instead of raw hex in
+      // inline styles. Warning, not error: marketing/brand moments (landing,
+      // onboarding) legitimately use literal palettes.
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            'JSXAttribute[name.name="style"] Property[key.name=/^(color|background|backgroundColor|borderColor|fill|stroke)$/] > Literal[value=/#[0-9a-fA-F]{3,8}/]',
+          message:
+            "Use a design token (var(--primary), var(--domain-*), …) instead of raw hex in inline styles.",
+        },
+      ],
     },
   },
   eslintPluginPrettier,

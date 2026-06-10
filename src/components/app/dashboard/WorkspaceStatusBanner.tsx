@@ -113,13 +113,13 @@ export function WorkspaceStatusBanner() {
       <div
         className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5"
         style={{
-          borderColor: "color-mix(in oklab, #06b6d4 30%, transparent)",
-          background: "color-mix(in oklab, #06b6d4 5%, transparent)",
+          borderColor: "color-mix(in oklab, var(--domain-customers) 30%, transparent)",
+          background: "color-mix(in oklab, var(--domain-customers) 5%, transparent)",
         }}
       >
         <div
           className="flex items-center gap-2 text-[12.5px] font-semibold"
-          style={{ color: "#06b6d4" }}
+          style={{ color: "var(--domain-customers)" }}
         >
           <Zap className="h-3.5 w-3.5" /> Operator mode
           <span className="font-normal" style={{ color: "var(--muted-foreground)" }}>
@@ -138,7 +138,7 @@ export function WorkspaceStatusBanner() {
                 color: "var(--foreground)",
               }}
             >
-              <l.icon className="h-3.5 w-3.5" style={{ color: "#06b6d4" }} />
+              <l.icon className="h-3.5 w-3.5" style={{ color: "var(--domain-customers)" }} />
               {l.label}
               <ArrowRight className="h-3 w-3 opacity-50" />
             </Link>

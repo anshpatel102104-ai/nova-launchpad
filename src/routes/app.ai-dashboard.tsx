@@ -1,3 +1,4 @@
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -976,6 +977,9 @@ function AiDashboardPage() {
     <div className="min-h-screen px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-4xl">
         {/* Page header */}
+        <div className="mb-4">
+          <SectionTabs section="insights" />
+        </div>
         <div className="flex items-center gap-2 mb-6">
           <LayoutDashboard className="h-5 w-5" style={{ color: "var(--primary)" }} />
           <span

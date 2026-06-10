@@ -25,6 +25,7 @@ import { NovaAvatar } from "@/components/nova/NovaAvatar";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
 import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
+import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -726,7 +727,9 @@ function Dashboard() {
   return (
     <div className="space-y-5">
       {/* ── Section 0: provisioning repair / operator cockpit strip ── */}
-      <WorkspaceStatusBanner />
+      <ModuleBoundary name="workspace status">
+        <WorkspaceStatusBanner />
+      </ModuleBoundary>
 
       {/* ── Section 1: Nova Brief ── */}
       <div
@@ -811,7 +814,9 @@ function Dashboard() {
       </div>
 
       {/* ── Section 1.5: AI Briefing (merged from /app/ai-dashboard) ── */}
-      <AiBriefingCard />
+      <ModuleBoundary name="AI briefing">
+        <AiBriefingCard />
+      </ModuleBoundary>
 
       {/* ── Section 2: Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
