@@ -26,6 +26,7 @@ import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
 import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
+import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -817,6 +818,13 @@ function Dashboard() {
       <ModuleBoundary name="AI briefing">
         <AiBriefingCard />
       </ModuleBoundary>
+
+      {/* ── Section 1.6: Focus — the current mission (design system §5.4) ── */}
+      {user?.id && (
+        <ModuleBoundary name="current mission">
+          <CurrentMissionCard userId={user.id} />
+        </ModuleBoundary>
+      )}
 
       {/* ── Section 2: Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
