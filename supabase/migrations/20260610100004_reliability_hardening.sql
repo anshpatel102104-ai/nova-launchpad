@@ -47,7 +47,7 @@ alter table public.n8n_error_log enable row level security;
 drop policy if exists "n8n_error_log_select_admin" on public.n8n_error_log;
 create policy "n8n_error_log_select_admin"
   on public.n8n_error_log for select
-  using (public.has_role(auth.uid(), 'admin'));
+  using (public.has_role(auth.uid(), 'admin'::public.app_role));
 
 -- ── 2. Stripe webhook idempotency ─────────────────────────────────────
 -- payments-webhook records every event id it processes; a redelivered
@@ -66,7 +66,7 @@ alter table public.stripe_webhook_events enable row level security;
 drop policy if exists "stripe_webhook_events_select_admin" on public.stripe_webhook_events;
 create policy "stripe_webhook_events_select_admin"
   on public.stripe_webhook_events for select
-  using (public.has_role(auth.uid(), 'admin'));
+  using (public.has_role(auth.uid(), 'admin'::public.app_role));
 
 -- ── 3. Atomic quota consumption ───────────────────────────────────────
 -- Replaces the read-then-increment pattern in edge functions. One statement,
