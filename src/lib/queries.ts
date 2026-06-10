@@ -655,6 +655,22 @@ export async function markInsightsRead(orgId: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Workspace mode + provisioning status — drives mode-aware Home and the repair CTA. */
+export const workspaceStatusQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["workspace-status", userId],
+    queryFn: async () => {
+      if (!userId || isGuest()) return null;
+      const { data } = await supabase
+        .from("workspaces")
+        .select("id, mode, provisioning_status, lane, stage")
+        .eq("owner_id", userId)
+        .maybeSingle();
+      return data ?? null;
+    },
+    staleTime: 60_000,
+  });
+
 /** Current active mission for the user's workspace — shared query key with CurrentMissionCard. */
 export const currentMissionQuery = (userId: string) =>
   queryOptions({

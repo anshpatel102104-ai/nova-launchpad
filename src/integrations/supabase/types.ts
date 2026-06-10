@@ -1019,6 +1019,101 @@ export type Database = {
           },
         ];
       };
+      onboarding_sessions: {
+        Row: {
+          answers: Json;
+          created_at: string;
+          id: string;
+          mode: string | null;
+          status: string;
+          step: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          answers?: Json;
+          created_at?: string;
+          id?: string;
+          mode?: string | null;
+          status?: string;
+          step?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          answers?: Json;
+          created_at?: string;
+          id?: string;
+          mode?: string | null;
+          status?: string;
+          step?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      business_context: {
+        Row: {
+          activity: Json;
+          constraints: Json;
+          created_at: string;
+          customer: Json;
+          goals: Json;
+          id: string;
+          identity: Json;
+          model: Json;
+          motion: Json;
+          organization_id: string;
+          stage: Json;
+          updated_at: string;
+          verdicts: Json;
+          version: number;
+          workspace_id: string | null;
+        };
+        Insert: {
+          activity?: Json;
+          constraints?: Json;
+          created_at?: string;
+          customer?: Json;
+          goals?: Json;
+          id?: string;
+          identity?: Json;
+          model?: Json;
+          motion?: Json;
+          organization_id: string;
+          stage?: Json;
+          updated_at?: string;
+          verdicts?: Json;
+          version?: number;
+          workspace_id?: string | null;
+        };
+        Update: {
+          activity?: Json;
+          constraints?: Json;
+          created_at?: string;
+          customer?: Json;
+          goals?: Json;
+          id?: string;
+          identity?: Json;
+          model?: Json;
+          motion?: Json;
+          organization_id?: string;
+          stage?: Json;
+          updated_at?: string;
+          verdicts?: Json;
+          version?: number;
+          workspace_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_context_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       operator_memory: {
         Row: {
           content: string;
@@ -1870,9 +1965,11 @@ export type Database = {
           current_mission_id: string | null;
           id: string;
           lane: Database["public"]["Enums"]["workspace_lane"];
+          mode: string;
           name: string;
           organization_id: string;
           owner_id: string;
+          provisioning_status: string;
           stage: Database["public"]["Enums"]["business_stage"];
           updated_at: string;
           updated_by: string | null;
@@ -1882,9 +1979,11 @@ export type Database = {
           current_mission_id?: string | null;
           id?: string;
           lane?: Database["public"]["Enums"]["workspace_lane"];
+          mode?: string;
           name: string;
           organization_id: string;
           owner_id: string;
+          provisioning_status?: string;
           stage?: Database["public"]["Enums"]["business_stage"];
           updated_at?: string;
           updated_by?: string | null;
@@ -1894,9 +1993,11 @@ export type Database = {
           current_mission_id?: string | null;
           id?: string;
           lane?: Database["public"]["Enums"]["workspace_lane"];
+          mode?: string;
           name?: string;
           organization_id?: string;
           owner_id?: string;
+          provisioning_status?: string;
           stage?: Database["public"]["Enums"]["business_stage"];
           updated_at?: string;
           updated_by?: string | null;

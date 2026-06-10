@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   AlertTriangle,
+  Brain,
   Check,
   Lock,
   Trash2,
@@ -31,6 +32,7 @@ import {
   ExternalLink,
   Unplug,
 } from "lucide-react";
+import { BusinessContextTab } from "@/components/app/settings/BusinessContextTab";
 import { getCatalogByKey } from "@/lib/integrations-catalog";
 import {
   Dialog,
@@ -46,6 +48,7 @@ export const Route = createFileRoute("/app/settings")({ component: SettingsPage 
 
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
+  { key: "context", label: "Business Context", icon: Brain },
   { key: "organization", label: "Organization", icon: Building2 },
   { key: "plan", label: "Plan", icon: CreditCard },
   { key: "connectors", label: "Connectors", icon: Plug },
@@ -105,6 +108,7 @@ function SettingsPage() {
 
       <div>
         {tab === "profile" && <ProfileTab />}
+        {tab === "context" && <BusinessContextTab />}
         {tab === "organization" && <OrgTab />}
         {tab === "plan" && <PlanTab />}
         {tab === "connectors" && <ConnectorsTab />}

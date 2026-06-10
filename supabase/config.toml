@@ -46,3 +46,8 @@ verify_jwt = true
 [functions.feedback-loop]
 verify_jwt = false
 
+
+# Server-side onboarding completion saga — org + workspace + mission + context
+# created atomically. Replaces the client-orchestrated chain in onboarding.tsx.
+[functions.complete-onboarding]
+verify_jwt = true

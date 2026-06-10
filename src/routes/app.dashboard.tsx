@@ -24,6 +24,7 @@ import {
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
+import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -724,6 +725,9 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
+      {/* ── Section 0: provisioning repair / operator cockpit strip ── */}
+      <WorkspaceStatusBanner />
+
       {/* ── Section 1: Nova Brief ── */}
       <div
         className="rounded-xl p-5 flex gap-5 items-start"
