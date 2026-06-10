@@ -3,7 +3,7 @@
 // Sends messages to the /functions/v1/operator endpoint.
 
 import React, { useState, useRef, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { Send, Loader2, Bot, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,20 +37,15 @@ export function AskOperatorCard({ workspaceId, className }: Props) {
     setLoading(true);
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/operator`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: text, workspace_id: workspaceId }),
-      });
-
-      const data = await res.json();
+      const data = await invokeEdge<{
+        status?: string;
+        reply?: string;
+        upsell_message?: string;
+        error?: string;
+      }>("operator", { message: text, workspace_id: workspaceId }, { timeoutMs: 90_000 });
 
       if (data.status === "success") {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: data.reply ?? "" }]);
       } else if (data.status === "credit_insufficient") {
         setMessages((prev) => [
           ...prev,

@@ -1,10 +1,22 @@
+// Two-track onboarding: CREATE A BUSINESS (founders) vs OPERATE A BUSINESS
+// (operators). Every answer persists to onboarding_sessions (resume on return);
+// completion is a single server-side saga (complete-onboarding edge function)
+// — the profile is only flagged complete after the workspace actually exists.
+
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
-import { NovaChatOnboarding, type OnboardingAnswers } from "@/components/app/NovaChatOnboarding";
-import { classifyLane } from "@/lib/lane-classifier";
-import { toast } from "sonner";
+import { NovaIntakeChat, type IntakeAnswers } from "@/components/app/NovaIntakeChat";
+import { FOUNDER_QUESTIONS, OPERATOR_QUESTIONS } from "@/constants/onboarding-questions";
+import { invokeEdge, EdgeError } from "@/lib/invokeEdge";
+
+type Mode = "create" | "operate";
+
+const ACCENTS: Record<Mode, { accent: string; accentDark: string }> = {
+  create: { accent: "#f97316", accentDark: "#ea580c" },
+  operate: { accent: "#06b6d4", accentDark: "#0e7490" },
+};
 
 export const Route = createFileRoute("/onboarding")({
   beforeLoad: async () => {
@@ -40,159 +52,91 @@ const ANIM_CSS = `
   }
 `;
 
+type Phase = "loading" | "fork" | "chat" | "provisioning" | "done";
+
 function Onboarding() {
   const navigate = useNavigate();
-  const [done, setDone] = useState(false);
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [mode, setMode] = useState<Mode>("create");
+  const [resume, setResume] = useState<{ step: number; answers: IntakeAnswers } | null>(null);
+  const [pendingAnswers, setPendingAnswers] = useState<IntakeAnswers | null>(null);
+  const [provisionError, setProvisionError] = useState<string | null>(null);
 
-  const handleComplete = async (answers: OnboardingAnswers) => {
-    const { idea, stage, target_customer, goal, revenue, challenge } = answers;
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    // ── 1. Create org + membership ────────────────────────────────────
-    const { data: existingOrg } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    let orgId: string;
-    if (existingOrg) {
-      orgId = existingOrg.organization_id as string;
-    } else {
-      const { data: org, error: orgErr } = await supabase
-        .from("organizations")
-        .insert({
-          name: "My Workspace",
-          owner_id: user.id,
-          stage: (stage || undefined) as
-            | "Idea"
-            | "Validate"
-            | "Launch"
-            | "Operate"
-            | "Scale"
-            | undefined,
-        })
-        .select("id")
-        .single();
-      if (orgErr) throw orgErr;
-      orgId = org.id as string;
-
-      await supabase
-        .from("organization_members")
-        .insert({ organization_id: orgId, user_id: user.id, role: "owner" });
-    }
-
-    // ── 2. Classify lane ──────────────────────────────────────────────
-    const lane = classifyLane(stage || "Idea", challenge);
-
-    // ── 3. Provision workspace ────────────────────────────────────────
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData.session?.access_token;
-    const supabaseBase = import.meta.env.VITE_SUPABASE_URL;
-
-    let workspaceId: string | null = null;
-    try {
-      const provisionRes = await fetch(`${supabaseBase}/functions/v1/provision-workspace`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({
-          organization_id: orgId,
-          name: "My Workspace",
-          lane,
-          stage: stage || "Idea",
-          idea,
-        }),
-      });
-      if (provisionRes.ok) {
-        const d = await provisionRes.json();
-        workspaceId = d.workspace_id ?? null;
+  // Restore an abandoned session so users never re-answer from scratch.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("onboarding_sessions")
+          .select("mode, step, answers, status")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data && data.status === "in_progress" && data.mode) {
+          setMode(data.mode as Mode);
+          setResume({
+            step: (data.step as number) ?? 0,
+            answers: (data.answers as IntakeAnswers) ?? {},
+          });
+          setPhase("chat");
+        } else {
+          setPhase("fork");
+        }
+      } catch {
+        if (!cancelled) setPhase("fork");
       }
-    } catch {
-      /* non-blocking */
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    // ── 4. Save onboarding answers ────────────────────────────────────
-    const { error: onboardingErr } = await supabase.from("onboarding_responses").upsert(
-      {
-        user_id: user.id,
-        organization_id: orgId,
-        offer: idea,
-        niche: target_customer,
-        target_customer,
-        goal,
-        current_revenue: revenue,
-        stage: (stage || null) as "Idea" | "Validate" | "Launch" | "Operate" | "Scale" | null,
-        biggest_blocker: challenge,
-        completed: true,
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
-    if (onboardingErr) {
-      console.error("[onboarding] Failed to save responses:", onboardingErr.message);
-      // Non-fatal — continue so profile still gets marked complete
-    }
-
-    if (workspaceId) {
-      await supabase.from("workspace_intake").upsert(
-        {
-          workspace_id: workspaceId,
-          user_id: user.id,
-          idea,
-          stage: stage || "Idea",
-          challenge,
-          lane: lane as "Idea" | "Offer" | "Customer" | "Systems",
-          raw_answers: { idea, stage, target_customer, goal, revenue, challenge },
-          completed: true,
-          completed_at: new Date().toISOString(),
-        },
-        { onConflict: "workspace_id" },
-      );
-    }
-
-    // ── 5. Mark onboarding complete ───────────────────────────────────
-    const { error: profileErr } = await supabase
-      .from("profiles")
-      .update({ onboarding_complete: true })
-      .eq("id", user.id);
-    if (profileErr) throw new Error("Failed to mark onboarding complete: " + profileErr.message);
-
-    // ── 6. Generate AI dashboard (non-blocking — happens in background) ──
-    fetch(`${supabaseBase}/functions/v1/generate-ai-dashboard`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({
-        business: idea,
-        niche: target_customer,
-        stage,
-        goal,
-        current_revenue: revenue,
-        target_customer,
-        biggest_blocker: challenge,
-        organization_id: orgId,
-      }),
-    }).catch((e) => console.warn("[onboarding] AI dashboard gen failed (non-blocking):", e));
-
-    // ── 7. Log activation event ───────────────────────────────────────
-    fetch(`${supabaseBase}/functions/v1/log-activation-event`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({
-        event_name: "onboarding_complete",
-        workspace_id: workspaceId,
-        properties: { lane, stage, challenge, goal, has_idea: idea.length > 0 },
-      }),
-    }).catch(() => {});
-
-    setDone(true);
-    setTimeout(() => navigate({ to: "/app/dashboard" }), 3200);
+  const saveSession = (m: Mode, step: number, answers: IntakeAnswers) => {
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase
+        .from("onboarding_sessions")
+        .upsert(
+          { user_id: user.id, mode: m, step, answers, status: "in_progress" },
+          { onConflict: "user_id" },
+        );
+    })();
   };
 
-  if (done) return <WelcomeScreen onSkip={() => navigate({ to: "/app/dashboard" })} />;
+  const chooseMode = (m: Mode) => {
+    setMode(m);
+    setResume(null);
+    saveSession(m, 0, {});
+    setPhase("chat");
+  };
+
+  const complete = async (answers: IntakeAnswers) => {
+    setPendingAnswers(answers);
+    setProvisionError(null);
+    setPhase("provisioning");
+    try {
+      await invokeEdge("complete-onboarding", { mode, answers }, { timeoutMs: 90_000, retries: 1 });
+      setPhase("done");
+      setTimeout(() => navigate({ to: "/app/dashboard" }), 3200);
+    } catch (e) {
+      setProvisionError(
+        e instanceof EdgeError ? e.message : "Something went wrong while building your workspace.",
+      );
+    }
+  };
+
+  if (phase === "done")
+    return <WelcomeScreen mode={mode} onSkip={() => navigate({ to: "/app/dashboard" })} />;
+
+  const { accent, accentDark } = ACCENTS[mode];
 
   return (
     <div
@@ -217,7 +161,7 @@ function Onboarding() {
           width: 700,
           height: 500,
           borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(249,115,22,0.07) 0%, transparent 70%)",
+          background: `radial-gradient(ellipse, color-mix(in oklab, ${phase === "fork" ? "#8b5cf6" : accent} 7%, transparent) 0%, transparent 70%)`,
           animation: "ambientPulse 4s ease-in-out infinite",
           pointerEvents: "none",
         }}
@@ -237,27 +181,22 @@ function Onboarding() {
         }}
       >
         {/* Nova wordmark */}
-        <div
-          style={{
-            marginBottom: 28,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
+        <div style={{ marginBottom: 28, display: "flex", alignItems: "center", gap: 8 }}>
           <div
             style={{
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #f97316, #ea580c)",
+              background:
+                phase === "fork"
+                  ? "linear-gradient(135deg, #8b5cf6, #6d28d9)"
+                  : `linear-gradient(135deg, ${accent}, ${accentDark})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: 800,
               color: "#fff",
-              boxShadow: "0 0 20px rgba(249,115,22,0.4)",
             }}
           >
             N
@@ -274,18 +213,345 @@ function Onboarding() {
           </span>
         </div>
 
-        <NovaChatOnboarding
-          onComplete={async (answers) => {
-            try {
-              await handleComplete(answers);
-            } catch (e) {
-              toast.error(
-                e instanceof Error ? e.message : "Something went wrong. Please try again.",
-              );
-              throw e;
-            }
+        {phase === "loading" && (
+          <div style={{ color: "rgba(247,240,232,0.4)", fontSize: 13, fontFamily: "monospace" }}>
+            loading…
+          </div>
+        )}
+
+        {phase === "fork" && <ForkScreen onChoose={chooseMode} />}
+
+        {phase === "chat" && (
+          <NovaIntakeChat
+            key={mode}
+            questions={mode === "operate" ? OPERATOR_QUESTIONS : FOUNDER_QUESTIONS}
+            accent={accent}
+            accentDark={accentDark}
+            initialAnswers={resume?.answers}
+            initialStep={resume?.step ?? 0}
+            onAnswer={(key, value, step) => {
+              const merged = { ...(resume?.answers ?? {}), [key]: value };
+              setResume({ step, answers: merged });
+              saveSession(mode, step, merged);
+            }}
+            onComplete={complete}
+          />
+        )}
+
+        {phase === "provisioning" && (
+          <ProvisioningScreen
+            mode={mode}
+            accent={accent}
+            error={provisionError}
+            onRetry={() => pendingAnswers && complete(pendingAnswers)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Step 0 — the fork ─────────────────────────────────────────────────────────
+
+function ForkScreen({ onChoose }: { onChoose: (m: Mode) => void }) {
+  const cards: Array<{
+    mode: Mode;
+    title: string;
+    desc: string;
+    bullets: string[];
+    accent: string;
+    accentDark: string;
+    emoji: string;
+  }> = [
+    {
+      mode: "create",
+      title: "Create a business",
+      desc: "I have an idea — take me from concept to paying customers.",
+      bullets: ["Validate the idea", "Build the offer", "Land the first customers"],
+      accent: "#f97316",
+      accentDark: "#ea580c",
+      emoji: "🚀",
+    },
+    {
+      mode: "operate",
+      title: "Operate a business",
+      desc: "I'm running one — give me systems, automation, and visibility.",
+      bullets: ["KPI cockpit", "Automation opportunities", "Scale playbooks"],
+      accent: "#06b6d4",
+      accentDark: "#0e7490",
+      emoji: "⚙️",
+    },
+  ];
+
+  return (
+    <div style={{ width: "100%", maxWidth: 720, animation: "fadeUp 0.5s ease both" }}>
+      <h1
+        style={{
+          textAlign: "center",
+          fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
+          fontWeight: 800,
+          letterSpacing: "-0.03em",
+          color: "#f7f0e8",
+          margin: "0 0 8px",
+        }}
+      >
+        What brings you to Nova?
+      </h1>
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: 14,
+          color: "rgba(247,240,232,0.45)",
+          margin: "0 0 28px",
+        }}
+      >
+        Two different operating systems. Pick the one that matches where you are.
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: 14,
+        }}
+      >
+        {cards.map((c, i) => (
+          <button
+            key={c.mode}
+            onClick={() => onChoose(c.mode)}
+            style={{
+              textAlign: "left",
+              padding: "22px 20px",
+              borderRadius: 18,
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.035)",
+              border: `1px solid color-mix(in oklab, ${c.accent} 28%, transparent)`,
+              transition: "transform 0.15s, border-color 0.15s, background 0.15s",
+              animation: `fadeUp 0.5s ease ${0.1 + i * 0.08}s both`,
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.transform = "translateY(-3px)";
+              el.style.borderColor = c.accent;
+              el.style.background = `color-mix(in oklab, ${c.accent} 7%, transparent)`;
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.transform = "none";
+              el.style.borderColor = `color-mix(in oklab, ${c.accent} 28%, transparent)`;
+              el.style.background = "rgba(255,255,255,0.035)";
+            }}
+          >
+            <div
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 20,
+                background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
+                boxShadow: `0 4px 18px color-mix(in oklab, ${c.accent} 35%, transparent)`,
+                marginBottom: 14,
+              }}
+            >
+              {c.emoji}
+            </div>
+            <div
+              style={{ fontSize: 17, fontWeight: 800, color: "#f7f0e8", letterSpacing: "-0.01em" }}
+            >
+              {c.title}
+            </div>
+            <p
+              style={{
+                fontSize: 13,
+                color: "rgba(247,240,232,0.5)",
+                margin: "6px 0 14px",
+                lineHeight: 1.55,
+              }}
+            >
+              {c.desc}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {c.bullets.map((b) => (
+                <div
+                  key={b}
+                  style={{
+                    fontSize: 12,
+                    color: "rgba(247,240,232,0.65)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      background: c.accent,
+                      flexShrink: 0,
+                    }}
+                  />
+                  {b}
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                marginTop: 16,
+                fontSize: 12.5,
+                fontWeight: 700,
+                color: c.accent,
+              }}
+            >
+              Start here →
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Provisioning — real checkpoints, real failure handling ───────────────────
+
+const CREATE_CHECKPOINTS = [
+  "Creating your workspace",
+  "Seeding your first mission",
+  "Writing your business context",
+  "Generating your AI briefing",
+];
+
+const OPERATE_CHECKPOINTS = [
+  "Creating your workspace",
+  "Building your operating baseline",
+  "Mapping your bottlenecks & stack",
+  "Generating your ops briefing",
+];
+
+function ProvisioningScreen({
+  mode,
+  accent,
+  error,
+  onRetry,
+}: {
+  mode: Mode;
+  accent: string;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  const checkpoints = mode === "operate" ? OPERATE_CHECKPOINTS : CREATE_CHECKPOINTS;
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (error) return;
+    const t = setInterval(() => setTick((v) => Math.min(v + 1, checkpoints.length - 1)), 1600);
+    return () => clearInterval(t);
+  }, [error, checkpoints.length]);
+
+  return (
+    <div style={{ width: "100%", maxWidth: 420, animation: "fadeUp 0.4s ease both" }}>
+      <div
+        style={{
+          borderRadius: 18,
+          padding: "26px 24px",
+          background: "rgba(255,255,255,0.035)",
+          border: `1px solid color-mix(in oklab, ${error ? "#f87171" : accent} 30%, transparent)`,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: error ? "#f87171" : accent,
+            marginBottom: 16,
+            fontFamily: "monospace",
           }}
-        />
+        >
+          {error ? "provisioning failed" : "assembling workspace"}
+        </div>
+
+        {!error &&
+          checkpoints.map((label, i) => {
+            const state = i < tick ? "done" : i === tick ? "active" : "pending";
+            return (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "7px 0",
+                  opacity: state === "pending" ? 0.35 : 1,
+                  transition: "opacity 0.4s",
+                }}
+              >
+                <span
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 10,
+                    color: "#fff",
+                    background:
+                      state === "done"
+                        ? accent
+                        : state === "active"
+                          ? `color-mix(in oklab, ${accent} 35%, transparent)`
+                          : "rgba(255,255,255,0.08)",
+                    animation: state === "active" ? "ambientPulse 1.2s infinite" : undefined,
+                  }}
+                >
+                  {state === "done" ? "✓" : ""}
+                </span>
+                <span style={{ fontSize: 13.5, color: "rgba(247,240,232,0.8)" }}>{label}</span>
+              </div>
+            );
+          })}
+
+        {error && (
+          <>
+            <p
+              style={{
+                fontSize: 13.5,
+                color: "rgba(247,240,232,0.75)",
+                lineHeight: 1.6,
+                margin: 0,
+              }}
+            >
+              {error}
+            </p>
+            <p style={{ fontSize: 12, color: "rgba(247,240,232,0.4)", lineHeight: 1.6 }}>
+              Your answers are saved — nothing is lost. Retry now, or come back later and Nova will
+              pick up where you left off.
+            </p>
+            <button
+              onClick={onRetry}
+              style={{
+                marginTop: 10,
+                width: "100%",
+                padding: "11px 0",
+                borderRadius: 12,
+                border: "none",
+                fontWeight: 700,
+                fontSize: 13.5,
+                color: "#fff",
+                cursor: "pointer",
+                background: `linear-gradient(135deg, ${accent}, color-mix(in oklab, ${accent} 55%, #000))`,
+              }}
+            >
+              Retry provisioning
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -300,7 +566,7 @@ const BOOT_LINES = [
   "building your command center…",
 ];
 
-function WelcomeScreen({ onSkip }: { onSkip: () => void }) {
+function WelcomeScreen({ mode, onSkip }: { mode: Mode; onSkip: () => void }) {
   const [phase, setPhase] = useState<"boot" | "reveal">("boot");
   const [lineIdx, setLineIdx] = useState(0);
   const [showFallback, setShowFallback] = useState(false);
@@ -438,9 +704,19 @@ function WelcomeScreen({ onSkip }: { onSkip: () => void }) {
                 opacity: 0,
               }}
             >
-              Your AI founder OS is online.
-              <br />
-              Let's build something remarkable.
+              {mode === "operate" ? (
+                <>
+                  Your operations cockpit is online.
+                  <br />
+                  Time to build the machine that runs itself.
+                </>
+              ) : (
+                <>
+                  Your AI founder OS is online.
+                  <br />
+                  Let's build something remarkable.
+                </>
+              )}
             </p>
 
             <div

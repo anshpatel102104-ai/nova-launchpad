@@ -127,3 +127,37 @@ export function getProfilePrefills(
   }
   return fills;
 }
+
+/**
+ * Hydrate the local profile from the server-side Business Context Graph
+ * (business_context row). Server context fills any field the user hasn't
+ * already captured locally — so tool prefills work on a fresh device the
+ * moment onboarding completes, not after the first manual tool run.
+ */
+export function mergeBusinessContextIntoProfile(ctx: {
+  identity?: unknown;
+  customer?: unknown;
+  stage?: unknown;
+  model?: unknown;
+}): WorkspaceProfile {
+  const block = (b: unknown): Record<string, unknown> =>
+    b && typeof b === "object" ? (b as Record<string, unknown>) : {};
+  const s = (b: Record<string, unknown>, k: string): string | undefined =>
+    typeof b[k] === "string" && (b[k] as string).trim() ? (b[k] as string) : undefined;
+
+  const identity = block(ctx.identity);
+  const customer = block(ctx.customer);
+  const stage = block(ctx.stage);
+  const model = block(ctx.model);
+
+  const existing = loadWorkspaceProfile();
+  const merged: WorkspaceProfile = {
+    business_name: existing.business_name || s(identity, "name"),
+    description: existing.description || s(identity, "description"),
+    target_market: existing.target_market || s(customer, "description") || s(customer, "target"),
+    revenue_model: existing.revenue_model || s(model, "monetization"),
+    stage: existing.stage || s(stage, "stage"),
+  };
+  saveWorkspaceProfile(merged);
+  return merged;
+}

@@ -22,10 +22,12 @@ import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthInviteRouteImport } from './routes/auth.invite'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AppTutorialsRouteImport } from './routes/app.tutorials'
 import { Route as AppTemplatesRouteImport } from './routes/app.templates'
 import { Route as AppSopLibraryRouteImport } from './routes/app.sop-library'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScaleRouteImport } from './routes/app.scale'
+import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
 import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
@@ -42,10 +44,9 @@ import { Route as AppGalaxyRouteImport } from './routes/app.galaxy'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as AppCommandCenterRouteImport } from './routes/app.command-center'
+import { Route as AppBuilderRouteImport } from './routes/app.builder'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
-import { Route as AppBuilderRouteImport } from './routes/app.builder'
-import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
 import { Route as AppApprovalsRouteImport } from './routes/app.approvals'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
@@ -138,6 +139,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTutorialsRoute = AppTutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTemplatesRoute = AppTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -156,6 +162,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppScaleRoute = AppScaleRouteImport.update({
   id: '/scale',
   path: '/scale',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResearchRoute = AppResearchRouteImport.update({
+  id: '/research',
+  path: '/research',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlaybookRoute = AppPlaybookRouteImport.update({
@@ -238,6 +249,11 @@ const AppCommandCenterRoute = AppCommandCenterRouteImport.update({
   path: '/command-center',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBuilderRoute = AppBuilderRouteImport.update({
+  id: '/builder',
+  path: '/builder',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -246,16 +262,6 @@ const AppBillingRoute = AppBillingRouteImport.update({
 const AppAutomationsRoute = AppAutomationsRouteImport.update({
   id: '/automations',
   path: '/automations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBuilderRoute = AppBuilderRouteImport.update({
-  id: '/builder',
-  path: '/builder',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppResearchRoute = AppResearchRouteImport.update({
-  id: '/research',
-  path: '/research',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAssetsRoute = AppAssetsRouteImport.update({
@@ -405,8 +411,8 @@ export interface FileRoutesByFullPath {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
-  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
+  '/app/builder': typeof AppBuilderRoute
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -428,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
+  '/app/tutorials': typeof AppTutorialsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -469,8 +476,8 @@ export interface FileRoutesByTo {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
-  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
+  '/app/builder': typeof AppBuilderRoute
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -492,6 +499,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
+  '/app/tutorials': typeof AppTutorialsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -535,8 +543,8 @@ export interface FileRoutesById {
   '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
-  '/app/builder': typeof AppBuilderRoute
   '/app/billing': typeof AppBillingRouteWithChildren
+  '/app/builder': typeof AppBuilderRoute
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -558,6 +566,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
+  '/app/tutorials': typeof AppTutorialsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -602,8 +611,8 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
-    | '/app/builder'
     | '/app/billing'
+    | '/app/builder'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -625,6 +634,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sop-library'
     | '/app/templates'
+    | '/app/tutorials'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -666,8 +676,8 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
-    | '/app/builder'
     | '/app/billing'
+    | '/app/builder'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -689,6 +699,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sop-library'
     | '/app/templates'
+    | '/app/tutorials'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -731,8 +742,8 @@ export interface FileRouteTypes {
     | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
-    | '/app/builder'
     | '/app/billing'
+    | '/app/builder'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -754,6 +765,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/sop-library'
     | '/app/templates'
+    | '/app/tutorials'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -890,6 +902,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/tutorials': {
+      id: '/app/tutorials'
+      path: '/tutorials'
+      fullPath: '/app/tutorials'
+      preLoaderRoute: typeof AppTutorialsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/templates': {
       id: '/app/templates'
       path: '/templates'
@@ -916,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/scale'
       fullPath: '/app/scale'
       preLoaderRoute: typeof AppScaleRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/research': {
+      id: '/app/research'
+      path: '/research'
+      fullPath: '/app/research'
+      preLoaderRoute: typeof AppResearchRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/playbook': {
@@ -1030,6 +1056,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommandCenterRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/builder': {
+      id: '/app/builder'
+      path: '/builder'
+      fullPath: '/app/builder'
+      preLoaderRoute: typeof AppBuilderRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/billing': {
       id: '/app/billing'
       path: '/billing'
@@ -1042,20 +1075,6 @@ declare module '@tanstack/react-router' {
       path: '/automations'
       fullPath: '/app/automations'
       preLoaderRoute: typeof AppAutomationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/builder': {
-      id: '/app/builder'
-      path: '/builder'
-      fullPath: '/app/builder'
-      preLoaderRoute: typeof AppBuilderRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/research': {
-      id: '/app/research'
-      path: '/research'
-      fullPath: '/app/research'
-      preLoaderRoute: typeof AppResearchRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/assets': {
@@ -1307,9 +1326,8 @@ interface AppRouteChildren {
   AppApprovalsRoute: typeof AppApprovalsRoute
   AppAssetsRoute: typeof AppAssetsRoute
   AppAutomationsRoute: typeof AppAutomationsRoute
-  AppBuilderRoute: typeof AppBuilderRoute
-  AppResearchRoute: typeof AppResearchRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
+  AppBuilderRoute: typeof AppBuilderRoute
   AppCommandCenterRoute: typeof AppCommandCenterRoute
   AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -1326,10 +1344,12 @@ interface AppRouteChildren {
   AppNovaFullRoute: typeof AppNovaFullRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
   AppPlaybookRoute: typeof AppPlaybookRoute
+  AppResearchRoute: typeof AppResearchRoute
   AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
   AppSopLibraryRoute: typeof AppSopLibraryRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
+  AppTutorialsRoute: typeof AppTutorialsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBlogIdRoute: typeof AppBlogIdRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
@@ -1353,9 +1373,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppApprovalsRoute: AppApprovalsRoute,
   AppAssetsRoute: AppAssetsRoute,
   AppAutomationsRoute: AppAutomationsRoute,
-  AppBuilderRoute: AppBuilderRoute,
-  AppResearchRoute: AppResearchRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
+  AppBuilderRoute: AppBuilderRoute,
   AppCommandCenterRoute: AppCommandCenterRoute,
   AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
@@ -1372,10 +1391,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppNovaFullRoute: AppNovaFullRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
   AppPlaybookRoute: AppPlaybookRoute,
+  AppResearchRoute: AppResearchRoute,
   AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
   AppSopLibraryRoute: AppSopLibraryRoute,
   AppTemplatesRoute: AppTemplatesRoute,
+  AppTutorialsRoute: AppTutorialsRoute,
   AppIndexRoute: AppIndexRoute,
   AppBlogIdRoute: AppBlogIdRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
@@ -1410,3 +1431,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

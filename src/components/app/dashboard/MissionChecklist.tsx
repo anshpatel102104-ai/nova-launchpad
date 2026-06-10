@@ -4,7 +4,7 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, ChevronRight, Loader2, SkipForward } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { toast } from "sonner";
 
 export interface MissionStep {
@@ -40,21 +40,16 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
   const handleCompleteStep = async (stepId: string) => {
     setLoadingStep(stepId);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/advance-mission`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
+      await invokeEdge(
+        "advance-mission",
+        {
           action: "complete_step",
           step_id: stepId,
           mission_id: missionId,
           workspace_id: workspaceId,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to complete step");
+        },
+        { timeoutMs: 20_000 },
+      );
       toast.success("Step completed!");
       onStepComplete?.();
     } catch (e) {

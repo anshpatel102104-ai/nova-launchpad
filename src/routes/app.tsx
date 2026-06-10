@@ -9,11 +9,13 @@ import { NovaBar } from "@/components/nova/NovaBar";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore } from "@/lib/guest";
 import { saveLastAppPath } from "@/lib/session-restore";
+import { workspaceStatusQuery, currentMissionQuery } from "@/lib/queries";
+import type { QueryClient } from "@tanstack/react-query";
 
 const onboardedUsers = new Set<string>();
 
 export const Route = createFileRoute("/app")({
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async ({ location, context }) => {
     if (guestStore.get().isGuest) return;
     const {
       data: { session },
@@ -21,6 +23,15 @@ export const Route = createFileRoute("/app")({
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
     }
+
+    // Warm the Home-critical queries while the route renders — not awaited,
+    // so navigation never blocks on them (design system §10).
+    const qc = (context as { queryClient?: QueryClient }).queryClient;
+    if (qc) {
+      void qc.prefetchQuery(workspaceStatusQuery(session.user.id));
+      void qc.prefetchQuery(currentMissionQuery(session.user.id));
+    }
+
     if (onboardedUsers.has(session.user.id)) return;
     const { data: profile } = await supabase
       .from("profiles")

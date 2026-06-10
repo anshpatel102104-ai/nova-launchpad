@@ -2,6 +2,7 @@
 // Routes through Cloudflare AI Gateway when CLOUDFLARE_AI_GATEWAY_URL is set,
 // falls back to direct Anthropic API otherwise.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { assembleContext } from "../_shared/context.ts";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 
 const corsHeaders = {
@@ -104,7 +105,7 @@ Deno.serve(async (req: Request) => {
   const { message, conversation_history = [], user_context = {}, session_id, org_id } = body;
 
   // Build rich personalised context block
-  let contextLines: string[] = [];
+  const contextLines: string[] = [];
 
   if (Object.keys(user_context).length > 0) {
     const {
@@ -127,25 +128,25 @@ Deno.serve(async (req: Request) => {
     if (current_mission) contextLines.push(`Active mission: ${current_mission}`);
     if (tools_completed) contextLines.push(`Launchpad tools completed: ${tools_completed}`);
     if (recent_tools) contextLines.push(`Recently used tools: ${recent_tools}`);
-  } else if (org_id) {
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("name, niche, stage, target_customer, offer, goal")
-      .eq("id", org_id)
-      .maybeSingle();
-    if (org) {
-      contextLines = Object.entries(org as Record<string, unknown>)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}: ${v}`);
-    }
+  }
+
+  // Business Context Graph + recent related outputs — same assembler as
+  // run-tool, hard-budgeted so the system prompt can never blow the window.
+  let graphBlock = "";
+  if (org_id) {
+    const assembled = await assembleContext(supabase, org_id, { budgetChars: 5000 }).catch(() => ({
+      block: "",
+      used: [] as string[],
+    }));
+    graphBlock = assembled.block ? `\n\n${assembled.block}` : "";
   }
 
   const contextBlock =
     contextLines.length > 0
-      ? `\n\n## This Founder's Context\nAddress them by name if provided. Reference their idea and stage naturally — not robotically. Tailor every response to where they actually are.\n\n${contextLines.join("\n")}`
+      ? `\n\n## This Founder's Context\nAddress them by name if provided. Reference their idea and stage naturally — not robotically. Tailor every response to where they actually are.\n\n${contextLines.join("\n").slice(0, 2000)}`
       : "";
 
-  const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}`;
+  const systemPrompt = `${NOVA_SYSTEM_PROMPT}${contextBlock}${graphBlock}`;
 
   const messages = [...conversation_history.slice(-20), { role: "user", content: message }];
 

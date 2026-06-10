@@ -2318,7 +2318,12 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let body: { toolKey: string; input: Record<string, unknown>; organizationId?: string };
+  let body: {
+    toolKey: string;
+    input: Record<string, unknown>;
+    organizationId?: string;
+    fromRunId?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -2342,5 +2347,6 @@ Deno.serve(async (req: Request) => {
     assetCategory: toolConfig.assetCategory,
     assetTitle: toolConfig.assetTitle,
     preloadedInput: input,
+    fromRunId: body.fromRunId,
   });
 });

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   Shield,
@@ -23,7 +23,12 @@ import {
   Star,
   Layers,
   Lightbulb,
+  ShieldAlert,
+  CheckCheck,
+  AlertTriangle,
+  Wrench,
 } from "lucide-react";
+import { toast } from "sonner";
 import { auditLogQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -58,7 +63,15 @@ export const Route = createFileRoute("/app/admin")({
   component: AdminHub,
 });
 
-type TabKey = "overview" | "users" | "orgs" | "subs" | "runs" | "audit" | "analytics";
+type TabKey =
+  | "overview"
+  | "users"
+  | "orgs"
+  | "subs"
+  | "runs"
+  | "audit"
+  | "analytics"
+  | "reliability";
 
 const PLAN_COLORS: Record<string, string> = {
   starter: "bg-muted text-muted-foreground",
@@ -77,6 +90,20 @@ const PLAN_STRIPE: Record<string, string> = {
 function AdminHub() {
   const [tab, setTab] = useState<TabKey>("overview");
   const [search, setSearch] = useState("");
+  const qc = useQueryClient();
+
+  const markFeedbackApplied = async (id: string) => {
+    const { error } = await supabase
+      .from("prompt_feedback" as never)
+      .update({ applied: true } as never)
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Marked applied");
+    qc.invalidateQueries({ queryKey: ["admin", "prompt_feedback"] });
+  };
 
   const profilesQ = useQuery({
     queryKey: ["admin", "profiles"],
@@ -140,6 +167,81 @@ function AdminHub() {
 
   const auditQ = useQuery({ ...auditLogQuery(200) });
 
+  // ── Reliability: provisioning health, webhook ledger, prompt feedback ──
+  const provisioningQ = useQuery({
+    queryKey: ["admin", "provisioning"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workspaces")
+        .select("id, name, organization_id, owner_id, mode, provisioning_status, created_at")
+        .neq("provisioning_status", "complete")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const webhookEventsQ = useQuery({
+    queryKey: ["admin", "webhook_events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stripe_webhook_events" as never)
+        .select("id, event_id, event_type, status, detail, received_at")
+        .order("received_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{
+        id: string;
+        event_id: string;
+        event_type: string;
+        status: string;
+        detail: string | null;
+        received_at: string;
+      }>;
+    },
+  });
+
+  const opsAlertsQ = useQuery({
+    queryKey: ["admin", "ops_alerts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("n8n_error_log" as never)
+        .select("id, workflow_name, error_message, error_node, occurred_at")
+        .order("occurred_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{
+        id: string;
+        workflow_name: string;
+        error_message: string | null;
+        error_node: string | null;
+        occurred_at: string;
+      }>;
+    },
+  });
+
+  const promptFeedbackQ = useQuery({
+    queryKey: ["admin", "prompt_feedback"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prompt_feedback" as never)
+        .select("id, org_id, tool_name, repeat_count, suggestion, applied, created_at")
+        .order("created_at", { ascending: false })
+        .limit(80);
+      if (error) throw error;
+      return (data ?? []) as unknown as Array<{
+        id: string;
+        org_id: string;
+        tool_name: string;
+        repeat_count: number;
+        suggestion: string;
+        applied: boolean;
+        created_at: string;
+      }>;
+    },
+  });
+
   const leadsQ = useQuery({
     queryKey: ["admin", "leads"],
     queryFn: async () => {
@@ -161,6 +263,12 @@ function AdminHub() {
   const roles = rolesQ.data ?? [];
   const auditEntries = auditQ.data ?? [];
   const allLeads = leadsQ.data ?? [];
+  const failedWorkspaces = provisioningQ.data ?? [];
+  const webhookEvents = webhookEventsQ.data ?? [];
+  const opsAlerts = opsAlertsQ.data ?? [];
+  const promptFeedback = promptFeedbackQ.data ?? [];
+  const pendingFeedback = promptFeedback.filter((f) => !f.applied).length;
+  const reliabilityCount = failedWorkspaces.length + opsAlerts.length + pendingFeedback;
 
   const adminIds = useMemo(
     () => new Set(roles.filter((r) => r.role === "admin").map((r) => r.user_id)),
@@ -300,6 +408,7 @@ function AdminHub() {
     { key: "orgs", label: "Workspaces", icon: Building2, count: totalOrgs },
     { key: "subs", label: "Subscriptions", icon: CreditCard, count: subs.length },
     { key: "runs", label: "Tool Runs", icon: TrendingUp, count: runs.length },
+    { key: "reliability", label: "Reliability", icon: ShieldAlert, count: reliabilityCount },
     { key: "audit", label: "Audit Log", icon: ClipboardList, count: auditEntries.length },
   ];
 
@@ -1186,6 +1295,212 @@ function AdminHub() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {tab === "reliability" && (
+          <div className="space-y-7 p-4">
+            {/* Provisioning health — failed/pending workspaces (repair queue) */}
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Wrench className="h-4 w-4" style={{ color: "var(--warning)" }} />
+                <h3 className="font-display text-[14px] font-semibold">Provisioning health</h3>
+                <span className="text-[11px] text-muted-foreground">
+                  {failedWorkspaces.length} incomplete
+                </span>
+              </div>
+              {failedWorkspaces.length === 0 ? (
+                <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-[12.5px] text-muted-foreground">
+                  All workspaces fully provisioned. ✓
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {failedWorkspaces.map((w) => (
+                    <div
+                      key={w.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate text-[13px] font-semibold">{w.name}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {w.mode} · org {w.organization_id.slice(0, 8)} ·{" "}
+                          {new Date(w.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <span
+                        className="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold"
+                        style={{
+                          background:
+                            w.provisioning_status === "failed"
+                              ? "color-mix(in oklab, var(--destructive) 14%, transparent)"
+                              : "color-mix(in oklab, var(--warning) 14%, transparent)",
+                          color:
+                            w.provisioning_status === "failed"
+                              ? "var(--destructive)"
+                              : "var(--warning)",
+                        }}
+                      >
+                        {w.provisioning_status}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="pt-1 text-[11px] text-muted-foreground">
+                    Owners can self-repair from the Home banner; this list flags any that never
+                    finished.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Ops alerts — payments-webhook + automation consumer failures */}
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" style={{ color: "var(--destructive)" }} />
+                <h3 className="font-display text-[14px] font-semibold">Ops alerts</h3>
+                <span className="text-[11px] text-muted-foreground">{opsAlerts.length} recent</span>
+              </div>
+              {opsAlerts.length === 0 ? (
+                <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-[12.5px] text-muted-foreground">
+                  No alerts logged.
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {opsAlerts.map((a) => (
+                    <div
+                      key={a.id}
+                      className="rounded-xl border border-border bg-surface px-4 py-2.5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[12.5px] font-semibold">{a.workflow_name}</span>
+                        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                          {new Date(a.occurred_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 text-[12px] text-muted-foreground">
+                        {a.error_message}
+                      </div>
+                      {a.error_node && (
+                        <div className="mt-1 truncate font-mono text-[10.5px] text-muted-foreground opacity-70">
+                          {a.error_node}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Stripe webhook ledger — idempotency record */}
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                <h3 className="font-display text-[14px] font-semibold">Stripe webhook ledger</h3>
+                <span className="text-[11px] text-muted-foreground">
+                  last {webhookEvents.length}
+                </span>
+              </div>
+              {webhookEvents.length === 0 ? (
+                <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-[12.5px] text-muted-foreground">
+                  No webhook events recorded yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-border">
+                  <table className="w-full text-[12px]">
+                    <thead>
+                      <tr className="bg-surface text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <th className="px-4 py-2 font-semibold">Event</th>
+                        <th className="px-4 py-2 font-semibold">Status</th>
+                        <th className="px-4 py-2 font-semibold">When</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {webhookEvents.map((e) => (
+                        <tr key={e.id}>
+                          <td className="px-4 py-2 font-mono text-[11px]">{e.event_type}</td>
+                          <td className="px-4 py-2">
+                            <span
+                              className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                              style={{
+                                background:
+                                  e.status === "processed"
+                                    ? "color-mix(in oklab, var(--success) 14%, transparent)"
+                                    : "color-mix(in oklab, var(--destructive) 14%, transparent)",
+                                color:
+                                  e.status === "processed"
+                                    ? "var(--success)"
+                                    : "var(--destructive)",
+                              }}
+                            >
+                              {e.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 tabular-nums text-muted-foreground">
+                            {new Date(e.received_at).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Prompt feedback — graduate the dead-end pipeline to review */}
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Lightbulb className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                <h3 className="font-display text-[14px] font-semibold">Prompt feedback</h3>
+                <span className="text-[11px] text-muted-foreground">
+                  {pendingFeedback} pending review
+                </span>
+              </div>
+              {promptFeedback.length === 0 ? (
+                <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-[12.5px] text-muted-foreground">
+                  No prompt-improvement suggestions yet. The feedback loop logs one when a tool is
+                  re-run repeatedly with identical input.
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {promptFeedback.map((f) => (
+                    <div
+                      key={f.id}
+                      className="rounded-xl border border-border bg-surface px-4 py-3"
+                      style={{ opacity: f.applied ? 0.55 : 1 }}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12.5px] font-semibold">
+                            {f.tool_name.replace(/-/g, " ")}
+                          </span>
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            re-run ×{f.repeat_count}
+                          </span>
+                        </div>
+                        {f.applied ? (
+                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <CheckCheck className="h-3.5 w-3.5" /> applied
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => markFeedbackApplied(f.id)}
+                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition"
+                            style={{
+                              background: "color-mix(in oklab, var(--primary) 12%, transparent)",
+                              color: "var(--primary)",
+                            }}
+                          >
+                            <CheckCheck className="h-3.5 w-3.5" /> Mark applied
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
+                        {f.suggestion}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </section>

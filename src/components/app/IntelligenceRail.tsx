@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { X, Send, RotateCcw, ArrowUpRight, Zap, ChevronDown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
 import { cn } from "@/lib/utils";
@@ -245,31 +245,17 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     const history = [...messages, userMsg];
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
       const abort = new AbortController();
       abortRef.current = abort;
 
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nova-chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+      const resp = await invokeEdgeStream(
+        "nova-chat",
+        {
           messages: history.map((m) => ({ role: m.role, content: m.content })),
           context,
-        }),
-        signal: abort.signal,
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(err.error || `HTTP ${resp.status}`);
-      }
+        },
+        { signal: abort.signal, timeoutMs: 45_000 },
+      );
 
       const reader = resp.body!.getReader();
       const decoder = new TextDecoder();

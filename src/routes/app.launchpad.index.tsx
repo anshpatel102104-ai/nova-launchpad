@@ -10,7 +10,9 @@ import {
   leadsQuery,
   subscriptionQuery,
   planEntitlementsQuery,
+  workspaceStatusQuery,
 } from "@/lib/queries";
+import { recommendTools } from "@/lib/recommendTools";
 import {
   Lock,
   Search,
@@ -28,18 +30,18 @@ export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOv
 const STAGE_TABS = [
   { key: "all", label: "All" },
   { key: "validate", label: "Validate" },
-  { key: "plan", label: "Plan" },
-  { key: "customers", label: "Launch" },
-  { key: "launch", label: "Scale" },
-  { key: "funding", label: "Funding" },
+  { key: "plan", label: "Position & plan" },
+  { key: "customers", label: "Get customers" },
+  { key: "launch", label: "Launch assets" },
+  { key: "funding", label: "Fundraise" },
 ] as const;
 
 const CATEGORY_META: Record<string, { label: string; desc: string }> = {
-  validate: { label: "Validate & Research", desc: "Test your idea before you build" },
-  plan: { label: "Plan & Strategy", desc: "Map the path to product-market fit" },
-  customers: { label: "Launch & Acquire", desc: "Get your first customers" },
-  launch: { label: "Launch & Scale", desc: "Accelerate what's working" },
-  funding: { label: "Funding", desc: "Raise from investors" },
+  validate: { label: "Validate the idea", desc: "Know it's worth building before you build it" },
+  plan: { label: "Position & plan", desc: "Offer, pricing, and the plan to sell it" },
+  customers: { label: "Get customers", desc: "Playbooks and outreach that land paying customers" },
+  launch: { label: "Launch assets", desc: "Pages, emails, and content that convert" },
+  funding: { label: "Fundraise", desc: "Score your readiness and reach investors" },
 };
 
 const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
@@ -76,7 +78,7 @@ const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
 };
 
 function LaunchpadOverview() {
-  const { currentOrgId } = useAuth();
+  const { currentOrgId, user } = useAuth();
   const isOwner = useOwnerMode();
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -148,6 +150,28 @@ function LaunchpadOverview() {
     filtered.some((t) => t.category === cat),
   );
 
+  // ── Context-driven recommendations (the default surface, not the catalog) ──
+  const wsQ = useQuery({ ...workspaceStatusQuery(user?.id ?? ""), enabled: !!user?.id });
+  const completedSlugs = useMemo(() => {
+    const done = new Set<string>();
+    for (const t of allTools) {
+      const backendKey = toolKeyBySlug.get(t.slug) ?? t.slug;
+      if ((runsByTool.get(backendKey) ?? 0) > 0 || (runsByTool.get(t.slug) ?? 0) > 0)
+        done.add(t.slug);
+    }
+    return done;
+  }, [allTools, runsByTool, toolKeyBySlug]);
+  const recommendations = useMemo(
+    () =>
+      recommendTools({
+        lane: wsQ.data?.lane,
+        stage: wsQ.data?.stage ?? stage,
+        mode: wsQ.data?.mode,
+        completedSlugs,
+      }),
+    [wsQ.data, stage, completedSlugs],
+  );
+
   return (
     <div className="flex gap-5 items-start">
       {/* ── Main content ── */}
@@ -165,7 +189,7 @@ function LaunchpadOverview() {
                 lineHeight: 1.1,
               }}
             >
-              Launchpad
+              Workbench
             </h1>
             <p
               className="mt-1"
@@ -175,7 +199,8 @@ function LaunchpadOverview() {
                 color: "var(--muted-foreground)",
               }}
             >
-              Your stage-gated execution engine. Nova sequences every tool in the right order.
+              Outcome engines, playbooks, and asset generators — sequenced for your business, not
+              browsed.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -222,6 +247,82 @@ function LaunchpadOverview() {
             </button>
           </div>
         </div>
+
+        {/* Recommended next — context-ranked, with the WHY on every card */}
+        {recommendations.length > 0 && !search && (
+          <div
+            className="rounded-2xl border p-4"
+            style={{
+              borderColor: "color-mix(in oklab, var(--primary) 25%, var(--border))",
+              background: "color-mix(in oklab, var(--primary) 4%, transparent)",
+            }}
+          >
+            <div
+              className="mb-3 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+              style={{ color: "var(--primary)" }}
+            >
+              Recommended next
+              {wsQ.data?.lane && (
+                <span
+                  className="font-normal normal-case tracking-normal"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  · based on your {wsQ.data.lane} lane
+                  {wsQ.data?.mode === "operate" ? " (operator mode)" : ""}
+                </span>
+              )}
+            </div>
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              {recommendations.map((rec, i) => {
+                const tool = allTools.find((t) => t.slug === rec.slug);
+                if (!tool) return null;
+                return (
+                  <Link
+                    key={rec.slug}
+                    to="/app/launchpad/$tool"
+                    params={{ tool: rec.slug }}
+                    className="group rounded-xl border p-3.5 transition-all hover:-translate-y-0.5"
+                    style={{
+                      borderColor:
+                        i === 0
+                          ? "color-mix(in oklab, var(--primary) 40%, transparent)"
+                          : "var(--border)",
+                      background: "var(--surface)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[18px]">{tool.emoji}</span>
+                      {i === 0 && (
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider"
+                          style={{
+                            background: "color-mix(in oklab, var(--primary) 14%, transparent)",
+                            color: "var(--primary)",
+                          }}
+                        >
+                          Start here
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-[13.5px] font-semibold leading-snug">{tool.name}</div>
+                    <p
+                      className="mt-1 text-[11.5px] leading-relaxed"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      {rec.reason}
+                    </p>
+                    <div
+                      className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      Run it <ArrowRight className="h-3 w-3" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Stage tabs */}
         <div className="flex items-center gap-0 border-b" style={{ borderColor: "var(--border)" }}>
@@ -529,7 +630,7 @@ function ToolCard({
   return (
     <Link
       to={available ? "/app/launchpad/$tool" : ("/app/launchpad/" as never)}
-      params={available ? { tool: slug } : undefined}
+      params={available ? { tool: slug } : { tool: "" }}
       className="group block"
       style={{ pointerEvents: available ? "auto" : "none" }}
     >

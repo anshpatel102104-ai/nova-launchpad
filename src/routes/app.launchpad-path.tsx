@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -265,6 +266,7 @@ function LaunchpadPathPage() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="path" />
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">

@@ -1,3 +1,4 @@
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -94,6 +95,7 @@ function MonitoringPage() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="insights" />
       {/* Header */}
       <div
         className="rounded-2xl p-6 relative overflow-hidden"

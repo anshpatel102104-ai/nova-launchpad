@@ -1,3 +1,4 @@
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -841,6 +842,7 @@ function PlaybookPage() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="path" />
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -858,7 +860,7 @@ function PlaybookPage() {
           </p>
         </div>
         <Link
-          to="/app/launchpad/"
+          to="/app/launchpad"
           className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shrink-0"
           style={{ background: "var(--primary)", color: "#fff" }}
           onMouseEnter={(e) =>
@@ -1094,7 +1096,7 @@ function PlaybookPage() {
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                   <Link
-                    to="/app/launchpad/"
+                    to="/app/launchpad"
                     className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-[12px] font-semibold transition-colors"
                     style={{
                       background: "var(--surface-2)",

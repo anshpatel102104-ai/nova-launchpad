@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
 import { Sparkles, Send, X, RotateCcw, ArrowUpRight, Zap, Activity } from "lucide-react";
@@ -256,21 +256,12 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
     const updatedHistory = [...messages, userMsg];
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
       const abort = new AbortController();
       abortRef.current = abort;
 
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nova-chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+      const resp = await invokeEdgeStream(
+        "nova-chat",
+        {
           message: trimmed,
           conversation_history: updatedHistory
             .slice(0, -1) // exclude the message we just added
@@ -294,14 +285,9 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
               : {}),
           },
           org_id: (ctxAny.organization_id as string) || undefined,
-        }),
-        signal: abort.signal,
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(err.error || `HTTP ${resp.status}`);
-      }
+        },
+        { signal: abort.signal, timeoutMs: 45_000 },
+      );
 
       const reader = resp.body!.getReader();
       const decoder = new TextDecoder();

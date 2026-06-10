@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { CustomersNav } from "@/components/app/CustomersNav";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -450,7 +451,8 @@ function CRMPage() {
       {/* ── Header ── */}
       <div className="shrink-0 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
+          <div className="space-y-2.5">
+            <CustomersNav />
             <h1
               className="font-display text-[22px] font-bold tracking-tight"
               style={{ color: "var(--foreground)" }}

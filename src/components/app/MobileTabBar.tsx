@@ -11,13 +11,13 @@ const TABS = [
   },
   {
     to: "/app/launchpad/",
-    label: "Launchpad",
+    label: "Workbench",
     icon: Zap,
     match: (p: string) => p.startsWith("/app/launchpad"),
   },
   {
     to: "/app/contacts",
-    label: "Contacts",
+    label: "Customers",
     icon: Users,
     match: (p: string) => p.startsWith("/app/contacts") || p.startsWith("/app/leads"),
   },

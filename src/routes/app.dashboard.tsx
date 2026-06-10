@@ -23,6 +23,10 @@ import {
 } from "lucide-react";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
+import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
+import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
+import { ModuleBoundary } from "@/components/app/ModuleBoundary";
+import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCard";
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
@@ -723,6 +727,11 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
+      {/* ── Section 0: provisioning repair / operator cockpit strip ── */}
+      <ModuleBoundary name="workspace status">
+        <WorkspaceStatusBanner />
+      </ModuleBoundary>
+
       {/* ── Section 1: Nova Brief ── */}
       <div
         className="rounded-xl p-5 flex gap-5 items-start"
@@ -804,6 +813,18 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Section 1.5: AI Briefing (merged from /app/ai-dashboard) ── */}
+      <ModuleBoundary name="AI briefing">
+        <AiBriefingCard />
+      </ModuleBoundary>
+
+      {/* ── Section 1.6: Focus — the current mission (design system §5.4) ── */}
+      {user?.id && (
+        <ModuleBoundary name="current mission">
+          <CurrentMissionCard userId={user.id} />
+        </ModuleBoundary>
+      )}
 
       {/* ── Section 2: Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -912,7 +933,7 @@ function Dashboard() {
 
         {/* Tools Run */}
         <Link
-          to="/app/launchpad/"
+          to="/app/launchpad"
           className="rounded-xl p-4 group transition-all"
           style={{
             background: "var(--surface)",
@@ -1085,7 +1106,7 @@ function Dashboard() {
               </h2>
             </div>
             <Link
-              to="/app/launchpad/"
+              to="/app/launchpad"
               className="inline-flex items-center gap-1.5 rounded-lg transition-colors"
               style={{
                 fontFamily: "var(--font-body)",

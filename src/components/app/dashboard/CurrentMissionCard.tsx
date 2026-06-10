@@ -87,6 +87,9 @@ export function CurrentMissionCard({ userId }: Props) {
   }
 
   if (!data) {
+    // Retries are exhausted by now — resolve to a real empty state, never an
+    // eternal spinner. Broken provisioning is handled by the Home repair
+    // banner; this covers "no mission assigned" (e.g. all missions done).
     return (
       <div
         style={{
@@ -97,38 +100,55 @@ export function CurrentMissionCard({ userId }: Props) {
           textAlign: "center",
         }}
       >
-        <Loader2
+        <Target
           style={{
             width: 24,
             height: 24,
-            color: "#3b82f6",
+            color: "var(--muted-foreground)",
             margin: "0 auto 12px",
-            animation: "spin 1s linear infinite",
           }}
         />
         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)", marginBottom: 6 }}>
-          Setting up your mission…
+          No active mission
         </div>
         <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-          Nova is building your personalized action plan based on your business idea. This takes
-          just a few seconds.
+          If you just finished onboarding, your mission may still be provisioning — check again in a
+          moment. Otherwise, pick your next move from the Path.
         </div>
-        <button
-          onClick={refresh}
-          style={{
-            padding: "8px 18px",
-            borderRadius: 9,
-            border: "1px solid var(--border-strong)",
-            background: "var(--surface-2)",
-            color: "rgba(240,244,255,0.7)",
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: "pointer",
-            fontFamily: "inherit",
-          }}
-        >
-          Check again
-        </button>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+          <button
+            onClick={refresh}
+            style={{
+              padding: "8px 18px",
+              borderRadius: 9,
+              border: "1px solid var(--border-strong)",
+              background: "var(--surface-2)",
+              color: "var(--muted-foreground)",
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Check again
+          </button>
+          <Link
+            to="/app/launchpad-path"
+            style={{
+              padding: "8px 18px",
+              borderRadius: 9,
+              background: "var(--primary)",
+              color: "#fff",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            Open Path <ArrowRight style={{ width: 14, height: 14 }} />
+          </Link>
+        </div>
       </div>
     );
   }

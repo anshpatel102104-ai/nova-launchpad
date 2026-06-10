@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 import { CLAUDE_MODEL } from "./config.ts";
 import { callPAL, buildUsageRows } from "./pal/index.ts";
 import type { PALResult } from "./pal/types.ts";
+import { assembleContext } from "./context.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,46 +79,86 @@ export async function authenticateAndAuthorize(
     );
   }
 
-  // Quota check against usage_tracking
-  if (monthlyLimit !== null) {
-    const period = new Date().toISOString().slice(0, 7);
-    const { data: usageRows } = await supabase
-      .from("usage_tracking")
-      .select("count")
-      .eq("organization_id", organizationId)
-      .eq("period", period);
-    const total = (usageRows || []).reduce((s, r) => s + (r.count as number), 0);
-    if (total >= monthlyLimit) {
-      return jsonResponse({ error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" }, 429);
+  // Atomic quota consumption — check + count in one advisory-locked function
+  // so concurrent runs can never both squeeze past a nearly-exhausted limit.
+  // Failed runs hand the credit back via refundQuota in the catch paths.
+  const { data: allowed, error: quotaErr } = await supabase.rpc("consume_quota", {
+    p_organization_id: organizationId,
+    p_tool_key: toolKey,
+    p_monthly_limit: monthlyLimit,
+  });
+  if (quotaErr) {
+    // Legacy soft check if the RPC isn't deployed yet — never block on infra lag.
+    console.error("[consume_quota] rpc failed, soft-checking:", quotaErr.message);
+    if (monthlyLimit !== null) {
+      const period = new Date().toISOString().slice(0, 7);
+      const { data: usageRows } = await supabase
+        .from("usage_tracking")
+        .select("count")
+        .eq("organization_id", organizationId)
+        .eq("period", period);
+      const total = (usageRows || []).reduce((s, r) => s + (r.count as number), 0);
+      if (total >= monthlyLimit) {
+        return jsonResponse(
+          { error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" },
+          429,
+        );
+      }
     }
+    await incrementUsageLegacy(supabase, organizationId, toolKey);
+  } else if (allowed === false) {
+    return jsonResponse({ error: `Monthly limit reached (${monthlyLimit})`, code: "QUOTA" }, 429);
   }
 
   return { supabase, userId, organizationId, plan, allowedTools, monthlyLimit };
 }
 
-export async function incrementUsage(ctx: AuthCtx, toolKey: string) {
+/** Give the quota credit back when a run fails after consume_quota counted it. */
+export async function refundQuota(ctx: AuthCtx, toolKey: string): Promise<void> {
+  await ctx.supabase
+    .rpc("refund_quota", { p_organization_id: ctx.organizationId, p_tool_key: toolKey })
+    .then(
+      () => {},
+      (e: unknown) => console.error("[refund_quota] non-fatal:", e),
+    );
+}
+
+async function incrementUsageLegacy(
+  supabase: SupabaseClient,
+  organizationId: string,
+  toolKey: string,
+) {
   const period = new Date().toISOString().slice(0, 7);
-  const { data: existing } = await ctx.supabase
+  const { data: existing } = await supabase
     .from("usage_tracking")
     .select("id, count")
-    .eq("organization_id", ctx.organizationId)
+    .eq("organization_id", organizationId)
     .eq("period", period)
     .eq("tool_key", toolKey)
     .maybeSingle();
 
   if (existing) {
-    await ctx.supabase
+    await supabase
       .from("usage_tracking")
       .update({ count: (existing.count as number) + 1, updated_at: new Date().toISOString() })
       .eq("id", existing.id);
   } else {
-    await ctx.supabase.from("usage_tracking").insert({
-      organization_id: ctx.organizationId,
+    await supabase.from("usage_tracking").insert({
+      organization_id: organizationId,
       period,
       tool_key: toolKey,
       count: 1,
     });
   }
+}
+
+/**
+ * @deprecated Quota is now consumed atomically inside authenticateAndAuthorize
+ * (consume_quota RPC). Kept as a no-op-compatible export so existing function
+ * code keeps compiling; calling it would double-count.
+ */
+export async function incrementUsage(_ctx: AuthCtx, _toolKey: string) {
+  // intentionally empty — counting happens in consume_quota
 }
 
 // ─── callClaude (legacy — kept for feedback-loop, memory-query) ───────────
@@ -184,6 +225,59 @@ export async function writeUsage(
 
 // ─── runTool — central tool execution wrapper ─────────────────────────────
 
+// Appended to every tool schema: the output contract that makes results
+// auditable (context receipt) and actionable (structured next actions).
+function withOutputContract(schema: {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}) {
+  const params = schema.parameters as { properties?: Record<string, unknown> };
+  return {
+    ...schema,
+    parameters: {
+      ...schema.parameters,
+      properties: {
+        ...(params.properties ?? {}),
+        context_used: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "The specific facts from FOUNDER CONTEXT that shaped this output (verbatim short phrases). Empty array only if no context was provided.",
+        },
+        recommended_next_actions: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string", enum: ["tool", "manual"] },
+              target: {
+                type: "string",
+                description: "Tool key when type=tool (e.g. 'gtm-strategy-builder'), else empty",
+              },
+              label: { type: "string", description: "Short imperative action label" },
+              reason: {
+                type: "string",
+                description: "Why this is the next move for THIS business",
+              },
+            },
+            required: ["type", "label", "reason"],
+          },
+          description: "1-3 concrete next actions ranked by leverage for this specific business.",
+        },
+      },
+    },
+  };
+}
+
+const CONTEXT_CONTRACT_PROMPT = `
+
+## CONTEXT RULES
+- A FOUNDER CONTEXT block may precede the task input. Treat it as verified fact about THIS business. Reference its specifics (name, niche, stage, numbers) in your first two sentences.
+- If your recommendation contradicts a prior Nova output included in context, name the contradiction explicitly and justify the change.
+- If context is missing a fact you need, state the single most important missing fact instead of generalizing.
+- Always populate context_used with the exact context facts you relied on, and recommended_next_actions with 1-3 ranked, concrete moves (use type "tool" + the tool key when a Launchpad tool is the right move).`;
+
 export async function runTool(opts: {
   req: Request;
   toolKey: string;
@@ -193,6 +287,8 @@ export async function runTool(opts: {
   assetCategory: string;
   assetTitle: (input: Record<string, unknown>, output: Record<string, unknown>) => string;
   preloadedInput?: Record<string, unknown>;
+  /** Prior run to chain from — its output is injected into context. */
+  fromRunId?: string;
 }) {
   if (opts.req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -230,14 +326,34 @@ export async function runTool(opts: {
     return jsonResponse({ error: "Failed to create run", details: runErr?.message }, 500);
 
   try {
+    // Assemble the Business Context Graph + related prior outputs.
+    // Failure here must never block the run — context is an enhancer.
+    const assembled = await assembleContext(ctx.supabase, ctx.organizationId, {
+      toolKey: opts.toolKey,
+      fromRunId: opts.fromRunId,
+    }).catch(() => ({ block: "", used: [] as string[] }));
+
+    const baseUserPrompt = opts.buildUserPrompt(input);
+    const userPrompt = assembled.block
+      ? `${assembled.block}\n\n## TASK INPUT\n${baseUserPrompt}`
+      : baseUserPrompt;
+
     const palResult = await callClaudeTracked(
-      opts.systemPrompt,
-      opts.buildUserPrompt(input),
-      opts.schema,
+      opts.systemPrompt + CONTEXT_CONTRACT_PROMPT,
+      userPrompt,
+      withOutputContract(opts.schema),
       ctx.plan,
       opts.toolKey,
     );
     const output = palResult.toolResult!;
+
+    // Guarantee the context receipt even if the model skipped it.
+    if (
+      assembled.used.length > 0 &&
+      (!Array.isArray(output.context_used) || output.context_used.length === 0)
+    ) {
+      output.context_used = assembled.used;
+    }
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -268,7 +384,7 @@ export async function runTool(opts: {
       }),
 
       // Increment quota counter
-      incrementUsage(ctx, opts.toolKey),
+      // (quota already counted atomically in authenticateAndAuthorize)
 
       // Write credits + usage event
       writeUsage(admin, palResult, {
@@ -278,20 +394,162 @@ export async function runTool(opts: {
         eventType: "tool_run",
         resourceKey: opts.toolKey,
       }),
+
+      // Index into memory server-side (full content) so the assembler can
+      // chain this output into future runs. Replaces the lossy client write.
+      saveRunToMemory(admin, {
+        orgId: ctx.organizationId,
+        userId: ctx.userId,
+        toolKey: opts.toolKey,
+        input,
+        output,
+      }),
+
+      // Capture structured verdicts into the Business Context Graph.
+      captureVerdict(admin, ctx.organizationId, opts.toolKey, output),
     ]);
 
     return jsonResponse({ run_id: run.id, output });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[tool-run-error:${opts.toolKey}]`, msg);
-    await ctx.supabase
-      .from("tool_runs")
-      .update({ status: "failed", error: msg, completed_at: new Date().toISOString() })
-      .eq("id", run.id);
+    await Promise.allSettled([
+      ctx.supabase
+        .from("tool_runs")
+        .update({ status: "failed", error: msg, completed_at: new Date().toISOString() })
+        .eq("id", run.id),
+      // The run failed — give the consumed quota credit back.
+      refundQuota(ctx, opts.toolKey),
+    ]);
     if (msg === "RATE_LIMIT")
       return jsonResponse({ error: "Rate limit exceeded, try again shortly." }, 429);
     if (msg === "PAYMENT_REQUIRED")
       return jsonResponse({ error: "AI credits exhausted. Add funds in Settings." }, 402);
     return jsonResponse({ error: "An internal error occurred. Please try again." }, 500);
+  }
+}
+
+// ─── saveRunToMemory — server-side memory indexing with full content ──────
+
+async function saveRunToMemory(
+  admin: SupabaseClient,
+  params: {
+    orgId: string;
+    userId: string;
+    toolKey: string;
+    input: Record<string, unknown>;
+    output: Record<string, unknown>;
+  },
+): Promise<void> {
+  try {
+    const { orgId, userId, toolKey, input, output } = params;
+    const primaryInput = String(
+      input.idea ||
+        input.product ||
+        input.idea_description ||
+        input.business_description ||
+        input.product_description ||
+        input.business ||
+        input.topic ||
+        "",
+    ).slice(0, 300);
+
+    // Find or create the memory source for this tool
+    const { data: existing } = await admin
+      .from("memory_sources")
+      .select("id")
+      .eq("org_id", orgId)
+      .eq("source_type", "tool")
+      .eq("source_label", toolKey)
+      .limit(1);
+
+    let sourceId: string | null = existing?.[0]?.id ?? null;
+    if (sourceId) {
+      await admin
+        .from("memory_sources")
+        .update({ last_synced_at: new Date().toISOString(), status: "indexed" })
+        .eq("id", sourceId);
+    } else {
+      const { data: created } = await admin
+        .from("memory_sources")
+        .insert({
+          org_id: orgId,
+          user_id: userId,
+          source_type: "tool",
+          source_label: toolKey,
+          status: "indexed",
+          last_synced_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      sourceId = created?.id ?? null;
+    }
+
+    const fullContent = JSON.stringify(output);
+    await admin.from("memory_artifacts").insert({
+      org_id: orgId,
+      user_id: userId,
+      source_id: sourceId,
+      source_type: "tool",
+      source_label: toolKey,
+      title: `${toolKey}: ${primaryInput.slice(0, 120)}`,
+      content: fullContent.slice(0, 20000),
+      content_preview: fullContent.slice(0, 500),
+      status: "indexed",
+      metadata: { tool: toolKey, input_summary: primaryInput },
+    });
+  } catch (e) {
+    console.error("[saveRunToMemory] non-fatal:", e instanceof Error ? e.message : e);
+  }
+}
+
+// ─── captureVerdict — structured scores flow back into business_context ───
+
+async function captureVerdict(
+  admin: SupabaseClient,
+  organizationId: string,
+  toolKey: string,
+  output: Record<string, unknown>,
+): Promise<void> {
+  try {
+    let patch: Record<string, unknown> | null = null;
+    if (toolKey === "idea-validator" || toolKey === "validate-idea") {
+      patch = {
+        validator_score: output.total_score ?? null,
+        validator_verdict: output.verdict ?? null,
+        validator_at: new Date().toISOString(),
+      };
+    } else if (toolKey === "funding-readiness-score") {
+      patch = {
+        funding_readiness: output.total_score ?? output.score ?? null,
+        funding_readiness_at: new Date().toISOString(),
+      };
+    } else if (toolKey === "kill-my-idea") {
+      const risks = Array.isArray(output.top_risks)
+        ? output.top_risks
+        : Array.isArray(output.reasons)
+          ? (output.reasons as unknown[]).slice(0, 3)
+          : null;
+      if (risks) patch = { top_risks: risks, risks_at: new Date().toISOString() };
+    }
+    if (!patch) return;
+
+    const { data: row } = await admin
+      .from("business_context")
+      .select("verdicts")
+      .eq("organization_id", organizationId)
+      .maybeSingle();
+    if (!row) return;
+
+    const verdicts =
+      row.verdicts && typeof row.verdicts === "object"
+        ? (row.verdicts as Record<string, unknown>)
+        : {};
+    await admin
+      .from("business_context")
+      .update({ verdicts: { ...verdicts, ...patch } })
+      .eq("organization_id", organizationId);
+  } catch (e) {
+    console.error("[captureVerdict] non-fatal:", e instanceof Error ? e.message : e);
   }
 }

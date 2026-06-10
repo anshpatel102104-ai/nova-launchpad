@@ -125,3 +125,32 @@ grep -rl ipidfqwlszuhjgjygbvx n8n/workflows | \
   xargs sed -i 's/ipidfqwlszuhjgjygbvx/<your_new_ref>/g'
 ```
 Re-import the affected workflows.
+
+---
+
+## Ownership boundary (decided 2026-06, platform redesign)
+
+**Edge functions own product flows. n8n owns comms + billing-ops.**
+
+Product-critical paths (onboarding completion, workspace provisioning,
+mission seeding, AI dashboard generation, tool execution) are implemented
+exclusively in Supabase edge functions (`complete-onboarding`,
+`provision-workspace`, `generate-ai-dashboard`, `run-tool`). n8n must not
+duplicate them.
+
+### Deprecated / broken workflows in /N8N (do not deploy)
+
+| Workflow | Status | Reason |
+|---|---|---|
+| `nova_ops_provision_workspace_setup.json` | **deprecated** | Duplicates the `provision-workspace` edge function (now superseded by `complete-onboarding` + `provision_workspace_tx`). Two implementations drifted. |
+| `nova_ops_onboarding_intake_capture.json` | **deprecated** | Legacy intake schema (`business_name`, `monthly_revenue_range`, `website_url`) that no longer matches the two-track onboarding; writes to a `users` table that does not exist. |
+| `nova_ops_onboarding_completion_operator_handoff.json` | **broken** | References non-existent tables (`users`, `user_entitlements`, `user_credits`). |
+| `nova_ops_dashboard_auto_creation.json` | **broken** | References `user_profiles` / `user_entitlements` / `user_credits` — none exist in the schema. |
+
+Mission seed content has a single source of truth:
+`supabase/functions/_shared/missionSeeds.ts`. If mission copy changes, change
+it there — never in n8n workflow JSON.
+
+n8n remains the right home for: welcome email sequences, Stripe lifecycle
+comms (trial warnings, dunning), admin alert routing, and the daily health
+check.

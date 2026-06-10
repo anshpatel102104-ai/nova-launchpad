@@ -1,3 +1,6 @@
+import { WeeklyReviewCard } from "@/components/app/WeeklyReviewCard";
+import { ModuleBoundary } from "@/components/app/ModuleBoundary";
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -57,11 +60,16 @@ function Reports() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="insights" />
       <PageHeader
-        eyebrow="Nova OS"
+        eyebrow="Insights"
         title="Reporting"
-        description="Workspace activity, AI throughput, pipeline performance, and estimated ROI."
+        description="Your weekly operating review, AI throughput, pipeline performance, and ROI."
       />
+
+      <ModuleBoundary name="weekly review">
+        <WeeklyReviewCard />
+      </ModuleBoundary>
 
       {/* Summary KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

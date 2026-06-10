@@ -4,7 +4,9 @@ import {
   corsHeaders,
   incrementUsage,
   jsonResponse,
+  refundQuota,
 } from "../_shared/helpers.ts";
+import { assembleContext } from "../_shared/context.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -63,9 +65,46 @@ Deno.serve(async (req) => {
     .single();
 
   try {
-    // Fetch the page
-    const pageResp = await fetch(url, { headers: { "User-Agent": "Launchpad-Nova-Analyzer/1.0" } });
-    const html = (await pageResp.text()).slice(0, 30000);
+    // Fetch the page — bounded: 15s timeout, 2 MB read cap, HTML-ish content only.
+    // Without these a slow or hostile site pins the function until the platform kills it.
+    const fetchAbort = new AbortController();
+    const fetchTimer = setTimeout(() => fetchAbort.abort(), 15_000);
+    let pageResp: Response;
+    try {
+      pageResp = await fetch(url, {
+        headers: { "User-Agent": "Launchpad-Nova-Analyzer/1.0" },
+        signal: fetchAbort.signal,
+        redirect: "follow",
+      });
+    } catch (fetchErr) {
+      const aborted = fetchErr instanceof Error && fetchErr.name === "AbortError";
+      throw new Error(aborted ? "SITE_TIMEOUT" : "SITE_UNREACHABLE");
+    } finally {
+      clearTimeout(fetchTimer);
+    }
+    if (!pageResp.ok) throw new Error("SITE_UNREACHABLE");
+    const contentType = pageResp.headers.get("content-type") ?? "";
+    if (contentType && !/text\/html|application\/xhtml|text\/plain/.test(contentType)) {
+      throw new Error("NOT_HTML");
+    }
+
+    const MAX_BYTES = 2 * 1024 * 1024;
+    let html = "";
+    if (pageResp.body) {
+      const reader = pageResp.body.getReader();
+      const decoder = new TextDecoder();
+      let bytes = 0;
+      while (bytes < MAX_BYTES) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytes += value.byteLength;
+        html += decoder.decode(value, { stream: true });
+      }
+      reader.cancel().catch(() => {});
+    } else {
+      html = await pageResp.text();
+    }
+    html = html.slice(0, 30000);
 
     // Snapshot to storage
     const snapshotPath = `${ctx.organizationId}/${ctx.userId}/${Date.now()}.html`;
@@ -74,9 +113,17 @@ Deno.serve(async (req) => {
       upsert: false,
     });
 
+    // Inject business context so the audit checks POSITIONING for this ICP,
+    // not just generic UX/SEO hygiene.
+    const assembled = await assembleContext(ctx.supabase, ctx.organizationId, {
+      budgetChars: 2500,
+    }).catch(() => ({ block: "", used: [] as string[] }));
+
     const output = await callClaude(
-      "You are a senior conversion + SEO + UX consultant. Audit the supplied HTML and return actionable findings.",
-      `Analyze this website (${url}). HTML excerpt:\n\n${html}`,
+      "You are a senior conversion + SEO + UX consultant. Audit the supplied HTML and return actionable findings. " +
+        "When business context is provided, evaluate positioning clarity for that specific target customer and " +
+        "whether the page's promise matches their stated offer — not just generic best practices.",
+      `${assembled.block ? assembled.block + "\n\n" : ""}Analyze this website (${url}). HTML excerpt:\n\n${html}`,
       {
         name: "analyze_website",
         description: "Return a structured website audit.",
@@ -119,9 +166,18 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[analyze-website] error", msg);
-    await ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run!.id);
+    await Promise.allSettled([
+      ctx.supabase.from("tool_runs").update({ status: "failed", error: msg }).eq("id", run!.id),
+      refundQuota(ctx, "analyze-website"),
+    ]);
     if (msg === "RATE_LIMIT") return jsonResponse({ error: "Rate limit exceeded." }, 429);
     if (msg === "PAYMENT_REQUIRED") return jsonResponse({ error: "AI credits exhausted." }, 402);
+    if (msg === "SITE_TIMEOUT")
+      return jsonResponse({ error: "That site took too long to respond (15s). Try again." }, 422);
+    if (msg === "SITE_UNREACHABLE")
+      return jsonResponse({ error: "Couldn't reach that site. Check the URL and try again." }, 422);
+    if (msg === "NOT_HTML")
+      return jsonResponse({ error: "That URL doesn't serve an HTML page." }, 422);
     return jsonResponse({ error: "Failed to analyze website. Please try again." }, 500);
   }
 });

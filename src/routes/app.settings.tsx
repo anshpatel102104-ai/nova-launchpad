@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   AlertTriangle,
+  Brain,
   Check,
   Lock,
   Trash2,
@@ -31,6 +32,7 @@ import {
   ExternalLink,
   Unplug,
 } from "lucide-react";
+import { BusinessContextTab } from "@/components/app/settings/BusinessContextTab";
 import { getCatalogByKey } from "@/lib/integrations-catalog";
 import {
   Dialog,
@@ -42,10 +44,16 @@ import {
 } from "@/components/ui/dialog";
 import { blockIfGuest } from "@/lib/guest";
 
-export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
+export const Route = createFileRoute("/app/settings")({
+  validateSearch: (s: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof s.tab === "string" ? s.tab : undefined,
+  }),
+  component: SettingsPage,
+});
 
 const TABS = [
   { key: "profile", label: "Profile", icon: User },
+  { key: "context", label: "Business Context", icon: Brain },
   { key: "organization", label: "Organization", icon: Building2 },
   { key: "plan", label: "Plan", icon: CreditCard },
   { key: "connectors", label: "Connectors", icon: Plug },
@@ -55,7 +63,9 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 function SettingsPage() {
-  const [tab, setTab] = useState<TabKey>("profile");
+  const search = Route.useSearch();
+  const initialTab = TABS.some((t) => t.key === search.tab) ? (search.tab as TabKey) : "profile";
+  const [tab, setTab] = useState<TabKey>(initialTab);
 
   return (
     <div className="space-y-6">
@@ -105,6 +115,7 @@ function SettingsPage() {
 
       <div>
         {tab === "profile" && <ProfileTab />}
+        {tab === "context" && <BusinessContextTab />}
         {tab === "organization" && <OrgTab />}
         {tab === "plan" && <PlanTab />}
         {tab === "connectors" && <ConnectorsTab />}

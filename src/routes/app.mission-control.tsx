@@ -1,3 +1,4 @@
+import { SectionTabs } from "@/components/app/SectionTabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -71,6 +72,7 @@ function MissionControlPage() {
 
   return (
     <div className="space-y-6">
+      <SectionTabs section="path" />
       {/* Hero header */}
       <div
         className="rounded-2xl p-6 relative overflow-hidden nova-bracket"

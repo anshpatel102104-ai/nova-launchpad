@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { CustomersNav } from "@/components/app/CustomersNav";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -280,13 +281,16 @@ function ContactsPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Contacts
-          </h1>
-          <p className="text-[13px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            {allContacts.length} contact{allContacts.length !== 1 ? "s" : ""} in your CRM
-          </p>
+        <div className="space-y-2.5">
+          <CustomersNav />
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+              Contacts
+            </h1>
+            <p className="text-[13px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              {allContacts.length} contact{allContacts.length !== 1 ? "s" : ""} in your CRM
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setShowAddModal(true)}

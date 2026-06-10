@@ -4,14 +4,27 @@
  * No API key is ever exposed to the browser.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "./invokeEdge";
 import { saveToMemory } from "./saveToMemory";
+
+const AI_TIMEOUT_MS = 120_000;
+
+interface RunToolResponse {
+  output?: Record<string, unknown>;
+  run_id?: string;
+  error?: string;
+}
+
+export interface RunToolOptions {
+  /** A prior tool_runs.id whose output should be injected as context server-side. */
+  fromRunId?: string;
+}
 
 export async function runTool(
   toolKey: string,
   input: Record<string, unknown>,
   context: { orgId: string | null; userId?: string | undefined },
-  _onChunk?: (chunk: string) => void,
+  options?: RunToolOptions,
 ): Promise<{ output: Record<string, unknown>; run_id?: string }> {
   if (!context.orgId) throw new Error("Not signed in to an organization.");
 
@@ -31,40 +44,24 @@ export async function runTool(
   ).slice(0, 500);
 
   // analyze-website has a dedicated function with live URL fetching — route it directly.
-  if (toolKey === "analyze-website") {
-    const url = ((input.url || input.context || input.idea || "") as string).trim();
-    const { data, error } = await supabase.functions.invoke("analyze-website", {
-      body: { url },
-    });
-    if (error) throw new Error(error.message);
-    if (data?.error) throw new Error(data.error);
-    if (!data?.output) throw new Error("No output returned from AI. Please try again.");
-    const result = {
-      output: data.output as Record<string, unknown>,
-      run_id: data.run_id as string | undefined,
-    };
-    if (context.orgId && context.userId) {
-      saveToMemory({
-        orgId: context.orgId,
-        userId: context.userId,
-        toolName: toolKey,
-        input: primaryInput,
-        output: JSON.stringify(result.output, null, 2),
-      });
-    }
-    return result;
-  }
+  const data =
+    toolKey === "analyze-website"
+      ? await invokeEdge<RunToolResponse>(
+          "analyze-website",
+          { url: ((input.url || input.context || input.idea || "") as string).trim() },
+          { timeoutMs: AI_TIMEOUT_MS },
+        )
+      : await invokeEdge<RunToolResponse>(
+          "run-tool",
+          {
+            toolKey,
+            input,
+            organizationId: context.orgId,
+            fromRunId: options?.fromRunId,
+          },
+          { timeoutMs: AI_TIMEOUT_MS },
+        );
 
-  const { data, error } = await supabase.functions.invoke("run-tool", {
-    body: {
-      toolKey,
-      input,
-      organizationId: context.orgId,
-    },
-  });
-
-  if (error) throw new Error(error.message);
-  if (data?.error) throw new Error(data.error);
   if (!data?.output) throw new Error("No output returned from AI. Please try again.");
 
   const result = {
@@ -72,7 +69,9 @@ export async function runTool(
     run_id: data.run_id as string | undefined,
   };
 
-  if (context.orgId && context.userId) {
+  // run-tool indexes memory server-side (full content). The client write
+  // remains only for analyze-website, which doesn't go through that wrapper.
+  if (toolKey === "analyze-website" && context.orgId && context.userId) {
     saveToMemory({
       orgId: context.orgId,
       userId: context.userId,

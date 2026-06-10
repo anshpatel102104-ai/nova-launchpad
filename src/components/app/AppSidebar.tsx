@@ -57,72 +57,71 @@ interface NavGroup {
   badge?: string;
 }
 
-/* ── Navigation Definition ── */
+/* ── Navigation Definition ──
+ * Seven destinations organized around the operating loop:
+ * Home → Path → Workbench → Customers → Automate → Insights → Library.
+ * Legacy routes (nova-os, scale/*, command-center, leads…) redirect into these.
+ */
 const NAV_GROUPS: NavGroup[] = [
   {
-    id: "command",
-    label: "Command",
+    id: "home",
+    label: "Home",
     icon: LayoutDashboard,
     to: "/app/dashboard",
     match: (p) => p === "/app/dashboard",
   },
   {
-    id: "playbook",
-    label: "Playbook",
-    icon: BookOpen,
-    to: "/app/playbook",
-    match: (p) => p === "/app/playbook",
+    id: "path",
+    label: "Path",
+    icon: Map,
+    to: "/app/launchpad-path",
+    match: (p) =>
+      p === "/app/launchpad-path" ||
+      p === "/app/playbook" ||
+      p === "/app/mission-control" ||
+      p === "/app/mission-briefing" ||
+      p === "/app/galaxy",
+    children: [
+      {
+        label: "Journey",
+        to: "/app/launchpad-path",
+        icon: Map,
+        match: (p) => p === "/app/launchpad-path" || p === "/app/galaxy",
+      },
+      {
+        label: "Missions",
+        to: "/app/mission-control",
+        icon: Crosshair,
+        match: (p) => p === "/app/mission-control" || p === "/app/mission-briefing",
+      },
+      {
+        label: "Playbook",
+        to: "/app/playbook",
+        icon: BookOpen,
+        match: (p) => p === "/app/playbook",
+      },
+    ],
   },
   {
-    id: "build",
-    label: "Build",
+    id: "workbench",
+    label: "Workbench",
     icon: Rocket,
     to: "/app/launchpad",
     match: (p) =>
-      p.startsWith("/app/launchpad") ||
-      p === "/app/launchpad-path" ||
-      p === "/app/assets" ||
-      p === "/app/launch-control" ||
-      p === "/app/templates" ||
-      p === "/app/sop-library" ||
-      p === "/app/research" ||
-      p.startsWith("/app/mission"),
+      (p.startsWith("/app/launchpad") &&
+        p !== "/app/launchpad-path" &&
+        p !== "/app/launchpad/first-customers") ||
+      p === "/app/research",
     children: [
       {
-        label: "Launchpad",
+        label: "Tools",
         to: "/app/launchpad",
         icon: Sparkles,
-        match: (p) => p.startsWith("/app/launchpad"),
-      },
-      {
-        label: "Launch Control",
-        to: "/app/launch-control",
-        icon: Crosshair,
-        match: (p) => p === "/app/launch-control",
-      },
-      {
-        label: "First Customers",
-        to: "/app/launchpad/first-customers",
-        icon: Users,
-        match: (p) => p === "/app/launchpad/first-customers",
-      },
-      {
-        label: "Mission Path",
-        to: "/app/launchpad-path",
-        icon: Map,
-        match: (p) => p === "/app/launchpad-path",
-      },
-      {
-        label: "Assets",
-        to: "/app/assets",
-        icon: FileText,
-        match: (p) => p === "/app/assets",
-      },
-      {
-        label: "Templates",
-        to: "/app/templates",
-        icon: LayoutTemplate,
-        match: (p) => p === "/app/templates",
+        match: (p) =>
+          p.startsWith("/app/launchpad") &&
+          p !== "/app/launchpad-path" &&
+          p !== "/app/launchpad/history" &&
+          p !== "/app/launchpad/first-customers",
       },
       {
         label: "Research",
@@ -131,39 +130,32 @@ const NAV_GROUPS: NavGroup[] = [
         match: (p) => p === "/app/research",
       },
       {
-        label: "SOP Library",
-        to: "/app/sop-library",
-        icon: BookOpen,
-        match: (p) => p === "/app/sop-library",
+        label: "History",
+        to: "/app/launchpad/history",
+        icon: Activity,
+        match: (p) => p === "/app/launchpad/history",
       },
     ],
   },
   {
-    id: "operate",
-    label: "Operate",
-    icon: TrendingUp,
-    to: "/app/nova/crm",
+    id: "customers",
+    label: "Customers",
+    icon: Users,
+    to: "/app/contacts",
     match: (p) =>
-      p.startsWith("/app/nova") ||
-      p.startsWith("/app/scale") ||
       p === "/app/contacts" ||
       p === "/app/leads" ||
-      p === "/app/command-center" ||
-      p === "/app/nova-os" ||
-      p.startsWith("/app/nova-os/") ||
-      p === "/app/approvals",
+      p === "/app/nova" ||
+      p === "/app/nova/crm" ||
+      p === "/app/nova/leads" ||
+      p === "/app/launchpad/first-customers" ||
+      p.startsWith("/app/scale"),
     children: [
       {
-        label: "Command Center",
-        to: "/app/command-center",
-        icon: LayoutDashboard,
-        match: (p) => p === "/app/command-center",
-      },
-      {
-        label: "Nova OS",
-        to: "/app/nova-os",
-        icon: Zap,
-        match: (p) => p === "/app/nova-os" || p.startsWith("/app/nova-os/"),
+        label: "Contacts",
+        to: "/app/contacts",
+        icon: Users,
+        match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/nova/leads",
       },
       {
         label: "Pipeline",
@@ -172,16 +164,10 @@ const NAV_GROUPS: NavGroup[] = [
         match: (p) => p === "/app/nova/crm" || p === "/app/nova",
       },
       {
-        label: "Contacts",
-        to: "/app/contacts",
-        icon: Users,
-        match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/nova/leads",
-      },
-      {
-        label: "Approvals",
-        to: "/app/approvals",
-        icon: ClipboardList,
-        match: (p) => p === "/app/approvals",
+        label: "First Customers",
+        to: "/app/launchpad/first-customers",
+        icon: Crosshair,
+        match: (p) => p === "/app/launchpad/first-customers",
       },
       {
         label: "Campaigns",
@@ -196,10 +182,14 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Automate",
     icon: Zap,
     to: "/app/automations",
-    match: (p) => p === "/app/automations" || p === "/app/integrations" || p === "/app/builder",
+    match: (p) =>
+      p === "/app/automations" ||
+      p === "/app/integrations" ||
+      p === "/app/builder" ||
+      p === "/app/approvals",
     children: [
       {
-        label: "Workflows",
+        label: "Automations",
         to: "/app/automations",
         icon: Workflow,
         match: (p) => p === "/app/automations",
@@ -216,29 +206,24 @@ const NAV_GROUPS: NavGroup[] = [
         icon: Plug,
         match: (p) => p === "/app/integrations",
       },
+      {
+        label: "Approvals",
+        to: "/app/approvals",
+        icon: ClipboardList,
+        match: (p) => p === "/app/approvals",
+      },
     ],
   },
   {
-    id: "monitoring",
-    label: "Monitoring",
-    icon: Activity,
-    to: "/app/monitoring",
-    match: (p) => p === "/app/monitoring",
-  },
-  {
-    id: "memory",
-    label: "Memory",
-    icon: Brain,
-    to: "/app/memory",
-    match: (p) => p.startsWith("/app/memory"),
-    badge: "new",
-  },
-  {
-    id: "intelligence",
-    label: "Intelligence",
+    id: "insights",
+    label: "Insights",
     icon: BarChart3,
     to: "/app/ai-dashboard",
-    match: (p) => p.startsWith("/app/ai-dashboard") || p === "/app/mentor",
+    match: (p) =>
+      p.startsWith("/app/ai-dashboard") ||
+      p === "/app/mentor" ||
+      p === "/app/monitoring" ||
+      p === "/app/activity",
     children: [
       {
         label: "AI Dashboard",
@@ -247,31 +232,70 @@ const NAV_GROUPS: NavGroup[] = [
         match: (p) => p.startsWith("/app/ai-dashboard"),
       },
       {
+        label: "Reports",
+        to: "/app/nova/reports",
+        icon: TrendingUp,
+        match: (p) => p === "/app/nova/reports" || p === "/app/activity",
+      },
+      {
         label: "Mentor",
         to: "/app/mentor",
         icon: MessageSquare,
         match: (p) => p === "/app/mentor",
       },
+      {
+        label: "System Health",
+        to: "/app/monitoring",
+        icon: Activity,
+        match: (p) => p === "/app/monitoring",
+      },
     ],
   },
   {
-    id: "tutorials",
-    label: "Tutorials",
-    icon: PlayCircle,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    to: "/app/tutorials" as any,
-    match: (p: string) => p === "/app/tutorials",
-    badge: "new",
+    id: "library",
+    label: "Library",
+    icon: FileText,
+    to: "/app/assets",
+    match: (p) =>
+      p === "/app/assets" ||
+      p === "/app/templates" ||
+      p === "/app/sop-library" ||
+      p.startsWith("/app/memory"),
+    children: [
+      {
+        label: "Assets",
+        to: "/app/assets",
+        icon: FileText,
+        match: (p) => p === "/app/assets",
+      },
+      {
+        label: "Templates",
+        to: "/app/templates",
+        icon: LayoutTemplate,
+        match: (p) => p === "/app/templates",
+      },
+      {
+        label: "SOP Library",
+        to: "/app/sop-library",
+        icon: BookOpen,
+        match: (p) => p === "/app/sop-library",
+      },
+      {
+        label: "Memory",
+        to: "/app/memory",
+        icon: Brain,
+        match: (p) => p.startsWith("/app/memory"),
+      },
+    ],
   },
 ];
 
 /* Which group IDs begin a new named section */
 const SECTION_STARTS: Record<string, string> = {
-  build: "Build",
-  operate: "Operate",
-  automate: "Automate",
-  monitoring: "Monitoring",
-  tutorials: "Help",
+  path: "Execute",
+  customers: "Operate",
+  insights: "Intelligence",
+  library: "Resources",
 };
 
 const STORAGE = "nova-sidebar-collapsed";
@@ -348,6 +372,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
 
   const footerItems = [
     ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield }] : []),
+    { to: "/app/tutorials", label: "Help & Tutorials", icon: PlayCircle },
     { to: "/app/settings", label: "Settings", icon: Settings },
     { to: "/app/billing", label: "Billing", icon: CreditCard },
   ];
