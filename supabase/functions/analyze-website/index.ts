@@ -5,6 +5,7 @@ import {
   incrementUsage,
   jsonResponse,
 } from "../_shared/helpers.ts";
+import { assembleContext } from "../_shared/context.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -111,9 +112,17 @@ Deno.serve(async (req) => {
       upsert: false,
     });
 
+    // Inject business context so the audit checks POSITIONING for this ICP,
+    // not just generic UX/SEO hygiene.
+    const assembled = await assembleContext(ctx.supabase, ctx.organizationId, {
+      budgetChars: 2500,
+    }).catch(() => ({ block: "", used: [] as string[] }));
+
     const output = await callClaude(
-      "You are a senior conversion + SEO + UX consultant. Audit the supplied HTML and return actionable findings.",
-      `Analyze this website (${url}). HTML excerpt:\n\n${html}`,
+      "You are a senior conversion + SEO + UX consultant. Audit the supplied HTML and return actionable findings. " +
+        "When business context is provided, evaluate positioning clarity for that specific target customer and " +
+        "whether the page's promise matches their stated offer — not just generic best practices.",
+      `${assembled.block ? assembled.block + "\n\n" : ""}Analyze this website (${url}). HTML excerpt:\n\n${html}`,
       {
         name: "analyze_website",
         description: "Return a structured website audit.",

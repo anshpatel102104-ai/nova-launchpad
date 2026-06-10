@@ -69,7 +69,9 @@ export async function runTool(
     run_id: data.run_id as string | undefined,
   };
 
-  if (context.orgId && context.userId) {
+  // run-tool indexes memory server-side (full content). The client write
+  // remains only for analyze-website, which doesn't go through that wrapper.
+  if (toolKey === "analyze-website" && context.orgId && context.userId) {
     saveToMemory({
       orgId: context.orgId,
       userId: context.userId,

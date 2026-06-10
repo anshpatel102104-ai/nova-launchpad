@@ -1238,12 +1238,13 @@ function buildPayload(fields: Record<string, string>, title: string): Record<str
   return payload;
 }
 
-type Search = { context?: string; title?: string };
+type Search = { context?: string; title?: string; fromRun?: string };
 
 export const Route = createFileRoute("/app/launchpad/$tool")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     context: typeof s.context === "string" ? s.context : undefined,
     title: typeof s.title === "string" ? s.title : undefined,
+    fromRun: typeof s.fromRun === "string" ? s.fromRun : undefined,
   }),
   loader: ({ params }) => {
     const tool = launchpadCatalog.find((t) => t.key === params.tool);
@@ -1386,6 +1387,30 @@ function ToolPage() {
 
   const handoffs = HANDOFFS[tool.key] ?? [];
 
+  // Output contract fields (context receipt + structured next actions) are
+  // rendered by this page, not OutputBody — strip them from the core payload.
+  type NextAction = { type: string; target?: string; label: string; reason: string };
+  const contextUsed: string[] = Array.isArray(output?.context_used)
+    ? (output!.context_used as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
+  const nextActions: NextAction[] = Array.isArray(output?.recommended_next_actions)
+    ? (output!.recommended_next_actions as NextAction[]).filter(
+        (a) => a && typeof a.label === "string" && typeof a.reason === "string",
+      )
+    : [];
+  const coreOutput = (() => {
+    if (!output) return output;
+    const rest = { ...output };
+    delete (rest as Record<string, unknown>).context_used;
+    delete (rest as Record<string, unknown>).recommended_next_actions;
+    return rest;
+  })();
+  const slugByToolKey = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of launchpadCatalog) map.set(t.toolKey, t.key);
+    return map;
+  }, []);
+
   const ideaValidatorRuns = useMemo(
     () =>
       (runsQ.data ?? []).filter((r) => r.tool_key === "validate-idea" && r.status === "succeeded")
@@ -1430,10 +1455,12 @@ function ToolPage() {
     setFeedback(null);
     try {
       const payload = buildPayload(fields, title);
-      const result = await runTool(effectiveToolKey, payload, {
-        orgId: currentOrgId,
-        userId: user?.id,
-      });
+      const result = await runTool(
+        effectiveToolKey,
+        payload,
+        { orgId: currentOrgId, userId: user?.id },
+        search.fromRun ? { fromRunId: search.fromRun } : undefined,
+      );
       setStreamText("");
       setOutput(result.output);
       if (result.run_id) setRunId(result.run_id);
@@ -2179,7 +2206,100 @@ function ToolPage() {
 
               {output && !generating && (
                 <div className="max-h-[68vh] overflow-y-auto pr-1">
-                  <OutputBody toolKey={effectiveToolKey || tool.key} output={output} />
+                  <OutputBody toolKey={effectiveToolKey || tool.key} output={coreOutput} />
+                  {contextUsed.length > 0 && (
+                    <div
+                      className="mt-4 rounded-xl border p-3"
+                      style={{
+                        borderColor: "color-mix(in oklab, var(--primary) 22%, var(--border))",
+                        background: "color-mix(in oklab, var(--primary) 3%, transparent)",
+                      }}
+                    >
+                      <div
+                        className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        Based on your business
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {contextUsed.slice(0, 6).map((c, i) => (
+                          <span
+                            key={i}
+                            className="rounded-full px-2 py-0.5 text-[10.5px]"
+                            style={{
+                              background: "var(--surface-2)",
+                              border: "1px solid var(--border)",
+                              color: "var(--muted-foreground)",
+                            }}
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {nextActions.length > 0 && (
+                    <div className="mt-4">
+                      <div
+                        className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        Nova recommends next
+                      </div>
+                      <div className="mt-2 space-y-2">
+                        {nextActions.slice(0, 3).map((a, i) => {
+                          const slug = a.target ? (slugByToolKey.get(a.target) ?? a.target) : null;
+                          const isTool =
+                            a.type === "tool" &&
+                            !!slug &&
+                            launchpadCatalog.some((t) => t.key === slug);
+                          const inner = (
+                            <>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[12.5px] font-semibold">{a.label}</span>
+                                {isTool && (
+                                  <ArrowRight
+                                    className="h-3.5 w-3.5 shrink-0"
+                                    style={{ color: "var(--primary)" }}
+                                  />
+                                )}
+                              </div>
+                              <p
+                                className="mt-0.5 text-[11.5px] leading-relaxed"
+                                style={{ color: "var(--muted-foreground)" }}
+                              >
+                                {a.reason}
+                              </p>
+                            </>
+                          );
+                          return isTool ? (
+                            <Link
+                              key={i}
+                              to="/app/launchpad/$tool"
+                              params={{ tool: slug! }}
+                              search={{ fromRun: runId ?? undefined, title } as never}
+                              className="block rounded-xl border p-3 transition hover:-translate-y-0.5"
+                              style={{
+                                borderColor:
+                                  "color-mix(in oklab, var(--primary) 30%, var(--border))",
+                                background: "var(--surface)",
+                              }}
+                            >
+                              {inner}
+                            </Link>
+                          ) : (
+                            <div
+                              key={i}
+                              className="rounded-xl border p-3"
+                              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                            >
+                              {inner}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2207,6 +2327,7 @@ function ToolPage() {
                           ? ({
                               context: primaryFieldValue,
                               title,
+                              fromRun: runId ?? undefined,
                             } as never)
                           : undefined
                       }
