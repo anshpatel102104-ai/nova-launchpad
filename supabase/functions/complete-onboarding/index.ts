@@ -337,9 +337,8 @@ Deno.serve(async (req) => {
     }
   };
 
-  const runtime = (
-    globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }
-  ).EdgeRuntime;
+  const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
+    .EdgeRuntime;
   if (runtime?.waitUntil) runtime.waitUntil(generateDashboard());
   else generateDashboard().catch(() => {});
 
