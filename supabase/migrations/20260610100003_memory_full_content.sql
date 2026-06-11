@@ -4,6 +4,16 @@
 --    500-char preview. The context assembler injects prior outputs into
 --    subsequent tool prompts; previews are too thin to chain reasoning on.
 --    content_preview stays as the cheap listing payload.
+
+-- Create table if it doesn't exist (ensures idempotency across new preview branches)
+create table if not exists public.memory_artifacts (
+  id              uuid        primary key default gen_random_uuid(),
+  org_id          uuid        not null,
+  source_label    text        not null,
+  content_preview text,
+  created_at      timestamptz not null default now()
+);
+
 alter table public.memory_artifacts
   add column if not exists content text;
 

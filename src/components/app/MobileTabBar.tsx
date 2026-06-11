@@ -1,37 +1,41 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Zap, Users, Activity, Settings } from "lucide-react";
+import { Crosshair, Rocket, Megaphone, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Nova OS mobile nav — mirrors the outcome-first primary sidebar:
+// Mission Control · Build · Launch · Grow · Nova
 const TABS = [
   {
-    to: "/app/dashboard",
-    label: "Home",
-    icon: LayoutDashboard,
-    match: (p: string) => p === "/app/dashboard" || p === "/app/",
+    to: "/app/mission-control",
+    label: "Mission",
+    icon: Crosshair,
+    match: (p: string) => p === "/app/mission-control" || p === "/app/dashboard" || p === "/app/",
   },
   {
-    to: "/app/launchpad/",
-    label: "Workbench",
-    icon: Zap,
-    match: (p: string) => p.startsWith("/app/launchpad"),
+    to: "/app/outcomes/build",
+    label: "Build",
+    icon: Rocket,
+    match: (p: string) => p === "/app/outcomes/build" || p.startsWith("/app/launchpad"),
   },
   {
-    to: "/app/contacts",
-    label: "Customers",
-    icon: Users,
-    match: (p: string) => p.startsWith("/app/contacts") || p.startsWith("/app/leads"),
+    to: "/app/outcomes/launch",
+    label: "Launch",
+    icon: Megaphone,
+    match: (p: string) =>
+      p === "/app/outcomes/launch" || p.startsWith("/app/contacts") || p.startsWith("/app/leads"),
   },
   {
-    to: "/app/automations",
-    label: "Automate",
-    icon: Activity,
-    match: (p: string) => p.startsWith("/app/automations") || p.startsWith("/app/scale"),
+    to: "/app/outcomes/grow",
+    label: "Grow",
+    icon: TrendingUp,
+    match: (p: string) =>
+      p === "/app/outcomes/grow" || p.startsWith("/app/automations") || p.startsWith("/app/scale"),
   },
   {
-    to: "/app/settings",
-    label: "Settings",
-    icon: Settings,
-    match: (p: string) => p.startsWith("/app/settings"),
+    to: "/app/mentor",
+    label: "Nova",
+    icon: Sparkles,
+    match: (p: string) => p === "/app/mentor",
   },
 ];
 

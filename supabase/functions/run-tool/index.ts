@@ -2295,13 +2295,18 @@ Output format:
 };
 
 // ─── Frontend-naming aliases ─────────────────────────────────────────────────
-// mock.ts uses these toolKey values; map them to the matching configs above.
+// Mission seed definitions and frontend components use these toolKey values.
+// Map them to the canonical TOOLS keys defined above.
+// TASK-065: Tool Key Unification — normalize mission step tool references
 const TOOL_ALIASES: Record<string, string> = {
   // Frontend toolKey → canonical key
   "generate-pitch": "pitch-generator",
   "generate-gtm-strategy": "gtm-strategy-builder",
+  "gtm-strategy": "gtm-strategy-builder", // Mission seed shorthand
   "landing-page": "landing-page-creator",
-  "first-10-customers": "first-10-customers-finder",
+  "first-10-customers": "first-10-customers-finder", // Mission seed uses short name
+  followup: "generate-followup-sequence", // Mission seed uses short name
+  offer: "generate-offer", // Mission seed uses short name
   "funding-score": "funding-readiness-score",
   "investor-emails": "investor-email-writer",
   "competitor-analysis": "competitor-scanner",

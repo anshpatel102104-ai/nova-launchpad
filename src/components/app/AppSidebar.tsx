@@ -36,7 +36,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
-import { subscriptionQuery } from "@/lib/queries";
+import { subscriptionQuery, workspaceStatusQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
 
 /* ── Types ── */
@@ -57,42 +57,95 @@ interface NavGroup {
   badge?: string;
 }
 
-/* ── Navigation Definition ──
- * Seven destinations organized around the operating loop:
- * Home → Path → Workbench → Customers → Automate → Insights → Library.
- * Legacy routes (nova-os, scale/*, command-center, leads…) redirect into these.
+/* ── Navigation Definition — Nova OS model ──
+ * Outcome-first primary nav (NOVA_OS_REDESIGN.md):
+ *   Mission Control → Build → Launch → Grow → Ask Nova
+ * Everything else lives in the Toolbox (progressive disclosure, collapsed
+ * by default) so every legacy route stays reachable without nav overload.
  */
-const NAV_GROUPS: NavGroup[] = [
+const PRIMARY_NAV: NavGroup[] = [
   {
-    id: "home",
-    label: "Home",
-    icon: LayoutDashboard,
-    to: "/app/dashboard",
-    match: (p) => p === "/app/dashboard",
+    id: "mission-control",
+    label: "Mission Control",
+    icon: Crosshair,
+    to: "/app/mission-control",
+    match: (p) =>
+      p === "/app/mission-control" ||
+      p === "/app/dashboard" ||
+      p === "/app/mission-briefing" ||
+      p === "/app/launchpad-path" ||
+      p === "/app/galaxy",
   },
   {
+    id: "build",
+    label: "Build",
+    icon: Rocket,
+    to: "/app/outcomes/build",
+    match: (p) => p === "/app/outcomes/build",
+  },
+  {
+    id: "launch",
+    label: "Launch",
+    icon: Megaphone,
+    to: "/app/outcomes/launch",
+    match: (p) => p === "/app/outcomes/launch",
+  },
+  {
+    id: "grow",
+    label: "Grow",
+    icon: TrendingUp,
+    to: "/app/outcomes/grow",
+    match: (p) => p === "/app/outcomes/grow",
+  },
+  {
+    id: "nova",
+    label: "Ask Nova",
+    icon: Sparkles,
+    to: "/app/mentor",
+    match: (p) => p === "/app/mentor",
+  },
+];
+
+/* Operator-mode swaps Build/Launch/Grow for Automate/Optimize/Scale */
+const PRIMARY_NAV_OPERATE: NavGroup[] = [
+  PRIMARY_NAV[0],
+  {
+    id: "automate-outcomes",
+    label: "Automate",
+    icon: Zap,
+    to: "/app/outcomes/automate",
+    match: (p) => p === "/app/outcomes/automate",
+  },
+  {
+    id: "optimize",
+    label: "Optimize",
+    icon: TrendingUp,
+    to: "/app/outcomes/optimize",
+    match: (p) => p === "/app/outcomes/optimize",
+  },
+  {
+    id: "scale-outcomes",
+    label: "Scale",
+    icon: Rocket,
+    to: "/app/outcomes/scale",
+    match: (p) => p === "/app/outcomes/scale",
+  },
+  PRIMARY_NAV[4],
+];
+
+const NAV_GROUPS: NavGroup[] = [
+  {
     id: "path",
-    label: "Path",
+    label: "Journey",
     icon: Map,
     to: "/app/launchpad-path",
-    match: (p) =>
-      p === "/app/launchpad-path" ||
-      p === "/app/playbook" ||
-      p === "/app/mission-control" ||
-      p === "/app/mission-briefing" ||
-      p === "/app/galaxy",
+    match: (p) => p === "/app/launchpad-path" || p === "/app/playbook",
     children: [
       {
         label: "Journey",
         to: "/app/launchpad-path",
         icon: Map,
         match: (p) => p === "/app/launchpad-path" || p === "/app/galaxy",
-      },
-      {
-        label: "Missions",
-        to: "/app/mission-control",
-        icon: Crosshair,
-        match: (p) => p === "/app/mission-control" || p === "/app/mission-briefing",
       },
       {
         label: "Playbook",
@@ -290,15 +343,8 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-/* Which group IDs begin a new named section */
-const SECTION_STARTS: Record<string, string> = {
-  path: "Execute",
-  customers: "Operate",
-  insights: "Intelligence",
-  library: "Resources",
-};
-
 const STORAGE = "nova-sidebar-collapsed";
+const TOOLBOX_STORAGE = "nova-toolbox-open";
 
 interface AppSidebarProps {
   onOpenRail?: () => void;
@@ -315,6 +361,32 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plan = subQ.data?.plan ?? "starter";
+
+  // Mode-aware primary nav: founders see Build/Launch/Grow,
+  // operators see Automate/Optimize/Scale.
+  const wsQ = useQuery({ ...workspaceStatusQuery(user?.id ?? ""), enabled: !!user?.id });
+  const isOperate = (wsQ.data as { mode?: string } | null)?.mode === "operate";
+  const primaryNav = isOperate ? PRIMARY_NAV_OPERATE : PRIMARY_NAV;
+
+  // Toolbox (legacy full nav) — progressive disclosure, closed by default.
+  const [toolboxOpen, setToolboxOpen] = useState(() => {
+    try {
+      return localStorage.getItem(TOOLBOX_STORAGE) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleToolbox = () => {
+    setToolboxOpen((o) => {
+      const next = !o;
+      try {
+        localStorage.setItem(TOOLBOX_STORAGE, next ? "1" : "0");
+      } catch {
+        /* */
+      }
+      return next;
+    });
+  };
 
   const initials = (profile?.full_name || user?.email || "U")
     .split(/[\s@]/)
@@ -341,6 +413,9 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         active.forEach((id) => next.add(id));
         return next;
       });
+      // Reveal the Toolbox when the user is on a page that lives inside it,
+      // so the active state is never hidden.
+      setToolboxOpen(true);
     }
   }, [path]);
 
@@ -435,126 +510,169 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto py-2 space-y-px">
-        {NAV_GROUPS.map((group) => {
-          const isActive = group.match(path);
-          const isExpanded = expandedGroups.has(group.id);
-          const hasChildren = !!group.children?.length;
-          const sectionLabel = SECTION_STARTS[group.id];
-
+        {/* Primary nav — the OS layer: outcome-driven, 5 items */}
+        {primaryNav.map((item) => {
+          const isActive = item.match(path);
+          const isNova = item.id === "nova";
           return (
-            <div key={group.id}>
-              {/* Section header */}
-              {sectionLabel && !collapsed && (
-                <div className="px-3 pt-4 pb-1">
-                  <span
-                    className="text-[10px] font-semibold uppercase tracking-widest"
-                    style={{ color: "var(--muted-foreground)", opacity: 0.55 }}
-                  >
-                    {sectionLabel}
-                  </span>
-                </div>
-              )}
-              {sectionLabel && collapsed && (
-                <div className="mx-2 my-2 h-px" style={{ background: "var(--sidebar-border)" }} />
-              )}
-
-              {/* Parent nav item */}
-              <div className={cn("px-2", collapsed && "px-1.5")}>
-                {hasChildren ? (
-                  <button
-                    onClick={() => toggleGroup(group.id)}
-                    title={collapsed ? group.label : undefined}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-all duration-100",
-                      collapsed && "justify-center px-0 w-8 mx-auto",
-                      isActive ? "font-semibold" : "hover:bg-surface-2",
-                    )}
-                    style={
-                      isActive
-                        ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                        : { color: "var(--muted-foreground)" }
-                    }
-                  >
-                    <group.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 text-[13px]">{group.label}</span>
-                        <ChevronDown
-                          className={cn(
-                            "h-3.5 w-3.5 shrink-0 transition-transform duration-150 opacity-50",
-                            isExpanded && "rotate-180",
-                          )}
-                        />
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    to={group.to}
-                    title={collapsed ? group.label : undefined}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
-                      collapsed && "justify-center px-0 w-8 mx-auto",
-                      isActive ? "font-semibold" : "hover:bg-surface-2",
-                    )}
-                    style={
-                      isActive
-                        ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                        : { color: "var(--muted-foreground)" }
-                    }
-                  >
-                    <group.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 text-[13px]">{group.label}</span>
-                        {group.badge && (
-                          <span
-                            className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
-                            style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-                          >
-                            {group.badge}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </Link>
+            <div key={item.id} className={cn("px-2", collapsed && "px-1.5")}>
+              <Link
+                to={item.to}
+                title={collapsed ? item.label : undefined}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] transition-all duration-100",
+                  collapsed && "justify-center px-0 w-8 mx-auto",
+                  isActive ? "font-semibold" : "hover:bg-surface-2",
                 )}
-              </div>
-
-              {/* Sub-items */}
-              {!collapsed && hasChildren && isExpanded && (
-                <div className="px-2 mt-0.5 mb-1">
-                  <div
-                    className="ml-[18px] pl-3 space-y-px"
-                    style={{ borderLeft: "1.5px solid var(--border)" }}
-                  >
-                    {group.children!.map((child) => {
-                      const childActive = child.match(path);
-                      return (
-                        <Link
-                          key={child.to}
-                          to={child.to}
-                          className={cn(
-                            "flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-all duration-100",
-                            childActive ? "font-medium" : "hover:bg-surface-2",
-                          )}
-                          style={
-                            childActive
-                              ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                              : { color: "var(--muted-foreground)" }
-                          }
-                        >
-                          <child.icon className="h-3.5 w-3.5 shrink-0" />
-                          <span className="text-[12.5px]">{child.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                style={
+                  isActive
+                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                    : isNova
+                      ? { color: "var(--orbit-accent)" }
+                      : { color: "var(--muted-foreground)" }
+                }
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && <span className="flex-1 text-[13px]">{item.label}</span>}
+              </Link>
             </div>
           );
         })}
+
+        {/* Toolbox — progressive disclosure of the full feature set */}
+        <div className="px-2 pt-4">
+          <button
+            onClick={toggleToolbox}
+            title={collapsed ? "Toolbox" : undefined}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-left transition-colors hover:bg-surface-2",
+              collapsed && "justify-center px-0",
+            )}
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            {!collapsed ? (
+              <>
+                <span className="text-[10px] font-semibold uppercase tracking-widest opacity-55">
+                  Toolbox
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 opacity-40 transition-transform duration-150",
+                    toolboxOpen && "rotate-180",
+                  )}
+                />
+              </>
+            ) : (
+              <MoreHorizontal className="h-3.5 w-3.5 opacity-50" />
+            )}
+          </button>
+        </div>
+
+        {(toolboxOpen || collapsed) &&
+          NAV_GROUPS.map((group) => {
+            const isActive = group.match(path);
+            const isExpanded = expandedGroups.has(group.id);
+            const hasChildren = !!group.children?.length;
+
+            return (
+              <div key={group.id}>
+                {/* Parent nav item */}
+                <div className={cn("px-2", collapsed && "px-1.5")}>
+                  {hasChildren ? (
+                    <button
+                      onClick={() => toggleGroup(group.id)}
+                      title={collapsed ? group.label : undefined}
+                      className={cn(
+                        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-all duration-100",
+                        collapsed && "justify-center px-0 w-8 mx-auto",
+                        isActive ? "font-semibold" : "hover:bg-surface-2",
+                      )}
+                      style={
+                        isActive
+                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                          : { color: "var(--muted-foreground)" }
+                      }
+                    >
+                      <group.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-[13px]">{group.label}</span>
+                          <ChevronDown
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0 transition-transform duration-150 opacity-50",
+                              isExpanded && "rotate-180",
+                            )}
+                          />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      to={group.to}
+                      title={collapsed ? group.label : undefined}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
+                        collapsed && "justify-center px-0 w-8 mx-auto",
+                        isActive ? "font-semibold" : "hover:bg-surface-2",
+                      )}
+                      style={
+                        isActive
+                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                          : { color: "var(--muted-foreground)" }
+                      }
+                    >
+                      <group.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-[13px]">{group.label}</span>
+                          {group.badge && (
+                            <span
+                              className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
+                              style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                            >
+                              {group.badge}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </Link>
+                  )}
+                </div>
+
+                {/* Sub-items */}
+                {!collapsed && hasChildren && isExpanded && (
+                  <div className="px-2 mt-0.5 mb-1">
+                    <div
+                      className="ml-[18px] pl-3 space-y-px"
+                      style={{ borderLeft: "1.5px solid var(--border)" }}
+                    >
+                      {group.children!.map((child) => {
+                        const childActive = child.match(path);
+                        return (
+                          <Link
+                            key={child.to}
+                            to={child.to}
+                            className={cn(
+                              "flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-all duration-100",
+                              childActive ? "font-medium" : "hover:bg-surface-2",
+                            )}
+                            style={
+                              childActive
+                                ? { background: "var(--primary-soft)", color: "var(--primary)" }
+                                : { color: "var(--muted-foreground)" }
+                            }
+                          >
+                            <child.icon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="text-[12.5px]">{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </nav>
 
       {/* ── Footer ── */}

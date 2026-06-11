@@ -187,7 +187,36 @@ async function handleTrigger(request: Request, env: Env, origin: string): Promis
     log_id: logId,
   };
 
-  await env.AUTOMATION_QUEUE.send(job);
+  try {
+    await env.AUTOMATION_QUEUE.send(job);
+  } catch (queueErr) {
+    // If queue fails, update log status to 'failed' and return error
+    if (logId) {
+      await fetch(`${env.SUPABASE_URL}/rest/v1/automation_logs?id=eq.${logId}`, {
+        method: "PATCH",
+        headers: {
+          ...sbHeaders(env),
+          Prefer: "return=representation",
+        },
+        body: JSON.stringify({
+          status: "failed",
+          error_message: `Queue enqueue failed: ${queueErr instanceof Error ? queueErr.message : "Unknown error"}`,
+          completed_at: new Date().toISOString(),
+        }),
+      });
+    }
+    return new Response(
+      JSON.stringify({
+        error: "Failed to queue automation",
+        message: queueErr instanceof Error ? queueErr.message : "Unknown error",
+        log_id: logId,
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+      },
+    );
+  }
 
   return new Response(JSON.stringify({ success: true, log_id: logId }), {
     status: 200,
