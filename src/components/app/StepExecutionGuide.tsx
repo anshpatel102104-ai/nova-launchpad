@@ -232,7 +232,13 @@ export function StepExecutionGuide({ guidance, onExecute, isCompleted }: Props) 
                     {/* Expanded details */}
                     {isExpanded && (
                       <div style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                        <div style={{ padding: "12px", fontSize: 12, color: "var(--muted-foreground)" }}>
+                        <div
+                          style={{
+                            padding: "12px",
+                            fontSize: 12,
+                            color: "var(--muted-foreground)",
+                          }}
+                        >
                           {option.description}
                         </div>
                         <div

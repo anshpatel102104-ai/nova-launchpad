@@ -61,6 +61,7 @@ import { Route as AppScaleReportsRouteImport } from './routes/app.scale.reports'
 import { Route as AppScalePipelineRouteImport } from './routes/app.scale.pipeline'
 import { Route as AppScaleCampaignsRouteImport } from './routes/app.scale.campaigns'
 import { Route as AppScaleAutomationsRouteImport } from './routes/app.scale.automations'
+import { Route as AppOutcomesCategoryRouteImport } from './routes/app.outcomes.$category'
 import { Route as AppNovaWorkflowsRouteImport } from './routes/app.nova.workflows'
 import { Route as AppNovaReportsRouteImport } from './routes/app.nova.reports'
 import { Route as AppNovaLeadsRouteImport } from './routes/app.nova.leads'
@@ -334,6 +335,11 @@ const AppScaleAutomationsRoute = AppScaleAutomationsRouteImport.update({
   path: '/automations',
   getParentRoute: () => AppScaleRoute,
 } as any)
+const AppOutcomesCategoryRoute = AppOutcomesCategoryRouteImport.update({
+  id: '/outcomes/$category',
+  path: '/outcomes/$category',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNovaWorkflowsRoute = AppNovaWorkflowsRouteImport.update({
   id: '/nova/workflows',
   path: '/nova/workflows',
@@ -453,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
@@ -518,6 +525,7 @@ export interface FileRoutesByTo {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
@@ -585,6 +593,7 @@ export interface FileRoutesById {
   '/app/nova/leads': typeof AppNovaLeadsRoute
   '/app/nova/reports': typeof AppNovaReportsRoute
   '/app/nova/workflows': typeof AppNovaWorkflowsRoute
+  '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
@@ -653,6 +662,7 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
@@ -718,6 +728,7 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
@@ -784,6 +795,7 @@ export interface FileRouteTypes {
     | '/app/nova/leads'
     | '/app/nova/reports'
     | '/app/nova/workflows'
+    | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
@@ -1175,6 +1187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScaleAutomationsRouteImport
       parentRoute: typeof AppScaleRoute
     }
+    '/app/outcomes/$category': {
+      id: '/app/outcomes/$category'
+      path: '/outcomes/$category'
+      fullPath: '/app/outcomes/$category'
+      preLoaderRoute: typeof AppOutcomesCategoryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/nova/workflows': {
       id: '/app/nova/workflows'
       path: '/nova/workflows'
@@ -1360,6 +1379,7 @@ interface AppRouteChildren {
   AppNovaLeadsRoute: typeof AppNovaLeadsRoute
   AppNovaReportsRoute: typeof AppNovaReportsRoute
   AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
+  AppOutcomesCategoryRoute: typeof AppOutcomesCategoryRoute
   AppBlogIndexRoute: typeof AppBlogIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
@@ -1407,6 +1427,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNovaLeadsRoute: AppNovaLeadsRoute,
   AppNovaReportsRoute: AppNovaReportsRoute,
   AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
+  AppOutcomesCategoryRoute: AppOutcomesCategoryRoute,
   AppBlogIndexRoute: AppBlogIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,

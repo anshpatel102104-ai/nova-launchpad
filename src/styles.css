@@ -2257,3 +2257,200 @@ a,
 .rail-slide-in {
   animation: railSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+@layer utilities {
+  /* ════════════════════════════════════════════════════════════════
+     LOGBOOK — Founder's Mission Log design language
+     Notebook paper (ruled lines, margin rule, handwritten annotations)
+     fused with solar-system mission control (orbits, telemetry stamps).
+     Subtle by default — paper texture at low opacity keeps premium calm.
+     ════════════════════════════════════════════════════════════════ */
+
+  /* Ruled notebook page: horizontal lines + left margin rule */
+  .logbook-page {
+    position: relative;
+    background-color: var(--surface);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      color-mix(in oklab, var(--orbit-accent) 9%, transparent) 27px,
+      color-mix(in oklab, var(--orbit-accent) 9%, transparent) 28px
+    );
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+  }
+  .logbook-page::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 44px;
+    width: 1px;
+    background: color-mix(in oklab, var(--ignition, #f97316) 35%, transparent);
+    pointer-events: none;
+  }
+
+  /* Page without the margin rule (for tighter cards) */
+  .logbook-ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      color-mix(in oklab, var(--orbit-accent) 8%, transparent) 27px,
+      color-mix(in oklab, var(--orbit-accent) 8%, transparent) 28px
+    );
+  }
+
+  /* Spiral binding edge — dotted holes down the left side */
+  .logbook-spiral {
+    position: relative;
+  }
+  .logbook-spiral::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 14px;
+    width: 8px;
+    background-image: radial-gradient(
+      circle at center,
+      color-mix(in oklab, var(--foreground) 18%, transparent) 2.5px,
+      transparent 3px
+    );
+    background-size: 8px 26px;
+    background-repeat: repeat-y;
+    pointer-events: none;
+  }
+
+  /* Handwritten annotation — for margin notes & emphasis only */
+  .logbook-hand {
+    font-family: "Caveat", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    font-size: 1.15em;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+  }
+
+  /* Telemetry stamp — mono mission-control labels */
+  .logbook-stamp {
+    font-family: ui-monospace, "SF Mono", "Fira Code", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted-foreground);
+  }
+
+  /* Notebook divider tab */
+  .logbook-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px 4px 10px;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: var(--surface-2);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Sticky-note accent block */
+  .logbook-sticky {
+    background: color-mix(in oklab, var(--warning) 10%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--warning) 25%, transparent);
+    border-radius: 2px 10px 2px 10px;
+    transform: rotate(-0.4deg);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Field-journal checkbox row */
+  .logbook-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .logbook-check-box {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 1.5px solid color-mix(in oklab, var(--foreground) 35%, transparent);
+    border-radius: 3px;
+    background: transparent;
+  }
+  .logbook-check-box.is-done {
+    border-color: var(--success);
+    background: color-mix(in oklab, var(--success) 16%, transparent);
+    position: relative;
+  }
+  .logbook-check-box.is-done::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--success);
+  }
+
+  /* Orbital progress ring container (pairs with svg rings) */
+  .logbook-orbit {
+    position: relative;
+  }
+  .logbook-orbit::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 999px;
+    border: 1px dashed color-mix(in oklab, var(--orbit-accent) 30%, transparent);
+    pointer-events: none;
+    animation: logbook-orbit-spin 40s linear infinite;
+  }
+  @keyframes logbook-orbit-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Starfield wash for page headers */
+  .logbook-starfield {
+    background-image:
+      radial-gradient(
+        1px 1px at 12% 25%,
+        color-mix(in oklab, var(--orbit-accent) 55%, transparent),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 38% 65%,
+        color-mix(in oklab, var(--foreground) 35%, transparent),
+        transparent
+      ),
+      radial-gradient(
+        1.5px 1.5px at 62% 20%,
+        color-mix(in oklab, var(--primary) 45%, transparent),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 81% 50%,
+        color-mix(in oklab, var(--foreground) 30%, transparent),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 92% 80%,
+        color-mix(in oklab, var(--orbit-accent) 40%, transparent),
+        transparent
+      );
+  }
+
+  /* Torn-paper bottom edge divider */
+  .logbook-torn {
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 6px), transparent 100%);
+    mask-image: linear-gradient(to bottom, black calc(100% - 6px), transparent 100%);
+  }
+}
