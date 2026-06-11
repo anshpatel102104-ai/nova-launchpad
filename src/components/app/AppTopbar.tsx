@@ -21,6 +21,7 @@ import { useTheme } from "@/lib/theme";
 import { useGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
+import { ThemePaletteButton } from "./ThemePaletteButton";
 
 const PAGE_TITLES: Record<string, string> = {
   "/app/dashboard": "Home",
@@ -29,7 +30,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/launchpad/first-customers": "First Customers",
   "/app/launchpad": "Workbench",
   "/app/playbook": "Playbook",
-  "/app/mission-control": "Missions",
+  "/app/mission-control": "Home",
   "/app/mission-briefing": "Mission Briefing",
   "/app/research": "Research",
   "/app/memory": "Memory",
@@ -236,6 +237,9 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           <IconBtn title="Help & support">
             <HelpCircle className="h-4 w-4" />
           </IconBtn>
+
+          {/* Custom 3-color palette (Base / Secondary / Text) */}
+          <ThemePaletteButton />
 
           {/* Theme picker */}
           <div className="relative" ref={themeRef}>

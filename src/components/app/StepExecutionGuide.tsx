@@ -1,354 +1,157 @@
-// Step Execution Guide Component
-// Provides actionable, clear guidance for each mission step with:
-// - Simple execution instructions at a 5th-grade reading level
-// - Dropdown showing different ways to execute (tool link, external action, etc)
-// - Links and what-to-do guidance inline
-// - Clarified wording for complex steps
+// Step Execution Guide — renders one step's hand-holding block:
+// why it matters, a numbered directions table, "you are done when", and one
+// clear purple button. Sharp corners, plain words.
 
-import React, { useState } from "react";
-import {
-  ChevronDown,
-  ExternalLink,
-  Zap,
-  BookOpen,
-  Link as LinkIcon,
-  CheckCircle2,
-} from "lucide-react";
-
-export interface ExecutionOption {
-  type: "tool" | "inline" | "external" | "manual" | "integration";
-  label: string;
-  description: string;
-  action: {
-    text: string;
-    href?: string;
-    onClick?: () => void;
-  };
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
-export interface StepGuidance {
-  stepId: string;
-  title: string;
-  simplifiedDescription?: string;
-  whyDoThis?: string;
-  executionOptions: ExecutionOption[];
-  estimatedTime?: number; // in minutes
-  commonMistakes?: string[];
-  successCriteria?: string[];
-}
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Clock, MessageCircle } from "lucide-react";
+import type { StepGuidance } from "@/lib/step-execution-guidance";
 
 interface Props {
   guidance: StepGuidance;
-  onExecute?: (option: ExecutionOption) => void;
+  /** Called when the user says "I did it" (manual steps). */
+  onMarkDone?: () => void;
   isCompleted?: boolean;
+  /** Hide why/done-when boxes for tight checklist rows. */
+  compact?: boolean;
 }
 
-export function StepExecutionGuide({ guidance, onExecute, isCompleted }: Props) {
-  const [expandedOption, setExpandedOption] = useState<number | null>(null);
-  const [showAllDetails, setShowAllDetails] = useState(false);
-
-  const defaultOption = guidance.executionOptions[0];
-  const primaryOption = guidance.executionOptions.find((o) => o.type === "tool") || defaultOption;
-
+export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact }: Props) {
   if (isCompleted) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          fontSize: 13,
-          color: "var(--muted-foreground)",
-        }}
-      >
-        <CheckCircle2 style={{ width: 16, height: 16, color: "#22c55e" }} />
-        <span>Step completed</span>
+      <div className="text-[12.5px] font-semibold" style={{ color: "var(--success)" }}>
+        ✓ Step done
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {/* Why do this */}
-      {guidance.whyDoThis && !showAllDetails && (
+    <div className="flex flex-col gap-3">
+      {!compact && (
         <div
+          className="rounded-[4px] border px-3.5 py-2.5 text-[13px] leading-relaxed"
           style={{
-            fontSize: 12,
+            background: "var(--surface-2)",
+            borderColor: "var(--border-subtle)",
+            borderLeft: "3px solid var(--primary)",
             color: "var(--muted-foreground)",
-            lineHeight: 1.5,
-            padding: "8px 12px",
-            borderRadius: 8,
-            background: "rgba(100,150,200,0.05)",
-            borderLeft: "2px solid var(--primary)",
           }}
         >
-          <strong style={{ color: "var(--foreground)" }}>Why:</strong> {guidance.whyDoThis}
+          <b style={{ color: "var(--foreground)", fontWeight: 700 }}>Why this matters: </b>
+          {guidance.why}
         </div>
       )}
 
-      {/* Simplified description */}
-      {guidance.simplifiedDescription && (
+      {/* Directions — numbered, one move per row */}
+      <div>
+        <div className="mb-1.5 text-[12.5px] font-bold" style={{ color: "var(--foreground)" }}>
+          How to do it — {guidance.directions.length} small steps:
+        </div>
         <div
+          className="overflow-hidden rounded-[4px] border"
+          style={{ borderColor: "var(--border)" }}
+        >
+          {guidance.directions.map((d, i) => (
+            <div
+              key={i}
+              className="flex items-stretch"
+              style={{
+                borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none",
+              }}
+            >
+              <div
+                className="flex w-10 shrink-0 items-center justify-center text-[13px] font-extrabold"
+                style={{
+                  color: "var(--primary)",
+                  background: "var(--primary-soft)",
+                  borderRight: "1px solid var(--primary-border)",
+                }}
+              >
+                {i + 1}
+              </div>
+              <div className="px-3.5 py-2.5 text-[13px] leading-relaxed">
+                <span className="font-bold" style={{ color: "var(--foreground)" }}>
+                  {d.action}
+                </span>{" "}
+                <span style={{ color: "var(--muted-foreground)" }}>{d.detail}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!compact && guidance.doneWhen.length > 0 && (
+        <div
+          className="rounded-[4px] border px-3.5 py-2.5"
           style={{
-            fontSize: 12,
-            color: "var(--foreground)",
-            lineHeight: 1.6,
-            padding: "8px 0",
+            background: "color-mix(in oklab, var(--success) 7%, var(--surface))",
+            borderColor: "color-mix(in oklab, var(--success) 30%, transparent)",
+            borderLeft: "3px solid var(--success)",
           }}
         >
-          {guidance.simplifiedDescription}
+          <div className="mb-1 text-[12.5px] font-bold" style={{ color: "var(--success)" }}>
+            You are done when:
+          </div>
+          <ul className="space-y-0.5">
+            {guidance.doneWhen.map((c, i) => (
+              <li
+                key={i}
+                className="flex gap-2 text-[13px] leading-relaxed"
+                style={{ color: "var(--foreground)" }}
+              >
+                <span className="font-extrabold" style={{ color: "var(--success)" }}>
+                  ✓
+                </span>
+                {c}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
-      {/* Primary execution button */}
-      <button
-        onClick={() => {
-          if (primaryOption.action.href) {
-            window.location.href = primaryOption.action.href;
-          } else if (primaryOption.action.onClick) {
-            primaryOption.action.onClick();
-          }
-          onExecute?.(primaryOption);
-        }}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          padding: "8px 14px",
-          borderRadius: 8,
-          border: "none",
-          background:
-            primaryOption.type === "tool"
-              ? "linear-gradient(135deg, #3b82f6, #6366f1)"
-              : "var(--primary)",
-          color: "#fff",
-          fontSize: 12.5,
-          fontWeight: 600,
-          cursor: "pointer",
-          fontFamily: "inherit",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.opacity = "0.9";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.opacity = "1";
-        }}
-      >
-        <Zap style={{ width: 14, height: 14 }} />
-        {primaryOption.action.text}
-      </button>
-
-      {/* Alternative options dropdown (if more than 1) */}
-      {guidance.executionOptions.length > 1 && (
-        <div
-          style={{
-            borderTop: "1px solid var(--border-subtle)",
-            paddingTop: 8,
-            marginTop: 4,
-          }}
-        >
-          <button
-            onClick={() => setShowAllDetails(!showAllDetails)}
+      {/* One clear action */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        {guidance.toolRoute ? (
+          <Link
+            to={guidance.toolRoute}
+            className="inline-flex items-center gap-2 rounded-[4px] px-4 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90"
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              padding: "6px 0",
-              border: "none",
-              background: "transparent",
-              color: "var(--muted-foreground)",
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
+              background: "var(--primary)",
+              boxShadow: "0 2px 6px var(--primary-glow)",
             }}
           >
-            <span>Other ways to do this</span>
-            <ChevronDown
+            {guidance.buttonLabel}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          onMarkDone && (
+            <button
+              onClick={onMarkDone}
+              className="inline-flex items-center gap-2 rounded-[4px] px-4 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90"
               style={{
-                width: 14,
-                height: 14,
-                transition: "transform 0.2s",
-                transform: showAllDetails ? "rotate(180deg)" : "rotate(0deg)",
+                background: "var(--primary)",
+                boxShadow: "0 2px 6px var(--primary-glow)",
               }}
-            />
-          </button>
-
-          {showAllDetails && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
-              {guidance.executionOptions.map((option, idx) => {
-                const isExpanded = expandedOption === idx;
-                const Icon = option.icon || LinkIcon;
-
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      borderRadius: 8,
-                      border: "1px solid var(--border-subtle)",
-                      background: "var(--surface)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Option header */}
-                    <button
-                      onClick={() => setExpandedOption(isExpanded ? null : idx)}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "10px 12px",
-                        border: "none",
-                        background: "transparent",
-                        color: "var(--foreground)",
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        textAlign: "left",
-                      }}
-                    >
-                      <Icon style={{ width: 16, height: 16, flexShrink: 0 }} />
-                      <span style={{ flex: 1 }}>{option.label}</span>
-                      <ChevronDown
-                        style={{
-                          width: 14,
-                          height: 14,
-                          transition: "transform 0.2s",
-                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                          color: "var(--muted-foreground)",
-                        }}
-                      />
-                    </button>
-
-                    {/* Expanded details */}
-                    {isExpanded && (
-                      <div style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                        <div
-                          style={{
-                            padding: "12px",
-                            fontSize: 12,
-                            color: "var(--muted-foreground)",
-                          }}
-                        >
-                          {option.description}
-                        </div>
-                        <div
-                          style={{
-                            padding: "10px 12px",
-                            background: "var(--surface-2)",
-                            borderTop: "1px solid var(--border-subtle)",
-                          }}
-                        >
-                          <button
-                            onClick={() => {
-                              if (option.action.href) {
-                                window.location.href = option.action.href;
-                              } else if (option.action.onClick) {
-                                option.action.onClick();
-                              }
-                              onExecute?.(option);
-                            }}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              padding: "6px 10px",
-                              borderRadius: 6,
-                              border: "none",
-                              background: "var(--primary)",
-                              color: "#fff",
-                              fontSize: 11.5,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                            }}
-                          >
-                            {option.action.text}
-                            {option.action.href && (
-                              <ExternalLink style={{ width: 12, height: 12 }} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Common mistakes */}
-      {guidance.commonMistakes && guidance.commonMistakes.length > 0 && showAllDetails && (
-        <div
-          style={{
-            padding: "10px 12px",
-            borderRadius: 8,
-            background: "rgba(239,68,68,0.05)",
-            borderLeft: "2px solid rgba(239,68,68,0.3)",
-            fontSize: 11.5,
-            color: "var(--muted-foreground)",
-          }}
+            >
+              {guidance.buttonLabel}
+            </button>
+          )
+        )}
+        <Link
+          to="/app/mentor"
+          className="inline-flex items-center gap-1.5 rounded-[4px] border px-3.5 py-2 text-[12.5px] font-semibold"
+          style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}
         >
-          <div style={{ fontWeight: 600, color: "var(--foreground)", marginBottom: 4 }}>
-            Common mistakes to avoid:
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 16, lineHeight: 1.6 }}>
-            {guidance.commonMistakes.map((mistake, idx) => (
-              <li key={idx}>{mistake}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Success criteria */}
-      {guidance.successCriteria && guidance.successCriteria.length > 0 && showAllDetails && (
-        <div
-          style={{
-            padding: "10px 12px",
-            borderRadius: 8,
-            background: "rgba(34,197,94,0.05)",
-            borderLeft: "2px solid rgba(34,197,94,0.3)",
-            fontSize: 11.5,
-            color: "var(--muted-foreground)",
-          }}
+          <MessageCircle className="h-3.5 w-3.5" />
+          I'm stuck — ask Nova
+        </Link>
+        <span
+          className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold"
+          style={{ color: "var(--text-faint)" }}
         >
-          <div style={{ fontWeight: 600, color: "var(--foreground)", marginBottom: 4 }}>
-            You'll be done when:
-          </div>
-          <ul style={{ margin: 0, paddingLeft: 16, lineHeight: 1.6 }}>
-            {guidance.successCriteria.map((criteria, idx) => (
-              <li key={idx}>{criteria}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Estimated time */}
-      {guidance.estimatedTime && (
-        <div
-          style={{
-            fontSize: 11,
-            color: "var(--muted-foreground)",
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <BookOpen style={{ width: 12, height: 12 }} />
-          <span>~{guidance.estimatedTime} minutes</span>
-        </div>
-      )}
+          <Clock className="h-3 w-3" />
+          about {guidance.minutes} minutes
+        </span>
+      </div>
     </div>
   );
 }

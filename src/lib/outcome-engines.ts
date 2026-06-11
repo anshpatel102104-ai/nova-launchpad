@@ -1,8 +1,7 @@
-// Outcome Engines — the outcome-first layer that replaces tool-marketplace
-// browsing. Users pick what they want to ACHIEVE; each engine sequences the
-// existing Launchpad tools (plus manual steps) behind the scenes.
-//
-// NOVA_OS_REDESIGN.md · Part 2 — frontend-only; reuses existing tool routes.
+// Outcome Engines — goals, in plain words.
+// Users pick what they want to get done; each goal sequences the existing
+// Launchpad tools (plus real-world steps) behind the scenes.
+// Frontend-only; reuses existing tool routes.
 
 import type { ComponentType, CSSProperties } from "react";
 import {
@@ -26,7 +25,7 @@ export interface OutcomeStep {
   title: string;
   /** What the user does, in plain language */
   description: string;
-  /** Launchpad tool slug — null means manual step */
+  /** Launchpad tool slug — null means a real-world step */
   toolSlug: string | null;
   /** Route to execute (tool page or relevant app page) */
   to: string;
@@ -37,17 +36,15 @@ export interface OutcomeEngine {
   id: string;
   category: OutcomeCategory;
   name: string;
-  /** One-line: what the user walks away with */
+  /** One line: what the user walks away with */
   outcome: string;
-  /** Why this matters for the business */
+  /** Why this matters, in one plain sentence */
   impact: string;
   estimatedMinutes: number;
   icon: ComponentType<{ className?: string; style?: CSSProperties }>;
   steps: OutcomeStep[];
   /** Outcome IDs that naturally follow this one */
   leadsTo: string[];
-  /** Handwritten margin note — logbook flavor */
-  marginNote?: string;
 }
 
 /* ─── Category metadata (drives nav + page headers) ─────────── */
@@ -58,7 +55,7 @@ export const OUTCOME_CATEGORIES: Record<
 > = {
   build: {
     label: "Build",
-    tagline: "Turn your idea into something sellable",
+    tagline: "Turn your idea into something you can sell",
     modes: ["create"],
   },
   launch: {
@@ -68,59 +65,56 @@ export const OUTCOME_CATEGORIES: Record<
   },
   grow: {
     label: "Grow",
-    tagline: "Scale revenue with repeatable systems",
+    tagline: "Make sales repeatable, not lucky",
     modes: ["create"],
   },
   automate: {
     label: "Automate",
-    tagline: "Remove manual work from your business",
+    tagline: "Make boring work run by itself",
     modes: ["operate"],
   },
   optimize: {
     label: "Optimize",
-    tagline: "Improve conversion, revenue, and efficiency",
+    tagline: "Same effort, more results",
     modes: ["operate"],
   },
   scale: {
     label: "Scale",
-    tagline: "Build the team and playbook to grow without you",
+    tagline: "Make the business run without you",
     modes: ["operate"],
   },
 };
 
-/* ─── Engine definitions ────────────────────────────────────── */
+/* ─── Goal definitions ──────────────────────────────────────── */
 
 export const OUTCOME_ENGINES: OutcomeEngine[] = [
   /* ── BUILD ── */
   {
     id: "validate-idea",
     category: "build",
-    name: "Validate Your Idea",
-    outcome: "A scored verdict: build it, fix it, or kill it",
-    impact: "Saves you months of building the wrong thing",
+    name: "Check your idea",
+    outcome: "a clear answer: build it, fix it, or drop it.",
+    impact: "Find out if people want it — before you build it.",
     estimatedMinutes: 20,
     icon: Lightbulb,
-    marginNote: "check before you build!",
     steps: [
       {
-        title: "Score the idea",
-        description: "Nova grades your idea across 8 investor dimensions and gives a verdict.",
+        title: "Score your idea",
+        description: "Nova grades your idea and tells you what's strong and what's weak.",
         toolSlug: "idea-validator",
         to: "/app/launchpad/idea-validator",
         estimatedMinutes: 8,
       },
       {
-        title: "Pressure-test it",
-        description:
-          "Nova argues against your idea like a skeptical investor — find the holes first.",
+        title: "Stress-test it",
+        description: "Nova argues against your idea, like a tough customer. Find the holes first.",
         toolSlug: "kill-my-idea",
         to: "/app/launchpad/kill-my-idea",
         estimatedMinutes: 6,
       },
       {
-        title: "Write your one-liner",
-        description:
-          'Fill in: "I help [WHO] to [DO WHAT] so that [BENEFIT]." Simple enough for a 10-year-old.',
+        title: "Write your one-line promise",
+        description: 'Fill in: "I help [WHO] do [WHAT] so they get [RESULT]." Keep it simple.',
         toolSlug: null,
         to: "/app/mission-control",
         estimatedMinutes: 6,
@@ -131,33 +125,29 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "build-offer",
     category: "build",
-    name: "Build Your Offer",
-    outcome: "A clear offer with pricing, ready to sell",
-    impact: "The foundation for all revenue — nothing sells without it",
+    name: "Build your offer",
+    outcome: "a clear offer with a price, ready to sell.",
+    impact: "You can't sell anything until you can say what it is and what it costs.",
     estimatedMinutes: 30,
     icon: Megaphone,
-    marginNote: "this unlocks revenue ↓",
     steps: [
       {
-        title: "Design the offer",
-        description:
-          "Tell Nova who it's for, what result you deliver, and the price. Get a professional offer architecture.",
+        title: "Design your offer",
+        description: "Answer 4 short questions. Nova writes the offer for you.",
         toolSlug: "offer",
         to: "/app/launchpad/offer",
         estimatedMinutes: 12,
       },
       {
-        title: "Map your go-to-market",
-        description:
-          "Nova builds a 90-day plan: target segment, channels, messaging, weekly calendar.",
+        title: "Make your customer plan",
+        description: "Nova shows you where to find customers and what to say to them.",
         toolSlug: "gtm-strategy",
         to: "/app/launchpad/gtm-strategy",
         estimatedMinutes: 10,
       },
       {
-        title: "Write your positioning",
-        description:
-          'Fill in: "We help [WHO] achieve [RESULT] without [PAIN] in [TIMEFRAME]." Put it everywhere.',
+        title: "Write your one-line promise",
+        description: "Fill in one simple sentence about who you help. Use it everywhere.",
         toolSlug: null,
         to: "/app/mission-control",
         estimatedMinutes: 8,
@@ -168,23 +158,22 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "create-pitch",
     category: "build",
-    name: "Create Your Pitch",
-    outcome: "A 30-second pitch that makes people want more",
-    impact: "Used in every email, meeting, and conversation from here on",
+    name: "Write your 30-second pitch",
+    outcome: "words that make people want to hear more.",
+    impact: "You'll use this pitch in every email, call, and meeting.",
     estimatedMinutes: 15,
     icon: Target,
     steps: [
       {
-        title: "Generate the pitch",
-        description: "Nova writes a compelling pitch from your business details.",
+        title: "Let Nova write your pitch",
+        description: "Answer short questions. Nova turns them into a pitch.",
         toolSlug: "pitch-generator",
         to: "/app/launchpad/pitch-generator",
         estimatedMinutes: 10,
       },
       {
-        title: "Practice out loud",
-        description:
-          "Say it 5 times. Record yourself. If you sound clear and confident, you're ready.",
+        title: "Say it out loud 5 times",
+        description: "Change any word that doesn't sound like you. Then you're ready.",
         toolSlug: null,
         to: "/app/mission-control",
         estimatedMinutes: 5,
@@ -197,31 +186,29 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "land-first-customers",
     category: "launch",
-    name: "Land First 10 Customers",
-    outcome: "10 paying customers and proven product-market fit",
-    impact: "The moment your idea becomes a business",
+    name: "Get your first 10 customers",
+    outcome: "10 paying customers — proof your business is real.",
+    impact: "This is the only number that matters right now.",
     estimatedMinutes: 45,
     icon: Users,
-    marginNote: "the only metric that matters right now",
     steps: [
       {
-        title: "Get your acquisition blueprint",
-        description: "Nova builds a personalized plan to land 10 customers in 30 days.",
+        title: "Get your 30-day plan",
+        description: "Nova builds a day-by-day plan to land 10 customers.",
         toolSlug: "first-10-customers",
         to: "/app/launchpad/first-10-customers",
         estimatedMinutes: 15,
       },
       {
-        title: "Build your follow-up sequence",
-        description: "5 ready-to-send emails over 2 weeks — intro, value, objection, proof, ask.",
+        title: "Get your 5 follow-up emails",
+        description: "Nova writes the emails that keep leads warm for 2 weeks.",
         toolSlug: "followup",
         to: "/app/launchpad/followup",
         estimatedMinutes: 15,
       },
       {
-        title: "Send your first outreach today",
-        description:
-          "One real person. One message. Right now — then add them to your Contacts to track what happens.",
+        title: "Message one real person today",
+        description: "One person, one message, right now. Then save them in Customers.",
         toolSlug: null,
         to: "/app/contacts",
         estimatedMinutes: 15,
@@ -232,23 +219,22 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "automate-followup",
     category: "launch",
-    name: "Automate Your Follow-Up",
-    outcome: "Follow-ups that send themselves — no lead falls through",
-    impact: "Most sales need 5–8 touches; automation makes that effortless",
+    name: "Set up follow-up that sends itself",
+    outcome: "follow-up emails that go out on their own — no lead is forgotten.",
+    impact: "Most people buy after 5 to 8 reminders. Nova sends them for you.",
     estimatedMinutes: 20,
     icon: Mail,
     steps: [
       {
-        title: "Write the sequence",
-        description: "Nova drafts the 5-email sequence tuned to your business and customer.",
+        title: "Write the emails",
+        description: "Nova writes 5 short emails that fit your business.",
         toolSlug: "followup",
         to: "/app/launchpad/followup",
         estimatedMinutes: 10,
       },
       {
-        title: "Turn on the automation",
-        description:
-          "Enable the follow-up workflow so every new lead enters the sequence automatically.",
+        title: "Turn it on",
+        description: "Flip the switch. Every new lead now gets the emails automatically.",
         toolSlug: null,
         to: "/app/automations",
         estimatedMinutes: 10,
@@ -261,30 +247,29 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "build-growth-system",
     category: "grow",
-    name: "Build a Repeatable Growth System",
-    outcome: "Customer acquisition that runs without your personal effort",
-    impact: "Your business stops being capped by your hours",
+    name: "Build a growth machine",
+    outcome: "a way to get customers that doesn't need you every day.",
+    impact: "Your business stops being capped by your hours.",
     estimatedMinutes: 60,
     icon: TrendingUp,
     steps: [
       {
-        title: "Document your GTM playbook",
-        description: "A strategy a team member could execute — channels, scripts, weekly cadence.",
+        title: "Write your growth playbook",
+        description: "A plan so clear that someone else could run it for you.",
         toolSlug: "gtm-strategy",
         to: "/app/launchpad/gtm-strategy",
         estimatedMinutes: 15,
       },
       {
-        title: "Map your operations",
-        description: "Nova structures your processes, roles, and ranks what to automate first.",
+        title: "Map how your business runs",
+        description: "Nova writes down your steps and picks what to automate first.",
         toolSlug: "generate-ops-plan",
         to: "/app/launchpad/ops-plan",
         estimatedMinutes: 20,
       },
       {
-        title: "Design your referral loop",
-        description:
-          "Send the 3-sentence referral ask to your last 5 customers. Make referrals happen on purpose.",
+        title: "Ask 5 customers for a referral",
+        description: "Send a 3-sentence ask to your last 5 customers. Referrals on purpose.",
         toolSlug: null,
         to: "/app/contacts",
         estimatedMinutes: 25,
@@ -297,25 +282,22 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "automate-process",
     category: "automate",
-    name: "Automate a Key Process",
-    outcome: "One recurring task running 100% without you",
-    impact: "Every automated task is permanent reclaimed time",
+    name: "Automate one task",
+    outcome: "one boring task that now runs 100% without you.",
+    impact: "Every task you automate gives you time back, forever.",
     estimatedMinutes: 40,
     icon: Workflow,
-    marginNote: "start with the most repeated task",
     steps: [
       {
-        title: "Map the task",
-        description:
-          "Write the handoff doc: what triggers it, the exact steps, and what 'done' looks like.",
+        title: "Write the task down",
+        description: "What starts it, the exact steps, and what 'done' looks like.",
         toolSlug: "generate-ops-plan",
         to: "/app/launchpad/ops-plan",
         estimatedMinutes: 15,
       },
       {
-        title: "Deploy the automation",
-        description:
-          "Pick a pre-built workflow that matches, or build a custom trigger → action chain.",
+        title: "Turn on the automation",
+        description: "Pick a ready-made workflow that matches, or build your own.",
         toolSlug: null,
         to: "/app/automations",
         estimatedMinutes: 25,
@@ -326,15 +308,15 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "connect-systems",
     category: "automate",
-    name: "Connect Your Systems",
-    outcome: "Your real data flowing into Nova automatically",
-    impact: "No more manual reporting — your numbers fill themselves in",
+    name: "Connect your tools",
+    outcome: "your real numbers flowing into Nova by themselves.",
+    impact: "No more typing numbers in by hand — your dashboard fills itself.",
     estimatedMinutes: 15,
     icon: Plug,
     steps: [
       {
-        title: "Connect your most-used tool",
-        description: "Link payments, CRM, or calendar. One integration unlocks live dashboards.",
+        title: "Connect the tool you use most",
+        description: "Link payments, your contact list, or your calendar. One is enough to start.",
         toolSlug: null,
         to: "/app/integrations",
         estimatedMinutes: 15,
@@ -347,30 +329,29 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "optimize-growth",
     category: "optimize",
-    name: "Improve Your Growth Engine",
-    outcome: "A sharper GTM with better conversion at each stage",
-    impact: "Same effort, more revenue",
+    name: "Tune up your sales",
+    outcome: "a sharper plan that turns more leads into customers.",
+    impact: "Same effort, more money.",
     estimatedMinutes: 35,
     icon: TrendingUp,
     steps: [
       {
-        title: "Rebuild your GTM with current data",
-        description:
-          "Feed Nova your real numbers — get an updated strategy that targets the leaks.",
+        title: "Rebuild your plan with real numbers",
+        description: "Give Nova your real results. Get a plan that fixes the leaks.",
         toolSlug: "gtm-strategy",
         to: "/app/launchpad/gtm-strategy",
         estimatedMinutes: 15,
       },
       {
-        title: "Tighten your follow-up",
-        description: "Refresh the sequence with what you've learned about objections.",
+        title: "Refresh your follow-up emails",
+        description: "Update them with what you've learned about why people say no.",
         toolSlug: "followup",
         to: "/app/launchpad/followup",
         estimatedMinutes: 10,
       },
       {
-        title: "Review your pipeline",
-        description: "Walk every open deal: what's the next action and when?",
+        title: "Walk through every open deal",
+        description: "For each one, decide the next move and when you'll make it.",
         toolSlug: null,
         to: "/app/nova/crm",
         estimatedMinutes: 10,
@@ -383,23 +364,23 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "build-playbook",
     category: "scale",
-    name: "Build Your Team Playbook",
-    outcome: "SOPs that let someone else run your processes",
-    impact: "Delegation becomes possible — you stop being the bottleneck",
+    name: "Write your team playbook",
+    outcome: "step-by-step guides so someone else can do the work.",
+    impact: "You stop being the person everything depends on.",
     estimatedMinutes: 60,
     icon: BookOpen,
     steps: [
       {
-        title: "Document your operations",
-        description: "Nova structures how the business runs: processes, roles, tools.",
+        title: "Write down how the business runs",
+        description: "Nova maps your steps, roles, and tools.",
         toolSlug: "generate-ops-plan",
         to: "/app/launchpad/ops-plan",
         estimatedMinutes: 20,
       },
       {
-        title: "Write your first 3 SOPs",
+        title: "Write guides for your top 3 tasks",
         description:
-          "For your 3 most repeated tasks: when to do it, numbered steps like a recipe, what 'done' looks like.",
+          "For each: when to do it, the steps like a recipe, and what 'done' looks like.",
         toolSlug: null,
         to: "/app/sop-library",
         estimatedMinutes: 40,
@@ -410,15 +391,15 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
   {
     id: "build-custom-workflow",
     category: "scale",
-    name: "Build a Custom Workflow",
-    outcome: "An automation built for a process unique to your business",
-    impact: "Your edge, systematized",
+    name: "Build a custom workflow",
+    outcome: "an automation made just for how your business works.",
+    impact: "Your special way of working, running on its own.",
     estimatedMinutes: 30,
     icon: Blocks,
     steps: [
       {
-        title: "Sketch the trigger → action chain",
-        description: "Use the visual builder to wire your custom automation.",
+        title: "Draw the steps in the builder",
+        description: "Pick what starts it and what happens next. Drag, drop, done.",
         toolSlug: null,
         to: "/app/builder",
         estimatedMinutes: 30,
@@ -440,4 +421,19 @@ export function getOutcomeById(id: string): OutcomeEngine | undefined {
 
 export function isValidCategory(c: string): c is OutcomeCategory {
   return c in OUTCOME_CATEGORIES;
+}
+
+/** A goal is done when every tool step has a succeeded run. */
+export function isOutcomeDone(o: OutcomeEngine, succeededToolKeys: string[]): boolean {
+  const toolSteps = o.steps.filter((s) => s.toolSlug);
+  if (toolSteps.length === 0) return false;
+  return toolSteps.every((s) => succeededToolKeys.includes(s.toolSlug as string));
+}
+
+/** A goal is locked when a goal that leads to it isn't done yet. */
+export function isOutcomeLocked(o: OutcomeEngine, succeededToolKeys: string[]): boolean {
+  const prerequisites = OUTCOME_ENGINES.filter((e) => e.leadsTo.includes(o.id));
+  if (prerequisites.length === 0) return false;
+  // Unlocked as soon as ANY path to it is complete.
+  return !prerequisites.some((p) => isOutcomeDone(p, succeededToolKeys));
 }

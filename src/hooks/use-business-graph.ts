@@ -53,6 +53,15 @@ export interface Recommendation {
   to: string;
 }
 
+export interface LeadRow {
+  id: string;
+  name: string | null;
+  source: string | null;
+  stage: string | null;
+  value: number | null;
+  created_at: string | null;
+}
+
 export interface BusinessGraph {
   isLoading: boolean;
   mode: BusinessMode;
@@ -62,6 +71,8 @@ export interface BusinessGraph {
   metrics: KeyMetric[];
   blockers: Blocker[];
   recommendations: Recommendation[];
+  /** Lead rows for tables and charts (newest first) */
+  leads: LeadRow[];
   /** Raw signals other components can use */
   signals: {
     toolRunCount: number;
@@ -73,6 +84,8 @@ export interface BusinessGraph {
     hasFollowupSequence: boolean;
     missionActive: boolean;
     missionProgress: number; // 0–1
+    /** tool_keys with at least one succeeded run */
+    succeededToolKeys: string[];
   };
 }
 
@@ -149,6 +162,7 @@ export function useBusinessGraph(): BusinessGraph {
     hasFollowupSequence: hasRunAny("followup", "generate-followup-sequence"),
     missionActive: !!mission?.mission,
     missionProgress: missionSteps.length > 0 ? missionDone / missionSteps.length : 0,
+    succeededToolKeys: [...succeededKeys].filter(Boolean),
   };
 
   /* ── Key metrics: only the 3 numbers that matter for this mode ── */
@@ -222,10 +236,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-validation",
         severity: "critical",
-        title: "Idea not validated yet",
-        why: "Everything you build on an unvalidated idea is at risk. Validate first.",
+        title: "Your idea is not checked yet",
+        why: "Check it first, so you don't build something nobody wants.",
         resolveTo: "/app/outcomes/build",
-        resolveLabel: "Validate idea",
+        resolveLabel: "Check my idea",
         estimatedMinutes: 8,
       });
     }
@@ -233,10 +247,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-offer",
         severity: "critical",
-        title: "No offer built yet",
-        why: "You can't sell anything without a clear offer. This blocks all revenue.",
+        title: "You don't have an offer yet",
+        why: "You can't sell anything until you can say what it is and what it costs.",
         resolveTo: "/app/outcomes/build",
-        resolveLabel: "Build your offer",
+        resolveLabel: "Build my offer",
         estimatedMinutes: 30,
       });
     }
@@ -244,10 +258,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-leads",
         severity: "high",
-        title: "No leads tracked",
-        why: "An offer with no prospects goes nowhere. Start filling your pipeline.",
+        title: "No leads saved yet",
+        why: "You need people to talk to. Nova will help you find your first 10.",
         resolveTo: "/app/outcomes/launch",
-        resolveLabel: "Find first customers",
+        resolveLabel: "Find my first customers",
         estimatedMinutes: 15,
       });
     }
@@ -255,10 +269,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-automation",
         severity: "medium",
-        title: "No follow-up automation",
-        why: "Leads slip away without follow-up. One automation fixes that permanently.",
+        title: "Follow-up is still by hand",
+        why: "Leads go cold fast. Turn on follow-up so no one is forgotten.",
         resolveTo: "/app/automations",
-        resolveLabel: "Set up automation",
+        resolveLabel: "Turn on follow-up",
         estimatedMinutes: 15,
       });
     }
@@ -267,10 +281,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-automation",
         severity: "critical",
-        title: "Nothing automated yet",
-        why: "Your time is the bottleneck. Every manual task caps your growth.",
+        title: "Nothing runs by itself yet",
+        why: "Every task you do by hand eats your time. Automate one this week.",
         resolveTo: "/app/outcomes/automate",
-        resolveLabel: "Automate first process",
+        resolveLabel: "Automate one task",
         estimatedMinutes: 20,
       });
     }
@@ -278,10 +292,10 @@ export function useBusinessGraph(): BusinessGraph {
       blockers.push({
         id: "no-gtm",
         severity: "high",
-        title: "No documented growth system",
-        why: "Growth that lives in your head can't be delegated or scaled.",
+        title: "Your growth plan is not written down",
+        why: "If it only lives in your head, nobody can help you with it.",
         resolveTo: "/app/outcomes/optimize",
-        resolveLabel: "Document GTM system",
+        resolveLabel: "Write the plan",
         estimatedMinutes: 30,
       });
     }
@@ -293,8 +307,8 @@ export function useBusinessGraph(): BusinessGraph {
   if (signals.missionActive && signals.missionProgress < 1) {
     recommendations.push({
       id: "continue-mission",
-      title: `Continue mission: ${mission?.mission?.title ?? "your active mission"}`,
-      impact: "Your fastest path to measurable progress",
+      title: `Keep going: ${mission?.mission?.title ?? "your current goal"}`,
+      impact: "Finishing this is your fastest win",
       estimatedMinutes: 15,
       to: "/app/mission-control",
     });
@@ -302,8 +316,8 @@ export function useBusinessGraph(): BusinessGraph {
   if (signals.hasOffer && !signals.hasGtm) {
     recommendations.push({
       id: "gtm",
-      title: "Build your go-to-market plan",
-      impact: "Know exactly where to find customers and what to say",
+      title: "Make your customer plan",
+      impact: "Know where to find customers and what to say",
       estimatedMinutes: 10,
       to: "/app/outcomes/launch",
     });
@@ -311,8 +325,8 @@ export function useBusinessGraph(): BusinessGraph {
   if (signals.hasGtm && !signals.hasFollowupSequence) {
     recommendations.push({
       id: "followup",
-      title: "Create your follow-up sequence",
-      impact: "Most sales need 5–8 touches — never lose a warm lead again",
+      title: "Set up your follow-up emails",
+      impact: "Most people buy after 5 to 8 reminders — never lose a warm lead",
       estimatedMinutes: 15,
       to: "/app/outcomes/launch",
     });
@@ -321,7 +335,7 @@ export function useBusinessGraph(): BusinessGraph {
     recommendations.push({
       id: "automate",
       title: "Turn on your first automation",
-      impact: "Stop doing manually what Nova can run for you",
+      impact: "Stop doing by hand what Nova can run for you",
       estimatedMinutes: 15,
       to: "/app/automations",
     });
@@ -330,7 +344,7 @@ export function useBusinessGraph(): BusinessGraph {
     recommendations.push({
       id: "ask-nova",
       title: "Ask Nova what to do next",
-      impact: "Get a personalized next move based on your business state",
+      impact: "Nova looks at your business and picks your next move",
       estimatedMinutes: 2,
       to: "/app/mentor",
     });
@@ -345,6 +359,7 @@ export function useBusinessGraph(): BusinessGraph {
     metrics,
     blockers: blockers.slice(0, 3),
     recommendations: recommendations.slice(0, 3),
+    leads: leads as LeadRow[],
     signals,
   };
 }

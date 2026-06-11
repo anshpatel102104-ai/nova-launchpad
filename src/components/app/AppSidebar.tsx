@@ -66,7 +66,7 @@ interface NavGroup {
 const PRIMARY_NAV: NavGroup[] = [
   {
     id: "mission-control",
-    label: "Mission Control",
+    label: "Home",
     icon: Crosshair,
     to: "/app/mission-control",
     match: (p) =>

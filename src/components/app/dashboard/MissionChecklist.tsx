@@ -1,16 +1,12 @@
-// TASK-062 · Stage Progress / Checklist UI
-// Shows current mission steps with completion status and tool launch buttons.
-// TASK-064 · Step Execution Guidance
-// Integrated guidance system showing clear HOW-TO instructions for each step.
+// Mission step checklist — each open step shows plain hand-holding guidance
+// (via StepExecutionGuide) and a clear way to mark it done.
 
 import React from "react";
-import { Link } from "@tanstack/react-router";
-import { CheckCircle2, Circle, ChevronRight, Loader2, SkipForward } from "lucide-react";
+import { CheckSquare, Square, Loader2 } from "lucide-react";
 import { invokeEdge } from "@/lib/invokeEdge";
 import { toast } from "sonner";
 import { StepExecutionGuide } from "@/components/app/StepExecutionGuide";
-import { getStepGuidance } from "@/lib/step-execution-guidance";
-import type { StepGuidance } from "@/components/app/StepExecutionGuide";
+import { getStepGuidance, makeFallbackGuidance } from "@/lib/step-execution-guidance";
 
 export interface MissionStep {
   id: string;
@@ -28,17 +24,6 @@ interface Props {
   onStepComplete?: () => void;
 }
 
-const TOOL_ROUTES: Record<string, string> = {
-  "idea-validator": "/app/launchpad/idea-validator",
-  "kill-my-idea": "/app/launchpad/kill-my-idea",
-  "pitch-generator": "/app/launchpad/pitch-generator",
-  "gtm-strategy": "/app/launchpad/gtm-strategy",
-  offer: "/app/launchpad/offer",
-  "first-10-customers": "/app/launchpad/first-10-customers",
-  followup: "/app/launchpad/followup",
-  "generate-ops-plan": "/app/launchpad/ops-plan",
-};
-
 export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete }: Props) {
   const [loadingStep, setLoadingStep] = React.useState<string | null>(null);
 
@@ -55,7 +40,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
         },
         { timeoutMs: 20_000 },
       );
-      toast.success("Step completed!");
+      toast.success("Step done. Nice work!");
       onStepComplete?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -69,103 +54,116 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
     (s) => s.status === "completed" || s.status === "skipped",
   ).length;
   const progress = sorted.length > 0 ? Math.round((completedCount / sorted.length) * 100) : 0;
+  const firstOpenId = sorted.find((s) => s.status !== "completed" && s.status !== "skipped")?.id;
 
   return (
     <div>
-      {/* Progress bar */}
+      {/* Progress */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span
             style={{
               fontSize: 11,
-              fontWeight: 600,
+              fontWeight: 700,
               color: "var(--muted-foreground)",
               textTransform: "uppercase",
               letterSpacing: "0.08em",
             }}
           >
-            Progress
+            Your progress
           </span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>
-            {completedCount}/{sorted.length} steps
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--primary)" }}>
+            {completedCount} of {sorted.length} steps done
           </span>
         </div>
-        <div
-          style={{
-            height: 4,
-            borderRadius: 99,
-            background: "var(--border)",
-            overflow: "hidden",
-          }}
-        >
+        <div style={{ height: 5, background: "var(--border-subtle)", overflow: "hidden" }}>
           <div
             style={{
               height: "100%",
               width: `${progress}%`,
-              borderRadius: 99,
-              background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
+              background: "var(--primary)",
               transition: "width 0.5s cubic-bezier(0.16,1,0.3,1)",
-              boxShadow: "0 0 8px rgba(59,130,246,0.5)",
             }}
           />
         </div>
       </div>
 
       {/* Steps */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {sorted.map((step, idx) => {
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {sorted.map((step) => {
           const isDone = step.status === "completed" || step.status === "skipped";
+          const isCurrent = step.id === firstOpenId;
           const isLoading = loadingStep === step.id;
-          const toolRoute = step.tool_key ? TOOL_ROUTES[step.tool_key] : null;
-          const guidance = getStepGuidance(step.tool_key);
+          const guidance =
+            getStepGuidance(step.tool_key) ??
+            makeFallbackGuidance(step.title, step.description, step.tool_key);
 
           return (
             <div
               key={step.id}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                padding: "14px 16px",
-                borderRadius: 12,
-                border: isDone ? "1px solid rgba(34,197,94,0.2)" : "1px solid var(--border-subtle)",
-                background: isDone
-                  ? "color-mix(in oklab, var(--success) 5%, transparent)"
-                  : "var(--surface)",
-                transition: "all 0.2s",
-                opacity: isDone ? 0.7 : 1,
+                padding: "13px 15px",
+                borderRadius: 4,
+                border: "1px solid var(--border-subtle)",
+                borderLeft: isCurrent
+                  ? "3px solid var(--primary)"
+                  : isDone
+                    ? "3px solid var(--success)"
+                    : "3px solid var(--border)",
+                background: "var(--surface)",
+                opacity: isDone ? 0.65 : 1,
               }}
             >
-              {/* Step header with status */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                {/* Status icon */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <div style={{ flexShrink: 0, marginTop: 2 }}>
                   {isDone ? (
-                    <CheckCircle2 style={{ width: 18, height: 18, color: "#22c55e" }} />
+                    <CheckSquare style={{ width: 17, height: 17, color: "var(--success)" }} />
                   ) : (
-                    <Circle style={{ width: 18, height: 18, color: "var(--muted-foreground)" }} />
+                    <Square
+                      style={{
+                        width: 17,
+                        height: 17,
+                        color: isCurrent ? "var(--primary)" : "var(--muted-foreground)",
+                      }}
+                    />
                   )}
                 </div>
-
-                {/* Step title and description */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
                       fontSize: 13.5,
-                      fontWeight: 600,
-                      color: isDone ? "rgba(240,244,255,0.5)" : "#f0f4ff",
+                      fontWeight: 700,
+                      color: "var(--foreground)",
                       textDecoration: isDone ? "line-through" : "none",
-                      marginBottom: 2,
                     }}
                   >
                     {step.title}
+                    {isCurrent && (
+                      <span
+                        style={{
+                          marginLeft: 8,
+                          fontSize: 10,
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          color: "var(--primary)",
+                          background: "var(--primary-soft)",
+                          border: "1px solid var(--primary-border)",
+                          borderRadius: 3,
+                          padding: "2px 6px",
+                        }}
+                      >
+                        Do this now
+                      </span>
+                    )}
                   </div>
                   {step.description && !isDone && (
                     <div
                       style={{
-                        fontSize: 11.5,
+                        fontSize: 12,
                         color: "var(--muted-foreground)",
-                        lineHeight: 1.5,
+                        lineHeight: 1.55,
+                        marginTop: 2,
                       }}
                     >
                       {step.description}
@@ -174,86 +172,43 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                 </div>
               </div>
 
-              {/* Execution guidance or actions */}
-              {!isDone && (
-                <div style={{ marginLeft: 30 }}>
-                  {guidance ? (
-                    <StepExecutionGuide
-                      guidance={guidance}
-                      isCompleted={isDone}
-                      onExecute={(option) => {
-                        // If it's a "Done" action (no href/onClick), mark the step complete
-                        if (
-                          !option.action.href &&
-                          !option.action.onClick &&
-                          option.type === "manual"
-                        ) {
-                          handleCompleteStep(step.id);
-                        }
+              {/* Guidance only for the current step — keeps the list calm */}
+              {!isDone && isCurrent && (
+                <div style={{ marginTop: 12, marginLeft: 27 }}>
+                  <StepExecutionGuide
+                    guidance={guidance}
+                    compact
+                    onMarkDone={() => handleCompleteStep(step.id)}
+                  />
+                  {guidance.toolRoute && (
+                    <button
+                      onClick={() => handleCompleteStep(step.id)}
+                      disabled={isLoading}
+                      style={{
+                        marginTop: 10,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "7px 12px",
+                        borderRadius: 4,
+                        border: "1px solid color-mix(in oklab, var(--success) 35%, transparent)",
+                        background: "color-mix(in oklab, var(--success) 8%, transparent)",
+                        color: "var(--success)",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: isLoading ? "default" : "pointer",
+                        fontFamily: "inherit",
                       }}
-                    />
-                  ) : (
-                    // Fallback for steps without guidance
-                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                      {toolRoute && (
-                        <Link to={toolRoute}>
-                          <button
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                              padding: "6px 12px",
-                              borderRadius: 7,
-                              border: "none",
-                              background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                              color: "#fff",
-                              fontSize: 11.5,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            Run tool
-                            <ChevronRight style={{ width: 12, height: 12 }} />
-                          </button>
-                        </Link>
+                    >
+                      {isLoading ? (
+                        <Loader2
+                          style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }}
+                        />
+                      ) : (
+                        "I finished this step — mark it done"
                       )}
-                      <button
-                        onClick={() => handleCompleteStep(step.id)}
-                        disabled={isLoading}
-                        title="Mark as done"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          padding: "6px 10px",
-                          borderRadius: 7,
-                          border: "1px solid rgba(34,197,94,0.3)",
-                          background: "rgba(34,197,94,0.08)",
-                          color: "#22c55e",
-                          fontSize: 11.5,
-                          fontWeight: 600,
-                          cursor: isLoading ? "default" : "pointer",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        {isLoading ? (
-                          <Loader2
-                            style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }}
-                          />
-                        ) : (
-                          "Done"
-                        )}
-                      </button>
-                    </div>
+                    </button>
                   )}
-                </div>
-              )}
-
-              {/* Completed state marker */}
-              {isDone && (
-                <div style={{ marginLeft: 30, fontSize: 12, color: "var(--muted-foreground)" }}>
-                  ✓ Step completed
                 </div>
               )}
             </div>

@@ -391,3 +391,36 @@ stamps, starfield headers). CSS utilities in `src/styles.css` under `LOGBOOK`.
 - [ ] DRY mission seeds (Phase 2 backend cleanup, unchanged)
 
 Verified: tsc clean · eslint clean · vite build passes.
+
+---
+
+## ✅ CONTINUATION UPDATE — Guided Redesign Shipped (2026-06-11, session 2)
+
+User feedback driving this pass: looked childish/unprofessional (logbook
+handwriting + sticky notes), wording not 5th-grade/step-by-step, layout
+repetitive, wanted: sharp (no bubbles), charts, tables with easy directions,
+drag-and-drop, and a 3-color theme palette. Preview approved before build.
+
+**Core principle: Nova holds the founder's hand — one plain next step at a
+time, never guessing.**
+
+Shipped:
+- Logbook theme fully removed (CSS utilities, Caveat font, margin notes)
+- Home (`app.mission-control.tsx`): journey bar ("YOU ARE HERE"), one big
+  guided "Do this now" hero (`NextStepHero.tsx`), locked up-next, "one thing
+  to fix" blocker, drag-and-drop chart cards (money line + leads bars), leads
+  table where every row shows the next move
+- Goals pages (`app.outcomes.$category.tsx`): one recommended "Start here"
+  goal + quiet done/open/locked list; `isOutcomeDone`/`isOutcomeLocked` in
+  `outcome-engines.ts`
+- All copy rewritten to plain 5th-grade step-by-step language
+  (`step-execution-guidance.ts` new directions/doneWhen shape,
+  `outcome-engines.ts`, business-graph blockers/recommendations)
+- `StepExecutionGuide.tsx` + `MissionChecklist.tsx`: numbered directions
+  table, "You are done when", one purple button, "I'm stuck — ask Nova"
+- 3-color theme palette (Base/Secondary/Text): `lib/theme-palette.ts` +
+  `ThemePaletteButton.tsx` in topbar; presets + any custom color, derived
+  tokens via color-mix, readability check, persists in localStorage
+- Nav renamed to "Home" (sidebar, mobile tab, topbar title)
+
+Verified: tsc clean · eslint clean on changed files · vite build passes.
