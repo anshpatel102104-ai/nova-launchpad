@@ -1,11 +1,16 @@
 // TASK-062 · Stage Progress / Checklist UI
 // Shows current mission steps with completion status and tool launch buttons.
+// TASK-064 · Step Execution Guidance
+// Integrated guidance system showing clear HOW-TO instructions for each step.
 
 import React from "react";
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, ChevronRight, Loader2, SkipForward } from "lucide-react";
 import { invokeEdge } from "@/lib/invokeEdge";
 import { toast } from "sonner";
+import { StepExecutionGuide } from "@/components/app/StepExecutionGuide";
+import { getStepGuidance } from "@/lib/step-execution-guidance";
+import type { StepGuidance } from "@/components/app/StepExecutionGuide";
 
 export interface MissionStep {
   id: string;
@@ -107,20 +112,21 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
       </div>
 
       {/* Steps */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {sorted.map((step, idx) => {
           const isDone = step.status === "completed" || step.status === "skipped";
           const isLoading = loadingStep === step.id;
           const toolRoute = step.tool_key ? TOOL_ROUTES[step.tool_key] : null;
+          const guidance = getStepGuidance(step.tool_key);
 
           return (
             <div
               key={step.id}
               style={{
                 display: "flex",
-                alignItems: "flex-start",
-                gap: 12,
-                padding: "12px 14px",
+                flexDirection: "column",
+                gap: 10,
+                padding: "14px 16px",
                 borderRadius: 12,
                 border: isDone ? "1px solid rgba(34,197,94,0.2)" : "1px solid var(--border-subtle)",
                 background: isDone
@@ -130,94 +136,124 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                 opacity: isDone ? 0.7 : 1,
               }}
             >
-              {/* Status icon */}
-              <div style={{ flexShrink: 0, marginTop: 2 }}>
-                {isDone ? (
-                  <CheckCircle2 style={{ width: 18, height: 18, color: "#22c55e" }} />
-                ) : (
-                  <Circle style={{ width: 18, height: 18, color: "var(--muted-foreground)" }} />
-                )}
-              </div>
-
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: isDone ? "rgba(240,244,255,0.5)" : "#f0f4ff",
-                    textDecoration: isDone ? "line-through" : "none",
-                  }}
-                >
-                  {step.title}
+              {/* Step header with status */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                {/* Status icon */}
+                <div style={{ flexShrink: 0, marginTop: 2 }}>
+                  {isDone ? (
+                    <CheckCircle2 style={{ width: 18, height: 18, color: "#22c55e" }} />
+                  ) : (
+                    <Circle style={{ width: 18, height: 18, color: "var(--muted-foreground)" }} />
+                  )}
                 </div>
-                {step.description && !isDone && (
+
+                {/* Step title and description */}
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 11.5,
-                      color: "var(--muted-foreground)",
-                      marginTop: 3,
-                      lineHeight: 1.5,
+                      fontSize: 13.5,
+                      fontWeight: 600,
+                      color: isDone ? "rgba(240,244,255,0.5)" : "#f0f4ff",
+                      textDecoration: isDone ? "line-through" : "none",
+                      marginBottom: 2,
                     }}
                   >
-                    {step.description}
+                    {step.title}
                   </div>
-                )}
+                  {step.description && !isDone && (
+                    <div
+                      style={{
+                        fontSize: 11.5,
+                        color: "var(--muted-foreground)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {step.description}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Actions */}
+              {/* Execution guidance or actions */}
               {!isDone && (
-                <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center" }}>
-                  {toolRoute && (
-                    <Link to={toolRoute}>
+                <div style={{ marginLeft: 30 }}>
+                  {guidance ? (
+                    <StepExecutionGuide
+                      guidance={guidance}
+                      isCompleted={isDone}
+                      onExecute={(option) => {
+                        // If it's a "Done" action (no href/onClick), mark the step complete
+                        if (
+                          !option.action.href &&
+                          !option.action.onClick &&
+                          option.type === "manual"
+                        ) {
+                          handleCompleteStep(step.id);
+                        }
+                      }}
+                    />
+                  ) : (
+                    // Fallback for steps without guidance
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      {toolRoute && (
+                        <Link to={toolRoute}>
+                          <button
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              padding: "6px 12px",
+                              borderRadius: 7,
+                              border: "none",
+                              background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                              color: "#fff",
+                              fontSize: 11.5,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              fontFamily: "inherit",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Run tool
+                            <ChevronRight style={{ width: 12, height: 12 }} />
+                          </button>
+                        </Link>
+                      )}
                       <button
+                        onClick={() => handleCompleteStep(step.id)}
+                        disabled={isLoading}
+                        title="Mark as done"
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 4,
-                          padding: "5px 10px",
+                          padding: "6px 10px",
                           borderRadius: 7,
-                          border: "none",
-                          background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                          color: "#fff",
+                          border: "1px solid rgba(34,197,94,0.3)",
+                          background: "rgba(34,197,94,0.08)",
+                          color: "#22c55e",
                           fontSize: 11.5,
                           fontWeight: 600,
-                          cursor: "pointer",
+                          cursor: isLoading ? "default" : "pointer",
                           fontFamily: "inherit",
-                          whiteSpace: "nowrap",
                         }}
                       >
-                        Run tool
-                        <ChevronRight style={{ width: 12, height: 12 }} />
+                        {isLoading ? (
+                          <Loader2
+                            style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }}
+                          />
+                        ) : (
+                          "Done"
+                        )}
                       </button>
-                    </Link>
+                    </div>
                   )}
-                  <button
-                    onClick={() => handleCompleteStep(step.id)}
-                    disabled={isLoading}
-                    title="Mark as done"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      padding: "5px 8px",
-                      borderRadius: 7,
-                      border: "1px solid rgba(34,197,94,0.3)",
-                      background: "rgba(34,197,94,0.08)",
-                      color: "#22c55e",
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      cursor: isLoading ? "default" : "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {isLoading ? (
-                      <Loader2
-                        style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }}
-                      />
-                    ) : (
-                      "Done"
-                    )}
-                  </button>
+                </div>
+              )}
+
+              {/* Completed state marker */}
+              {isDone && (
+                <div style={{ marginLeft: 30, fontSize: 12, color: "var(--muted-foreground)" }}>
+                  ✓ Step completed
                 </div>
               )}
             </div>
