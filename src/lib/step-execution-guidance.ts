@@ -231,9 +231,19 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
   },
 };
 
+// Alternate keys used by other catalogs/routes for the same tools.
+const KEY_ALIASES: Record<string, string> = {
+  "ops-plan": "generate-ops-plan",
+  "validate-idea": "idea-validator",
+  "generate-offer": "offer",
+  "generate-followup-sequence": "followup",
+  "gtm-strategy-builder": "gtm-strategy",
+  "generate-gtm-strategy": "gtm-strategy",
+};
+
 export function getStepGuidance(toolKey: string | null): StepGuidance | null {
   if (!toolKey) return null;
-  return GUIDANCE_MAP[toolKey] ?? null;
+  return GUIDANCE_MAP[toolKey] ?? GUIDANCE_MAP[KEY_ALIASES[toolKey]] ?? null;
 }
 
 /** Plain generic guidance for steps that have no tool mapping yet. */

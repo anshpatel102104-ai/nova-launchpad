@@ -148,7 +148,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
         style={{ background: "var(--background)", borderColor: "var(--border)" }}
       >
         {/* ── Mobile logo ── */}
-        <Link to="/app/dashboard" className="flex items-center gap-2 lg:hidden shrink-0">
+        <Link to="/app/mission-control" className="flex items-center gap-2 lg:hidden shrink-0">
           <div
             className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
             style={{ background: "linear-gradient(135deg, var(--primary), var(--orbit-accent))" }}

@@ -22,7 +22,7 @@ function SignIn() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/app/dashboard" });
+    navigate({ to: "/app/mission-control" });
   };
 
   return (

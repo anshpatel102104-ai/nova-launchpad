@@ -14,6 +14,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { NovaThinking } from "@/components/app/NovaThinking";
+import { ToolGuidePanel } from "@/components/app/ToolGuidePanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1631,6 +1632,9 @@ function ToolPage() {
           </div>
         </div>
       </div>
+
+      {/* Hand-holding guide — hidden once output exists so results get room */}
+      {!output && !generating && <ToolGuidePanel toolKey={tool.key} />}
 
       {/* 60/40 workspace */}
       <div className="grid gap-5 lg:grid-cols-5">
