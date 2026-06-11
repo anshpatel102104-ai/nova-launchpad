@@ -203,8 +203,9 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `(1) What triggers this task? (What happens that makes it need to be done?) ` +
               `(2) What are the exact steps to complete it? (Write them out like you're explaining to a brand new employee.) ` +
               `(3) What does "done" look like? ` +
-              `Once you have this document, go to the Integrations section in Nova and look for an automation that matches your task. ` +
-              `Or, take the handoff document to a tool like Zapier or Make.com and build the automation yourself. ` +
+              `Once you have this document, go to the Automations page (left sidebar under Tools) and look for a pre-built workflow that matches your task. ` +
+              `If you don't find an exact match, go to the Workflow Builder (same page) and create a custom automation. ` +
+              `Or, take the handoff document to Zapier or Make.com to build it there. ` +
               `Mark this step complete when the automation is live and has run at least once successfully without you touching it.`,
             tool_key: null,
           },
@@ -256,19 +257,20 @@ export function buildOperatorBaseline(
         title: `Step 3 — Attack Your #1 Bottleneck: ${topBottleneck}`,
         description:
           `You named "${topBottleneck}" as the thing slowing you down most. ` +
-          `Go to the Automations section and look at the suggested systems — Nova has ranked them against your bottlenecks. ` +
-          `Deploy the one that targets "${topBottleneck}" (or the closest match). ` +
-          `If none fit exactly, open the Builder and sketch the trigger → action chain for the task you do most often. ` +
-          `Mark this step complete when one automation is live.`,
+          `Nova has built a list of automations specifically designed to solve your bottleneck. ` +
+          `Go to the Automations page (in the left sidebar) and look for the workflows that target "${topBottleneck}". ` +
+          `Deploy the one that matches your workflow best. ` +
+          `If none fit exactly, go to the Workflow Builder and sketch the trigger → action chain for the task you do most often. ` +
+          `Mark this step complete when one automation is live and has run at least once.`,
         tool_key: null,
       },
       {
         title: "Step 4 — Connect Your First Integration",
         description:
           `Nova works best plugged into your real data. ` +
-          `Open Integrations and connect the tool you rely on most (payments, CRM, or calendar). ` +
-          `Once connected, your dashboard numbers fill themselves in — no more manual reporting. ` +
-          `Mark complete when at least one integration shows "connected."`,
+          `Go to the Integrations page (in the left sidebar under Tools) and connect the tool you rely on most for data: Stripe (payments), HubSpot (CRM), Slack (team comms), or Google Calendar. ` +
+          `Once connected, Nova automatically pulls your real numbers — no more manual data entry. ` +
+          `Mark complete when at least one integration shows "connected" and is syncing data.`,
         tool_key: null,
       },
     ],
