@@ -6,9 +6,9 @@ import { LAUNCHPAD_TOOLS } from "@/lib/catalog";
 type Item = { id: string; label: string; path: string; tag: "page" | "tool" | "action" };
 
 const NAV_ITEMS: Item[] = [
-  { id: "home", label: "Home", path: "/app/dashboard", tag: "page" },
+  { id: "home", label: "Home", path: "/app/mission-control", tag: "page" },
   { id: "path", label: "Journey / Path", path: "/app/launchpad-path", tag: "page" },
-  { id: "missions", label: "Missions", path: "/app/mission-control", tag: "page" },
+  { id: "dashboard", label: "Dashboard (classic)", path: "/app/dashboard", tag: "page" },
   { id: "workbench", label: "Workbench (Tools)", path: "/app/launchpad/", tag: "page" },
   { id: "contacts", label: "Customers · Contacts", path: "/app/contacts", tag: "page" },
   { id: "pipeline", label: "Customers · Pipeline", path: "/app/nova/crm", tag: "page" },

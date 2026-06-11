@@ -1,25 +1,25 @@
-// Outcome Engines page — outcome-first replacement for tool-marketplace
-// browsing. Styled as the Founder's Logbook: ruled notebook pages with
-// mission-control telemetry stamps. Users pick what to ACHIEVE; tools are
-// sequenced behind the scenes.
+// Pick your next goal — the goal-first page for each category.
+// One recommended goal up top (Nova picked it), everything else in a quiet
+// list: done, open, or locked. Plain words, sharp corners, zero guessing.
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, ChevronDown, Clock, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Clock, ListChecks, Lock, Star, Target } from "lucide-react";
 import {
   OUTCOME_CATEGORIES,
+  OUTCOME_ENGINES,
   getOutcomesByCategory,
+  isOutcomeDone,
+  isOutcomeLocked,
   isValidCategory,
   type OutcomeEngine,
 } from "@/lib/outcome-engines";
 import { useBusinessGraph } from "@/hooks/use-business-graph";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/outcomes/$category")({
-  component: OutcomeEnginePage,
+  component: GoalsPage,
 });
 
-function OutcomeEnginePage() {
+function GoalsPage() {
   const { category } = Route.useParams();
   const navigate = useNavigate();
   const graph = useBusinessGraph();
@@ -31,185 +31,281 @@ function OutcomeEnginePage() {
 
   const meta = OUTCOME_CATEGORIES[category];
   const outcomes = getOutcomesByCategory(category);
+  const done = graph.signals.succeededToolKeys;
+
+  const recommended =
+    outcomes.find((o) => !isOutcomeDone(o, done) && !isOutcomeLocked(o, done)) ?? null;
+  const rest = outcomes.filter((o) => o.id !== recommended?.id);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 py-2">
-      {/* ── Logbook header: starfield + tab ── */}
+    <div className="mx-auto max-w-3xl space-y-6 py-2">
+      {/* ── Header ── */}
       <div>
-        <div className="logbook-tab" style={{ color: "var(--primary)" }}>
-          <Sparkles className="h-3 w-3" />
-          {meta.label}
+        <div className="mb-3 text-[12.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
+          <Link to="/app/mission-control" style={{ color: "var(--text-faint)" }}>
+            Home
+          </Link>
+          <span className="px-1.5">/</span>
+          <span style={{ color: "var(--muted-foreground)" }}>{meta.label}</span>
         </div>
+        <h1
+          className="text-[24px] font-extrabold leading-tight"
+          style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
+        >
+          Pick your next goal
+        </h1>
+        <p
+          className="mt-1.5 text-[14px] leading-relaxed"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          {meta.tagline}. Pick one goal — Nova walks you through it, one small step at a time. You
+          never have to guess what to do next.
+        </p>
+      </div>
+
+      {/* ── Recommended goal ── */}
+      {recommended && (
         <div
-          className="logbook-starfield rounded-tr-2xl rounded-b-2xl p-6 relative overflow-hidden"
+          className="overflow-hidden rounded-[6px] border"
           style={{
-            background:
-              "linear-gradient(135deg, color-mix(in oklab, var(--primary) 8%, var(--surface)) 0%, var(--surface) 100%)",
-            border: "1px solid var(--border)",
+            borderColor: "var(--primary-border)",
+            borderLeft: "4px solid var(--primary)",
+            background: "var(--surface)",
+            boxShadow:
+              "0 4px 8px var(--primary-glow), 0 12px 32px color-mix(in oklab, var(--primary) 8%, transparent)",
           }}
         >
-          <div className="logbook-stamp mb-1">
-            Mission Log · {graph.businessName} · Stage: {graph.stage}
-          </div>
-          <h1
-            className="font-display text-[24px] font-bold"
-            style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
+          <div
+            className="flex items-center gap-2 px-5 py-2.5 text-[11.5px] font-extrabold uppercase tracking-[0.08em]"
+            style={{
+              color: "var(--primary)",
+              background: "var(--primary-soft)",
+              borderBottom: "1px solid var(--primary-border)",
+            }}
           >
-            What do you want to achieve?
-          </h1>
-          <p className="text-[13.5px] mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {meta.tagline}. Pick an outcome — Nova sequences the steps and tools for you.
-          </p>
+            <Star className="h-3.5 w-3.5" />
+            Start here — the best next goal for you
+          </div>
+
+          <div className="px-5 pb-5 pt-4">
+            <h2
+              className="text-[19px] font-extrabold"
+              style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+            >
+              {recommended.name}
+            </h2>
+            <p
+              className="mt-1 text-[13.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              <b style={{ color: "var(--foreground)", fontWeight: 650 }}>What you get: </b>
+              {recommended.outcome}
+            </p>
+            <div
+              className="mt-2.5 flex gap-4 text-[12px] font-semibold"
+              style={{ color: "var(--text-faint)" }}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" />
+                about {recommended.estimatedMinutes} minutes
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <ListChecks className="h-3.5 w-3.5" />
+                {recommended.steps.length} step{recommended.steps.length === 1 ? "" : "s"}
+              </span>
+            </div>
+
+            {/* Steps table */}
+            <div className="mt-4">
+              <div
+                className="mb-1.5 text-[12px] font-bold"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                The {recommended.steps.length} step{recommended.steps.length === 1 ? "" : "s"} —
+                Nova guides you through each one:
+              </div>
+              <div
+                className="overflow-hidden rounded-[4px] border"
+                style={{ borderColor: "var(--border)" }}
+              >
+                {recommended.steps.map((s, i) => (
+                  <div
+                    key={i}
+                    className="flex items-stretch"
+                    style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
+                  >
+                    <div
+                      className="flex w-10 shrink-0 items-center justify-center text-[13px] font-extrabold"
+                      style={{
+                        color: "var(--primary)",
+                        background: "var(--primary-soft)",
+                        borderRight: "1px solid var(--primary-border)",
+                      }}
+                    >
+                      {i + 1}
+                    </div>
+                    <div className="px-3.5 py-2.5 text-[13px] leading-relaxed">
+                      <span className="font-bold" style={{ color: "var(--foreground)" }}>
+                        {s.title}
+                      </span>
+                      <span
+                        className="ml-2 text-[11.5px] font-semibold"
+                        style={{ color: "var(--text-faint)" }}
+                      >
+                        · {s.estimatedMinutes} min
+                      </span>
+                      <div style={{ color: "var(--muted-foreground)" }}>{s.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              to={recommended.steps[0].to}
+              className="mt-4 inline-flex items-center gap-2 rounded-[4px] px-5 py-2.5 text-[13.5px] font-bold text-white transition hover:opacity-90"
+              style={{ background: "var(--primary)", boxShadow: "0 2px 6px var(--primary-glow)" }}
+            >
+              Start this goal
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Outcome entries — notebook pages ── */}
-      <div className="space-y-5">
-        {outcomes.map((outcome, idx) => (
-          <OutcomeLogEntry key={outcome.id} outcome={outcome} entryNumber={idx + 1} />
-        ))}
-      </div>
+      {/* ── The rest, quiet ── */}
+      {rest.length > 0 && (
+        <div>
+          <div
+            className="mb-2.5 px-0.5 text-[12px] font-bold uppercase tracking-[0.07em]"
+            style={{ color: "var(--text-faint)" }}
+          >
+            More goals
+          </div>
+          <div
+            className="overflow-hidden rounded-[6px] border"
+            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          >
+            {rest.map((o, i) => (
+              <GoalRow key={o.id} outcome={o} succeededToolKeys={done} first={i === 0} />
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* ── Footer note ── */}
-      <div className="flex items-center justify-between px-2 pb-4">
-        <span className="logbook-stamp">End of section</span>
+      <div className="flex justify-end pb-4">
         <Link
           to="/app/mission-control"
-          className="text-[12.5px] font-medium inline-flex items-center gap-1"
+          className="inline-flex items-center gap-1 text-[12.5px] font-semibold"
           style={{ color: "var(--primary)" }}
         >
-          Back to Mission Control <ArrowRight className="h-3.5 w-3.5" />
+          Back to Home <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </div>
   );
 }
 
-/* ─── A single outcome rendered as a logbook page entry ─────── */
-
-function OutcomeLogEntry({
+function GoalRow({
   outcome,
-  entryNumber,
+  succeededToolKeys,
+  first,
 }: {
   outcome: OutcomeEngine;
-  entryNumber: number;
+  succeededToolKeys: string[];
+  first: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const Icon = outcome.icon;
-  const firstStep = outcome.steps[0];
+  const done = isOutcomeDone(outcome, succeededToolKeys);
+  const locked = !done && isOutcomeLocked(outcome, succeededToolKeys);
+  const prerequisite = locked
+    ? OUTCOME_ENGINES.find((e) => e.leadsTo.includes(outcome.id))
+    : undefined;
 
   return (
-    <div className="logbook-page logbook-torn overflow-hidden">
-      {/* Entry content sits right of the margin rule */}
-      <div className="pl-[60px] pr-5 py-5 relative">
-        {/* Entry number in the margin — like a notebook index */}
+    <div
+      className="flex items-center gap-4 px-4.5 py-4"
+      style={{ padding: "15px 18px", borderTop: first ? "none" : "1px solid var(--border-subtle)" }}
+    >
+      <span
+        className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[4px] border"
+        style={
+          done
+            ? {
+                background: "color-mix(in oklab, var(--success) 9%, var(--surface))",
+                borderColor: "color-mix(in oklab, var(--success) 30%, transparent)",
+              }
+            : locked
+              ? {
+                  background: "var(--surface-2)",
+                  borderColor: "var(--border)",
+                  borderStyle: "dashed",
+                }
+              : { background: "var(--surface-2)", borderColor: "var(--border)" }
+        }
+      >
+        {done ? (
+          <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
+        ) : locked ? (
+          <Lock className="h-4 w-4" style={{ color: "var(--text-faint)" }} />
+        ) : (
+          <Target className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
+        )}
+      </span>
+
+      <div className="min-w-0">
         <div
-          className="absolute left-0 top-5 w-[44px] text-center font-mono text-[11px] font-bold"
-          style={{ color: "color-mix(in oklab, var(--ignition, #f97316) 70%, transparent)" }}
+          className="text-[14px] font-bold"
+          style={{ color: locked ? "var(--muted-foreground)" : "var(--foreground)" }}
         >
-          {String(entryNumber).padStart(2, "0")}
+          {outcome.name}
         </div>
-
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
-              <h2
-                className="font-display text-[17px] font-bold truncate"
-                style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
-              >
-                {outcome.name}
-              </h2>
-            </div>
-            <p className="text-[13px] leading-[1.6]" style={{ color: "var(--foreground)" }}>
-              <span style={{ color: "var(--muted-foreground)" }}>You get: </span>
-              {outcome.outcome}
-            </p>
-            <p className="text-[12px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              {outcome.impact}
-            </p>
-          </div>
-
-          {/* Margin note — handwritten */}
-          {outcome.marginNote && (
-            <div
-              className="logbook-hand shrink-0 max-w-[140px] text-right hidden sm:block"
-              style={{ color: "color-mix(in oklab, var(--warning) 85%, var(--foreground))" }}
-            >
-              {outcome.marginNote}
-            </div>
-          )}
-        </div>
-
-        {/* Telemetry row */}
-        <div className="flex items-center gap-4 mt-3">
-          <span className="logbook-stamp inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" /> ~{outcome.estimatedMinutes} min
-          </span>
-          <span className="logbook-stamp">
-            {outcome.steps.length} step{outcome.steps.length === 1 ? "" : "s"}
-          </span>
-        </div>
-
-        {/* Step checklist (collapsed → expanded) */}
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="mt-3 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.08em]"
+        <div
+          className="mt-0.5 text-[12.5px] leading-snug"
           style={{ color: "var(--muted-foreground)" }}
         >
-          Flight plan
-          <ChevronDown
-            className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")}
-          />
-        </button>
+          {locked && prerequisite ? `Unlocks after "${prerequisite.name}".` : outcome.impact}
+        </div>
+      </div>
 
-        {expanded && (
-          <div className="mt-2 space-y-2.5">
-            {outcome.steps.map((step, i) => (
-              <div key={i} className="logbook-check">
-                <div className="logbook-check-box" />
-                <div className="min-w-0">
-                  <div className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
-                    {step.title}
-                    <span
-                      className="ml-2 font-mono text-[10px] font-normal"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      ~{step.estimatedMinutes}m
-                    </span>
-                  </div>
-                  <div
-                    className="text-[12px] leading-[1.55] mt-0.5"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {step.description}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Primary action */}
-        <div className="mt-4 flex items-center gap-3">
-          <Link
-            to={firstStep.to}
-            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12.5px] font-bold text-white transition hover:opacity-90"
+      <div className="ml-auto shrink-0">
+        {done ? (
+          <span
+            className="inline-flex items-center gap-1.5 rounded-[3px] border px-2.5 py-1 text-[11.5px] font-bold"
             style={{
-              background: "linear-gradient(135deg, var(--primary), var(--orbit-accent))",
+              color: "var(--success)",
+              background: "color-mix(in oklab, var(--success) 9%, var(--surface))",
+              borderColor: "color-mix(in oklab, var(--success) 30%, transparent)",
             }}
           >
-            Begin <ArrowRight className="h-3.5 w-3.5" />
+            <Check className="h-3 w-3" />
+            Done
+          </span>
+        ) : locked ? (
+          <span
+            className="inline-flex items-center rounded-[3px] border border-dashed px-2.5 py-1 text-[11.5px] font-bold"
+            style={{
+              color: "var(--text-faint)",
+              background: "var(--surface-2)",
+              borderColor: "var(--border)",
+            }}
+          >
+            Locked for now
+          </span>
+        ) : (
+          <Link
+            to={outcome.steps[0].to}
+            className="inline-flex items-center gap-1.5 rounded-[3px] border px-2.5 py-1 text-[11.5px] font-bold"
+            style={{
+              color: "var(--muted-foreground)",
+              background: "var(--surface)",
+              borderColor: "var(--border)",
+            }}
+          >
+            <Clock className="h-3 w-3" />
+            {outcome.estimatedMinutes} min
+            <ArrowRight className="h-3 w-3" />
           </Link>
-          {outcome.leadsTo.length > 0 && (
-            <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-              <CheckCircle2 className="inline h-3 w-3 mr-1" />
-              Unlocks: {outcome.leadsTo.length} follow-on outcome
-              {outcome.leadsTo.length === 1 ? "" : "s"}
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

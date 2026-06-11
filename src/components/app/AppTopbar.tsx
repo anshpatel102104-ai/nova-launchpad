@@ -21,6 +21,7 @@ import { useTheme } from "@/lib/theme";
 import { useGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
+import { ThemePaletteButton } from "./ThemePaletteButton";
 
 const PAGE_TITLES: Record<string, string> = {
   "/app/dashboard": "Home",
@@ -29,7 +30,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/launchpad/first-customers": "First Customers",
   "/app/launchpad": "Workbench",
   "/app/playbook": "Playbook",
-  "/app/mission-control": "Missions",
+  "/app/mission-control": "Home",
   "/app/mission-briefing": "Mission Briefing",
   "/app/research": "Research",
   "/app/memory": "Memory",
@@ -147,7 +148,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
         style={{ background: "var(--background)", borderColor: "var(--border)" }}
       >
         {/* ── Mobile logo ── */}
-        <Link to="/app/dashboard" className="flex items-center gap-2 lg:hidden shrink-0">
+        <Link to="/app/mission-control" className="flex items-center gap-2 lg:hidden shrink-0">
           <div
             className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
             style={{ background: "linear-gradient(135deg, var(--primary), var(--orbit-accent))" }}
@@ -236,6 +237,9 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           <IconBtn title="Help & support">
             <HelpCircle className="h-4 w-4" />
           </IconBtn>
+
+          {/* Custom 3-color palette (Base / Secondary / Text) */}
+          <ThemePaletteButton />
 
           {/* Theme picker */}
           <div className="relative" ref={themeRef}>

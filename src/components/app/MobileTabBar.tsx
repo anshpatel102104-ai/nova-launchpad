@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   {
     to: "/app/mission-control",
-    label: "Mission",
+    label: "Home",
     icon: Crosshair,
     match: (p: string) => p === "/app/mission-control" || p === "/app/dashboard" || p === "/app/",
   },
