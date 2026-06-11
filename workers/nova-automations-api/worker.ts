@@ -214,7 +214,7 @@ async function handleTrigger(request: Request, env: Env, origin: string): Promis
       {
         status: 500,
         headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
-      }
+      },
     );
   }
 

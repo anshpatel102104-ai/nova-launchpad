@@ -104,7 +104,8 @@ export const PITCH_GENERATOR_GUIDANCE: StepGuidance = {
     {
       type: "tool",
       label: "Generate with Nova",
-      description: "Let Nova write your pitch based on your business details. Then practice saying it out loud.",
+      description:
+        "Let Nova write your pitch based on your business details. Then practice saying it out loud.",
       action: {
         text: "Open Pitch Generator",
         href: "/app/launchpad/pitch-generator",
@@ -145,7 +146,8 @@ export const GTM_STRATEGY_GUIDANCE: StepGuidance = {
     {
       type: "tool",
       label: "Generate Strategy",
-      description: "Tell Nova about your business, target customer, and how you want to reach them. Get a complete GTM plan.",
+      description:
+        "Tell Nova about your business, target customer, and how you want to reach them. Get a complete GTM plan.",
       action: {
         text: "Open GTM Strategy",
         href: "/app/launchpad/gtm-strategy",
@@ -229,7 +231,8 @@ export const FIRST_10_CUSTOMERS_GUIDANCE: StepGuidance = {
     {
       type: "tool",
       label: "Generate Blueprint",
-      description: "Tell Nova your offer, target customer, and price. Get a personalized 30-day action plan.",
+      description:
+        "Tell Nova your offer, target customer, and price. Get a personalized 30-day action plan.",
       action: {
         text: "Open First 10 Customers",
         href: "/app/launchpad/first-10-customers",
@@ -270,7 +273,8 @@ export const FOLLOWUP_GUIDANCE: StepGuidance = {
     {
       type: "tool",
       label: "Generate Sequence",
-      description: "Tell Nova about your business and target customer. Get 5 ready-to-send follow-up emails.",
+      description:
+        "Tell Nova about your business and target customer. Get 5 ready-to-send follow-up emails.",
       action: {
         text: "Open Follow-Up Sequence",
         href: "/app/launchpad/followup",

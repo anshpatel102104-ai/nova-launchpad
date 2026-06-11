@@ -2305,8 +2305,8 @@ const TOOL_ALIASES: Record<string, string> = {
   "gtm-strategy": "gtm-strategy-builder", // Mission seed shorthand
   "landing-page": "landing-page-creator",
   "first-10-customers": "first-10-customers-finder", // Mission seed uses short name
-  "followup": "generate-followup-sequence", // Mission seed uses short name
-  "offer": "generate-offer", // Mission seed uses short name
+  followup: "generate-followup-sequence", // Mission seed uses short name
+  offer: "generate-offer", // Mission seed uses short name
   "funding-score": "funding-readiness-score",
   "investor-emails": "investor-email-writer",
   "competitor-analysis": "competitor-scanner",
