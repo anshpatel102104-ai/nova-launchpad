@@ -46,7 +46,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/galaxy": "Galaxy Map",
   "/app/academy": "Academy",
   "/app/tutorials": "Tutorials",
-  "/app/mentor": "Mentors",
+  "/app/mentor": "Ask Nova",
   "/app/admin": "Admin",
   "/app/nova/crm": "Pipeline",
   "/app/monitoring": "System Health",
