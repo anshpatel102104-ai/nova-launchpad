@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Search,
   Play,
@@ -42,6 +44,20 @@ interface Tutorial {
   // Replace these YouTube IDs with your actual tutorial video IDs
   youtubeId: string;
   featured?: boolean;
+  /** Direct MP4 URL of the generated walkthrough video (from public.tutorials). */
+  videoUrl?: string;
+  thumbnailUrl?: string;
+}
+
+// Video fields live in the public.tutorials table, written by the tutorial
+// video generation pipeline. Static TUTORIALS below stays as the fallback
+// catalog when the table is unreachable.
+interface TutorialVideoRow {
+  id: string;
+  youtube_id: string | null;
+  video_url: string | null;
+  video_thumbnail_url: string | null;
+  video_status: "pending" | "generating" | "completed" | "failed";
 }
 
 /* ── Tutorial data ─────────────────────────────────────────────── */
@@ -335,6 +351,33 @@ function TutorialsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<TutorialCategory>("All");
   const [playing, setPlaying] = useState<Tutorial | null>(null);
+
+  const videosQ = useQuery({
+    queryKey: ["tutorial-videos"],
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("tutorials")
+        .select("id, youtube_id, video_url, video_thumbnail_url, video_status");
+      if (error) throw error;
+      return (data ?? []) as TutorialVideoRow[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const tutorials = useMemo(() => {
+    const rows = new Map((videosQ.data ?? []).map((r) => [r.id, r]));
+    return TUTORIALS.map((t) => {
+      const row = rows.get(t.id);
+      if (!row) return t;
+      return {
+        ...t,
+        youtubeId: row.youtube_id ?? t.youtubeId,
+        videoUrl: row.video_status === "completed" && row.video_url ? row.video_url : undefined,
+        thumbnailUrl: row.video_thumbnail_url ?? undefined,
+      };
+    });
+  }, [videosQ.data]);
   const [watched, setWatched] = useState<Set<string>>(() => {
     try {
       const raw = localStorage.getItem("nova-tutorials-watched");
@@ -358,7 +401,7 @@ function TutorialsPage() {
   };
 
   const filtered = useMemo(() => {
-    let arr = TUTORIALS;
+    let arr = tutorials;
     if (category !== "All") arr = arr.filter((t) => t.category === category);
     if (search.trim()) {
       const s = search.toLowerCase();
@@ -370,11 +413,11 @@ function TutorialsPage() {
       );
     }
     return arr;
-  }, [category, search]);
+  }, [tutorials, category, search]);
 
-  const featured = TUTORIALS.filter((t) => t.featured);
+  const featured = tutorials.filter((t) => t.featured);
   const completedCount = watched.size;
-  const totalCount = TUTORIALS.length;
+  const totalCount = tutorials.length;
   const progressPct = Math.round((completedCount / totalCount) * 100);
 
   return (
@@ -437,7 +480,7 @@ function TutorialsPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <Star className="h-3.5 w-3.5" />
-              {TUTORIALS.filter((t) => t.difficulty === "Beginner").length} beginner-friendly
+              {tutorials.filter((t) => t.difficulty === "Beginner").length} beginner-friendly
             </span>
           </div>
         </div>
@@ -523,7 +566,7 @@ function TutorialsPage() {
                     className="rounded-full px-1.5 text-[10px] font-bold"
                     style={{ background: isA ? "rgba(255,255,255,0.25)" : "var(--surface-2)" }}
                   >
-                    {TUTORIALS.filter((t) => t.category === cat).length}
+                    {tutorials.filter((t) => t.category === cat).length}
                   </span>
                 )}
               </button>
@@ -600,7 +643,7 @@ function TutorialCard({
 }) {
   const catCfg = CATEGORY_CONFIG[tutorial.category];
   const diffCfg = DIFFICULTY_CONFIG[tutorial.difficulty];
-  const hasVideo = !!tutorial.youtubeId;
+  const hasVideo = !!(tutorial.videoUrl || tutorial.youtubeId);
 
   return (
     <div
@@ -625,7 +668,23 @@ function TutorialCard({
         className="relative aspect-video flex items-center justify-center overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${catCfg.color}30, ${catCfg.color}10)` }}
       >
-        {hasVideo ? (
+        {tutorial.videoUrl ? (
+          tutorial.thumbnailUrl ? (
+            <img
+              src={tutorial.thumbnailUrl}
+              alt={tutorial.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <video
+              src={tutorial.videoUrl}
+              muted
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+            />
+          )
+        ) : hasVideo ? (
           <img
             src={`https://img.youtube.com/vi/${tutorial.youtubeId}/mqdefault.jpg`}
             alt={tutorial.title}
@@ -712,7 +771,7 @@ function TutorialCard({
 /* ── Video modal ─────────────────────────────────────────────── */
 function VideoModal({ tutorial, onClose }: { tutorial: Tutorial; onClose: () => void }) {
   const catCfg = CATEGORY_CONFIG[tutorial.category];
-  const hasVideo = !!tutorial.youtubeId;
+  const hasVideo = !!(tutorial.videoUrl || tutorial.youtubeId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -723,7 +782,16 @@ function VideoModal({ tutorial, onClose }: { tutorial: Tutorial; onClose: () => 
       >
         {/* Video area */}
         <div className="aspect-video bg-black">
-          {hasVideo ? (
+          {tutorial.videoUrl ? (
+            <video
+              src={tutorial.videoUrl}
+              poster={tutorial.thumbnailUrl}
+              controls
+              autoPlay
+              playsInline
+              className="w-full h-full"
+            />
+          ) : hasVideo ? (
             <iframe
               src={`https://www.youtube.com/embed/${tutorial.youtubeId}?autoplay=1&rel=0`}
               title={tutorial.title}
