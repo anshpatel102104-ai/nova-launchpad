@@ -55,14 +55,20 @@ seeded with real screenshots of the running app.
     sidebar links** — full-page `goto` loses the session (it lives in
     localStorage, which SSR `beforeLoad` cannot see) and redirects to sign-in.
 
-## Status (2026-06-12)
+## Status (2026-06-12, second run — PLUS plan)
 
-- 25 tutorials seeded; `welcome` completed (8 s, veo3_1_lite, job
-  `96d8a9b5-daf1-4d9b-8796-2f3e97582384`); 24 pending — generation paused on
-  credit exhaustion (free plan, 10 credits; each 8 s video costs 8).
-- Known issue: the `welcome` caption renders "opering" instead of
-  "operating" (AI text artifact). Regenerate when credits allow, or prefer
-  shorter caption words in prompts (e.g. "Welcome to Nova").
-- Some seeded `app_path` values point at routes no longer present in the
-  current sidebar (e.g. `/app/dashboard`, `/app/nova/crm`). They still render
-  when visited; revisit the mapping if the IA settles elsewhere.
+- All 25 tutorials have generated videos saved in `public.tutorials`
+  (`video_status = 'completed'`), including a regenerated `welcome` that fixes
+  the earlier caption typo. Total spend ≈ 208 credits (26 × 8 s jobs, one
+  `integrations` job re-submitted after the original wedged in_progress).
+- Screens were captured from the live app signed in as the seeded demo user
+  (org "Nova Demo Co", 10 demo deals across all lead stages, admin role) so
+  CRM/kanban/forecast/admin pages show real data.
+- Client-side navigation for arbitrary routes:
+  `history.pushState(...)` + `dispatchEvent(new PopStateEvent('popstate'))` —
+  TanStack Router picks it up; sidebar links are not needed.
+- Concurrency: PLUS allows max 6 concurrent video jobs (submission fails with
+  a rate-limit error, jobs are NOT queued server-side) — submit in waves of 6
+  and wait for completion between waves.
+- Prompt lesson: keep on-screen caption text to a few short words; the first
+  run's long caption produced a typo ("opering").
