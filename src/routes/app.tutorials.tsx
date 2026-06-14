@@ -60,6 +60,9 @@ interface TutorialVideoRow {
   video_status: "pending" | "generating" | "completed" | "failed";
 }
 
+/* Public Supabase Storage base, used for the brand film hero. */
+const SUPABASE_PUBLIC_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public`;
+
 /* ── Tutorial data ─────────────────────────────────────────────── */
 // IMPORTANT: Replace the youtubeId values with your actual YouTube/Loom video IDs.
 // Set youtubeId to "" for videos not yet recorded — they will show as "Coming Soon".
@@ -485,6 +488,35 @@ function TutorialsPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Brand film ── */}
+      {category === "All" && !search && (
+        <div
+          className="rounded-2xl overflow-hidden relative"
+          style={{ border: "1px solid var(--border)", background: "rgb(11,14,26)" }}
+        >
+          <video
+            className="w-full block"
+            style={{ aspectRatio: "16 / 9", objectFit: "cover" }}
+            src={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/nova-brand-film.mp4`}
+            poster={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/nova-brand-film.jpg`}
+            controls
+            playsInline
+            preload="none"
+          />
+          <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none">
+            <span
+              className="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full"
+              style={{ background: "rgba(240,101,58,0.92)", color: "white" }}
+            >
+              THE FILM
+            </span>
+            <span className="text-[12px] font-medium text-white/90">
+              Launchpad Nova — From idea → scale
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ── Featured tutorials ── */}
       {category === "All" && !search && (

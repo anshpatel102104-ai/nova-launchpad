@@ -227,7 +227,7 @@ export const launchpadCatalog: LaunchpadTool[] = [
   },
   {
     key: "email-sequence",
-    toolKey: "email_sequence",
+    toolKey: "email-sequence",
     name: "Email Sequence Builder",
     desc: "Multi-email nurture or onboarding sequences that convert.",
     wired: true,

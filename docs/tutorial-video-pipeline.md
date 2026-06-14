@@ -1,74 +1,60 @@
-# Tutorial Video Generation Pipeline
+# Tutorial Video Pipeline
 
-Automated pipeline that generates screen-capture-style walkthrough videos for
-every tutorial on `/app/tutorials`, using Higgsfield image-to-video generation
-seeded with real screenshots of the running app.
+How the `/app/tutorials` videos are produced. There are two kinds of asset:
 
-## Architecture
+1. **25 step-by-step tutorials** — real screen recordings that actually *operate*
+   the app (create a deal, drag the kanban, build an automation, connect Slack,
+   generate real AI content), one per row in `public.tutorials`.
+2. **1 cinematic brand film** — the hero promo at the top of the tutorials page
+   (`tutorial-videos/promo/nova-brand-film.mp4`). See `docs/promo-film-brief.md`.
 
-- **Queue / source of truth:** `public.tutorials` (see
-  `supabase/migrations/20260612030000_create_tutorials_table.sql`). One row per
-  tutorial. `video_status` drives the queue:
-  `pending → generating → completed | failed`.
-- **Frontend:** `src/routes/app.tutorials.tsx` fetches
-  `id, youtube_id, video_url, video_thumbnail_url, video_status` from the table
-  and merges it over the static `TUTORIALS` catalog. Rows with
-  `video_status = 'completed'` and a `video_url` render an MP4 `<video>` player;
-  rows with a `youtube_id` fall back to a YouTube embed; everything else shows
-  "Coming Soon".
-- **Writes** to the table go through the service role only (RLS: public
-  `select`, no write policies).
+## Tutorials — real screen recordings (`scripts/tutorial-videos/`)
 
-## Per-tutorial generation flow
+- `record.mjs` drives the running app with Playwright + Chromium while recording
+  video, so every clip shows the actual operation in its title — not a static
+  page. An injected overlay draws a smooth cursor, click ripples, a title card,
+  and on-screen captions. Each scenario performs the real flow (fills the New
+  Deal form and saves it, drags cards between kanban stages, drags trigger/action
+  blocks onto the workflow builder, connects an integration, runs a real
+  Launchpad AI tool and waits for the output, etc.).
+- AI-generation tutorials (campaigns, email sequences, AI dashboard) trigger the
+  real `run-tool` edge function and the encoder speeds up the generation wait
+  (`ffStart`/`ffEnd` marks → 14× segment) so the video shows the real output
+  without a dead spinner.
+- Output is encoded to H.264 MP4 (via system `ffmpeg`) with a JPG poster, then
+  `upload.sh` pushes both to the Supabase `tutorial-videos` bucket and points the
+  `public.tutorials` row at them (`video_status = 'completed'`,
+  `video_provider = 'playwright'`).
+- `reset-demo-data.sh` restores the seeded demo org between runs so each
+  recording starts from clean, realistic data.
 
-1. Pick the next row: `select * from tutorials where video_status = 'pending' order by featured desc, sort_order limit 1`.
-2. Open the page at `app_path` in the running app and screenshot it at
-   1280×720 (16:9). See "Capturing real screens" below.
-3. Upload the screenshot to Higgsfield (`media_upload` → PUT → `media_confirm`).
-4. Set `video_status = 'generating'`, record `video_model`/`video_provider`.
-5. Generate with `generate_video`, model `veo3_1_lite` (1 credit/second,
-   720p, `generate_audio: false`), `start_image` = uploaded screenshot,
-   prompt = flat 2D screen-capture style, cursor movement/hovers/clicks over
-   the actual UI, one short on-screen caption, no camera motion or cinematic
-   effects.
-6. Record the returned job id in `video_job_id`; when the job completes, save
-   `results.rawUrl` → `video_url`, `results.thumbnailUrl` →
-   `video_thumbnail_url`, set `video_status = 'completed'` and
-   `video_generated_at = now()`. On failure set `video_status = 'failed'` and
-   `video_error`.
-7. Repeat until no `pending` rows remain or credits run out. The queue is
-   fully resumable — state lives in the table, never in the session.
+### Running it
+Env: `APP_BASE_URL` (default `http://127.0.0.1:8080`), `TUTORIAL_PASSWORD`,
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, plus a Chromium-capable
+`playwright`. Start the dev server (`bun run dev -- --host 127.0.0.1 --port 8080`),
+then `node scripts/tutorial-videos/record.mjs all` and
+`bash scripts/tutorial-videos/upload.sh`.
 
-## Capturing real screens
+### Capturing real screens
+- Sign in as a seeded confirmed demo user, then navigate client-side
+  (`history.pushState` + `popstate`) — full-page `goto` loses the localStorage
+  session and redirects to sign-in.
+- Pre-set `localStorage["nova-rail-open"] = "0"` so the Nova AI rail doesn't
+  cover the page; use `ignoreHTTPSErrors` for the sandbox TLS proxy.
 
-- Dev server: `bun run dev -- --host 127.0.0.1 --port 8080` (IPv6 is not
-  available in the sandbox; the default `::` bind fails).
-- Auth: create a confirmed user via the Supabase admin API
-  (`POST {SUPABASE_URL}/auth/v1/admin/users` with the service-role key from
-  `.env.development`), then set `profiles.onboarding_complete = true` and a
-  presentable `full_name` (it appears in the dashboard greeting).
-- Headless capture (Playwright + Chromium):
-  - `ignoreHTTPSErrors: true` (sandbox TLS-intercepting proxy).
-  - Pre-set `localStorage["nova-rail-open"] = "0"` via `addInitScript` so the
-    Nova AI rail does not cover the page.
-  - Sign in through `/auth/sign-in`, then navigate **client-side by clicking
-    sidebar links** — full-page `goto` loses the session (it lives in
-    localStorage, which SSR `beforeLoad` cannot see) and redirects to sign-in.
+## Schema
 
-## Status (2026-06-12, second run — PLUS plan)
+`public.tutorials` (see `supabase/migrations/20260612030000_create_tutorials_table.sql`)
+is the catalog + queue. The frontend (`src/routes/app.tutorials.tsx`) merges the
+DB rows over the static `TUTORIALS` list and renders an MP4 `<video>` for any row
+with `video_status = 'completed'` and a `video_url`.
 
-- All 25 tutorials have generated videos saved in `public.tutorials`
-  (`video_status = 'completed'`), including a regenerated `welcome` that fixes
-  the earlier caption typo. Total spend ≈ 208 credits (26 × 8 s jobs, one
-  `integrations` job re-submitted after the original wedged in_progress).
-- Screens were captured from the live app signed in as the seeded demo user
-  (org "Nova Demo Co", 10 demo deals across all lead stages, admin role) so
-  CRM/kanban/forecast/admin pages show real data.
-- Client-side navigation for arbitrary routes:
-  `history.pushState(...)` + `dispatchEvent(new PopStateEvent('popstate'))` —
-  TanStack Router picks it up; sidebar links are not needed.
-- Concurrency: PLUS allows max 6 concurrent video jobs (submission fails with
-  a rate-limit error, jobs are NOT queued server-side) — submit in waves of 6
-  and wait for completion between waves.
-- Prompt lesson: keep on-screen caption text to a few short words; the first
-  run's long caption produced a typo ("opering").
+## Status (2026-06-14)
+
+- All **25** tutorials recorded as real-operation screen captures, uploaded, and
+  live (`video_provider = 'playwright'`).
+- Brand film produced (14 scenes, ~1:34) and surfaced as the tutorials-page hero.
+- Fixed two latent bugs found while recording (see
+  `supabase/migrations/20260612210000_fix_integration_save.sql` for the
+  integration-save `pgcrypto`/`#variable_conflict` fix; `src/lib/mock.ts` for the
+  `email-sequence` tool-key mismatch that 404'd the Email Sequence tool).
