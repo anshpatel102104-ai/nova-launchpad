@@ -10,9 +10,18 @@ const OUT = process.env.OUT_DIR || "/tmp/tut/out";
 const RAW = process.env.RAW_DIR || "/tmp/tut/raw";
 const FFMPEG = process.env.FFMPEG || "ffmpeg";
 const FFPROBE = process.env.FFPROBE || "ffprobe";
-const USER = { email: process.env.TUTORIAL_EMAIL || "tutorial.recorder@nova-ops.dev", pass: process.env.TUTORIAL_PASSWORD };
-const ONBOARD_USER = { email: process.env.ONBOARDING_EMAIL || "tutorial.onboarding@nova-ops.dev", pass: process.env.TUTORIAL_PASSWORD };
-if (!USER.pass) { console.error("Set TUTORIAL_PASSWORD (demo recorder user password)"); process.exit(1); }
+const USER = {
+  email: process.env.TUTORIAL_EMAIL || "tutorial.recorder@nova-ops.dev",
+  pass: process.env.TUTORIAL_PASSWORD,
+};
+const ONBOARD_USER = {
+  email: process.env.ONBOARDING_EMAIL || "tutorial.onboarding@nova-ops.dev",
+  pass: process.env.TUTORIAL_PASSWORD,
+};
+if (!USER.pass) {
+  console.error("Set TUTORIAL_PASSWORD (demo recorder user password)");
+  process.exit(1);
+}
 fs.mkdirSync(OUT, { recursive: true });
 fs.mkdirSync(RAW, { recursive: true });
 
@@ -43,7 +52,9 @@ const OVERLAY_JS = `
 /* ───────────────────────── per-page helper kit ───────────────────────── */
 function kit(page) {
   const h = {};
-  h.ensureOverlay = async () => { await page.evaluate(OVERLAY_JS).catch(() => {}); };
+  h.ensureOverlay = async () => {
+    await page.evaluate(OVERLAY_JS).catch(() => {});
+  };
   h.sleep = (ms) => page.waitForTimeout(ms);
   h.goTo = async (path, settle = 2800) => {
     await page.evaluate((p) => {
@@ -64,10 +75,12 @@ function kit(page) {
     if (hold) await h.sleep(hold);
   };
   h.capOff = async () => {
-    await page.evaluate(() => {
-      const c = document.getElementById("tut-caption");
-      if (c) c.style.opacity = "0";
-    }).catch(() => {});
+    await page
+      .evaluate(() => {
+        const c = document.getElementById("tut-caption");
+        if (c) c.style.opacity = "0";
+      })
+      .catch(() => {});
   };
   h.title = async (titleText, sub) => {
     await h.ensureOverlay();
@@ -75,7 +88,22 @@ function kit(page) {
       ([t, s]) => {
         const d = document.createElement("div");
         d.id = "tut-title";
-        Object.assign(d.style, { position: "fixed", inset: "0", zIndex: 2147483647, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(9,11,22,0.82)", backdropFilter: "blur(5px)", opacity: "0", transition: "opacity .35s ease", fontFamily: "Inter,system-ui,sans-serif", textAlign: "center", padding: "0 60px" });
+        Object.assign(d.style, {
+          position: "fixed",
+          inset: "0",
+          zIndex: 2147483647,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(9,11,22,0.82)",
+          backdropFilter: "blur(5px)",
+          opacity: "0",
+          transition: "opacity .35s ease",
+          fontFamily: "Inter,system-ui,sans-serif",
+          textAlign: "center",
+          padding: "0 60px",
+        });
         d.innerHTML = `<div style="color:#60A5FA;font:700 12px/1 Inter;letter-spacing:.32em;margin-bottom:18px">NOVA TUTORIAL</div>
           <div style="color:#fff;font:700 34px/1.25 Inter;max-width:820px">${t}</div>
           ${s ? `<div style="color:#A5B4CC;font:500 16px/1.5 Inter;margin-top:14px;max-width:680px">${s}</div>` : ""}`;
@@ -87,7 +115,10 @@ function kit(page) {
     await h.sleep(2300);
     await page.evaluate(() => {
       const d = document.getElementById("tut-title");
-      if (d) { d.style.opacity = "0"; setTimeout(() => d.remove(), 450); }
+      if (d) {
+        d.style.opacity = "0";
+        setTimeout(() => d.remove(), 450);
+      }
     });
     await h.sleep(550);
   };
@@ -124,8 +155,12 @@ function kit(page) {
     const fb = await fromEl.boundingBox();
     const tb = await toEl.boundingBox();
     if (!fb || !tb) throw new Error("drag: missing boxes");
-    if (process.env.DRAG_DEBUG) console.log("  drag from", JSON.stringify(fb), "to", JSON.stringify(tb));
-    const point = (b) => [b.x + b.width * (opts.fx ?? 0.5) + (opts.dx ?? 0), b.y + Math.min(b.height * (opts.fy ?? 0.3), 140)];
+    if (process.env.DRAG_DEBUG)
+      console.log("  drag from", JSON.stringify(fb), "to", JSON.stringify(tb));
+    const point = (b) => [
+      b.x + b.width * (opts.fx ?? 0.5) + (opts.dx ?? 0),
+      b.y + Math.min(b.height * (opts.fy ?? 0.3), 140),
+    ];
     const [tx, ty] = point(tb);
     await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height / 2, { steps: 24 });
     await h.sleep(500);
@@ -147,7 +182,11 @@ function kit(page) {
     await h.sleep(opts.after ?? 1100);
   };
   h.hoverPath = async (locs, pause = 900) => {
-    for (const l of locs) { try { await h.move(l, { pause }); } catch {} }
+    for (const l of locs) {
+      try {
+        await h.move(l, { pause });
+      } catch {}
+    }
   };
   h.scrollMain = async (dy, ms = 900) => {
     await page.mouse.wheel(0, dy);
@@ -164,14 +203,19 @@ function kit(page) {
     throw new Error(`no visible block: ${text}`);
   };
   h.marks = {};
-  h.mark = (name) => { h.marks[name] = Date.now(); };
+  h.mark = (name) => {
+    h.marks[name] = Date.now();
+  };
   h.waitForOutput = async (maxMs = 110000) => {
     const t0 = Date.now();
     while (Date.now() - t0 < maxMs) {
       await page.waitForTimeout(2500);
       const st = await page.evaluate(() => {
         const txt = document.body.innerText;
-        return { busy: /generating|drafting|thinking|writing/i.test(txt), empty: txt.includes("No output yet") };
+        return {
+          busy: /generating|drafting|thinking|writing/i.test(txt),
+          empty: txt.includes("No output yet"),
+        };
       });
       if (!st.busy && !st.empty) return true;
     }
@@ -193,7 +237,11 @@ async function signIn(ctx, user) {
   await p.waitForTimeout(2500);
   const v = p.video();
   await p.close();
-  if (v) { try { fs.rmSync(await v.path()); } catch {} }
+  if (v) {
+    try {
+      fs.rmSync(await v.path());
+    } catch {}
+  }
 }
 
 /* ───────────────────────── scenarios ─────────────────────────────────── */
@@ -227,7 +275,9 @@ S["account-setup"] = {
   sub: "Profile, organization and first-time configuration",
   async run(page, h) {
     await h.cap("Start in Settings — complete your profile", 1500);
-    await h.type(page.locator('input:below(:text("Full name"))').first(), "Alex Carter", { clear: true });
+    await h.type(page.locator('input:below(:text("Full name"))').first(), "Alex Carter", {
+      clear: true,
+    });
     await h.cap("Save your profile", 500);
     await h.click(h.btn("Save profile"), { after: 1500 });
     await h.cap("Add your business context for better AI output", 700);
@@ -235,7 +285,9 @@ S["account-setup"] = {
     await h.scrollMain(250);
     await h.cap("Set up your organization", 600);
     await h.click(h.btn("Organization"), { after: 1800 });
-    await h.type(page.locator('input:below(:text("Business name"))').first(), "Nova Demo Co", { clear: true });
+    await h.type(page.locator('input:below(:text("Business name"))').first(), "Nova Demo Co", {
+      clear: true,
+    });
     await h.click(h.btn("Save organization"), { after: 1600 });
     await h.cap("Done — your account is configured", 1800);
   },
@@ -249,7 +301,10 @@ S["dashboard-tour"] = {
     await h.cap("Your dashboard greets you with today's focus", 1700);
     await h.move(page.locator("h1").first(), { pause: 900 });
     await h.cap("The sidebar is your map — five destinations", 900);
-    await h.hoverPath([h.link("Home"), h.link("Build"), h.link("Launch"), h.link("Grow"), h.link("Ask Nova")], 650);
+    await h.hoverPath(
+      [h.link("Home"), h.link("Build"), h.link("Launch"), h.link("Grow"), h.link("Ask Nova")],
+      650,
+    );
     await h.cap("Search anything with ⌘K", 700);
     await h.move(h.btn("Search anything"), { pause: 900 });
     await h.cap("Live metrics — contacts and tool runs", 800);
@@ -286,14 +341,20 @@ S["onboarding-wizard"] = {
         await page.keyboard.press("Enter");
       } else {
         // question presented as option cards instead of free text
-        const card = page.locator('button:has-text("E-commerce"), button:has-text("SaaS / software")').first();
+        const card = page
+          .locator('button:has-text("E-commerce"), button:has-text("SaaS / software")')
+          .first();
         if (!(await card.isVisible().catch(() => false))) break;
         await h.cap("Or just pick from Nova's suggestions", 600);
         await h.click(card, { after: 1500 });
       }
       // wait for Nova's next question to land
       for (let i = 0; i < 10; i++) {
-        const en = await page.locator("textarea:visible, input:visible, button:has-text('E-commerce')").last().isVisible().catch(() => false);
+        const en = await page
+          .locator("textarea:visible, input:visible, button:has-text('E-commerce')")
+          .last()
+          .isVisible()
+          .catch(() => false);
         if (en) break;
         await h.sleep(1500);
       }
@@ -318,12 +379,19 @@ S["crm-intro"] = {
     await h.type(h.ph("contact@example.com"), "dana@acme.com");
     await h.type(page.locator('input[type="number"]').first(), "7500");
     await h.cap("Pick a starting stage", 500);
-    await h.click(page.locator('[role="dialog"] button:has-text("Contacted"), button:has-text("Contacted")').last(), { after: 700 });
+    await h.click(
+      page
+        .locator('[role="dialog"] button:has-text("Contacted"), button:has-text("Contacted")')
+        .last(),
+      { after: 700 },
+    );
     await h.cap("Tag it for easy filtering", 500);
     await h.click(h.btn("+ saas"), { after: 700 });
     await h.click(h.btn("Create Deal"), { after: 1800 });
     await h.cap("Done — the deal is live in your pipeline", 1400);
-    try { await h.move(h.card("Acme Corp"), { pause: 1300 }); } catch {}
+    try {
+      await h.move(h.card("Acme Corp"), { pause: 1300 });
+    } catch {}
   },
 };
 
@@ -334,14 +402,17 @@ S["kanban-dnd"] = {
   async run(page, h) {
     await h.cap("Each column is a pipeline stage", 1700);
     await h.cap("Drag a deal to move it forward", 800);
-    const col = (stage) => page.locator(`div[class*="w-[264px]"]:has(span:text-is("${stage}"))`).first();
+    const col = (stage) =>
+      page.locator(`div[class*="w-[264px]"]:has(span:text-is("${stage}"))`).first();
     // center the target column so dnd-kit's edge auto-scroll never kicks in
     const center = async (stage) => {
       await page.evaluate((s) => {
         const span = [...document.querySelectorAll("span")].find(
           (el) => el.textContent === s && el.closest('div[class*="w-[264px]"]'),
         );
-        span?.closest('div[class*="w-[264px]"]')?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+        span
+          ?.closest('div[class*="w-[264px]"]')
+          ?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
       }, stage);
       await h.sleep(900);
     };
@@ -412,10 +483,13 @@ S["bulk-actions"] = {
     await h.click(h.btn("Table"), { after: 2000 });
     await h.cap("Select several deals in Table view", 1200);
     const boxes = page.locator("table tbody tr td:first-child button");
-    for (let i = 0; i < Math.min(await boxes.count(), 3); i++) await h.click(boxes.nth(i), { after: 600 });
+    for (let i = 0; i < Math.min(await boxes.count(), 3); i++)
+      await h.click(boxes.nth(i), { after: 600 });
     await h.cap("A bulk bar appears — act on all of them", 1400);
     await h.click(h.btn("Move to Stage"), { after: 1100 });
-    await h.click(page.locator('div[class*="z-50"] button:has-text("Qualified")').first(), { after: 1800 });
+    await h.click(page.locator('div[class*="z-50"] button:has-text("Qualified")').first(), {
+      after: 1800,
+    });
     await h.cap("Three deals updated in one click", 1800);
   },
 };
@@ -432,7 +506,11 @@ S["activity-timeline"] = {
     await h.cap("Every stage change and note is recorded here", 1800);
     await h.click(h.btn("Overview"), { after: 1500 });
     await h.cap("Add a note so the team has context", 900);
-    await h.type(h.ph("Add notes about this deal…"), "Discovery call done — send proposal by Friday.", { delay: 30 });
+    await h.type(
+      h.ph("Add notes about this deal…"),
+      "Discovery call done — send proposal by Friday.",
+      { delay: 30 },
+    );
     await h.click(h.btn("Save Notes"), { after: 1800 });
     await h.cap("Saved — the deal history stays complete", 1700);
   },
@@ -462,7 +540,9 @@ S["crm-settings"] = {
     await h.cap("Open Display settings", 1100);
     await h.click(h.btn("Display"), { after: 1500 });
     await h.cap("Toggle the fields your cards display", 1100);
-    const toggles = page.locator('[role="dialog"] [role="switch"], [role="switch"], [data-state][role="checkbox"]');
+    const toggles = page.locator(
+      '[role="dialog"] [role="switch"], [role="switch"], [data-state][role="checkbox"]',
+    );
     const n = Math.min(await toggles.count(), 3);
     for (let i = 0; i < n; i++) await h.click(toggles.nth(i), { after: 700 });
     await h.cap("Changes apply instantly", 1100);
@@ -480,10 +560,16 @@ S["workflow-builder"] = {
   async run(page, h) {
     await h.cap("This is the visual workflow builder", 1700);
     await h.cap("Step 1 — drag a trigger onto the canvas", 900);
-    await h.drag(await h.visBlock("New Lead"), page.locator('text="Drag a block here to start"'), { fy: 0.5, after: 1600 });
+    await h.drag(await h.visBlock("New Lead"), page.locator('text="Drag a block here to start"'), {
+      fy: 0.5,
+      after: 1600,
+    });
     await h.cap("Step 2 — add an action", 900);
     await h.click(h.btn("Actions"), { after: 1200 });
-    await h.drag(await h.visBlock("Send Email"), page.locator('text="Add next step"'), { fy: 0.5, after: 1600 });
+    await h.drag(await h.visBlock("Send Email"), page.locator('text="Add next step"'), {
+      fy: 0.5,
+      after: 1600,
+    });
     await h.cap("Trigger + action — that's a working automation", 1300);
     await h.cap("Save it — the automation is ready", 700);
     await h.click(h.btn("Save"), { after: 2200 });
@@ -508,7 +594,11 @@ S["trigger-types"] = {
     await h.move(await h.visBlock("Payment Received"), { pause: 900 });
     await h.cap("Payment Received — act the moment money lands", 1300);
     await h.cap("Let's use Form Submitted", 700);
-    await h.drag(await h.visBlock("Form Submitted"), page.locator('text="Drag a block here to start"'), { fy: 0.5, after: 1800 });
+    await h.drag(
+      await h.visBlock("Form Submitted"),
+      page.locator('text="Drag a block here to start"'),
+      { fy: 0.5, after: 1800 },
+    );
     await h.cap("Trigger placed — now add your actions", 1700);
   },
 };
@@ -519,15 +609,27 @@ S["multi-step"] = {
   sub: "Branching and delays in one flow",
   async run(page, h) {
     await h.cap("Start with a trigger", 1200);
-    await h.drag(await h.visBlock("New Lead"), page.locator('text="Drag a block here to start"'), { fy: 0.5, after: 1500 });
+    await h.drag(await h.visBlock("New Lead"), page.locator('text="Drag a block here to start"'), {
+      fy: 0.5,
+      after: 1500,
+    });
     await h.cap("Add logic — branch on conditions", 800);
     await h.click(h.btn("Logic"), { after: 1200 });
-    await h.drag(await h.visBlock("If / Else"), page.locator('text="Add next step"'), { fy: 0.5, after: 1500 });
+    await h.drag(await h.visBlock("If / Else"), page.locator('text="Add next step"'), {
+      fy: 0.5,
+      after: 1500,
+    });
     await h.cap("Add a delay between steps", 700);
-    await h.drag(await h.visBlock("Wait"), page.locator('text="Add next step"'), { fy: 0.5, after: 1500 });
+    await h.drag(await h.visBlock("Wait"), page.locator('text="Add next step"'), {
+      fy: 0.5,
+      after: 1500,
+    });
     await h.cap("Then add the action", 800);
     await h.click(h.btn("Actions"), { after: 1200 });
-    await h.drag(await h.visBlock("Send Email"), page.locator('text="Add next step"'), { fy: 0.5, after: 1600 });
+    await h.drag(await h.visBlock("Send Email"), page.locator('text="Add next step"'), {
+      fy: 0.5,
+      after: 1600,
+    });
     await h.cap("A real multi-step sequence — branch, wait, act", 1300);
     await h.click(h.btn("Save"), { after: 2200 });
     await h.cap("Saved — branching, delays and actions in one flow", 1800);
@@ -542,11 +644,17 @@ S.integrations = {
     await h.cap("Browse the integration catalog", 1500);
     await h.click(h.btn("Communication"), { after: 1500 });
     await h.cap("Let's connect Slack", 800);
-    const slackCard = page.locator('div:has(h3:text-is("Slack")):has(button:has-text("Connect"))').last();
+    const slackCard = page
+      .locator('div:has(h3:text-is("Slack")):has(button:has-text("Connect"))')
+      .last();
     await h.click(slackCard.locator('button:has-text("Connect")').first(), { after: 1500 });
     await h.cap("Paste your Slack webhook URL", 700);
     const dlg = page.locator('[role="dialog"]');
-    await h.type(dlg.locator("input").first(), "https://hooks.slack.com/services/T0DEMO/B0DEMO/nova", { delay: 18 });
+    await h.type(
+      dlg.locator("input").first(),
+      "https://hooks.slack.com/services/T0DEMO/B0DEMO/nova",
+      { delay: 18 },
+    );
     await h.click(dlg.locator('button:has-text("Connect")').first(), { after: 2200 });
     await h.cap("Connected — Nova can now use this tool", 1800);
   },
@@ -562,9 +670,21 @@ S.campaigns = {
     await h.click(h.link("Landing Page"), { after: 3200 });
     await h.cap("Brief Nova on the campaign", 1000);
     await h.type(h.ph("e.g. Northwind Labs — initial launch"), "Bright Brew launch", { delay: 26 });
-    await h.type(page.locator("textarea:visible").first(), "Specialty coffee subscriptions that make remote teams feel connected.", { delay: 18 });
-    await h.type(h.ph("e.g. B2B founders, solo consultants, DTC brands"), "Office managers at remote startups", { delay: 24 });
-    await h.type(h.ph("e.g. Cut churn by 30% without a single sales call"), "Boost remote team morale fast", { delay: 24 });
+    await h.type(
+      page.locator("textarea:visible").first(),
+      "Specialty coffee subscriptions that make remote teams feel connected.",
+      { delay: 18 },
+    );
+    await h.type(
+      h.ph("e.g. B2B founders, solo consultants, DTC brands"),
+      "Office managers at remote startups",
+      { delay: 24 },
+    );
+    await h.type(
+      h.ph("e.g. Cut churn by 30% without a single sales call"),
+      "Boost remote team morale fast",
+      { delay: 24 },
+    );
     await h.cap("Run the tool — Nova drafts the page for real", 800);
     await h.click(h.btn("Generate with AI"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
@@ -609,15 +729,29 @@ S["email-sequences"] = {
   sub: "A real multi-email nurture sequence, drafted by Nova",
   async run(page, h) {
     await h.cap("The Email Sequence Writer builds full drip campaigns", 1700);
-    await h.type(page.locator('input:below(:text("Business name"))').first(), "Bright Brew", { delay: 28 });
-    await h.type(page.locator('input:below(:text("Product"))').first(), "Specialty coffee subscriptions for remote teams", { delay: 18 });
+    await h.type(page.locator('input:below(:text("Business name"))').first(), "Bright Brew", {
+      delay: 28,
+    });
+    await h.type(
+      page.locator('input:below(:text("Product"))').first(),
+      "Specialty coffee subscriptions for remote teams",
+      { delay: 18 },
+    );
     await h.cap("Pick the sequence type — we'll nurture leads", 700);
     const sel = page.locator("select:visible").first();
     await h.move(sel, { pause: 400 });
     await sel.selectOption({ label: "Nurture" }).catch(() => sel.selectOption({ index: 1 }));
     await h.sleep(700);
-    await h.type(page.locator("textarea:visible").first(), "Turning trial users into paying subscribers with helpful coffee-culture tips.", { delay: 16 });
-    await h.type(page.locator('input:below(:text("Audience"))').first(), "Trial users who haven't upgraded yet", { delay: 20 });
+    await h.type(
+      page.locator("textarea:visible").first(),
+      "Turning trial users into paying subscribers with helpful coffee-culture tips.",
+      { delay: 16 },
+    );
+    await h.type(
+      page.locator('input:below(:text("Audience"))').first(),
+      "Trial users who haven't upgraded yet",
+      { delay: 20 },
+    );
     await h.cap("Run it — Nova writes every email in the drip", 800);
     await h.click(h.btn("Generate with AI"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
@@ -656,9 +790,15 @@ S["ai-dashboard"] = {
   sub: "A dashboard generated for your business",
   async run(page, h) {
     await h.cap("Describe your business — Nova builds the dashboard", 1600);
-    await h.type(page.locator("textarea:visible").first(), "B2B SaaS that automates lead follow-up for coffee subscription brands", { delay: 22 });
+    await h.type(
+      page.locator("textarea:visible").first(),
+      "B2B SaaS that automates lead follow-up for coffee subscription brands",
+      { delay: 22 },
+    );
     await h.type(h.ph("e.g. PropTech, Health"), "Food & Beverage SaaS", { delay: 26 });
-    await h.type(h.ph("e.g. Get 10 paying customers, hit $5k MRR"), "Hit $5k MRR by September", { delay: 26 });
+    await h.type(h.ph("e.g. Get 10 paying customers, hit $5k MRR"), "Hit $5k MRR by September", {
+      delay: 26,
+    });
     await h.cap("One click — Nova assembles your metrics", 900);
     await h.click(h.btn("Generate My Dashboard"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
@@ -736,9 +876,17 @@ S["nova-memory"] = {
     await h.cap("Nova Memory — your AI-queryable knowledge base", 1700);
     await h.cap("Log a win so Nova learns what works", 800);
     await h.click(h.btn("Log a win"), { after: 1400 });
-    await h.type(h.ph("e.g. Closed first $5K deal"), "Closed first $5K enterprise deal", { delay: 28 });
-    await h.type(page.locator('textarea:visible').first(), "Demo-first outreach to ops managers — repeatable.", { delay: 24 });
-    await h.type(h.ph("e.g. $5K MRR, 1 new enterprise logo"), "$5K MRR, 1 enterprise logo", { delay: 28 });
+    await h.type(h.ph("e.g. Closed first $5K deal"), "Closed first $5K enterprise deal", {
+      delay: 28,
+    });
+    await h.type(
+      page.locator("textarea:visible").first(),
+      "Demo-first outreach to ops managers — repeatable.",
+      { delay: 24 },
+    );
+    await h.type(h.ph("e.g. $5K MRR, 1 new enterprise logo"), "$5K MRR, 1 enterprise logo", {
+      delay: 28,
+    });
     await h.click(h.btn("Save to memory"), { after: 2000 });
     await h.cap("Saved — every AI output now uses this context", 1500);
     await h.cap("Sources and artifacts make memory searchable", 800);
@@ -750,7 +898,17 @@ S["nova-memory"] = {
 
 /* ───────────────────────── runner ────────────────────────────────────── */
 function ffprobeDuration(file) {
-  const out = execFileSync(FFPROBE, ["-v", "quiet", "-show_entries", "format=duration", "-of", "csv=p=0", file]).toString().trim();
+  const out = execFileSync(FFPROBE, [
+    "-v",
+    "quiet",
+    "-show_entries",
+    "format=duration",
+    "-of",
+    "csv=p=0",
+    file,
+  ])
+    .toString()
+    .trim();
   return parseFloat(out);
 }
 
@@ -779,30 +937,69 @@ async function recordOne(ctx, id, scenario) {
     const offset = Math.max((tStart - t0) / 1000 - 0.25, 0);
     const mp4 = `${OUT}/${id}.mp4`;
     const jpg = `${OUT}/${id}.jpg`;
-    const enc = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-r", "25", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an"];
+    const enc = [
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      "22",
+      "-r",
+      "25",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "-an",
+    ];
     if (h.marks.ffStart && h.marks.ffEnd) {
       // speed up the generation wait so the video shows the real output
       const A = ((h.marks.ffStart - t0) / 1000 - offset).toFixed(2);
       const B = ((h.marks.ffEnd - t0) / 1000 - offset).toFixed(2);
       const fc = `[0:v]split=3[s0][s1][s2];[s0]trim=end=${A},setpts=PTS-STARTPTS[v0];[s1]trim=start=${A}:end=${B},setpts=(PTS-STARTPTS)/14[v1];[s2]trim=start=${B},setpts=PTS-STARTPTS[v2];[v0][v1][v2]concat=n=3:v=1:a=0[v]`;
-      execFileSync(FFMPEG, ["-y", "-ss", offset.toFixed(2), "-i", webm, "-filter_complex", fc, "-map", "[v]", ...enc, mp4], { stdio: "pipe" });
+      execFileSync(
+        FFMPEG,
+        [
+          "-y",
+          "-ss",
+          offset.toFixed(2),
+          "-i",
+          webm,
+          "-filter_complex",
+          fc,
+          "-map",
+          "[v]",
+          ...enc,
+          mp4,
+        ],
+        { stdio: "pipe" },
+      );
     } else {
-      execFileSync(FFMPEG, ["-y", "-ss", offset.toFixed(2), "-i", webm, ...enc, mp4], { stdio: "pipe" });
+      execFileSync(FFMPEG, ["-y", "-ss", offset.toFixed(2), "-i", webm, ...enc, mp4], {
+        stdio: "pipe",
+      });
     }
-    execFileSync(FFMPEG, ["-y", "-ss", "3.2", "-i", mp4, "-frames:v", "1", "-q:v", "3", jpg], { stdio: "pipe" });
+    execFileSync(FFMPEG, ["-y", "-ss", "3.2", "-i", mp4, "-frames:v", "1", "-q:v", "3", jpg], {
+      stdio: "pipe",
+    });
     const dur = ffprobeDuration(mp4);
     fs.rmSync(webm, { force: true });
     console.log(`✔ ${id}: ${dur.toFixed(1)}s → ${mp4}`);
     return { id, ok: true, duration: Math.round(dur) };
   } catch (e) {
-    try { await page.close(); } catch {}
+    try {
+      await page.close();
+    } catch {}
     console.log(`✘ ${id}: ${e.message.split("\n")[0]}`);
     return { id, ok: false, error: e.message.split("\n")[0] };
   }
 }
 
 const ids = process.argv.slice(2).flatMap((a) => (a === "all" ? Object.keys(S) : [a]));
-if (!ids.length) { console.log("usage: node record.mjs <id...>|all"); process.exit(1); }
+if (!ids.length) {
+  console.log("usage: node record.mjs <id...>|all");
+  process.exit(1);
+}
 
 const browser = await chromium.launch();
 const results = [];
@@ -810,8 +1007,17 @@ const results = [];
 // main signed-in context (recorder user)
 const mainIds = ids.filter((i) => !S[i].user);
 if (mainIds.length) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, ignoreHTTPSErrors: true, recordVideo: { dir: RAW, size: { width: 1280, height: 720 } } });
-  await ctx.addInitScript(() => { try { localStorage.setItem("nova-rail-open", "0"); } catch {} });
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 1,
+    ignoreHTTPSErrors: true,
+    recordVideo: { dir: RAW, size: { width: 1280, height: 720 } },
+  });
+  await ctx.addInitScript(() => {
+    try {
+      localStorage.setItem("nova-rail-open", "0");
+    } catch {}
+  });
   await ctx.addInitScript(OVERLAY_JS);
   await signIn(ctx, USER);
   for (const id of mainIds) results.push(await recordOne(ctx, id, S[id]));
@@ -819,8 +1025,17 @@ if (mainIds.length) {
 }
 // special-user scenarios (fresh context each)
 for (const id of ids.filter((i) => S[i].user)) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, ignoreHTTPSErrors: true, recordVideo: { dir: RAW, size: { width: 1280, height: 720 } } });
-  await ctx.addInitScript(() => { try { localStorage.setItem("nova-rail-open", "0"); } catch {} });
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 1,
+    ignoreHTTPSErrors: true,
+    recordVideo: { dir: RAW, size: { width: 1280, height: 720 } },
+  });
+  await ctx.addInitScript(() => {
+    try {
+      localStorage.setItem("nova-rail-open", "0");
+    } catch {}
+  });
   await ctx.addInitScript(OVERLAY_JS);
   await signIn(ctx, S[id].user);
   results.push(await recordOne(ctx, id, S[id]));

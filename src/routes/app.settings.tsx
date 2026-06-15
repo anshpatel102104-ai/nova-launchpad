@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import {
   organizationQuery,
+  organizationMembersQuery,
   subscriptionQuery,
   planEntitlementsQuery,
   integrationsQuery,
   usageQuery,
   saveIntegration,
+  type OrgMember,
+  type OrgRole,
 } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,6 +34,8 @@ import {
   Skull,
   ExternalLink,
   Unplug,
+  Users,
+  UserPlus,
 } from "lucide-react";
 import { BusinessContextTab } from "@/components/app/settings/BusinessContextTab";
 import { getCatalogByKey } from "@/lib/integrations-catalog";
@@ -55,6 +60,7 @@ const TABS = [
   { key: "profile", label: "Profile", icon: User },
   { key: "context", label: "Business Context", icon: Brain },
   { key: "organization", label: "Organization", icon: Building2 },
+  { key: "team", label: "Team", icon: Users },
   { key: "plan", label: "Plan", icon: CreditCard },
   { key: "connectors", label: "Connectors", icon: Plug },
   { key: "danger", label: "Danger zone", icon: Skull },
@@ -117,6 +123,7 @@ function SettingsPage() {
         {tab === "profile" && <ProfileTab />}
         {tab === "context" && <BusinessContextTab />}
         {tab === "organization" && <OrgTab />}
+        {tab === "team" && <TeamTab />}
         {tab === "plan" && <PlanTab />}
         {tab === "connectors" && <ConnectorsTab />}
         {tab === "danger" && <DangerTab />}
@@ -202,6 +209,208 @@ function SaveButton({
     >
       <Check className="h-3.5 w-3.5" /> {children}
     </button>
+  );
+}
+
+const ROLE_LABEL: Record<OrgRole, string> = {
+  owner: "Owner",
+  admin: "Admin",
+  member: "Member",
+};
+
+function TeamTab() {
+  const { currentOrgId, user } = useAuth();
+  const qc = useQueryClient();
+  const membersQ = useQuery({
+    ...organizationMembersQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
+  const members: OrgMember[] = membersQ.data ?? [];
+  const myRole = members.find((m) => m.user_id === user?.id)?.role;
+  const canManage = myRole === "owner" || myRole === "admin";
+
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"admin" | "member">("member");
+  const [inviting, setInviting] = useState(false);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["org-members", currentOrgId] });
+
+  const invite = async () => {
+    if (blockIfGuest("Sign up to invite teammates.")) return;
+    if (!currentOrgId) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    setInviting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("team-invite", {
+        body: { organizationId: currentOrgId, email: email.trim(), role },
+      });
+      if (error) throw error;
+      toast.success(
+        (data as { status?: string })?.status === "added_existing"
+          ? "Teammate added."
+          : "Invite sent.",
+      );
+      setEmail("");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not invite teammate.");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const changeRole = async (target: OrgMember, next: OrgRole) => {
+    if (blockIfGuest()) return;
+    if (!currentOrgId) return;
+    const { error } = await supabase
+      .from("organization_members")
+      .update({ role: next })
+      .eq("organization_id", currentOrgId)
+      .eq("user_id", target.user_id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${target.email ?? "Member"} is now ${ROLE_LABEL[next]}.`);
+      refresh();
+    }
+  };
+
+  const removeMember = async (target: OrgMember) => {
+    if (blockIfGuest()) return;
+    if (!currentOrgId) return;
+    const { error } = await supabase
+      .from("organization_members")
+      .delete()
+      .eq("organization_id", currentOrgId)
+      .eq("user_id", target.user_id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Member removed.");
+      refresh();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {canManage && (
+        <Section title="Invite a teammate" description="They'll get access to this workspace.">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <Field label="Email address">
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="teammate@company.com"
+                  className="rounded-xl"
+                  style={{ background: "var(--surface-2)" }}
+                />
+              </Field>
+            </div>
+            <Field label="Role">
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as "admin" | "member")}
+                className="h-10 rounded-xl px-3 text-[13px]"
+                style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </Field>
+            <button
+              onClick={invite}
+              disabled={inviting}
+              className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] font-semibold text-white disabled:opacity-60"
+              style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+            >
+              <UserPlus className="h-4 w-4" />
+              {inviting ? "Inviting…" : "Invite"}
+            </button>
+          </div>
+        </Section>
+      )}
+
+      <Section
+        title="Members"
+        description={`${members.length} ${members.length === 1 ? "person" : "people"} in this workspace.`}
+      >
+        {membersQ.isLoading ? (
+          <div className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+            Loading members…
+          </div>
+        ) : members.length === 0 ? (
+          <div className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+            No members yet.
+          </div>
+        ) : (
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+            {members.map((m) => {
+              const isSelf = m.user_id === user?.id;
+              const editable = canManage && m.role !== "owner" && !isSelf;
+              return (
+                <div key={m.user_id} className="flex items-center gap-3 py-3">
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className="truncate text-[13.5px] font-medium"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {m.full_name || m.email || "Unknown"}
+                      {isSelf && (
+                        <span
+                          className="ml-1.5 text-[11px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          (you)
+                        </span>
+                      )}
+                    </div>
+                    {m.email && (
+                      <div
+                        className="truncate text-[12px]"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {m.email}
+                      </div>
+                    )}
+                  </div>
+                  {editable ? (
+                    <select
+                      value={m.role}
+                      onChange={(e) => changeRole(m, e.target.value as OrgRole)}
+                      className="h-8 rounded-lg px-2 text-[12px]"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  ) : (
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                      style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+                    >
+                      {ROLE_LABEL[m.role]}
+                    </span>
+                  )}
+                  {editable && (
+                    <button
+                      onClick={() => removeMember(m)}
+                      title="Remove member"
+                      className="rounded-lg p-1.5 transition-colors hover:bg-surface-2"
+                      style={{ color: "var(--destructive)" }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Section>
+    </div>
   );
 }
 

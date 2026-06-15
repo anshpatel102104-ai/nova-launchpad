@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useRef, useState, useMemo } from "react";
+import Papa from "papaparse";
 import { CustomersNav } from "@/components/app/CustomersNav";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { computeLeadScore } from "@/lib/lead-scoring";
+import { toast } from "sonner";
 import {
   Users,
   Plus,
@@ -25,6 +28,9 @@ import {
   Zap,
   MessageSquare,
   Send,
+  Download,
+  Upload,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
@@ -166,6 +172,31 @@ async function fetchContactNotes(contactId: string): Promise<ContactNote[]> {
 }
 
 /* ─── Main Page ─── */
+function SecondaryBtn({
+  onClick,
+  disabled,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+      style={{
+        background: "var(--surface-2)",
+        border: "1px solid var(--border)",
+        color: "var(--foreground)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function ContactsPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -242,6 +273,106 @@ function ContactsPage() {
     },
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState<"" | "import" | "score">("");
+
+  // Export the current (filtered) list to a CSV file.
+  const exportCsv = () => {
+    const rows = filtered.map((c) => ({
+      first_name: c.first_name ?? "",
+      last_name: c.last_name ?? "",
+      email: c.email ?? "",
+      phone: c.phone ?? "",
+      company: c.company ?? "",
+      status: c.status,
+      lead_score: c.lead_score ?? 0,
+      tags: (c.tags ?? []).join("|"),
+      source: c.source ?? "",
+      notes: c.notes ?? "",
+      last_contacted_at: c.last_contacted_at ?? "",
+    }));
+    const csv = Papa.unparse(rows);
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `contacts-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import contacts from a CSV. Headers are matched case-insensitively; tags may
+  // be pipe- or comma-separated. Each row is scored on insert.
+  const importCsv = (file: File) => {
+    if (!user) return;
+    setBusy("import");
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h) => h.trim().toLowerCase().replace(/\s+/g, "_"),
+      complete: async (res) => {
+        try {
+          const rows = res.data
+            .map((r) => {
+              const tags = (r.tags ?? "")
+                .split(/[|,]/)
+                .map((t) => t.trim())
+                .filter(Boolean);
+              const base = {
+                user_id: user.id,
+                first_name: r.first_name || r.firstname || null,
+                last_name: r.last_name || r.lastname || null,
+                email: r.email || null,
+                phone: r.phone || null,
+                company: r.company || null,
+                source: r.source || "csv-import",
+                notes: r.notes || null,
+                status: (r.status || "new").toLowerCase(),
+                tags,
+              };
+              return { ...base, lead_score: computeLeadScore({ ...base, tags }) };
+            })
+            .filter((r) => r.email || r.first_name || r.last_name);
+          if (rows.length === 0) {
+            toast.error("No usable rows found in that CSV.");
+            return;
+          }
+          const { error } = await db.from("contacts").insert(rows);
+          if (error) throw error;
+          toast.success(`Imported ${rows.length} contact${rows.length === 1 ? "" : "s"}.`);
+          qc.invalidateQueries({ queryKey: ["contacts", user.id] });
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Import failed.");
+        } finally {
+          setBusy("");
+        }
+      },
+      error: () => {
+        toast.error("Could not read that file.");
+        setBusy("");
+      },
+    });
+  };
+
+  // Recompute lead_score for every contact and persist the ones that changed.
+  const recomputeScores = async () => {
+    if (!user) return;
+    setBusy("score");
+    try {
+      const changed = allContacts
+        .map((c) => ({ id: c.id, next: computeLeadScore(c) }))
+        .filter((c) => c.next !== undefined);
+      await Promise.all(
+        changed.map((c) => db.from("contacts").update({ lead_score: c.next }).eq("id", c.id)),
+      );
+      toast.success(`Recomputed scores for ${changed.length} contacts.`);
+      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not recompute scores.");
+    } finally {
+      setBusy("");
+    }
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -292,14 +423,42 @@ function ContactsPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-opacity hover:opacity-80"
-          style={{ background: "var(--primary)", color: "#fff" }}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Contact
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) importCsv(f);
+              e.target.value = "";
+            }}
+          />
+          <SecondaryBtn
+            onClick={recomputeScores}
+            disabled={busy !== "" || allContacts.length === 0}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${busy === "score" ? "animate-spin" : ""}`} />
+            Recompute scores
+          </SecondaryBtn>
+          <SecondaryBtn onClick={() => fileInputRef.current?.click()} disabled={busy !== ""}>
+            <Upload className="h-3.5 w-3.5" />
+            {busy === "import" ? "Importing…" : "Import CSV"}
+          </SecondaryBtn>
+          <SecondaryBtn onClick={exportCsv} disabled={filtered.length === 0}>
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </SecondaryBtn>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-medium transition-opacity hover:opacity-80"
+            style={{ background: "var(--primary)", color: "#fff" }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Contact
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

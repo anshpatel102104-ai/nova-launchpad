@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -36,8 +36,10 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
-import { subscriptionQuery, workspaceStatusQuery } from "@/lib/queries";
+import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
+import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
+import { ViewSwitcher } from "./ViewSwitcher";
 
 /* ── Types ── */
 interface SubItem {
@@ -343,6 +345,14 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+/* Each view shows only the Toolbox groups that fit it, so the layout stays
+ * focused instead of dumping every feature on everyone:
+ *   Launchpad (create) → Journey, Workbench, Customers, Library
+ *   NOVA (operate)     → Customers, Automate, Insights, Library
+ */
+const LAUNCHPAD_GROUP_IDS = new Set(["path", "workbench", "customers", "library"]);
+const NOVA_GROUP_IDS = new Set(["customers", "automate", "insights", "library"]);
+
 const STORAGE = "nova-sidebar-collapsed";
 const TOOLBOX_STORAGE = "nova-toolbox-open";
 
@@ -362,11 +372,15 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plan = subQ.data?.plan ?? "starter";
 
-  // Mode-aware primary nav: founders see Build/Launch/Grow,
-  // operators see Automate/Optimize/Scale.
-  const wsQ = useQuery({ ...workspaceStatusQuery(user?.id ?? ""), enabled: !!user?.id });
-  const isOperate = (wsQ.data as { mode?: string } | null)?.mode === "operate";
+  // Active view (Launchpad ↔ NOVA), backed by workspaces.mode.
+  // Founders/Launchpad see Build/Launch/Grow; operators/NOVA see
+  // Automate/Optimize/Scale — and the Toolbox is curated to match.
+  const { isOperate } = useWorkspaceMode();
   const primaryNav = isOperate ? PRIMARY_NAV_OPERATE : PRIMARY_NAV;
+  const navGroups = useMemo(
+    () => NAV_GROUPS.filter((g) => (isOperate ? NOVA_GROUP_IDS : LAUNCHPAD_GROUP_IDS).has(g.id)),
+    [isOperate],
+  );
 
   // Toolbox (legacy full nav) — progressive disclosure, closed by default.
   const [toolboxOpen, setToolboxOpen] = useState(() => {
@@ -406,7 +420,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
   }, []);
 
   useEffect(() => {
-    const active = NAV_GROUPS.filter((g) => g.children && g.match(path)).map((g) => g.id);
+    const active = navGroups.filter((g) => g.children && g.match(path)).map((g) => g.id);
     if (active.length > 0) {
       setExpandedGroups((prev) => {
         const next = new Set(prev);
@@ -417,7 +431,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
       // so the active state is never hidden.
       setToolboxOpen(true);
     }
-  }, [path]);
+  }, [path, navGroups]);
 
   const toggle = () => {
     setCollapsed((c) => {
@@ -508,6 +522,14 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         )}
       </div>
 
+      {/* ── View switcher: Launchpad (create) ↔ NOVA (operate) ── */}
+      <div
+        className={cn("px-2 pt-2 pb-1", collapsed && "px-1.5")}
+        style={{ borderBottom: "1px solid var(--sidebar-border)" }}
+      >
+        <ViewSwitcher collapsed={collapsed} />
+      </div>
+
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto py-2 space-y-px">
         {/* Primary nav — the OS layer: outcome-driven, 5 items */}
@@ -569,7 +591,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         </div>
 
         {(toolboxOpen || collapsed) &&
-          NAV_GROUPS.map((group) => {
+          navGroups.map((group) => {
             const isActive = group.match(path);
             const isExpanded = expandedGroups.has(group.id);
             const hasChildren = !!group.children?.length;
