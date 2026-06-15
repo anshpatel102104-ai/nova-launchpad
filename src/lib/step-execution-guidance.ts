@@ -38,6 +38,12 @@ export const TOOL_ROUTES: Record<string, string> = {
   "first-10-customers": "/app/launchpad/first-10-customers",
   followup: "/app/launchpad/followup",
   "generate-ops-plan": "/app/launchpad/ops-plan",
+  // NOVA (operate & scale) tools
+  "kpi-dashboard": "/app/launchpad/kpi-dashboard",
+  "seo-audit": "/app/launchpad/seo-audit",
+  "launch-checklist": "/app/launchpad/launch-checklist",
+  "email-sequence": "/app/launchpad/email-sequence",
+  "ad-copy": "/app/launchpad/ad-copy",
 };
 
 const GUIDANCE_MAP: Record<string, StepGuidance> = {
@@ -228,6 +234,120 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 20,
     toolRoute: TOOL_ROUTES["generate-ops-plan"],
     buttonLabel: "Start: open the Operations Planner",
+  },
+
+  // ── NOVA (operate & scale) tools — same plain, 5th-grade hand-holding ──
+  "kpi-dashboard": {
+    stepId: "step-kpi-dashboard",
+    title: "Pick the numbers you'll watch",
+    plainWhat: "The few key numbers that tell you if your business is healthy this week.",
+    why: "You can't fix what you can't see. These numbers show you where to look first.",
+    directions: [
+      { action: "Click the purple button below.", detail: "It opens the KPI Dashboard Builder." },
+      {
+        action: "Tell Nova your business type and size.",
+        detail: "Use simple words. Nova picks the 10 numbers that matter most for you.",
+      },
+      {
+        action: "Choose the 5 you'll check every week.",
+        detail: "Write them somewhere you'll see every Monday.",
+      },
+    ],
+    doneWhen: [
+      "You have your top 5 numbers chosen.",
+      "You know what a good and bad number looks like.",
+    ],
+    minutes: 10,
+    toolRoute: TOOL_ROUTES["kpi-dashboard"],
+    buttonLabel: "Start: open the KPI Builder",
+  },
+
+  "seo-audit": {
+    stepId: "step-seo-audit",
+    title: "Help people find you on Google",
+    plainWhat: "A checklist that shows why your website isn't showing up — and how to fix it.",
+    why: "Most buyers search Google first. If you're not there, they find someone else.",
+    directions: [
+      { action: "Click the purple button below.", detail: "It opens the SEO Audit tool." },
+      {
+        action: "Paste your website link and your main keyword.",
+        detail: "The keyword is what a customer would type to find you.",
+      },
+      {
+        action: "Do the top 3 fixes Nova lists first.",
+        detail: "Start at the top — those matter the most.",
+      },
+    ],
+    doneWhen: ["You have your list of fixes.", "You finished the top 3."],
+    minutes: 8,
+    toolRoute: TOOL_ROUTES["seo-audit"],
+    buttonLabel: "Start: check my website",
+  },
+
+  "launch-checklist": {
+    stepId: "step-launch-checklist",
+    title: "Get ready for launch day",
+    plainWhat: "A countdown list of everything to do before you go live, in order.",
+    why: "A launch with a plan beats a launch you rush. Nothing important gets forgotten.",
+    directions: [
+      { action: "Click the purple button below.", detail: "It opens the Launch Checklist." },
+      {
+        action: "Tell Nova what you're launching and when.",
+        detail: "Nova builds a 30, 14, 7, and 1-day to-do list for you.",
+      },
+      {
+        action: "Do today's tasks, then check them off.",
+        detail: "Just do what's due today. Come back tomorrow for the next set.",
+      },
+    ],
+    doneWhen: ["You have your countdown checklist.", "Today's tasks are done."],
+    minutes: 6,
+    toolRoute: TOOL_ROUTES["launch-checklist"],
+    buttonLabel: "Start: build my checklist",
+  },
+
+  "email-sequence": {
+    stepId: "step-email-sequence",
+    title: "Set up your follow-up emails",
+    plainWhat: "A set of short emails that go out over time, so no customer forgets you.",
+    why: "Most people buy after a few reminders — not the first email. This does the reminding.",
+    directions: [
+      { action: "Click the purple button below.", detail: "It opens the Email Sequence Writer." },
+      {
+        action: "Tell Nova your business and who you're emailing.",
+        detail: "Nova writes all the emails for you.",
+      },
+      {
+        action: "Read each email and make it sound like you.",
+        detail: "Keep them short — 3 to 4 sentences each.",
+      },
+    ],
+    doneWhen: ["Your emails are saved and ready.", "You know which day each one goes out."],
+    minutes: 8,
+    toolRoute: TOOL_ROUTES["email-sequence"],
+    buttonLabel: "Start: write my emails",
+  },
+
+  "ad-copy": {
+    stepId: "step-ad-copy",
+    title: "Write ads that get clicks",
+    plainWhat: "Ready-to-use ad text for Facebook, Google, or other platforms.",
+    why: "Good ad words bring in customers for less money. Nova writes them in seconds.",
+    directions: [
+      { action: "Click the purple button below.", detail: "It opens the Ad Copy Generator." },
+      {
+        action: "Tell Nova your product, your customer, and the platform.",
+        detail: "Nova writes 5 different versions to try.",
+      },
+      {
+        action: "Pick your 2 favorites to run first.",
+        detail: "Test two, keep the one that works better.",
+      },
+    ],
+    doneWhen: ["You have ad text ready to use.", "You picked the 2 to run first."],
+    minutes: 8,
+    toolRoute: TOOL_ROUTES["ad-copy"],
+    buttonLabel: "Start: write my ads",
   },
 };
 
