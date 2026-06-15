@@ -106,8 +106,13 @@ export function sanitizeString(input: string, maxLength = 5000): string {
   );
 }
 
-// ── Rate limiting (in-memory, per Deno isolate) ─────────────────────────────
-// For production, use a distributed store (Upstash Redis, KV, etc.)
+// ── Rate limiting ───────────────────────────────────────────────────────────
+// `checkRateLimit` is the synchronous, in-memory limiter (per Deno isolate) used
+// today. For multi-region production it should be backed by a distributed store.
+// `checkRateLimitAsync` + `setRateLimitBackend` provide that seam without
+// touching existing callers: swap in a Cloudflare KV / Upstash backend at boot
+// and the limit becomes global. The default backend wraps the in-memory store,
+// so behavior is unchanged until a backend is explicitly set.
 
 interface RateLimitEntry {
   count: number;
@@ -154,4 +159,64 @@ export function rateLimitResponse(resetAt: number): Response {
     429,
     { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
   );
+}
+
+// ── Pluggable backend (for distributed rate limiting) ────────────────────────
+// A backend just needs to atomically "hit" a key within a window. The default
+// is the in-memory store above. To go global, implement this against a shared
+// KV/Redis and call setRateLimitBackend() once at startup.
+
+export interface RateLimitBackend {
+  hit(key: string, opts: RateLimitOptions): Promise<RateLimitResult>;
+}
+
+const inMemoryBackend: RateLimitBackend = {
+  hit: (key, opts) => Promise.resolve(checkRateLimit(key, opts)),
+};
+
+let activeBackend: RateLimitBackend = inMemoryBackend;
+
+export function setRateLimitBackend(backend: RateLimitBackend): void {
+  activeBackend = backend;
+}
+
+export function checkRateLimitAsync(
+  key: string,
+  opts: RateLimitOptions = { windowMs: 60_000, max: 20 },
+): Promise<RateLimitResult> {
+  return activeBackend.hit(key, opts);
+}
+
+// Minimal async key/value store (Cloudflare KV and Upstash Redis both satisfy
+// this with thin wrappers). `getWithMeta` returns the stored counter + its TTL.
+export interface RateLimitKv {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, ttlSeconds: number): Promise<void>;
+}
+
+// Drop-in distributed backend. Window is approximated with a per-key TTL — good
+// enough for abuse protection. Wire it up at startup, e.g.:
+//   setRateLimitBackend(createKvRateLimitBackend(env.RATE_LIMIT_KV));
+export function createKvRateLimitBackend(kv: RateLimitKv): RateLimitBackend {
+  return {
+    async hit(key, opts) {
+      const now = Date.now();
+      const raw = await kv.get(key);
+      const parsed = raw ? (JSON.parse(raw) as RateLimitEntry) : null;
+
+      if (!parsed || now > parsed.resetAt) {
+        const resetAt = now + opts.windowMs;
+        await kv.put(key, JSON.stringify({ count: 1, resetAt }), Math.ceil(opts.windowMs / 1000));
+        return { allowed: true, remaining: opts.max - 1, resetAt };
+      }
+
+      if (parsed.count >= opts.max) {
+        return { allowed: false, remaining: 0, resetAt: parsed.resetAt };
+      }
+
+      const next = { count: parsed.count + 1, resetAt: parsed.resetAt };
+      await kv.put(key, JSON.stringify(next), Math.ceil((parsed.resetAt - now) / 1000));
+      return { allowed: true, remaining: opts.max - next.count, resetAt: parsed.resetAt };
+    },
+  };
 }

@@ -53,6 +53,33 @@ export const organizationQuery = (orgId: string) =>
     },
   });
 
+export type OrgRole = "owner" | "admin" | "member";
+
+export interface OrgMember {
+  user_id: string;
+  role: OrgRole;
+  full_name: string | null;
+  email: string | null;
+  created_at: string;
+}
+
+// Org member roster. Reads through the list_org_members SECURITY DEFINER RPC so
+// members can see teammates without loosening profiles RLS. `supabase as any`
+// mirrors the house escape hatch (see app.contacts.tsx) for tables/RPCs not in
+// the generated types.
+export const organizationMembersQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["org-members", orgId],
+    queryFn: async (): Promise<OrgMember[]> => {
+      if (!orgId || isGuest()) return [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc("list_org_members", { _org_id: orgId });
+      if (error) throw error;
+      return (data ?? []) as OrgMember[];
+    },
+    staleTime: 30_000,
+  });
+
 export const subscriptionQuery = (orgId: string) =>
   queryOptions({
     queryKey: ["subscription", orgId],

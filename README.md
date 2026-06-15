@@ -17,17 +17,17 @@ The active mode is backed by `workspaces.mode` and switchable in the sidebar
 
 ## Repository layout
 
-| Path | What's there |
-| --- | --- |
-| `src/routes/` | Pages (TanStack file-based routing, `app.*` = authenticated app) |
-| `src/components/` | UI + app shell (`AppSidebar`, `ViewSwitcher`, dashboard cards) |
-| `src/lib/` | Client logic: `queries.ts`, `catalog.ts`, `lead-scoring.ts`, guidance, auth |
-| `src/hooks/` | React hooks (`use-workspace-mode.ts`) |
-| `supabase/migrations/` | SQL schema (RLS-first; idempotent) |
-| `supabase/functions/` | Edge Functions (`run-tool`, `nova-chat`, `complete-onboarding`, …) |
-| `workers/` | Cloudflare Workers (`nova-contacts-api`, `nova-stripe-api`, …) |
-| `n8n/` | Automation workflow definitions |
-| `GAP_ANALYSIS.md` | CRM-vs-HubSpot + scale roadmap (built vs deferred) |
+| Path                   | What's there                                                                |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `src/routes/`          | Pages (TanStack file-based routing, `app.*` = authenticated app)            |
+| `src/components/`      | UI + app shell (`AppSidebar`, `ViewSwitcher`, dashboard cards)              |
+| `src/lib/`             | Client logic: `queries.ts`, `catalog.ts`, `lead-scoring.ts`, guidance, auth |
+| `src/hooks/`           | React hooks (`use-workspace-mode.ts`)                                       |
+| `supabase/migrations/` | SQL schema (RLS-first; idempotent)                                          |
+| `supabase/functions/`  | Edge Functions (`run-tool`, `nova-chat`, `complete-onboarding`, …)          |
+| `workers/`             | Cloudflare Workers (`nova-contacts-api`, `nova-stripe-api`, …)              |
+| `n8n/`                 | Automation workflow definitions                                             |
+| `GAP_ANALYSIS.md`      | CRM-vs-HubSpot + scale roadmap (built vs deferred)                          |
 
 ## Local development
 
@@ -47,14 +47,14 @@ Minimum to boot the app: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. O
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `bun run dev` | Dev server |
-| `bun run build` | Production build |
-| `bun run tsc --noEmit` | Type-check |
-| `bun run test` | Unit tests (Vitest) |
-| `bun run lint` | ESLint |
-| `bun run format` | Prettier write |
+| Command                | Purpose             |
+| ---------------------- | ------------------- |
+| `bun run dev`          | Dev server          |
+| `bun run build`        | Production build    |
+| `bun run tsc --noEmit` | Type-check          |
+| `bun run test`         | Unit tests (Vitest) |
+| `bun run lint`         | ESLint              |
+| `bun run format`       | Prettier write      |
 
 ## Testing
 

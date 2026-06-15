@@ -140,10 +140,52 @@ operate/scale tools (`kpi-dashboard`, `seo-audit`, `launch-checklist`, `email-se
 
 ---
 
-## Verification (for the two-view change shipped here)
+## E. Shipped in this change set
 
-- `bun run dev`, sign in, use the ViewSwitcher → nav swaps Launchpad↔NOVA, accent changes,
-  choice persists across reload (DB write under `workspaces_update_owner`).
-- On an `operate` workspace, Home shows the seeded baseline mission and each step renders the
-  rich `StepExecutionGuide` (not generic fallback) for `kpi-dashboard` etc.
-- `bun run tsc --noEmit` and `bun run lint` pass (CI gates).
+Built, type-checked, unit-tested, and (for migrations) applied to the live DB and validated
+with the security advisor:
+
+- **Two-view split (Launchpad / NOVA) + NOVA 5th-grade guidance.** [C]
+- **CRM data model** — `companies` table (new) + `contacts` codified into a migration. Note:
+  `contacts` already existed in **production via schema drift** (never in a migration), so a
+  fresh DB lacked it; `supabase/migrations/20260615000001_crm_contacts_companies.sql` now
+  matches the live shape and adds `company_id`, the missing `contact_notes.contact_id` FK, an
+  `updated_at` trigger, and `leads.contact_id` / `leads.company_id` associations. [A1, A2, A3]
+- **Team management** — `list_org_members` SECURITY DEFINER RPC (members can see teammates
+  without loosening `profiles` RLS), `team-invite` edge function (owner/admin-gated, handles
+  existing accounts + new invites), and a **Team** tab in `app.settings.tsx` (invite, change
+  role, remove). [B1]
+- **Tests + docs** — Vitest harness + 26 unit tests, a CI `test` step, and a root README. [B2, B11]
+- **Error tracking** — Sentry scaffold gated behind `VITE_SENTRY_DSN` (`src/lib/observability.ts`)
+  - a root `ErrorBoundary`; no-op without a DSN. [B3]
+- **Lead scoring** — `src/lib/lead-scoring.ts` (pure, tested) + "Recompute scores" in Contacts. [A7]
+- **CSV import/export** for Contacts (papaparse), scoring rows on import. [A10]
+- **Full-text search** — trigger-maintained `tsvector` + GIN indexes + `search_leads` /
+  `search_contacts` RPCs (`20260615000002_crm_search.sql`). [B8]
+- **Distributed rate-limiting seam** — pluggable async backend + KV/Upstash adapter in
+  `supabase/functions/_shared/security.ts` (in-memory default unchanged). [B4, code side]
+
+## F. Deferred — needs external infra/credentials
+
+Not built here because they require accounts, secrets, or infra that can't be provisioned or
+verified from the repo. Each is a clean follow-up:
+
+- **Email 2-way sync / send-from-CRM / open-click tracking** — needs an email provider + OAuth. [A4]
+- **Telephony (calls) and calendar (meetings)** — needs Twilio / Google Calendar credentials. [A5]
+- **Sequences / cadences engine** — needs a scheduler + the email integration above. [A6]
+- **Distributed rate-limit + cache provisioning** — adapter shipped; needs a Cloudflare KV
+  namespace / Upstash instance + wrangler binding, then `setRateLimitBackend(...)` at boot. [B4, B5]
+- **In-app notifications + Supabase Realtime** — table + bell + subscriptions (UI surface). [B6, B7]
+- **Reporting/dashboard builder, custom-fields UI, lists & segmentation** — large UI surfaces. [A8, A9, A11]
+- **Forms / landing pages** — public capture endpoints + builder. [A12]
+- **SSO/MFA, Stripe seat/annual billing, load testing, DR runbook** — auth provider / Stripe
+  config / infra. [B9, B10]
+
+## Verification
+
+- `bun run tsc --noEmit`, `bun run test`, `bun run lint`, `bun run build` — all green (CI gates).
+- Migrations applied to the live project and confirmed: `companies` exists, `contacts.company_id`
+  - `updated_at` trigger present, `contact_notes` FK created, `leads` associations + search
+    vectors in place; security advisor shows no new issues.
+- Manual smoke (post-deploy): ViewSwitcher flips Launchpad↔NOVA and persists; Contacts page
+  loads, CSV import/export + recompute work; Team tab lists members and invites send.

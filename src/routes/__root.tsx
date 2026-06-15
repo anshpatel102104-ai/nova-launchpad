@@ -11,6 +11,7 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { applyStoredPalette } from "@/lib/theme-palette";
 import { Toaster } from "@/components/ui/sonner";
+import { Sentry } from "@/lib/observability";
 import appCss from "../styles.css?url";
 
 const themeBootScript = `(function(){try{var t=localStorage.getItem('nova-theme');var r=document.documentElement;r.classList.remove('light','dark');if(t==='light'){r.classList.add('light');r.style.colorScheme='light';}else{r.style.colorScheme='dark';}}catch(e){}})();`;
@@ -119,10 +120,31 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Outlet />
+          <Sentry.ErrorBoundary fallback={<RootErrorFallback />}>
+            <Outlet />
+          </Sentry.ErrorBoundary>
           <Toaster />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
+  );
+}
+
+function RootErrorFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Something went wrong</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The app hit an unexpected error. Reloading usually fixes it.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Reload
+        </button>
+      </div>
+    </div>
   );
 }
