@@ -13,6 +13,14 @@ create extension if not exists pgcrypto with schema extensions;
 --    referenced in INSERT .. ON CONFLICT, raising 42702 ("integration_key is
 --    ambiguous") on every call. Resolve identifiers to columns, and include
 --    the extensions schema in search_path so pgp_sym_encrypt is visible.
+--
+-- An earlier migration (the squash) created set_user_integration() RETURNS void.
+-- This redefinition changes the return type to TABLE(...), which CREATE OR
+-- REPLACE cannot do (42P13 "cannot change return type") on a clean replay, so we
+-- drop the old signature first. No-op on the live DB, which already has this
+-- migration applied (db push never re-runs it).
+DROP FUNCTION IF EXISTS public.set_user_integration(uuid, text, text, text);
+
 CREATE OR REPLACE FUNCTION public.set_user_integration(_user_id uuid, _integration_key text, _value text, _encryption_key text)
  RETURNS TABLE(integration_key text, status text, value_last4 text, is_connected boolean)
  LANGUAGE plpgsql
@@ -55,3 +63,8 @@ BEGIN
     (_value IS NOT NULL AND _value <> '');
 END;
 $function$;
+
+-- Dropping the function above also drops its grants, so restore them (matches
+-- the squash's lockdown: not callable by anon/public).
+REVOKE EXECUTE ON FUNCTION public.set_user_integration(uuid, text, text, text) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.set_user_integration(uuid, text, text, text) TO authenticated, service_role;
