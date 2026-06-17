@@ -470,12 +470,24 @@ Verified: `tsc --noEmit` clean · `vitest` 37/37 pass · `eslint` 0 errors
       Added an always-on "Next Move" column to the pipeline **table view** (after
       Stage), reusing `nextBestActionForLead({ stage, created_at })`; urgency dot +
       label, reason on hover. Kanban-card variant still open if wanted.
-- [ ] **Persist + act on the next move.** Optional `next_action`/`next_action_due`
-      so "Act now first" can be a saved smart list, and the "Do this next" card
-      can carry a one-click action (e.g. mark contacted → bumps recency).
-      **← resume here**
+- [x] **Act on the next move.** _(done 2026-06-17)_ One-click **"I reached out
+      today"** on the Contacts "Do this next" card stamps `last_contacted_at`
+      (nudges new→contacted, clears any follow-up) so the recommendation advances
+      live. No schema needed for this part — writes existing columns.
+- [x] **Persist a follow-up date.** _(done 2026-06-17)_ Deliberately did **not**
+      store the derived `next_action` (it would go stale — it's computed live).
+      Instead added a **non-derived** `contacts.next_action_due` (a date the
+      founder sets): migration `20260617000001_contacts_next_action_due.sql`
+      (additive + idempotent, partial index, row-level RLS unchanged), a
+      "Follow up by" date control on the card, an overdue/scheduled indicator in
+      the table, and **overdue follow-ups now float to the top of "Act now
+      first"**. NOTE: migration is committed but applies on deploy (merge→main);
+      not applied to live DB from here. Frontend is null-safe pre-migration
+      (`select *` + optional field), so no runtime break before it lands.
 - [ ] In-app notifications center (GAP B6) — table + bell + unread badge; producers
-      wired into key flows. Highest retention-loop leverage among remaining gaps.
+      wired into key flows. `next_action_due` is a natural producer (due → notify).
+      Highest retention-loop leverage among remaining gaps. **← resume here**
 - [ ] Saved smart lists / segmentation (GAP A9) — pure-UI, no infra.
+- [ ] Kanban-card "Next Move" variant in `app.nova.crm.tsx` (table view done).
 
 See `GAP_ANALYSIS.md` §A7/§E for CRM context. Branch: `claude/magical-brown-neukw0`.

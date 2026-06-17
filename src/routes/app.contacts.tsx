@@ -57,7 +57,15 @@ interface Contact {
   lead_score: number | null;
   tags: string[] | null;
   last_contacted_at: string | null;
+  next_action_due: string | null;
   created_at: string;
+}
+
+// True when a follow-up date is set and has reached/passed now.
+function isOverdue(due: string | null | undefined, now: Date = new Date()): boolean {
+  if (!due) return false;
+  const t = new Date(due).getTime();
+  return !Number.isNaN(t) && t <= now.getTime();
 }
 
 interface ContactNote {
@@ -248,12 +256,15 @@ function ContactsPage() {
       );
     }
     // "Act now first" overrides column sort: most urgent next move on top,
-    // ties broken by lead score so the hottest reachable lead wins.
+    // ties broken by lead score so the hottest reachable lead wins. A follow-up
+    // the founder explicitly scheduled and that is now overdue beats everything.
     if (actNowFirst) {
       const now = new Date();
+      const rank = (c: Contact) =>
+        isOverdue(c.next_action_due, now) ? -1 : urgencyRank(nextBestAction(c, now).urgency);
       arr = [...arr].sort((a, b) => {
-        const ra = urgencyRank(nextBestAction(a, now).urgency);
-        const rb = urgencyRank(nextBestAction(b, now).urgency);
+        const ra = rank(a);
+        const rb = rank(b);
         if (ra !== rb) return ra - rb;
         return (b.lead_score ?? 0) - (a.lead_score ?? 0);
       });
@@ -305,9 +316,21 @@ function ContactsPage() {
   const logTouchMutation = useMutation({
     mutationFn: async (id: string) => {
       const c = allContacts.find((x) => x.id === id);
-      const patch: Record<string, unknown> = { last_contacted_at: new Date().toISOString() };
+      // Logging a touch clears any scheduled follow-up — it's been handled.
+      const patch: Record<string, unknown> = {
+        last_contacted_at: new Date().toISOString(),
+        next_action_due: null,
+      };
       if (c?.status === "new") patch.status = "contacted";
       await db.from("contacts").update(patch).eq("id", id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contacts", user?.id] }),
+  });
+
+  // Set or clear a user-chosen follow-up date (pass null to clear).
+  const setFollowUpMutation = useMutation({
+    mutationFn: async ({ id, due }: { id: string; due: string | null }) => {
+      await db.from("contacts").update({ next_action_due: due }).eq("id", id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["contacts", user?.id] }),
   });
@@ -959,6 +982,22 @@ function ContactsPage() {
                               {na.label}
                             </span>
                           </div>
+                          {contact.next_action_due && (
+                            <div
+                              className="text-[10.5px] mt-0.5 font-medium"
+                              style={{
+                                color: isOverdue(contact.next_action_due)
+                                  ? "var(--destructive)"
+                                  : "var(--muted-foreground)",
+                              }}
+                            >
+                              {isOverdue(contact.next_action_due)
+                                ? "Follow-up overdue"
+                                : "Follow-up "}
+                              {!isOverdue(contact.next_action_due) &&
+                                new Date(contact.next_action_due).toLocaleDateString()}
+                            </div>
+                          )}
                         </td>
 
                         {/* Tags chips */}
@@ -1090,10 +1129,15 @@ function ContactsPage() {
                 ? {
                     ...c,
                     last_contacted_at: new Date().toISOString(),
+                    next_action_due: null,
                     status: c.status === "new" ? "contacted" : c.status,
                   }
                 : c,
             );
+          }}
+          onSetFollowUp={(id, due) => {
+            setFollowUpMutation.mutate({ id, due });
+            setDetailContact((c) => (c ? { ...c, next_action_due: due } : c));
           }}
           onDelete={(id) => deleteMutation.mutate(id)}
         />
@@ -1144,6 +1188,7 @@ function AddContactModal({
         lead_score: form.lead_score ? parseInt(form.lead_score) : null,
         tags: null,
         last_contacted_at: null,
+        next_action_due: null,
       });
       onSaved();
     } catch (err) {
@@ -1293,6 +1338,7 @@ function ContactDetail({
   onClose,
   onStatusChange,
   onLogTouch,
+  onSetFollowUp,
   onDelete,
 }: {
   contact: Contact;
@@ -1300,6 +1346,7 @@ function ContactDetail({
   onClose: () => void;
   onStatusChange: (id: string, status: ContactStatus) => void;
   onLogTouch: (id: string) => void;
+  onSetFollowUp: (id: string, due: string | null) => void;
   onDelete: (id: string) => void;
 }) {
   const qc = useQueryClient();
@@ -1490,6 +1537,53 @@ function ContactDetail({
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />I reached out today
                   </button>
+                )}
+                {na.urgency !== "none" && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <label
+                      className="text-[11px] font-medium"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      Follow up by
+                    </label>
+                    <input
+                      type="date"
+                      value={contact.next_action_due ? contact.next_action_due.slice(0, 10) : ""}
+                      onChange={(e) =>
+                        onSetFollowUp(
+                          contact.id,
+                          e.target.value ? new Date(e.target.value).toISOString() : null,
+                        )
+                      }
+                      className="rounded-lg px-2 py-1 text-[12px] outline-none"
+                      style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        color: "var(--foreground)",
+                      }}
+                    />
+                    {contact.next_action_due && (
+                      <>
+                        <span
+                          className="text-[11px] font-semibold"
+                          style={{
+                            color: isOverdue(contact.next_action_due)
+                              ? "var(--destructive)"
+                              : "var(--muted-foreground)",
+                          }}
+                        >
+                          {isOverdue(contact.next_action_due) ? "Overdue" : "Scheduled"}
+                        </span>
+                        <button
+                          onClick={() => onSetFollowUp(contact.id, null)}
+                          className="text-[11px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          Clear
+                        </button>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
 
