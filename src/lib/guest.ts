@@ -11,6 +11,15 @@ export const GUEST_USER = {
 
 export const GUEST_ORG_ID = "guest-org";
 
+// The single account that sees the fully-populated front-end demo (no backend).
+// When this email signs in, the client-side demo layer is switched on for them
+// (and only them); every other account is unaffected.
+export const DEMO_ACCOUNT_EMAIL = "ansh.patel102104@gmail.com";
+
+export function isDemoEmail(email: string | null | undefined): boolean {
+  return !!email && email.toLowerCase() === DEMO_ACCOUNT_EMAIL;
+}
+
 const STORAGE_KEY = "nova-guest-mode";
 
 type GuestState = {

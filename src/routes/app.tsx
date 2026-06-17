@@ -7,7 +7,7 @@ import { IntelligenceRail } from "@/components/app/IntelligenceRail";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { NovaBar } from "@/components/nova/NovaBar";
 import { supabase } from "@/integrations/supabase/client";
-import { guestStore } from "@/lib/guest";
+import { guestStore, isDemoEmail } from "@/lib/guest";
 import { saveLastAppPath } from "@/lib/session-restore";
 import { workspaceStatusQuery, currentMissionQuery } from "@/lib/queries";
 import type { QueryClient } from "@tanstack/react-query";
@@ -22,6 +22,13 @@ export const Route = createFileRoute("/app")({
     } = await supabase.auth.getSession();
     if (!session) {
       throw redirect({ to: "/auth/sign-in", search: { redirect: location.href } as never });
+    }
+
+    // Demo account: switch on the populated client-side demo and skip the
+    // onboarding gate, deterministically (don't depend on AuthProvider timing).
+    if (isDemoEmail(session.user.email)) {
+      guestStore.enable();
+      return;
     }
 
     // Warm the Home-critical queries while the route renders — not awaited,
