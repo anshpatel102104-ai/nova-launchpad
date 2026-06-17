@@ -58,6 +58,7 @@ import { leadsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { blockIfGuest } from "@/lib/guest";
+import { nextBestActionForLead, type ActionUrgency } from "@/lib/next-best-action";
 import { Switch } from "@/components/ui/switch";
 import {
   BarChart,
@@ -75,6 +76,15 @@ export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
 /* ── Types ─────────────────────────────────────────────────────── */
 const STAGES = ["New", "Contacted", "Qualified", "Proposal", "Won", "Lost"] as const;
 type Stage = (typeof STAGES)[number];
+
+// Urgency (shared next-move vocabulary) → chip color + short label for this CRM.
+const URGENCY_UI: Record<ActionUrgency, { color: string; label: string }> = {
+  now: { color: "var(--destructive)", label: "Do now" },
+  soon: { color: "var(--warning)", label: "Soon" },
+  later: { color: "var(--muted-foreground)", label: "Later" },
+  won: { color: "var(--success)", label: "Won" },
+  none: { color: "var(--text-faint)", label: "Done" },
+};
 type Priority = "low" | "medium" | "high";
 type CRMView = "kanban" | "table" | "list" | "forecast";
 type ActivityType = "note" | "stage_change" | "email" | "call" | "task" | "meeting";
@@ -1646,6 +1656,12 @@ function DealsTable({
             >
               Stage
             </th>
+            <th
+              className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              Next Move
+            </th>
             {settings.colValue && <SortTh label="Value" k="value" />}
             {settings.colProbability && <SortTh label="Prob %" k="probability" />}
             {settings.colScore && <SortTh label="Score" k="score" />}
@@ -1682,6 +1698,8 @@ function DealsTable({
             const cfg = STAGE_CONFIG[d.stage];
             const isSelected = selectedId === d.id;
             const isChecked = selectedIds.has(d.id);
+            const na = nextBestActionForLead({ stage: d.stage, created_at: d.created_at });
+            const nu = URGENCY_UI[na.urgency];
             return (
               <tr
                 key={d.id}
@@ -1742,6 +1760,20 @@ function DealsTable({
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2" title={na.reason}>
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ background: nu.color }}
+                    />
+                    <span
+                      className="text-[12.5px] font-medium whitespace-nowrap"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {na.label}
+                    </span>
+                  </div>
                 </td>
                 {settings.colValue && (
                   <td

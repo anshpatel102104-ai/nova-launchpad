@@ -466,11 +466,14 @@ Verified: `tsc --noEmit` clean · `vitest` 37/37 pass · `eslint` 0 errors
       Deciding / Waiting N days`) for cross-surface consistency — revert the
       `URGENCY_LABEL` map in `app.mission-control.tsx` if the old wording is
       preferred. 6 new tests (43 total).
-- [ ] Surface the same "Next Move" + score reasons in `app.nova.crm.tsx`
-      (Kanban/table). Now trivial — reuse `nextBestActionForLead`. **← resume here**
+- [x] Surface the same "Next Move" on `app.nova.crm.tsx`. _(done 2026-06-17)_
+      Added an always-on "Next Move" column to the pipeline **table view** (after
+      Stage), reusing `nextBestActionForLead({ stage, created_at })`; urgency dot +
+      label, reason on hover. Kanban-card variant still open if wanted.
 - [ ] **Persist + act on the next move.** Optional `next_action`/`next_action_due`
       so "Act now first" can be a saved smart list, and the "Do this next" card
       can carry a one-click action (e.g. mark contacted → bumps recency).
+      **← resume here**
 - [ ] In-app notifications center (GAP B6) — table + bell + unread badge; producers
       wired into key flows. Highest retention-loop leverage among remaining gaps.
 - [ ] Saved smart lists / segmentation (GAP A9) — pure-UI, no infra.
