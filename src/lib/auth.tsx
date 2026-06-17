@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useGuest, guestStore, GUEST_USER, GUEST_ORG_ID, GUEST_ORG } from "@/lib/guest";
-
-// Single account that sees the fully-populated front-end demo (no backend).
-// When this user logs in we flip on the client-side demo layer so they — and
-// only they — get the showcase data; every other account is unaffected.
-const DEMO_ACCOUNT_EMAIL = "ansh.patel102104@gmail.com";
+import {
+  useGuest,
+  guestStore,
+  isDemoEmail,
+  GUEST_USER,
+  GUEST_ORG_ID,
+  GUEST_ORG,
+} from "@/lib/guest";
 
 function syncDemoMode(email: string | null | undefined) {
-  if (email && email.toLowerCase() === DEMO_ACCOUNT_EMAIL) guestStore.enable();
+  if (isDemoEmail(email)) guestStore.enable();
   else guestStore.disable();
 }
 
