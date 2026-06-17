@@ -5,6 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { guestStore, GUEST_CONTACTS } from "@/lib/guest";
 import { computeLeadScore } from "@/lib/lead-scoring";
 import { toast } from "sonner";
 import {
@@ -142,6 +143,7 @@ function scoreColor(score: number) {
 
 /* ─── Supabase helpers ─── */
 async function fetchContacts(userId: string): Promise<Contact[]> {
+  if (guestStore.get().isGuest) return GUEST_CONTACTS as unknown as Contact[];
   const { data } = await db
     .from("contacts")
     .select("*")
