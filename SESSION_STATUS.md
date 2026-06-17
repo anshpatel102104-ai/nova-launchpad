@@ -424,3 +424,48 @@ Shipped:
 - Nav renamed to "Home" (sidebar, mobile tab, topbar title)
 
 Verified: tsc clean · eslint clean on changed files · vite build passes.
+
+---
+
+## ✅ CONTINUATION UPDATE — Next-Best-Action engine for the CRM (2026-06-17)
+
+**Why:** a lead score tells a founder _who_ is hot; it never told them _what to
+do_. The platform's stated design law is "every row shows the next move," but the
+Contacts CRM only showed a number. This closes that gap — turning the score into
+action — which is the #1 founder CRM job: "who do I act on next, and how?"
+
+**Shipped (pure-logic + UI, no external infra, additive, low-risk):**
+
+- `src/lib/next-best-action.ts` — canonical, deterministic engine. Maps a
+  contact's signals (status, contactability, recency, intent tags) → one
+  plain-language move + urgency (`now`/`soon`/`later`/`won`/`none`). `now` is
+  injectable for tests. Exports `nextBestAction`, `compareByNextAction`,
+  `urgencyRank`. Mirrors the signal model of `lead-scoring.ts`.
+- `src/lib/__tests__/next-best-action.test.ts` — 11 unit tests (37 total in repo).
+- `src/routes/app.contacts.tsx` — wired in:
+  - **"Next Move" table column** (urgency dot + action, `md`+; reason on hover).
+  - **"Act now first"** toggle — sorts list by urgency, ties broken by score.
+  - Detail slide-over: **"Do this next"** card (action + urgency chip + reason) and
+    a **"Why this score"** breakdown surfacing the existing `scoreLeadDetailed`
+    reasons (previously computed but thrown away by the UI).
+
+Verified: `tsc --noEmit` clean · `vitest` 37/37 pass · `eslint` 0 errors
+(pre-existing hex-token warnings only) · `vite build` passes.
+
+**Next up (clean, ordered follow-ups — resume here):**
+
+- [ ] **Unify next-move logic.** `app.mission-control.tsx` has its own
+      stage-based `nextMove()` for the home leads pipeline. Extend the shared
+      engine to accept a `stage` (pipeline) as well as `status` (contacts), then
+      have the home `LeadsTable` delegate to it. Removes duplication, makes
+      guidance consistent across surfaces. (Left untouched this pass to avoid
+      changing a prominent surface without review.)
+- [ ] **Persist + act on the next move.** Optional `next_action`/`next_action_due`
+      so "Act now first" can be a saved smart list, and the "Do this next" card
+      can carry a one-click action (e.g. mark contacted → bumps recency).
+- [ ] Surface the same "Next Move" + score reasons in `app.nova.crm.tsx` (Kanban/table).
+- [ ] In-app notifications center (GAP B6) — table + bell + unread badge; producers
+      wired into key flows. Highest retention-loop leverage among remaining gaps.
+- [ ] Saved smart lists / segmentation (GAP A9) — pure-UI, no infra.
+
+See `GAP_ANALYSIS.md` §A7/§E for CRM context. Branch: `claude/magical-brown-neukw0`.

@@ -159,6 +159,11 @@ with the security advisor:
 - **Error tracking** — Sentry scaffold gated behind `VITE_SENTRY_DSN` (`src/lib/observability.ts`)
   - a root `ErrorBoundary`; no-op without a DSN. [B3]
 - **Lead scoring** — `src/lib/lead-scoring.ts` (pure, tested) + "Recompute scores" in Contacts. [A7]
+- **Next-best-action** — `src/lib/next-best-action.ts` (pure, 11 tests) turns the score into
+  _one move_ (status/contactability/recency/intent → action + urgency). Surfaced in
+  `app.contacts.tsx` as a "Next Move" column, an "Act now first" sort, and a "Do this next"
+  card + "Why this score" breakdown in the detail panel. Operationalises A7 ("who do I act on
+  next, and how?"). _Added 2026-06-17._
 - **CSV import/export** for Contacts (papaparse), scoring rows on import. [A10]
 - **Full-text search** — trigger-maintained `tsvector` + GIN indexes + `search_leads` /
   `search_contacts` RPCs (`20260615000002_crm_search.sql`). [B8]

@@ -5,7 +5,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { computeLeadScore } from "@/lib/lead-scoring";
+import { computeLeadScore, scoreLeadDetailed } from "@/lib/lead-scoring";
+import { nextBestAction, urgencyRank, type ActionUrgency } from "@/lib/next-best-action";
 import { toast } from "sonner";
 import {
   Users,
@@ -31,6 +32,8 @@ import {
   Download,
   Upload,
   RefreshCw,
+  Target,
+  Flame,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
@@ -140,6 +143,15 @@ function scoreColor(score: number) {
   return "#6B7280";
 }
 
+// Urgency → design-token color + soft background, plus a short chip label.
+const URGENCY_STYLE: Record<ActionUrgency, { color: string; label: string }> = {
+  now: { color: "var(--destructive)", label: "Now" },
+  soon: { color: "var(--warning)", label: "Soon" },
+  later: { color: "var(--muted-foreground)", label: "Later" },
+  won: { color: "var(--success)", label: "Won" },
+  none: { color: "var(--text-faint)", label: "—" },
+};
+
 /* ─── Supabase helpers ─── */
 async function fetchContacts(userId: string): Promise<Contact[]> {
   const { data } = await db
@@ -204,6 +216,7 @@ function ContactsPage() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [statusFilter, setStatusFilter] = useState<ContactStatus | "all">("all");
   const [minScore, setMinScore] = useState(0);
+  const [actNowFirst, setActNowFirst] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -233,6 +246,18 @@ function ContactsPage() {
           (c.company ?? "").toLowerCase().includes(s),
       );
     }
+    // "Act now first" overrides column sort: most urgent next move on top,
+    // ties broken by lead score so the hottest reachable lead wins.
+    if (actNowFirst) {
+      const now = new Date();
+      arr = [...arr].sort((a, b) => {
+        const ra = urgencyRank(nextBestAction(a, now).urgency);
+        const rb = urgencyRank(nextBestAction(b, now).urgency);
+        if (ra !== rb) return ra - rb;
+        return (b.lead_score ?? 0) - (a.lead_score ?? 0);
+      });
+      return arr;
+    }
     arr = [...arr].sort((a, b) => {
       let av: string | number = 0;
       let bv: string | number = 0;
@@ -254,7 +279,7 @@ function ContactsPage() {
       return 0;
     });
     return arr;
-  }, [allContacts, statusFilter, minScore, search, sortField, sortDir]);
+  }, [allContacts, statusFilter, minScore, search, sortField, sortDir, actNowFirst]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -561,6 +586,31 @@ function ContactsPage() {
             );
           })}
         </div>
+        {/* Act now first — sort by what to do next, most urgent on top */}
+        <div
+          className="flex items-center justify-between gap-3 pt-1"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+            Not sure who to work first? Let Nova order your list by what to do next.
+          </span>
+          <button
+            onClick={() => setActNowFirst((v) => !v)}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all shrink-0"
+            style={
+              actNowFirst
+                ? { background: "var(--destructive)", color: "#fff" }
+                : {
+                    background: "var(--surface-2)",
+                    color: "var(--foreground)",
+                    border: "1px solid var(--border)",
+                  }
+            }
+          >
+            <Flame className="h-3.5 w-3.5" />
+            Act now first
+          </button>
+        </div>
       </div>
 
       {/* Bulk actions */}
@@ -706,6 +756,12 @@ function ContactsPage() {
                     </span>
                   </th>
                   <th
+                    className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden md:table-cell"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Next Move
+                  </th>
+                  <th
                     className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden lg:table-cell"
                     style={{ color: "var(--muted-foreground)" }}
                   >
@@ -726,7 +782,7 @@ function ContactsPage() {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-16 text-center">
+                    <td colSpan={9} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Users
                           className="h-7 w-7"
@@ -762,6 +818,8 @@ function ContactsPage() {
                     const av = avatarColor(fullName);
                     const sc = STATUS_CONFIG[contact.status];
                     const tags = contact.tags ?? [];
+                    const na = nextBestAction(contact);
+                    const us = URGENCY_STYLE[na.urgency];
 
                     return (
                       <tr
@@ -871,6 +929,22 @@ function ContactsPage() {
                             />
                             {sc.label}
                           </span>
+                        </td>
+
+                        {/* Next move — what to do, and how urgent */}
+                        <td className="px-4 py-3 hidden md:table-cell">
+                          <div className="flex items-center gap-2" title={na.reason}>
+                            <span
+                              className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ background: us.color }}
+                            />
+                            <span
+                              className="text-[12.5px] font-medium"
+                              style={{ color: "var(--foreground)" }}
+                            >
+                              {na.label}
+                            </span>
+                          </div>
                         </td>
 
                         {/* Tags chips */}
@@ -1218,6 +1292,9 @@ function ContactDetail({
   const sc = STATUS_CONFIG[contact.status];
   const score = contact.lead_score;
   const tags = contact.tags ?? [];
+  const na = nextBestAction(contact);
+  const us = URGENCY_STYLE[na.urgency];
+  const breakdown = scoreLeadDetailed(contact);
 
   const addNote = async () => {
     if (!newNote.trim()) return;
@@ -1338,6 +1415,47 @@ function ContactDetail({
           {/* ── Overview Tab ── */}
           {activeTab === "overview" && (
             <div className="px-5 py-5 space-y-5">
+              {/* Do this next — the single most important move for this contact */}
+              <div
+                className="rounded-xl p-4"
+                style={{
+                  background: "var(--primary-soft)",
+                  border: "1px solid var(--primary-border)",
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Target className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Do this next
+                  </span>
+                  <span
+                    className="ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                    style={{
+                      background: `color-mix(in oklab, ${us.color} 14%, transparent)`,
+                      color: us.color,
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ background: us.color }}
+                    />
+                    {us.label}
+                  </span>
+                </div>
+                <div className="text-[14px] font-semibold" style={{ color: "var(--foreground)" }}>
+                  {na.label}
+                </div>
+                <p
+                  className="text-[12.5px] mt-1 leading-relaxed"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {na.reason}
+                </p>
+              </div>
+
               {/* Score bar */}
               {score != null && (
                 <div>
@@ -1364,6 +1482,23 @@ function ContactDetail({
                       {score}
                     </span>
                   </div>
+                  {breakdown.reasons.length > 0 && (
+                    <ul className="mt-2.5 space-y-1">
+                      {breakdown.reasons.map((r, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center gap-1.5 text-[12px]"
+                          style={{ color: "var(--muted-foreground)" }}
+                        >
+                          <span
+                            className="w-1 h-1 rounded-full shrink-0"
+                            style={{ background: "var(--success)" }}
+                          />
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 
