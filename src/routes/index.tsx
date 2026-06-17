@@ -1,12 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { guestStore } from "@/lib/guest";
 
 export const Route = createFileRoute("/")({ component: LandingPage });
+
+/** Enable the no-backend demo and drop into the populated app. */
+function enterDemo() {
+  guestStore.enable();
+  window.location.href = "/app/mission-control";
+}
 
 function LandingPage() {
   const navigate = useNavigate();
   useEffect(() => {
+    // Shareable demo link: visiting "/?demo=1" jumps straight into demo mode.
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo")) {
+      enterDemo();
+      return;
+    }
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!cancelled && session) navigate({ to: "/app/dashboard" });
@@ -934,6 +946,37 @@ function CinematicLanding() {
           <div style={{ marginTop: 24, fontSize: 13, color: "rgba(255,255,255,0.2)" }}>
             No credit card required · Free to start
           </div>
+
+          {/* Secondary CTA — instant, no-signup demo with fully populated data */}
+          <button
+            onClick={enterDemo}
+            style={{
+              marginTop: 22,
+              padding: "13px 30px",
+              fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              borderRadius: 12,
+              color: "#fff",
+              cursor: "pointer",
+              position: "relative",
+              zIndex: 20,
+              fontFamily: "inherit",
+              transition: "transform 0.2s ease, background 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.03)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.09)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+            }}
+          >
+            Watch the live demo — no signup →
+          </button>
         </div>
       </section>
     </div>

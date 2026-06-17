@@ -10,6 +10,8 @@ import {
   GUEST_TOOL_RUNS,
   GUEST_USAGE,
   GUEST_INTEGRATIONS,
+  GUEST_INSIGHTS,
+  GUEST_KPIS,
 } from "@/lib/guest";
 
 const isGuest = () => guestStore.get().isGuest;
@@ -630,7 +632,7 @@ export const mentorInsightsQuery = (orgId: string) =>
   queryOptions({
     queryKey: ["mentor_insights", orgId],
     queryFn: async (): Promise<MentorInsight[]> => {
-      if (isGuest()) return [];
+      if (isGuest()) return GUEST_INSIGHTS as unknown as MentorInsight[];
       const { data, error } = await db
         .from("mentor_insights")
         .select("*")
@@ -757,18 +759,7 @@ export const mentorKPIsQuery = (orgId: string) =>
   queryOptions({
     queryKey: ["mentor_kpis", orgId],
     queryFn: async () => {
-      if (isGuest()) {
-        return {
-          mrr: 0,
-          pipelineValue: 0,
-          execIndex: 0,
-          cacRatio: 0,
-          wonLeads: 0,
-          totalLeads: 0,
-          completedRuns: 0,
-          activeAutomations: 0,
-        };
-      }
+      if (isGuest()) return GUEST_KPIS;
 
       // Parallel fetch from existing tables
       const [leadsRes, runsRes, autoRes] = await Promise.all([
@@ -1355,7 +1346,17 @@ export const roiAnalyticsQuery = (orgId: string) =>
   queryOptions({
     queryKey: ["roi_analytics", orgId],
     queryFn: async (): Promise<RoiAnalytics> => {
-      if (!orgId || isGuest()) {
+      if (isGuest()) {
+        return {
+          totalTimeSavedHrs: 47,
+          totalToolRuns: GUEST_TOOL_RUNS.length,
+          activeAutomations: 5,
+          wonLeadsValue: GUEST_LEADS.filter((l) => l.stage === "Won").reduce((s, l) => s + l.value, 0),
+          estimatedPipelineValue: GUEST_LEADS.filter((l) => l.stage !== "Won" && l.stage !== "Lost").reduce((s, l) => s + l.value, 0),
+          runsByCategory: { validate: 3, plan: 6, customers: 2, launch: 4, funding: 1 },
+        };
+      }
+      if (!orgId) {
         return {
           totalTimeSavedHrs: 0,
           totalToolRuns: 0,
