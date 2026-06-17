@@ -34,6 +34,7 @@ import {
   RefreshCw,
   Target,
   Flame,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/contacts")({ component: ContactsPage });
@@ -296,6 +297,19 @@ function ContactsPage() {
       qc.invalidateQueries({ queryKey: ["contacts", user?.id] });
       setDetailContact(null);
     },
+  });
+
+  // One-click "I reached out today": stamps last_contacted_at (which drives the
+  // follow-up cadence) and nudges a brand-new lead to "contacted". This closes
+  // the loop — the next-best-action recomputes the moment recency changes.
+  const logTouchMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const c = allContacts.find((x) => x.id === id);
+      const patch: Record<string, unknown> = { last_contacted_at: new Date().toISOString() };
+      if (c?.status === "new") patch.status = "contacted";
+      await db.from("contacts").update(patch).eq("id", id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contacts", user?.id] }),
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1069,6 +1083,18 @@ function ContactsPage() {
             updateMutation.mutate({ id, status });
             setDetailContact((c) => (c ? { ...c, status } : c));
           }}
+          onLogTouch={(id) => {
+            logTouchMutation.mutate(id);
+            setDetailContact((c) =>
+              c
+                ? {
+                    ...c,
+                    last_contacted_at: new Date().toISOString(),
+                    status: c.status === "new" ? "contacted" : c.status,
+                  }
+                : c,
+            );
+          }}
           onDelete={(id) => deleteMutation.mutate(id)}
         />
       )}
@@ -1266,12 +1292,14 @@ function ContactDetail({
   userId,
   onClose,
   onStatusChange,
+  onLogTouch,
   onDelete,
 }: {
   contact: Contact;
   userId: string;
   onClose: () => void;
   onStatusChange: (id: string, status: ContactStatus) => void;
+  onLogTouch: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   const qc = useQueryClient();
@@ -1454,6 +1482,15 @@ function ContactDetail({
                 >
                   {na.reason}
                 </p>
+                {(contact.email || contact.phone) && na.urgency !== "none" && (
+                  <button
+                    onClick={() => onLogTouch(contact.id)}
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-opacity hover:opacity-80"
+                    style={{ background: "var(--primary)", color: "#fff" }}
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />I reached out today
+                  </button>
+                )}
               </div>
 
               {/* Score bar */}
