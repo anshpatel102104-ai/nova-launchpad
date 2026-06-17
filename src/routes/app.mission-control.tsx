@@ -13,6 +13,7 @@ import { SectionTabs } from "@/components/app/SectionTabs";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
+import { nextBestActionForLead, type ActionUrgency } from "@/lib/next-best-action";
 import { ArrowRight, AlertTriangle, Clock, GripVertical, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
@@ -555,6 +556,7 @@ function LeadsTable({ leads }: { leads: LeadRow[] }) {
                   <td className="px-4 py-2.5">
                     <Link
                       to="/app/contacts"
+                      title={next.reason}
                       className="inline-flex items-center gap-1.5 rounded-[4px] border px-2.5 py-1 text-[12px] font-bold"
                       style={{
                         color: "var(--primary)",
@@ -589,26 +591,35 @@ function statusStyle(tone: Tone): React.CSSProperties {
   return { color, background, borderColor: `color-mix(in oklab, ${color} 30%, transparent)` };
 }
 
-/** Plain next move for a lead, from its stage and age. */
-function nextMove(l: LeadRow): { status: string; action: string; tone: Tone } {
-  const stage = (l.stage || "new").toLowerCase();
-  const days = l.created_at
-    ? Math.floor((Date.now() - new Date(l.created_at).getTime()) / 86_400_000)
-    : 0;
+// Urgency (shared next-move vocabulary) → this table's chip word + tone.
+const URGENCY_TONE: Record<ActionUrgency, Tone> = {
+  now: "violet",
+  soon: "amber",
+  later: "muted",
+  won: "green",
+  none: "muted",
+};
+const URGENCY_LABEL: Record<ActionUrgency, string> = {
+  now: "Do now",
+  soon: "Soon",
+  later: "Later",
+  won: "Won",
+  none: "Done",
+};
 
-  if (stage.includes("won") || stage.includes("closed"))
-    return { status: "Won", action: "Say thanks + ask for a referral", tone: "green" };
-  if (stage.includes("lost"))
-    return { status: "Lost", action: "Move on — add a new lead", tone: "muted" };
-  if (stage.includes("qualified") || stage.includes("interested"))
-    return { status: "Interested", action: "Book the call", tone: "green" };
-  if (stage.includes("proposal") || stage.includes("negotiat"))
-    return { status: "Deciding", action: "Check in — answer questions", tone: "amber" };
-  if (stage.includes("contact"))
-    return days >= 3
-      ? { status: `Waiting ${days} days`, action: "Send the follow-up", tone: "amber" }
-      : { status: "Contacted", action: "Wait, then follow up", tone: "muted" };
-  return { status: "New", action: "Send the intro email", tone: "violet" };
+/**
+ * Plain next move for a lead. Delegates to the shared next-best-action engine
+ * (`src/lib/next-best-action.ts`) so guidance reads the same here, in the
+ * Contacts CRM, and the NOVA pipeline — then maps urgency to this table's chip.
+ */
+function nextMove(l: LeadRow): { status: string; action: string; reason: string; tone: Tone } {
+  const na = nextBestActionForLead(l);
+  return {
+    status: URGENCY_LABEL[na.urgency],
+    action: na.label,
+    reason: na.reason,
+    tone: URGENCY_TONE[na.urgency],
+  };
 }
 
 /* ─── Helpers ───────────────────────────────────────────────── */

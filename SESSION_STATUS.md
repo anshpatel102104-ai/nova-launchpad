@@ -454,16 +454,23 @@ Verified: `tsc --noEmit` clean · `vitest` 37/37 pass · `eslint` 0 errors
 
 **Next up (clean, ordered follow-ups — resume here):**
 
-- [ ] **Unify next-move logic.** `app.mission-control.tsx` has its own
-      stage-based `nextMove()` for the home leads pipeline. Extend the shared
-      engine to accept a `stage` (pipeline) as well as `status` (contacts), then
-      have the home `LeadsTable` delegate to it. Removes duplication, makes
-      guidance consistent across surfaces. (Left untouched this pass to avoid
-      changing a prominent surface without review.)
+- [x] **Unify next-move logic.** _(done 2026-06-17, 2nd pass)_ Leads are a
+      different model from contacts (`stage` + age, no email/phone/recency), so
+      instead of forcing contact rules onto leads (which would nag "find their
+      email" and lose proposal/negotiation advice) the shared module now also
+      exports `nextBestActionForLead(stage, created_at)` — same urgency
+      vocabulary, stage-appropriate rules. `app.mission-control.tsx`'s inline
+      `nextMove()` now delegates to it (urgency→tone/chip map kept local); the
+      lead's reason shows on hover. **Visible change:** the home leads table chip
+      now reads `Do now / Soon / Later / Won / Done` (was `New / Interested /
+      Deciding / Waiting N days`) for cross-surface consistency — revert the
+      `URGENCY_LABEL` map in `app.mission-control.tsx` if the old wording is
+      preferred. 6 new tests (43 total).
+- [ ] Surface the same "Next Move" + score reasons in `app.nova.crm.tsx`
+      (Kanban/table). Now trivial — reuse `nextBestActionForLead`. **← resume here**
 - [ ] **Persist + act on the next move.** Optional `next_action`/`next_action_due`
       so "Act now first" can be a saved smart list, and the "Do this next" card
       can carry a one-click action (e.g. mark contacted → bumps recency).
-- [ ] Surface the same "Next Move" + score reasons in `app.nova.crm.tsx` (Kanban/table).
 - [ ] In-app notifications center (GAP B6) — table + bell + unread badge; producers
       wired into key flows. Highest retention-loop leverage among remaining gaps.
 - [ ] Saved smart lists / segmentation (GAP A9) — pure-UI, no infra.

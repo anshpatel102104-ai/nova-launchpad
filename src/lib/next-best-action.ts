@@ -184,3 +184,63 @@ export function compareByNextAction(
 ): number {
   return urgencyRank(nextBestAction(a, now).urgency) - urgencyRank(nextBestAction(b, now).urgency);
 }
+
+// ── Pipeline leads ────────────────────────────────────────────────
+// A lead in the deal pipeline is a different shape from a CRM contact: it has a
+// funnel `stage` and an age, but no email/phone/recency signals. It shares the
+// same urgency vocabulary so guidance reads the same on every surface (home
+// leads table, NOVA pipeline), but the rules are stage-appropriate — e.g. a
+// lead at "proposal" needs a check-in, not a cold intro.
+
+export interface LeadActionInput {
+  stage?: string | null;
+  created_at?: string | null;
+}
+
+/** The one move to make next for a pipeline lead, from its stage and age. */
+export function nextBestActionForLead(input: LeadActionInput, now: Date = new Date()): NextAction {
+  const stage = (input.stage ?? "new").toLowerCase();
+  const days = daysSince(input.created_at, now) ?? 0;
+
+  if (stage.includes("won") || stage.includes("closed"))
+    return {
+      label: "Ask for a referral",
+      reason: "You won them. Ask for a referral or testimonial while they're happy.",
+      urgency: "won",
+    };
+  if (stage.includes("lost"))
+    return {
+      label: "Move on",
+      reason: "Marked lost. Add a fresh lead instead of chasing this one.",
+      urgency: "none",
+    };
+  if (stage.includes("qualified") || stage.includes("interested"))
+    return {
+      label: "Book the call",
+      reason: "They're interested. Get a call on the calendar to move it forward.",
+      urgency: "now",
+    };
+  if (stage.includes("proposal") || stage.includes("negotiat"))
+    return {
+      label: "Check in",
+      reason: "They're deciding. Check in and answer any open questions.",
+      urgency: "soon",
+    };
+  if (stage.includes("contact"))
+    return days >= 3
+      ? {
+          label: "Send the follow-up",
+          reason: `It's been ${days} days. Send a short follow-up now.`,
+          urgency: "now",
+        }
+      : {
+          label: "Wait, then follow up",
+          reason: "You reached out recently. Give it a day or two before nudging.",
+          urgency: "later",
+        };
+  return {
+    label: "Send the intro",
+    reason: "New lead — send your first message today.",
+    urgency: "now",
+  };
+}

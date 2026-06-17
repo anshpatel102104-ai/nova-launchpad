@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { nextBestAction, compareByNextAction, urgencyRank } from "@/lib/next-best-action";
+import {
+  nextBestAction,
+  nextBestActionForLead,
+  compareByNextAction,
+  urgencyRank,
+} from "@/lib/next-best-action";
 
 const NOW = new Date("2026-06-15T12:00:00Z");
 const reachable = { email: "a@b.com" };
@@ -90,5 +95,48 @@ describe("nextBestAction", () => {
     expect(urgencyRank("now")).toBeLessThan(urgencyRank("soon"));
     expect(urgencyRank("soon")).toBeLessThan(urgencyRank("later"));
     expect(urgencyRank("later")).toBeLessThan(urgencyRank("none"));
+  });
+});
+
+describe("nextBestActionForLead", () => {
+  it("pushes the intro for a brand-new lead", () => {
+    const a = nextBestActionForLead({ stage: "new" }, NOW);
+    expect(a.label).toMatch(/intro/i);
+    expect(a.urgency).toBe("now");
+  });
+
+  it("books the call for qualified/interested leads", () => {
+    expect(nextBestActionForLead({ stage: "qualified" }, NOW).label).toMatch(/book the call/i);
+    expect(nextBestActionForLead({ stage: "interested" }, NOW).urgency).toBe("now");
+  });
+
+  it("checks in (not a cold intro) at proposal/negotiation", () => {
+    const a = nextBestActionForLead({ stage: "proposal" }, NOW);
+    expect(a.label).toMatch(/check in/i);
+    expect(a.urgency).toBe("soon");
+    expect(nextBestActionForLead({ stage: "negotiating" }, NOW).label).toMatch(/check in/i);
+  });
+
+  it("follows up on contacted leads by age", () => {
+    const stale = nextBestActionForLead(
+      { stage: "contacted", created_at: "2026-06-01T12:00:00Z" },
+      NOW,
+    );
+    expect(stale.label).toMatch(/follow-up/i);
+    expect(stale.urgency).toBe("now");
+
+    const fresh = nextBestActionForLead({ stage: "contacted", created_at: NOW.toISOString() }, NOW);
+    expect(fresh.urgency).toBe("later");
+  });
+
+  it("handles terminal stages", () => {
+    expect(nextBestActionForLead({ stage: "won" }, NOW).urgency).toBe("won");
+    expect(nextBestActionForLead({ stage: "closed won" }, NOW).urgency).toBe("won");
+    expect(nextBestActionForLead({ stage: "lost" }, NOW).urgency).toBe("none");
+  });
+
+  it("defaults unknown stages to first contact", () => {
+    expect(nextBestActionForLead({ stage: "" }, NOW).label).toMatch(/intro/i);
+    expect(nextBestActionForLead({}, NOW).urgency).toBe("now");
   });
 });
