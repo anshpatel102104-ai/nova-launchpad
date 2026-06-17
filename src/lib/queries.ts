@@ -1347,12 +1347,14 @@ export const roiAnalyticsQuery = (orgId: string) =>
     queryKey: ["roi_analytics", orgId],
     queryFn: async (): Promise<RoiAnalytics> => {
       if (isGuest()) {
+        const sumVal = (rows: typeof GUEST_LEADS) => rows.reduce((s, l) => s + l.value, 0);
+        const open = GUEST_LEADS.filter((l) => l.stage !== "Won" && l.stage !== "Lost");
         return {
           totalTimeSavedHrs: 47,
           totalToolRuns: GUEST_TOOL_RUNS.length,
           activeAutomations: 5,
-          wonLeadsValue: GUEST_LEADS.filter((l) => l.stage === "Won").reduce((s, l) => s + l.value, 0),
-          estimatedPipelineValue: GUEST_LEADS.filter((l) => l.stage !== "Won" && l.stage !== "Lost").reduce((s, l) => s + l.value, 0),
+          wonLeadsValue: sumVal(GUEST_LEADS.filter((l) => l.stage === "Won")),
+          estimatedPipelineValue: sumVal(open),
           runsByCategory: { validate: 3, plan: 6, customers: 2, launch: 4, funding: 1 },
         };
       }

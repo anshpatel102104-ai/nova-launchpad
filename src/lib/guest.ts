@@ -149,6 +149,7 @@ const lead = (
   updated_at: new Date(now - Math.max(1, Math.floor(ageDays / 4)) * day).toISOString(),
 });
 
+// prettier-ignore
 export const GUEST_LEADS: GuestLead[] = [
   lead("g-l1", "Northwind Labs — Enterprise rollout", "sarah.chen@northwindlabs.io", "+1 415 555 0114", "Northwind Labs", "Proposal", "LinkedIn", 48000, ["enterprise", "hot"], 88, "high", "Proposal sent; verbal yes pending legal.", 12),
   lead("g-l2", "Vortex Digital — Growth retainer", "marcus.webb@vortexdigital.co", "+44 20 7946 0091", "Vortex Digital", "Qualified", "Referral", 36000, ["referral", "hot"], 81, "high", "Demo done; scoping a 6-month retainer.", 9),
@@ -217,6 +218,7 @@ const contact = (
   created_at: new Date(now - ageDays * day).toISOString(),
 });
 
+// prettier-ignore
 export const GUEST_CONTACTS: GuestContact[] = [
   contact("g-c1", "Sarah", "Chen", "sarah.chen@northwindlabs.io", "+1 415 555 0114", "Northwind Labs", 88, "qualified", "LinkedIn", ["hot", "enterprise", "decision-maker"], "VP Eng. Wants a Q3 rollout. Sent proposal.", 1, 12),
   contact("g-c2", "Marcus", "Webb", "marcus.webb@vortexdigital.co", "+44 20 7946 0091", "Vortex Digital", 81, "engaged", "Referral", ["hot", "referral"], "Referred by OrbitCraft. Demo booked.", 2, 9),
@@ -235,6 +237,7 @@ export const GUEST_CONTACTS: GuestContact[] = [
 ];
 
 // Mentor / intelligence signals (read by mentorInsightsQuery in guest mode).
+// prettier-ignore
 export const GUEST_INSIGHTS = [
   { id: "g-i1", org_id: GUEST_ORG_ID, agent_id: "sales", type: "opportunity" as const, title: "3 deals are stuck in Proposal", detail: "Northwind, Quanta, and BrightPath have been in Proposal 5+ days. A nudge sequence could recover ~$102k.", priority: "high" as const, read: false, n8n_run_id: null, created_at: new Date(now - 6 * 3600 * 1000).toISOString() },
   { id: "g-i2", org_id: GUEST_ORG_ID, agent_id: "growth", type: "signal" as const, title: "Referrals are your best channel", detail: "Referral leads convert 2.4x higher than cold. Ask your 3 happiest clients for intros this week.", priority: "medium" as const, read: false, n8n_run_id: null, created_at: new Date(now - 1 * day).toISOString() },
@@ -389,6 +392,7 @@ export const GUEST_SUBSCRIPTION = {
   updated_at: new Date().toISOString(),
 };
 
+// prettier-ignore
 export const GUEST_USAGE = [
   { id: "gu1", organization_id: GUEST_ORG_ID, tool_key: "generate-followup-sequence", count: 6, period, last_used_at: new Date().toISOString() },
   { id: "gu2", organization_id: GUEST_ORG_ID, tool_key: "client_report", count: 4, period, last_used_at: new Date().toISOString() },

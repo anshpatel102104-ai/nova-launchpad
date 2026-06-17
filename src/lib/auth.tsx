@@ -1,7 +1,17 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useGuest, GUEST_USER, GUEST_ORG_ID } from "@/lib/guest";
+import { useGuest, guestStore, GUEST_USER, GUEST_ORG_ID, GUEST_ORG } from "@/lib/guest";
+
+// Single account that sees the fully-populated front-end demo (no backend).
+// When this user logs in we flip on the client-side demo layer so they — and
+// only they — get the showcase data; every other account is unaffected.
+const DEMO_ACCOUNT_EMAIL = "ansh.patel102104@gmail.com";
+
+function syncDemoMode(email: string | null | undefined) {
+  if (email && email.toLowerCase() === DEMO_ACCOUNT_EMAIL) guestStore.enable();
+  else guestStore.disable();
+}
 
 type Profile = {
   id: string;
@@ -65,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
+      syncDemoMode(sess?.user?.email);
       if (sess?.user) {
         // defer to avoid deadlock
         setTimeout(() => {
@@ -81,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
+      syncDemoMode(sess?.user?.email);
       if (sess?.user) void loadProfile(sess.user.id).finally(() => setLoading(false));
       else setLoading(false);
     });
@@ -123,7 +135,7 @@ export function useAuth() {
         onboarding_complete: true,
       },
       currentOrgId: GUEST_ORG_ID,
-      currentOrg: { id: GUEST_ORG_ID, name: "Demo Operations Co." },
+      currentOrg: { id: GUEST_ORG_ID, name: GUEST_ORG.name },
       loading: false,
     };
   }
