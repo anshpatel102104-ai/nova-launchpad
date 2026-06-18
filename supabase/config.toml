@@ -23,6 +23,9 @@ verify_jwt = true
 [functions.nova-chat]
 verify_jwt = true
 
+[functions.nova-research]
+verify_jwt = true
+
 [functions.manage-subscription]
 verify_jwt = true
 

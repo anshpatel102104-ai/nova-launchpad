@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 import { callPAL, buildUsageRows } from "../_shared/pal/index.ts";
+import { assembleContext } from "../_shared/context.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,6 +116,18 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ── Founder context graph (goals, mission, prior outputs) ─────────────────
+  // The single source of memory for BOTH the main operator and mentor subagents
+  // so neither ever loses sight of the founder's goal and active mission.
+  let founderContext = "";
+  if (orgId) {
+    const assembled = await assembleContext(admin, orgId, { budgetChars: 3000 }).catch(() => ({
+      block: "",
+      used: [] as string[],
+    }));
+    founderContext = assembled.block ?? "";
+  }
+
   // ── Credit guard — check balance from credit_ledger ───────────────────
   const { data: balance } = await admin
     .from("user_credit_balance")
@@ -136,12 +149,15 @@ Deno.serve(async (req) => {
   // ── Mentor agent fast-path ─────────────────────────────────────────────
   if (agent_id) {
     const persona = MENTOR_PERSONAS[agent_id] ?? MENTOR_PERSONAS.growth;
+    const mentorContext =
+      founderContext || (business_context ? `Business context: ${business_context}` : "");
     const mentorSystem = `${persona}
 
-Business context: ${business_context || "Not provided"}
+${mentorContext || "Business context: Not provided"}
 
 IMPORTANT rules:
 - Be concise, specific, and action-oriented
+- Always tie your advice back to the founder's primary goal and active mission above
 - Address the founder by their stage and context
 - When recommending a tool, name it explicitly
 - End every response with one clear, immediate next action
@@ -262,7 +278,8 @@ IMPORTANT rules:
     .filter(Boolean)
     .join("\n");
 
-  const systemPrompt = `${BASE_SYSTEM}\n\n${lanePersona}\n\nContext:\n${contextLines}`;
+  const founderBlock = founderContext ? `\n\n${founderContext}` : "";
+  const systemPrompt = `${BASE_SYSTEM}\n\n${lanePersona}\n\nContext:\n${contextLines}${founderBlock}\n\nAlways anchor your guidance to the founder's primary goal and active mission, and end with the single highest-leverage next action.`;
 
   // Load session transcript for multi-turn context (session_id now a proper column)
   type MsgRole = "user" | "assistant";

@@ -74,6 +74,12 @@ export async function assembleContext(
   const lines: string[] = [];
   const used: string[] = [];
 
+  // The few anchors that must lead every AI context so Nova never loses sight
+  // of where the founder is headed.
+  let primaryGoal = "";
+  let topBottleneck = "";
+  let stageSummary = "";
+
   // ── 1. Business Context Graph (canonical) ─────────────────────────────────
   const { data: ctx } = await supabase
     .from("business_context")
@@ -120,6 +126,7 @@ export async function assembleContext(
     if (stageLine) {
       lines.push(`Where they are: ${stageLine}`);
       used.push(stageLine);
+      stageSummary = stageLine;
     }
     const monetization = str(model, "monetization");
     if (monetization) {
@@ -130,6 +137,7 @@ export async function assembleContext(
     if (goal) {
       lines.push(`Primary goal: ${goal}`);
       used.push(`goal: ${goal}`);
+      primaryGoal = goal;
     }
     const cons = [
       str(constraints, "time"),
@@ -146,6 +154,7 @@ export async function assembleContext(
     if (bottlenecks.length) {
       lines.push(`Stated bottlenecks: ${bottlenecks.join(", ")}`);
       used.push(`bottlenecks: ${bottlenecks.join(", ")}`);
+      topBottleneck = bottlenecks[0];
     }
     const channels = list(motion, "channels");
     if (channels.length) lines.push(`Acquisition channels today: ${channels.join(", ")}`);
@@ -168,13 +177,53 @@ export async function assembleContext(
       if (ob.stage) {
         lines.push(`Stage: ${ob.stage} · revenue ${ob.current_revenue ?? "unknown"}`);
         used.push(`${ob.stage} stage`);
+        stageSummary = `${ob.stage} stage`;
       }
       if (ob.goal) {
         lines.push(`Primary goal: ${ob.goal}`);
         used.push(`goal: ${ob.goal}`);
+        primaryGoal = String(ob.goal);
       }
-      if (ob.biggest_blocker) lines.push(`Biggest blocker: ${ob.biggest_blocker}`);
+      if (ob.biggest_blocker) {
+        lines.push(`Biggest blocker: ${ob.biggest_blocker}`);
+        topBottleneck = String(ob.biggest_blocker);
+      }
     }
+  }
+
+  // ── Active mission + current step — the thing Nova is helping with NOW ─────
+  let missionLine = "";
+  try {
+    const { data: wsRow } = await supabase
+      .from("workspaces")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .maybeSingle();
+    if (wsRow?.id) {
+      const { data: mission } = await supabase
+        .from("missions")
+        .select("id, title")
+        .eq("workspace_id", wsRow.id)
+        .eq("status", "active")
+        .order("sort_order")
+        .limit(1)
+        .maybeSingle();
+      if (mission?.title) {
+        const { data: steps } = await supabase
+          .from("mission_steps")
+          .select("title, status, sort_order")
+          .eq("mission_id", mission.id)
+          .order("sort_order");
+        const current = (steps ?? []).find(
+          (s: { status?: string }) => s.status !== "completed" && s.status !== "skipped",
+        );
+        missionLine = current?.title
+          ? `"${mission.title}" — current step: ${current.title}`
+          : `"${mission.title}"`;
+      }
+    }
+  } catch {
+    /* mission context is best-effort */
   }
 
   // ── 2. The specific run being continued (chaining) ────────────────────────
@@ -234,10 +283,25 @@ export async function assembleContext(
     }
   }
 
-  if (lines.length === 0) return { block: "", used: [] };
+  // ── North Star — pinned to the very top so every answer stays anchored ────
+  const northStar: string[] = [];
+  if (primaryGoal) northStar.push(`Primary goal: ${primaryGoal}`);
+  if (missionLine) northStar.push(`Active mission: ${missionLine}`);
+  if (stageSummary) northStar.push(`Where they are: ${stageSummary}`);
+  if (topBottleneck) northStar.push(`Biggest thing to fix: ${topBottleneck}`);
 
-  const blockText =
-    `## FOUNDER CONTEXT (verified facts about THIS business — ground every claim in these)\n` +
-    lines.join("\n");
+  if (lines.length === 0 && northStar.length === 0) return { block: "", used: [] };
+
+  const northStarBlock =
+    northStar.length > 0
+      ? `## NORTH STAR (anchor every answer to this; tie advice back to the goal and active mission, and end with the single highest-leverage next action)\n${northStar.join("\n")}\n\n`
+      : "";
+
+  const factsBlock =
+    lines.length > 0
+      ? `## FOUNDER CONTEXT (verified facts about THIS business — ground every claim in these)\n${lines.join("\n")}`
+      : "";
+
+  const blockText = `${northStarBlock}${factsBlock}`.trim();
   return { block: blockText.slice(0, budget), used };
 }

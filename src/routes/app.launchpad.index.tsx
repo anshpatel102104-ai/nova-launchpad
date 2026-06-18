@@ -7,87 +7,97 @@ import { useAuth } from "@/lib/auth";
 import {
   toolRunsQuery,
   organizationQuery,
-  leadsQuery,
   subscriptionQuery,
   planEntitlementsQuery,
   workspaceStatusQuery,
+  businessContextQuery,
 } from "@/lib/queries";
-import { recommendTools } from "@/lib/recommendTools";
+import {
+  selectPlaybook,
+  computePlaybookProgress,
+  ALL_PLAYBOOKS,
+  type Playbook,
+} from "@/lib/playbooks";
+import { NovaResearchPanel } from "@/components/app/playbook/NovaResearchPanel";
 import {
   Lock,
   Search,
   History,
   ChevronRight,
+  ChevronDown,
   Check,
+  CheckCircle2,
+  Circle,
   MessageSquare,
   ArrowRight,
+  Clock,
+  Sparkles,
+  PartyPopper,
 } from "lucide-react";
 import { useOwnerMode } from "@/lib/ownerMode";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
 
-const STAGE_TABS = [
-  { key: "all", label: "All" },
-  { key: "validate", label: "Validate" },
-  { key: "plan", label: "Position & plan" },
-  { key: "customers", label: "Get customers" },
-  { key: "launch", label: "Launch assets" },
-  { key: "funding", label: "Fundraise" },
-] as const;
-
-const CATEGORY_META: Record<string, { label: string; desc: string }> = {
-  validate: { label: "Validate the idea", desc: "Know it's worth building before you build it" },
-  plan: { label: "Position & plan", desc: "Offer, pricing, and the plan to sell it" },
-  customers: { label: "Get customers", desc: "Playbooks and outreach that land paying customers" },
-  launch: { label: "Launch assets", desc: "Pages, emails, and content that convert" },
-  funding: { label: "Fundraise", desc: "Score your readiness and reach investors" },
-};
-
-const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
-  all: [
-    "Which tool should I run first?",
-    "What's my fastest path to first revenue?",
-    "How do I know when I'm ready to scale?",
-  ],
-  validate: [
-    "How do I validate without a product?",
-    "What's a good validation score?",
-    "How do I find people to interview?",
-  ],
-  plan: [
-    "What's the right GTM for B2B SaaS?",
-    "How detailed should my business plan be?",
-    "How do I identify my ICP?",
-  ],
-  customers: [
-    "How do I get my first 10 paying customers?",
-    "What should my landing page hero say?",
-    "How long is a good email sequence?",
-  ],
-  launch: [
-    "What acquisition channels should I test first?",
-    "How do I build a scalable campaign?",
-    "When should I invest in paid ads?",
-  ],
-  funding: [
-    "What do investors look for at seed stage?",
-    "How do I cold email an investor?",
-    "What's a strong funding readiness score?",
-  ],
-};
+/** Safe nested read from a jsonb-ish object. */
+function pick(obj: unknown, key: string): string {
+  if (obj && typeof obj === "object") {
+    const v = (obj as Record<string, unknown>)[key];
+    if (typeof v === "string" && v.trim()) return v.trim();
+  }
+  return "";
+}
 
 function LaunchpadOverview() {
   const { currentOrgId, user } = useAuth();
   const isOwner = useOwnerMode();
-  const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
+
+  const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 200), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plansQ = useQuery(planEntitlementsQuery());
+  const wsQ = useQuery({ ...workspaceStatusQuery(user?.id ?? ""), enabled: !!user?.id });
+  const bcQ = useQuery({ ...businessContextQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
 
-  // Real per-plan entitlements — mirrors the `isToolLocked` check in app.launchpad.$tool.tsx
-  // so a card's lock state always matches whether clicking it actually unlocks the tool.
+  // ── Completed tool keys (raw tool_runs.tool_key values) ───────────────────
+  const completedKeys = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of runsQ.data ?? []) {
+      if ((r as { status?: string }).status !== "failed") set.add(r.tool_key);
+    }
+    return set;
+  }, [runsQ.data]);
+
+  // ── Business context for grounded research + north-star goal ──────────────
+  const bc = bcQ.data as Record<string, unknown> | null | undefined;
+  const orgName = (orgQ.data?.name as string) ?? "";
+  const idea = pick(bc?.identity, "description") || pick(bc?.identity, "name") || orgName;
+  const goal = pick(bc?.goals, "goal_90d") || pick(bc?.goals, "scale_goal");
+  const niche = pick(bc?.identity, "niche") || pick(bc?.identity, "industry");
+  const targetCustomer = pick(bc?.customer, "target") || pick(bc?.customer, "description");
+
+  const lane = (wsQ.data?.lane as string | undefined) ?? undefined;
+  const stage = (wsQ.data?.stage as string | undefined) ?? (orgQ.data?.stage as string) ?? "Idea";
+
+  // ── Active playbook (lane-driven, switchable) ─────────────────────────────
+  const recommended = useMemo(() => selectPlaybook({ lane, stage }), [lane, stage]);
+  const [activePlaybookId, setActivePlaybookId] = useState<string | null>(null);
+  const activePlaybook: Playbook =
+    ALL_PLAYBOOKS.find((p) => p.id === activePlaybookId) ?? recommended;
+
+  const progress = useMemo(
+    () => computePlaybookProgress(activePlaybook, completedKeys),
+    [activePlaybook, completedKeys],
+  );
+
+  // The step whose guidance is shown — defaults to the current step.
+  const [focusedStepId, setFocusedStepId] = useState<string | null>(null);
+  const focusedStep =
+    progress.steps.find((s) => s.id === focusedStepId) ??
+    progress.steps.find((s) => s.current) ??
+    progress.steps[progress.steps.length - 1];
+
+  // ── Tool grid gating (the secondary "browse all" surface) ─────────────────
   const planTier = subQ.data?.plan ?? "starter";
   const currentEnt = plansQ.data?.find((p) => p.plan === planTier);
   const toolKeyBySlug = useMemo(() => {
@@ -100,497 +110,549 @@ function LaunchpadOverview() {
     if (!currentEnt) return true;
     return currentEnt.allowed_tools.includes(toolKeyBySlug.get(slug) ?? slug);
   };
-
   const runsByTool = useMemo(() => {
     const map = new Map<string, number>();
     (runsQ.data ?? []).forEach((r) => map.set(r.tool_key, (map.get(r.tool_key) ?? 0) + 1));
     return map;
   }, [runsQ.data]);
 
+  const [showAllTools, setShowAllTools] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const [novaSidebarOpen, setNovaSidebarOpen] = useState(true);
-
-  const allTools = LAUNCHPAD_TOOLS;
-
-  const filtered = useMemo(() => {
-    return allTools.filter((t) => {
-      if (activeTab !== "all" && t.category !== activeTab) return false;
-      if (search) {
-        const s = search.toLowerCase();
-        if (!t.name.toLowerCase().includes(s) && !t.description.toLowerCase().includes(s))
-          return false;
-      }
-      return true;
-    });
-  }, [activeTab, search, allTools]);
-
-  const totalCompleted = useMemo(
-    () => allTools.filter((t) => (runsByTool.get(t.slug) ?? 0) > 0).length,
-    [runsByTool, allTools],
-  );
-
-  const stage = (orgQ.data?.stage as string) ?? "Idea";
-  const runCount = runsQ.data?.length ?? 0;
-  const leadCount = leadsQ.data?.length ?? 0;
-
-  const novaAnalysis =
-    runCount === 0
-      ? `You're at ${stage} stage with no tools run yet. I recommend starting with Idea Validation — it scores your concept across 8 critical dimensions and sets the direction for everything that follows.`
-      : `You've completed ${totalCompleted} of ${allTools.length} tools at ${stage} stage. ${leadCount > 0 ? `Your ${leadCount} contacts give me signal to refine your GTM recommendations.` : "Adding contacts to your pipeline will help me personalise your execution path."}`;
+  const filteredTools = useMemo(() => {
+    if (!search) return LAUNCHPAD_TOOLS;
+    const s = search.toLowerCase();
+    return LAUNCHPAD_TOOLS.filter(
+      (t) => t.name.toLowerCase().includes(s) || t.description.toLowerCase().includes(s),
+    );
+  }, [search]);
 
   const novaMood: "active" | "thinking" | "alert" =
-    runCount >= 5 ? "active" : runCount >= 1 ? "thinking" : "alert";
-
-  const novaPrompts = NOVA_PROMPTS_BY_STAGE[activeTab] ?? NOVA_PROMPTS_BY_STAGE.all;
-
-  // Group by category (only when not filtering)
-  const showCategorised = activeTab === "all" && !search;
-  const categories = Object.keys(CATEGORY_META).filter((cat) =>
-    filtered.some((t) => t.category === cat),
-  );
-
-  // ── Context-driven recommendations (the default surface, not the catalog) ──
-  const wsQ = useQuery({ ...workspaceStatusQuery(user?.id ?? ""), enabled: !!user?.id });
-  const completedSlugs = useMemo(() => {
-    const done = new Set<string>();
-    for (const t of allTools) {
-      const backendKey = toolKeyBySlug.get(t.slug) ?? t.slug;
-      if ((runsByTool.get(backendKey) ?? 0) > 0 || (runsByTool.get(t.slug) ?? 0) > 0)
-        done.add(t.slug);
-    }
-    return done;
-  }, [allTools, runsByTool, toolKeyBySlug]);
-  const recommendations = useMemo(
-    () =>
-      recommendTools({
-        lane: wsQ.data?.lane,
-        stage: wsQ.data?.stage ?? stage,
-        mode: wsQ.data?.mode,
-        completedSlugs,
-      }),
-    [wsQ.data, stage, completedSlugs],
-  );
+    progress.completedCount >= 3 ? "active" : progress.completedCount >= 1 ? "thinking" : "alert";
 
   return (
-    <div className="flex gap-5 items-start">
-      {/* ── Main content ── */}
-      <div className="flex-1 min-w-0 space-y-5">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+    <div className="space-y-5">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <NovaAvatar size="md" mood={novaMood} />
           <div>
             <h1
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "32px",
+                fontSize: "28px",
                 fontWeight: 800,
                 color: "var(--foreground)",
                 letterSpacing: "-0.02em",
                 lineHeight: 1.1,
               }}
             >
-              Workbench
+              Your mission with Nova
             </h1>
             <p
               className="mt-1"
               style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "15px",
-                color: "var(--muted-foreground)",
-              }}
-            >
-              Outcome engines, playbooks, and asset generators — sequenced for your business, not
-              browsed.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              to="/app/launchpad/history"
-              className="hidden sm:inline-flex items-center gap-2 rounded-lg transition-colors"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "13px",
-                fontWeight: 500,
-                padding: "8px 14px",
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                color: "var(--muted-foreground)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-              }}
-            >
-              <History style={{ width: 14, height: 14 }} />
-              History
-            </Link>
-            <button
-              onClick={() => setNovaSidebarOpen((o) => !o)}
-              className="hidden lg:inline-flex items-center gap-2 rounded-lg transition-colors"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "13px",
-                fontWeight: 500,
-                padding: "8px 14px",
-                background: novaSidebarOpen ? "var(--primary-soft)" : "var(--surface)",
-                border: `1px solid ${novaSidebarOpen ? "var(--primary-border)" : "var(--border)"}`,
-                color: novaSidebarOpen ? "var(--primary)" : "var(--muted-foreground)",
-                cursor: "pointer",
-              }}
-            >
-              <MessageSquare style={{ width: 14, height: 14 }} />
-              Nova
-            </button>
-          </div>
-        </div>
-
-        {/* Recommended next — context-ranked, with the WHY on every card */}
-        {recommendations.length > 0 && !search && (
-          <div
-            className="rounded-2xl border p-4"
-            style={{
-              borderColor: "color-mix(in oklab, var(--primary) 25%, var(--border))",
-              background: "color-mix(in oklab, var(--primary) 4%, transparent)",
-            }}
-          >
-            <div
-              className="mb-3 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
-              style={{ color: "var(--primary)" }}
-            >
-              Recommended next
-              {wsQ.data?.lane && (
-                <span
-                  className="font-normal normal-case tracking-normal"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  · based on your {wsQ.data.lane} lane
-                  {wsQ.data?.mode === "operate" ? " (operator mode)" : ""}
-                </span>
-              )}
-            </div>
-            <div className="grid gap-2.5 sm:grid-cols-3">
-              {recommendations.map((rec, i) => {
-                const tool = allTools.find((t) => t.slug === rec.slug);
-                if (!tool) return null;
-                return (
-                  <Link
-                    key={rec.slug}
-                    to="/app/launchpad/$tool"
-                    params={{ tool: rec.slug }}
-                    className="group rounded-xl border p-3.5 transition-all hover:-translate-y-0.5"
-                    style={{
-                      borderColor:
-                        i === 0
-                          ? "color-mix(in oklab, var(--primary) 40%, transparent)"
-                          : "var(--border)",
-                      background: "var(--surface)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[18px]">{tool.emoji}</span>
-                      {i === 0 && (
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider"
-                          style={{
-                            background: "color-mix(in oklab, var(--primary) 14%, transparent)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          Start here
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 text-[13.5px] font-semibold leading-snug">{tool.name}</div>
-                    <p
-                      className="mt-1 text-[11.5px] leading-relaxed"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {rec.reason}
-                    </p>
-                    <div
-                      className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold opacity-0 transition-opacity group-hover:opacity-100"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      Run it <ArrowRight className="h-3 w-3" />
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Stage tabs */}
-        <div className="flex items-center gap-0 border-b" style={{ borderColor: "var(--border)" }}>
-          {STAGE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="relative px-4 pb-2.5 pt-0.5 transition-colors"
-              style={{
-                fontFamily: activeTab === tab.key ? "var(--font-display)" : "var(--font-body)",
                 fontSize: "14px",
-                fontWeight: activeTab === tab.key ? 600 : 400,
-                color: activeTab === tab.key ? "var(--foreground)" : "var(--muted-foreground)",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                borderBottom:
-                  activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
-                marginBottom: "-1px",
+                color: "var(--muted-foreground)",
               }}
             >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search
-            style={{
-              position: "absolute",
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "14px",
-              height: "14px",
-              color: "var(--muted-foreground)",
-              pointerEvents: "none",
-            }}
-          />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools..."
-            style={{
-              width: "100%",
-              borderRadius: "8px",
-              padding: "9px 14px 9px 38px",
-              fontFamily: "var(--font-body)",
-              fontSize: "14px",
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-              outline: "none",
-              transition: "border-color 160ms",
-            }}
-            onFocus={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--primary)")}
-            onBlur={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")}
-          />
-        </div>
-
-        {/* Tools */}
-        {filtered.length === 0 ? (
-          <div
-            className="rounded-xl p-12 text-center"
-            style={{ border: "1px dashed var(--border)", color: "var(--muted-foreground)" }}
-          >
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>
-              No tools match your search.
+              I run the playbook. You make the calls. One step at a time — no toolbox to figure out.
             </p>
           </div>
-        ) : showCategorised ? (
-          <div className="space-y-8">
-            {categories.map((cat) => {
-              const catTools = filtered.filter((t) => t.category === cat);
-              const meta = CATEGORY_META[cat];
-              if (!catTools.length || !meta) return null;
-              return (
-                <div key={cat}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                        color: "var(--muted-foreground)",
-                      }}
-                    >
-                      {meta.label}
-                    </span>
-                    <div className="flex-1 h-px" style={{ background: "var(--divider)" }} />
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        color: "var(--text-faint)",
-                      }}
-                    >
-                      {catTools.length}
-                    </span>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {catTools.map((tool, i) => (
-                      <ToolCard
-                        key={tool.slug}
-                        slug={tool.slug}
-                        name={tool.name}
-                        description={tool.description}
-                        available={isToolAvailable(tool.slug)}
-                        runCount={runsByTool.get(tool.slug) ?? 0}
-                        estimatedMinutes={tool.estimatedMinutes}
-                        icon={tool.icon}
-                        isRecommended={runCount === 0 && i === 0 && cat === "validate"}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tool) => (
-              <ToolCard
-                key={tool.slug}
-                slug={tool.slug}
-                name={tool.name}
-                description={tool.description}
-                available={isToolAvailable(tool.slug)}
-                runCount={runsByTool.get(tool.slug) ?? 0}
-                estimatedMinutes={tool.estimatedMinutes}
-                icon={tool.icon}
-                isRecommended={false}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── Nova Sidebar ── */}
-      {novaSidebarOpen && (
-        <aside
-          className="hidden lg:flex flex-col shrink-0 rounded-xl p-4 gap-4"
+        </div>
+        <Link
+          to="/app/launchpad/history"
+          className="hidden sm:inline-flex items-center gap-2 rounded-lg transition-colors shrink-0"
           style={{
-            width: "280px",
+            fontFamily: "var(--font-body)",
+            fontSize: "13px",
+            fontWeight: 500,
+            padding: "8px 14px",
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            position: "sticky",
-            top: "24px",
-            boxShadow: "var(--shadow-sm)",
+            color: "var(--muted-foreground)",
           }}
         >
-          <div className="flex items-center gap-2.5">
-            <NovaAvatar size="md" mood={novaMood} />
+          <History style={{ width: 14, height: 14 }} />
+          History
+        </Link>
+      </div>
+
+      {/* ── North Star: keep the founder's goal in front of every step ── */}
+      {goal && (
+        <div
+          className="rounded-xl px-4 py-3 flex items-center gap-2.5"
+          style={{
+            background: "color-mix(in oklab, var(--primary) 7%, transparent)",
+            border: "1px solid color-mix(in oklab, var(--primary) 22%, var(--border))",
+          }}
+        >
+          <Sparkles style={{ width: 15, height: 15, color: "var(--primary)", flexShrink: 0 }} />
+          <p
+            style={{ fontFamily: "var(--font-body)", fontSize: "13px", color: "var(--foreground)" }}
+          >
+            <span style={{ color: "var(--muted-foreground)" }}>Your goal: </span>
+            <span style={{ fontWeight: 600 }}>{goal}</span>
+            <span style={{ color: "var(--muted-foreground)" }}>
+              {" "}
+              — every step below moves you toward it.
+            </span>
+          </p>
+        </div>
+      )}
+
+      {/* ── Mission selector ── */}
+      <div className="flex flex-wrap gap-2">
+        {ALL_PLAYBOOKS.map((pb) => {
+          const active = pb.id === activePlaybook.id;
+          const isRec = pb.id === recommended.id;
+          return (
+            <button
+              key={pb.id}
+              onClick={() => {
+                setActivePlaybookId(pb.id);
+                setFocusedStepId(null);
+              }}
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-left transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "12.5px",
+                fontWeight: active ? 600 : 500,
+                background: active
+                  ? "color-mix(in oklab, var(--primary) 12%, transparent)"
+                  : "var(--surface)",
+                border: `1px solid ${active ? "color-mix(in oklab, var(--primary) 45%, transparent)" : "var(--border)"}`,
+                color: active ? "var(--primary)" : "var(--muted-foreground)",
+                cursor: "pointer",
+              }}
+            >
+              <span>{pb.emoji}</span>
+              <span>{pb.title}</span>
+              {isRec && !active && (
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                  style={{
+                    background: "color-mix(in oklab, var(--primary) 14%, transparent)",
+                    color: "var(--primary)",
+                  }}
+                >
+                  For you
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Mission card ── */}
+      <div
+        className="rounded-2xl border p-5"
+        style={{
+          background: "var(--surface)",
+          borderColor: "var(--border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-start gap-3">
+            <span style={{ fontSize: 26 }}>{activePlaybook.emoji}</span>
             <div>
-              <p
+              <h2
                 style={{
                   fontFamily: "var(--font-display)",
-                  fontSize: "14px",
+                  fontSize: "20px",
                   fontWeight: 700,
                   color: "var(--foreground)",
+                  letterSpacing: "-0.01em",
                 }}
               >
-                Nova
-              </p>
+                {activePlaybook.title}
+              </h2>
               <p
+                className="mt-0.5"
                 style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "10px",
-                  color: "var(--primary)",
-                  letterSpacing: "0.06em",
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13px",
+                  color: "var(--muted-foreground)",
                 }}
               >
-                LAUNCHPAD GUIDE
+                {activePlaybook.objective}
               </p>
             </div>
           </div>
-
-          <div
-            className="rounded-lg p-3"
-            style={{ background: "var(--surface-offset)", border: "1px solid var(--border)" }}
-          >
-            <p
+          <div className="text-right shrink-0">
+            <div
               style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "13px",
-                color: "var(--foreground)",
-                lineHeight: 1.5,
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
+                color: "var(--primary)",
+                fontWeight: 600,
               }}
             >
-              {novaAnalysis}
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <p
+              {progress.completedCount}/{progress.totalCount} done
+            </div>
+            <div
               style={{
                 fontFamily: "var(--font-mono)",
                 fontSize: "10px",
-                fontWeight: 600,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                color: "var(--muted-foreground)",
-                marginBottom: "6px",
+                color: "var(--text-faint)",
               }}
             >
-              Ask Nova
+              {progress.percent}%
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div
+          className="h-1.5 rounded-full overflow-hidden mb-5"
+          style={{ background: "var(--border)" }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${progress.percent}%`, background: "var(--primary)" }}
+          />
+        </div>
+
+        {/* ── Focused step guidance OR completion ── */}
+        {progress.isComplete ? (
+          <div
+            className="rounded-xl p-5 text-center"
+            style={{
+              background: "color-mix(in oklab, var(--success) 8%, transparent)",
+              border: "1px solid color-mix(in oklab, var(--success) 30%, transparent)",
+            }}
+          >
+            <PartyPopper
+              style={{ width: 28, height: 28, color: "var(--success)", margin: "0 auto" }}
+            />
+            <h3
+              className="mt-2"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "var(--foreground)",
+              }}
+            >
+              Mission complete — {activePlaybook.title}
+            </h3>
+            <p
+              className="mt-1 mb-4"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "13px",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              {activePlaybook.outcome} Pick your next mission above, or keep refining what you
+              built.
             </p>
-            {novaPrompts.map((prompt) => (
-              <Link
-                key={prompt}
-                to="/app/mentor"
-                className="flex items-center gap-2 rounded-lg transition-colors"
+            <Link
+              to="/app/mentor"
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold"
+              style={{ background: "var(--primary)", color: "#fff" }}
+            >
+              Ask Nova what's next <ArrowRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+        ) : focusedStep ? (
+          <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+            {/* Step guidance */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span
+                  className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                  style={{
+                    background: focusedStep.done
+                      ? "color-mix(in oklab, var(--success) 12%, transparent)"
+                      : "color-mix(in oklab, var(--primary) 12%, transparent)",
+                    color: focusedStep.done ? "var(--success)" : "var(--primary)",
+                  }}
+                >
+                  {focusedStep.done
+                    ? "Done"
+                    : `Step ${progress.steps.indexOf(focusedStep) + 1} of ${progress.totalCount}`}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    color: "var(--text-faint)",
+                  }}
+                >
+                  <Clock style={{ width: 10, height: 10 }} />~{focusedStep.estimatedMinutes} min
+                </span>
+              </div>
+
+              <h3
                 style={{
-                  padding: "8px 12px",
-                  border: "1px solid var(--border)",
-                  background: "transparent",
-                  fontFamily: "var(--font-body)",
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  fontFamily: "var(--font-display)",
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  color: "var(--foreground)",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.01em",
                 }}
               >
-                <span className="flex-1">{prompt}</span>
-              </Link>
-            ))}
-          </div>
+                {focusedStep.novaQuestion}
+              </h3>
+              <p
+                className="mt-1.5"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13.5px",
+                  color: "var(--muted-foreground)",
+                  lineHeight: 1.5,
+                }}
+              >
+                {focusedStep.why}
+              </p>
 
-          <Link
-            to="/app/mentor"
-            className="flex items-center justify-center gap-2 rounded-lg py-2.5 transition-colors"
+              {/* Done-when */}
+              <div className="mt-3 space-y-1.5">
+                <div
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  You're done when
+                </div>
+                {focusedStep.doneWhen.map((d, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2 text-[12.5px]"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    <Check
+                      style={{
+                        width: 13,
+                        height: 13,
+                        marginTop: 2,
+                        flexShrink: 0,
+                        color: "var(--primary)",
+                      }}
+                    />
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {focusedStep.route ? (
+                  <Link
+                    to="/app/launchpad/$tool"
+                    params={{ tool: focusedStep.route }}
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold transition-colors"
+                    style={{ background: "var(--primary)", color: "#fff" }}
+                  >
+                    {focusedStep.done ? "Run again" : focusedStep.ctaLabel}
+                    <ArrowRight style={{ width: 14, height: 14 }} />
+                  </Link>
+                ) : null}
+                <Link
+                  to="/app/mentor"
+                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold transition-colors"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--primary-border)",
+                    color: "var(--primary)",
+                  }}
+                >
+                  <MessageSquare style={{ width: 14, height: 14 }} />
+                  Ask Nova
+                </Link>
+              </div>
+            </div>
+
+            {/* Research panel — keyed by playbook so cache stays per mission */}
+            <NovaResearchPanel
+              key={activePlaybook.id}
+              stepId={focusedStep.id}
+              focus={focusedStep.researchFocus}
+              idea={idea}
+              goal={goal}
+              niche={niche}
+              targetCustomer={targetCustomer}
+              stage={stage}
+              orgId={currentOrgId ?? undefined}
+            />
+          </div>
+        ) : null}
+
+        {/* ── Steps rail ── */}
+        <div className="mt-5 pt-4 border-t" style={{ borderColor: "var(--divider)" }}>
+          <div className="space-y-1">
+            {progress.steps.map((s, i) => {
+              const isFocused = focusedStep?.id === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setFocusedStepId(s.id)}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                  style={{
+                    background: isFocused ? "var(--surface-2)" : "transparent",
+                    border: `1px solid ${isFocused ? "var(--primary-border)" : "transparent"}`,
+                    cursor: "pointer",
+                  }}
+                >
+                  {s.done ? (
+                    <CheckCircle2
+                      style={{ width: 17, height: 17, color: "var(--success)", flexShrink: 0 }}
+                    />
+                  ) : s.current ? (
+                    <div
+                      style={{
+                        width: 17,
+                        height: 17,
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                        background: "var(--primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {i + 1}
+                    </div>
+                  ) : (
+                    <Circle
+                      style={{ width: 17, height: 17, color: "var(--text-faint)", flexShrink: 0 }}
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "13px",
+                        fontWeight: s.current || isFocused ? 600 : 500,
+                        color: s.done ? "var(--muted-foreground)" : "var(--foreground)",
+                      }}
+                    >
+                      {s.title}
+                    </div>
+                  </div>
+                  {s.current && (
+                    <span
+                      className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0"
+                      style={{
+                        background: "color-mix(in oklab, var(--primary) 14%, transparent)",
+                        color: "var(--primary)",
+                      }}
+                    >
+                      You're here
+                    </span>
+                  )}
+                  <ChevronRight
+                    style={{ width: 14, height: 14, color: "var(--text-faint)", flexShrink: 0 }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Browse all tools (secondary) ── */}
+      <div
+        className="rounded-2xl border"
+        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      >
+        <button
+          onClick={() => setShowAllTools((o) => !o)}
+          className="w-full flex items-center justify-between px-5 py-4"
+          style={{ cursor: "pointer", background: "transparent", border: "none" }}
+        >
+          <div className="text-left">
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "var(--foreground)",
+              }}
+            >
+              Browse all tools
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "12.5px",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              Prefer to drive yourself? Every Launchpad tool, on tap.
+            </div>
+          </div>
+          <ChevronDown
             style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "13px",
-              fontWeight: 500,
-              border: "1px solid var(--primary-border)",
-              color: "var(--primary)",
-              background: "transparent",
-              marginTop: "auto",
+              width: 18,
+              height: 18,
+              color: "var(--muted-foreground)",
+              transform: showAllTools ? "rotate(180deg)" : "none",
+              transition: "transform 200ms",
             }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "transparent")
-            }
-          >
-            Open full chat
-            <ArrowRight style={{ width: 13, height: 13 }} />
-          </Link>
-        </aside>
-      )}
+          />
+        </button>
+
+        {showAllTools && (
+          <div className="px-5 pb-5">
+            <div className="relative mb-4">
+              <Search
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 14,
+                  height: 14,
+                  color: "var(--muted-foreground)",
+                  pointerEvents: "none",
+                }}
+              />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search tools..."
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  padding: "9px 14px 9px 38px",
+                  fontFamily: "var(--font-body)",
+                  fontSize: 14,
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                  outline: "none",
+                }}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredTools.map((tool) => (
+                <ToolCard
+                  key={tool.slug}
+                  slug={tool.slug}
+                  name={tool.name}
+                  description={tool.description}
+                  available={isToolAvailable(tool.slug)}
+                  runCount={runsByTool.get(tool.slug) ?? 0}
+                  estimatedMinutes={tool.estimatedMinutes}
+                  icon={tool.icon}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-/* ── Tool Card ── */
+/* ── Tool Card (used by the secondary "browse all tools" grid) ── */
 function ToolCard({
   slug,
   name,
@@ -599,7 +661,6 @@ function ToolCard({
   runCount,
   estimatedMinutes,
   icon: Icon,
-  isRecommended,
 }: {
   slug: string;
   name: string;
@@ -608,25 +669,8 @@ function ToolCard({
   runCount: number;
   estimatedMinutes: number;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-  isRecommended: boolean;
 }) {
   const hasRuns = runCount > 0;
-
-  const cardStyle: React.CSSProperties = {
-    background: isRecommended ? "var(--primary-soft)" : "var(--surface)",
-    border: `1px solid ${isRecommended ? "var(--primary-border)" : "var(--border)"}`,
-    borderRadius: "10px",
-    padding: "16px",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    transition: "border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease",
-    opacity: !available ? 0.45 : 1,
-    cursor: !available ? "not-allowed" : "pointer",
-    position: "relative",
-    boxShadow: "var(--shadow-sm)",
-  };
-
   return (
     <Link
       to={available ? "/app/launchpad/$tool" : ("/app/launchpad/" as never)}
@@ -635,27 +679,18 @@ function ToolCard({
       style={{ pointerEvents: available ? "auto" : "none" }}
     >
       <div
-        style={cardStyle}
-        onMouseEnter={(e) => {
-          if (available) {
-            (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
-            (e.currentTarget as HTMLElement).style.background = isRecommended
-              ? "color-mix(in oklab, var(--primary) 8%, var(--surface-2))"
-              : "var(--surface-2)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-md)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = isRecommended
-            ? "var(--primary-border)"
-            : "var(--border)";
-          (e.currentTarget as HTMLElement).style.background = isRecommended
-            ? "var(--primary-soft)"
-            : "var(--surface)";
-          (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-sm)";
+        style={{
+          background: "var(--surface-2)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          padding: 16,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          opacity: available ? 1 : 0.45,
+          cursor: available ? "pointer" : "not-allowed",
         }}
       >
-        {/* Top row */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div
             className="flex items-center justify-center rounded-lg shrink-0"
@@ -673,18 +708,16 @@ function ToolCard({
               <Lock style={{ width: 15, height: 15, color: "var(--muted-foreground)" }} />
             )}
           </div>
-
-          {/* Status badge */}
           {!available ? (
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "10px",
+                fontSize: 10,
                 fontWeight: 600,
-                letterSpacing: "0.10em",
+                letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 padding: "3px 8px",
-                borderRadius: "999px",
+                borderRadius: 999,
                 background: "var(--surface-offset)",
                 color: "var(--muted-foreground)",
                 border: "1px solid var(--border)",
@@ -697,12 +730,12 @@ function ToolCard({
               className="inline-flex items-center gap-1"
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: "10px",
+                fontSize: 10,
                 fontWeight: 600,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 padding: "3px 8px",
-                borderRadius: "999px",
+                borderRadius: 999,
                 background: "color-mix(in oklab, var(--success) 10%, transparent)",
                 color: "var(--success)",
                 border: "1px solid color-mix(in oklab, var(--success) 25%, transparent)",
@@ -713,16 +746,14 @@ function ToolCard({
             </span>
           ) : null}
         </div>
-
-        {/* Name + desc */}
         <p
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "15px",
+            fontSize: 15,
             fontWeight: 600,
             color: "var(--foreground)",
             letterSpacing: "-0.01em",
-            marginBottom: "4px",
+            marginBottom: 4,
           }}
         >
           {name}
@@ -730,7 +761,7 @@ function ToolCard({
         <p
           style={{
             fontFamily: "var(--font-body)",
-            fontSize: "12px",
+            fontSize: 12,
             color: "var(--muted-foreground)",
             lineHeight: 1.4,
             flex: 1,
@@ -742,15 +773,9 @@ function ToolCard({
         >
           {description}
         </p>
-
-        {/* Footer */}
         <div className="mt-3 flex items-center justify-between">
           <span
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              color: "var(--text-faint)",
-            }}
+            style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-faint)" }}
           >
             ~{estimatedMinutes} min
           </span>
@@ -759,7 +784,7 @@ function ToolCard({
               className="inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
               style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "12px",
+                fontSize: 12,
                 fontWeight: 500,
                 color: "var(--primary)",
               }}
@@ -771,7 +796,7 @@ function ToolCard({
             <span
               style={{
                 fontFamily: "var(--font-body)",
-                fontSize: "11px",
+                fontSize: 11,
                 color: "var(--muted-foreground)",
               }}
             >
