@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 import { auditLogQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
+import { impersonationStore } from "@/lib/impersonation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -276,6 +277,20 @@ function AdminHub() {
   );
   const orgById = useMemo(() => new Map(orgs.map((o) => [o.id, o])), [orgs]);
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
+
+  // First org owned by each user — used to open (impersonate) that account.
+  const orgByOwner = useMemo(() => {
+    const m = new Map<string, { id: string; name: string }>();
+    for (const o of orgs) if (!m.has(o.owner_id)) m.set(o.owner_id, { id: o.id, name: o.name });
+    return m;
+  }, [orgs]);
+
+  // Enter another account as a full-access admin (read + write via is_admin RLS).
+  const openAccount = (userId: string, label: string) => {
+    const org = orgByOwner.get(userId);
+    impersonationStore.start(userId, org?.id ?? null, org?.name ?? label);
+    window.location.assign("/app/dashboard");
+  };
 
   const totalUsers = profiles.length;
   const onboardedUsers = profiles.filter((p) => p.onboarding_complete).length;
@@ -682,6 +697,9 @@ function AdminHub() {
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
                     Joined
                   </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider">
+                    Account
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -720,11 +738,19 @@ function AdminHub() {
                     <td className="px-4 py-3 tabular-nums text-muted-foreground">
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => openAccount(p.id, p.email ?? p.full_name ?? "account")}
+                        className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-primary/90"
+                      >
+                        <ArrowUpRight className="h-3 w-3" /> Open
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filteredProfiles.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                       No users match.
                     </td>
                   </tr>

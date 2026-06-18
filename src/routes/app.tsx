@@ -8,6 +8,7 @@ import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { NovaBar } from "@/components/nova/NovaBar";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore, isDemoEmail } from "@/lib/guest";
+import { useImpersonation, impersonationStore } from "@/lib/impersonation";
 import { saveLastAppPath } from "@/lib/session-restore";
 import { workspaceStatusQuery, currentMissionQuery } from "@/lib/queries";
 import type { QueryClient } from "@tanstack/react-query";
@@ -56,6 +57,29 @@ export const Route = createFileRoute("/app")({
 // Pages that opt out of the intelligence rail (need full canvas)
 const FULL_CANVAS_PATHS = ["/app/galaxy", "/app/mission-briefing"];
 
+// Sticky warning bar shown while an admin is acting inside another account.
+function ImpersonationBanner() {
+  const imp = useImpersonation();
+  if (!imp.active) return null;
+  return (
+    <div className="flex items-center justify-between gap-3 bg-amber-500 px-4 py-1.5 text-[12.5px] font-medium text-black">
+      <span className="truncate">
+        Admin mode — acting as <strong>{imp.label ?? "account"}</strong>. Changes affect their
+        account.
+      </span>
+      <button
+        onClick={() => {
+          impersonationStore.stop();
+          window.location.assign("/app/admin");
+        }}
+        className="shrink-0 rounded-md bg-black/85 px-3 py-1 font-semibold text-white hover:bg-black"
+      >
+        Exit
+      </button>
+    </div>
+  );
+}
+
 function AppLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
 
@@ -91,6 +115,7 @@ function AppLayout() {
       <AppSidebar onOpenRail={() => setRailOpen(true)} />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <ImpersonationBanner />
         <AppTopbar onToggleRail={toggleRail} railOpen={railOpen && !hideRail} />
         <NovaBar />
 
