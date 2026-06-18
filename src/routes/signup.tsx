@@ -79,12 +79,17 @@ function SignupPage() {
     if (!validate()) return;
     setLoading(true);
     try {
+      // The org + owner membership + subscription are provisioned server-side by
+      // the handle_new_user trigger (it reads full_name + plan from this
+      // metadata), so the client never has to orchestrate that chain. This also
+      // means provisioning happens even when email confirmation is enabled and no
+      // session is returned here.
       const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/onboarding`,
-          data: { full_name: fullName },
+          data: { full_name: fullName, plan },
         },
       });
       if (signUpErr) throw signUpErr;
@@ -92,29 +97,8 @@ function SignupPage() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const userId = session?.user?.id ?? signUpData.user?.id;
 
-      if (session && userId) {
-        const orgName = `${fullName.trim()}'s Business`;
-        const { data: org, error: orgErr } = await supabase
-          .from("organizations")
-          .insert({ owner_id: userId, name: orgName })
-          .select("id")
-          .single();
-        if (orgErr) throw orgErr;
-
-        await supabase.from("organization_members").insert({
-          organization_id: org.id,
-          user_id: userId,
-          role: "owner",
-        });
-
-        await supabase.from("subscriptions").insert({
-          organization_id: org.id,
-          plan,
-          status: "trialing",
-        });
-
+      if (session ?? signUpData.session) {
         toast.success("Account created — welcome to Nova!");
         navigate({ to: "/onboarding" });
       } else {

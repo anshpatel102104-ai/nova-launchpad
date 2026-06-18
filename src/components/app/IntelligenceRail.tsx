@@ -242,7 +242,32 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     setInput("");
     setStreaming(true);
 
-    const history = [...messages, userMsg];
+    // nova-chat reads { message, conversation_history, user_context, org_id } —
+    // map the assembled OperatorContext onto that contract so the founder's
+    // context (and org_id, which gates the Business Context Graph) is actually
+    // sent instead of being silently dropped.
+    const ctx = context as {
+      organization_id?: string;
+      stage?: string;
+      lane?: string;
+      plan?: string;
+      current_mission?: { title?: string };
+      recent_tool_runs?: Array<{ tool_key?: string }>;
+      profile?: { full_name?: string; idea?: string; challenge?: string };
+    };
+    const userContext: Record<string, string> = {};
+    if (ctx.profile?.full_name) userContext.name = ctx.profile.full_name;
+    if (ctx.profile?.idea) userContext.idea = ctx.profile.idea;
+    if (ctx.profile?.challenge) userContext.challenge = ctx.profile.challenge;
+    if (ctx.stage) userContext.stage = String(ctx.stage);
+    if (ctx.lane) userContext.lane = String(ctx.lane);
+    if (ctx.plan) userContext.plan = String(ctx.plan);
+    if (ctx.current_mission?.title) userContext.current_mission = ctx.current_mission.title;
+    const recentTools = (ctx.recent_tool_runs ?? [])
+      .map((r) => r.tool_key)
+      .filter(Boolean)
+      .join(", ");
+    if (recentTools) userContext.recent_tools = recentTools;
 
     try {
       const abort = new AbortController();
@@ -251,8 +276,10 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
       const resp = await invokeEdgeStream(
         "nova-chat",
         {
-          messages: history.map((m) => ({ role: m.role, content: m.content })),
-          context,
+          message: trimmed,
+          conversation_history: messages.map((m) => ({ role: m.role, content: m.content })),
+          user_context: userContext,
+          org_id: ctx.organization_id,
         },
         { signal: abort.signal, timeoutMs: 45_000 },
       );

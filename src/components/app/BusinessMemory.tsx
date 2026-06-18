@@ -300,11 +300,13 @@ const CATEGORIES: CategoryConfig[] = [
 function AddEntryModal({
   category,
   userId,
+  orgId,
   onClose,
   onSaved,
 }: {
   category: CategoryConfig;
   userId: string;
+  orgId: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -333,8 +335,12 @@ function AddEntryModal({
         values.stage ?? "",
       ].filter(Boolean);
 
-      await supabase.from("operator_memory").insert({
+      // org_id isn't in the (stale) generated types yet — cast mirrors the
+      // house escape hatch used elsewhere for tables newer than the types.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from("operator_memory").insert({
         user_id: userId,
+        org_id: orgId || null,
         memory_type: category.type,
         content,
         tags,
@@ -835,6 +841,7 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
         <AddEntryModal
           category={addingCategory}
           userId={userId}
+          orgId={orgId}
           onClose={() => setAddingCategory(null)}
           onSaved={() => qc.invalidateQueries({ queryKey: ["business_memory", userId] })}
         />

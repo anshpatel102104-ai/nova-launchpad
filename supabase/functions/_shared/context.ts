@@ -73,6 +73,9 @@ export async function assembleContext(
   const budget = opts.budgetChars ?? 6000;
   const lines: string[] = [];
   const used: string[] = [];
+  // Surfaced as the very first line of the context block so every AI surface
+  // orients its recommendations around what the founder is actually trying to do.
+  let primaryGoal = "";
 
   // ── 1. Business Context Graph (canonical) ─────────────────────────────────
   const { data: ctx } = await supabase
@@ -128,8 +131,13 @@ export async function assembleContext(
     }
     const goal = str(goals, "goal_90d") || str(goals, "scale_goal");
     if (goal) {
-      lines.push(`Primary goal: ${goal}`);
+      primaryGoal = goal;
       used.push(`goal: ${goal}`);
+    }
+    const northStar = str(goals, "north_star");
+    if (northStar && northStar !== goal) {
+      lines.push(`North-star goal: ${northStar}`);
+      used.push(`north star: ${northStar}`);
     }
     const cons = [
       str(constraints, "time"),
@@ -170,7 +178,7 @@ export async function assembleContext(
         used.push(`${ob.stage} stage`);
       }
       if (ob.goal) {
-        lines.push(`Primary goal: ${ob.goal}`);
+        primaryGoal = String(ob.goal);
         used.push(`goal: ${ob.goal}`);
       }
       if (ob.biggest_blocker) lines.push(`Biggest blocker: ${ob.biggest_blocker}`);
@@ -234,10 +242,61 @@ export async function assembleContext(
     }
   }
 
-  if (lines.length === 0) return { block: "", used: [] };
+  // ── 4. Founder's own saved memory (Business Memory: wins, lessons, ───────
+  //        experiments, customer insights, strategy). Written from the
+  //        Business Memory UI into operator_memory; surfaced here so the AI
+  //        actually USES everything the founder asks it to remember.
+  if (priorBudget > 300) {
+    // operator_memory is keyed by user_id (legacy rows) and/or org_id (newer
+    // rows). Resolve the org owner so both shapes are covered.
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("owner_id")
+      .eq("id", organizationId)
+      .maybeSingle();
+    const ownerId = (org as { owner_id?: string } | null)?.owner_id ?? null;
+
+    let memQuery = supabase
+      .from("operator_memory")
+      .select("memory_type, content, created_at")
+      .eq("pruned", false)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    memQuery = ownerId
+      ? memQuery.or(`org_id.eq.${organizationId},user_id.eq.${ownerId}`)
+      : memQuery.eq("org_id", organizationId);
+
+    const { data: memories } = await memQuery;
+    if (memories && memories.length > 0) {
+      const memParts: string[] = [];
+      for (const m of memories) {
+        const content = typeof m.content === "string" ? m.content.trim() : "";
+        if (!content) continue;
+        const label = String(m.memory_type ?? "note").replace(/_/g, " ");
+        const slice = content.slice(0, Math.min(400, priorBudget));
+        memParts.push(`- [${label}] ${slice}`);
+        priorBudget -= slice.length + 40;
+        if (priorBudget < 200) break;
+      }
+      if (memParts.length > 0) {
+        used.push(`${memParts.length} founder memory notes`);
+        lines.push(
+          `\nWhat the founder has told you to remember (honour these in every answer):\n${memParts.join("\n")}`,
+        );
+      }
+    }
+  }
+
+  if (lines.length === 0 && !primaryGoal) return { block: "", used: [] };
+
+  // Lead with the goal so it stays "at the front" of every AI response.
+  const goalHeader = primaryGoal
+    ? `PRIMARY GOAL — orient every recommendation toward this: ${primaryGoal}\n`
+    : "";
 
   const blockText =
     `## FOUNDER CONTEXT (verified facts about THIS business — ground every claim in these)\n` +
+    goalHeader +
     lines.join("\n");
   return { block: blockText.slice(0, budget), used };
 }

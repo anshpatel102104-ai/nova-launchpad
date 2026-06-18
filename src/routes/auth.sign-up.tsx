@@ -18,7 +18,9 @@ function SignUp() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    // Org + owner membership + starter subscription are provisioned server-side
+    // by the handle_new_user trigger from this metadata — no client orchestration.
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -31,8 +33,13 @@ function SignUp() {
       toast.error(error.message);
       return;
     }
-    toast.success("Account created");
-    navigate({ to: "/onboarding" });
+    if (data.session) {
+      toast.success("Account created");
+      navigate({ to: "/onboarding" });
+    } else {
+      toast.success("Check your email to confirm your account");
+      navigate({ to: "/auth/sign-in" });
+    }
   };
 
   return (

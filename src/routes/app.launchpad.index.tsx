@@ -11,6 +11,7 @@ import {
   subscriptionQuery,
   planEntitlementsQuery,
   workspaceStatusQuery,
+  businessContextQuery,
 } from "@/lib/queries";
 import { recommendTools } from "@/lib/recommendTools";
 import {
@@ -82,6 +83,10 @@ function LaunchpadOverview() {
   const isOwner = useOwnerMode();
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const bizCtxQ = useQuery({
+    ...businessContextQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plansQ = useQuery(planEntitlementsQuery());
@@ -161,6 +166,12 @@ function LaunchpadOverview() {
     }
     return done;
   }, [allTools, runsByTool, toolKeyBySlug]);
+  const goal = useMemo(() => {
+    const goals = (bizCtxQ.data as { goals?: Record<string, unknown> } | null | undefined)?.goals;
+    const g90 = typeof goals?.goal_90d === "string" ? goals.goal_90d : "";
+    const scale = typeof goals?.scale_goal === "string" ? goals.scale_goal : "";
+    return g90 || scale || (orgQ.data?.goal as string | undefined) || "";
+  }, [bizCtxQ.data, orgQ.data]);
   const recommendations = useMemo(
     () =>
       recommendTools({
@@ -168,8 +179,9 @@ function LaunchpadOverview() {
         stage: wsQ.data?.stage ?? stage,
         mode: wsQ.data?.mode,
         completedSlugs,
+        goal,
       }),
-    [wsQ.data, stage, completedSlugs],
+    [wsQ.data, stage, completedSlugs, goal],
   );
 
   return (

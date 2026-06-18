@@ -1029,6 +1029,7 @@ function DangerTab() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const remove = async () => {
     if (blockIfGuest("This is a demo — no account to delete.")) return;
@@ -1037,10 +1038,21 @@ function DangerTab() {
       toast.error('Type "DELETE" to confirm');
       return;
     }
-    await supabase.from("profiles").update({ full_name: "(deleted)" }).eq("id", user.id);
-    await signOut();
-    toast.success("Account deleted");
-    navigate({ to: "/auth/sign-in" });
+    setDeleting(true);
+    try {
+      // Permanently deletes the auth user + cascades every org/user-scoped row.
+      const { error } = await supabase.functions.invoke("delete-account", { body: {} });
+      if (error) throw error;
+      await signOut();
+      toast.success("Your account and all its data were permanently deleted.");
+      navigate({ to: "/auth/sign-in" });
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Could not delete account. Please contact support.",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -1079,8 +1091,8 @@ function DangerTab() {
           className="mt-1.5 max-w-lg text-[13px] leading-relaxed"
           style={{ color: "var(--muted-foreground)" }}
         >
-          This permanently signs you out and clears your profile. Your data on the server may be
-          retained per policy.
+          This permanently deletes your account, your organization, and all of your data — tool
+          outputs, memory, leads, and connections. This cannot be undone.
         </p>
         <Button
           variant="destructive"
@@ -1107,11 +1119,11 @@ function DangerTab() {
             className="rounded-xl"
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={deleting}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={remove}>
-              Confirm delete
+            <Button variant="destructive" onClick={remove} disabled={deleting}>
+              {deleting ? "Deleting…" : "Confirm delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

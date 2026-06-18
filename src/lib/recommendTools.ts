@@ -14,6 +14,8 @@ interface RecommendInput {
   mode?: string | null;
   /** slugs of tools the org has already run at least once */
   completedSlugs: Set<string>;
+  /** The founder's stated primary goal — anchors the top recommendation. */
+  goal?: string | null;
 }
 
 // Ordered playlists per lane — first uncompleted wins.
@@ -70,6 +72,7 @@ export function recommendTools({
   stage,
   mode,
   completedSlugs,
+  goal,
 }: RecommendInput): ToolRecommendation[] {
   const playlist =
     (mode === "operate" ? LANE_PLAYLISTS.Systems : undefined) ??
@@ -79,11 +82,21 @@ export function recommendTools({
 
   const next = playlist.filter((t) => !completedSlugs.has(t.slug)).slice(0, 3);
 
-  // Everything in the playlist is done — celebrate forward motion instead.
-  if (next.length === 0) {
-    return playlist
-      .slice(0, 3)
-      .map((t) => ({ slug: t.slug, reason: "Run it again with what you've learned since." }));
+  const recs: ToolRecommendation[] =
+    // Everything in the playlist is done — celebrate forward motion instead.
+    next.length === 0
+      ? playlist
+          .slice(0, 3)
+          .map((t) => ({ slug: t.slug, reason: "Run it again with what you've learned since." }))
+      : next;
+
+  // Anchor the very first recommendation to the founder's stated goal so the
+  // "what next" surface always ties back to what they're working toward.
+  const trimmedGoal = goal?.trim();
+  if (trimmedGoal && recs.length > 0) {
+    const goalSnippet = trimmedGoal.length > 60 ? `${trimmedGoal.slice(0, 60)}…` : trimmedGoal;
+    recs[0] = { ...recs[0], reason: `Toward your goal "${goalSnippet}" — ${recs[0].reason}` };
   }
-  return next;
+
+  return recs;
 }

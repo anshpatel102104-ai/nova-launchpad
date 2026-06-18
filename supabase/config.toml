@@ -60,3 +60,8 @@ verify_jwt = false
 # Team invite — owner/admin adds a teammate; caller is verified + authorized.
 [functions.team-invite]
 verify_jwt = true
+
+# Delete account — permanently deletes the caller's auth user + all their data.
+# Caller is verified by JWT; the service role performs the cascade delete.
+[functions.delete-account]
+verify_jwt = true
