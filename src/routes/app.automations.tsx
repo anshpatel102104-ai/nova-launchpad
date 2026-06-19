@@ -35,6 +35,7 @@ import {
   ChevronUp,
   ArrowRight,
   Clock,
+  LayoutTemplate,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/automations")({ component: AutomationsPage });
@@ -641,13 +642,21 @@ function AutomationsPage() {
             {activeCount} of {AUTOMATIONS.length} systems active
           </p>
         </div>
-        <Link
-          to="/app/builder"
-          className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-[13px] font-semibold text-primary hover:bg-primary/20 transition-all"
-        >
-          <Blocks className="h-4 w-4" /> Build custom workflow{" "}
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/workflow-templates"
+            className="flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-semibold text-foreground hover:border-primary/40 hover:text-primary transition-all"
+          >
+            <LayoutTemplate className="h-4 w-4" /> Templates
+          </Link>
+          <Link
+            to="/app/builder"
+            className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-[13px] font-semibold text-primary hover:bg-primary/20 transition-all"
+          >
+            <Blocks className="h-4 w-4" /> Build custom workflow{" "}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Bottleneck-ranked suggestions from the Business Context Graph */}

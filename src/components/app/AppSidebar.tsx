@@ -241,6 +241,7 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/automations" ||
       p === "/app/integrations" ||
       p === "/app/builder" ||
+      p === "/app/workflow-templates" ||
       p === "/app/approvals",
     children: [
       {
@@ -254,6 +255,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/builder",
         icon: Blocks,
         match: (p) => p === "/app/builder",
+      },
+      {
+        label: "Workflow Templates",
+        to: "/app/workflow-templates",
+        icon: LayoutTemplate,
+        match: (p) => p === "/app/workflow-templates",
       },
       {
         label: "Integrations",
