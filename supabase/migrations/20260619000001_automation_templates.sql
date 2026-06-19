@@ -137,3 +137,6 @@ end;
 $$;
 
 grant execute on function public.install_automation_template(uuid, uuid, uuid) to authenticated;
+-- Mutation RPC must not be anon-callable (it self-guards on membership, but be explicit).
+revoke execute on function public.install_automation_template(uuid, uuid, uuid) from public;
+revoke execute on function public.install_automation_template(uuid, uuid, uuid) from anon;
