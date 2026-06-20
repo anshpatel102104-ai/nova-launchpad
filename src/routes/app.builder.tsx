@@ -49,10 +49,12 @@ import {
   type AudienceScope,
   type AutomationTemplate,
 } from "@/lib/automation-templates";
+import { runWorkflow, type RunResult } from "@/lib/automation-run";
 import {
   Zap,
   GitBranch,
   Play,
+  Clock,
   Save,
   Plus,
   X,
@@ -902,9 +904,9 @@ function BuilderPage() {
   const [saving, setSaving] = useState(false);
   const [showStartFrom, setShowStartFrom] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
-  const [testLogs, setTestLogs] = useState<
-    Array<{ id: string; status: "ok" | "error" | "running"; message: string }>
-  >([]);
+  const [showRun, setShowRun] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<RunResult | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -1001,34 +1003,41 @@ function BuilderPage() {
     }
   }
 
-  const runTest = () => {
+  const executeRun = async (runMode: "test" | "live", contactId: string | null) => {
+    if (!currentOrgId) return;
     if (blocks.length === 0) {
       toast.error("Add at least one block first");
       return;
     }
-    setMode("test");
-    setTestLogs([]);
-    const newLogs: typeof testLogs = [];
-    blocks.forEach((block, i) => {
-      const def = getPaletteBlock(block.type);
-      setTimeout(
-        () => {
-          newLogs.push({
-            id: block.id,
-            status: "ok",
-            message: `✓ ${def?.label ?? block.type} — OK`,
-          });
-          setTestLogs([...newLogs]);
-        },
-        (i + 1) * 600,
-      );
-    });
-    setTimeout(
-      () => {
-        toast.success("Test complete — all steps passed!");
-      },
-      (blocks.length + 1) * 600,
-    );
+    setRunning(true);
+    setRunResult(null);
+    setMode(runMode === "live" ? "live" : "test");
+    try {
+      const result = await runWorkflow({
+        blocks,
+        orgId: currentOrgId,
+        workflowName,
+        contactId,
+        mode: runMode,
+      });
+      setRunResult(result);
+      setShowRun(false);
+      if (result.status === "failed") {
+        toast.error("Run finished with errors — see the trace");
+      } else if (result.simulated) {
+        toast.success(
+          runMode === "test"
+            ? "Test run complete — steps simulated"
+            : "Run complete — some steps simulated (add provider keys to go fully live)",
+        );
+      } else {
+        toast.success("Workflow executed live ✓");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Run failed");
+    } finally {
+      setRunning(false);
+    }
   };
 
   const saveWorkflow = async () => {
@@ -1100,7 +1109,14 @@ function BuilderPage() {
             {(["build", "test", "live"] as RunMode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => (m === "test" ? runTest() : setMode(m))}
+                onClick={() => {
+                  if (m === "build") {
+                    setMode("build");
+                  } else {
+                    setMode(m);
+                    setShowRun(true);
+                  }
+                }}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium capitalize transition-all",
                   mode === m
@@ -1198,33 +1214,51 @@ function BuilderPage() {
 
           {/* ── Center: Canvas ── */}
           <div className="flex-1 overflow-y-auto p-4">
-            {mode === "test" && testLogs.length > 0 && (
+            {runResult && (
               <div className="mb-4 rounded-xl border border-border bg-surface-1/50 p-4 space-y-2">
-                <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <FlaskConical className="h-3.5 w-3.5 text-blue-500" /> Test run
-                </div>
-                {testLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className={cn(
-                      "flex items-center gap-2 text-[12.5px]",
-                      log.status === "ok"
-                        ? "text-emerald-600"
-                        : log.status === "error"
-                          ? "text-destructive"
-                          : "text-muted-foreground",
-                    )}
-                  >
-                    {log.status === "running" ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : log.status === "ok" ? (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                    ) : (
-                      <AlertCircle className="h-3.5 w-3.5" />
-                    )}
-                    {log.message}
+                <div className="flex items-center justify-between">
+                  <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <FlaskConical className="h-3.5 w-3.5 text-blue-500" />
+                    {runResult.mode === "live" ? "Live run" : "Test run"}
+                    <span className="text-muted-foreground/60 normal-case font-medium">
+                      {runResult.steps_completed}/{runResult.steps_total} steps ·{" "}
+                      {runResult.duration_ms}ms
+                    </span>
                   </div>
-                ))}
+                  <button
+                    onClick={() => setRunResult(null)}
+                    className="text-muted-foreground/60 hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {runResult.trace.map((step, i) => {
+                  const color =
+                    step.status === "ok"
+                      ? "text-emerald-600"
+                      : step.status === "error"
+                        ? "text-destructive"
+                        : step.status === "simulated"
+                          ? "text-amber-600"
+                          : "text-muted-foreground";
+                  return (
+                    <div
+                      key={`${step.block_id}-${i}`}
+                      className={cn("flex items-start gap-2 text-[12.5px]", color)}
+                    >
+                      {step.status === "ok" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : step.status === "error" ? (
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : step.status === "simulated" ? (
+                        <FlaskConical className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : (
+                        <Clock className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      )}
+                      <span className="leading-snug">{step.detail}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -1400,6 +1434,191 @@ function BuilderPage() {
           }}
         />
       )}
+      {showRun && user && (
+        <RunModal
+          userId={user.id}
+          running={running}
+          onClose={() => setShowRun(false)}
+          onRun={executeRun}
+        />
+      )}
     </DndContext>
+  );
+}
+
+/* ─── Run modal — pick test/live + an optional contact ───── */
+function RunModal({
+  userId,
+  running,
+  onClose,
+  onRun,
+}: {
+  userId: string;
+  running: boolean;
+  onClose: () => void;
+  onRun: (mode: "test" | "live", contactId: string | null) => void;
+}) {
+  const [runMode, setRunMode] = useState<"test" | "live">("test");
+  const [contactId, setContactId] = useState<string>("");
+  const [contactSearch, setContactSearch] = useState("");
+
+  const contactsQ = useQuery({ ...clientContactsQuery(userId) });
+  const contacts = (contactsQ.data ?? []).filter((c) => {
+    if (!contactSearch) return true;
+    const s = contactSearch.toLowerCase();
+    return (
+      `${c.first_name ?? ""} ${c.last_name ?? ""}`.toLowerCase().includes(s) ||
+      (c.company ?? "").toLowerCase().includes(s) ||
+      (c.email ?? "").toLowerCase().includes(s)
+    );
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 p-5 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <Play className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-foreground">Run workflow</div>
+              <div className="text-[12px] text-muted-foreground">
+                Execute the steps and see a live trace
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Test vs Live */}
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["test", "Test", "Simulate every step. Nothing is sent.", FlaskConical],
+                ["live", "Live", "Actually send / update. Uses your providers.", Radio],
+              ] as const
+            ).map(([m, label, desc, Icon]) => {
+              const active = runMode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setRunMode(m)}
+                  className={cn(
+                    "flex flex-col gap-1 rounded-xl border p-3 text-left transition-all",
+                    active
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/30",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-[13px] font-semibold",
+                      active ? "text-primary" : "text-foreground",
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground leading-snug">{desc}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Contact */}
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+              Run against a contact (optional)
+            </label>
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                className="w-full rounded-lg border border-border bg-background pl-8 pr-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                placeholder="Search your contacts…"
+                value={contactSearch}
+                onChange={(e) => setContactSearch(e.target.value)}
+              />
+            </div>
+            <div className="max-h-40 overflow-y-auto space-y-1">
+              <button
+                onClick={() => setContactId("")}
+                className={cn(
+                  "w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left text-[12.5px] transition-colors",
+                  contactId === ""
+                    ? "bg-primary/10 text-primary"
+                    : "hover:bg-surface-2 text-muted-foreground",
+                )}
+              >
+                <User className="h-3.5 w-3.5" /> No contact — sample run
+              </button>
+              {contacts.slice(0, 40).map((c) => {
+                const label =
+                  `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() ||
+                  c.company ||
+                  c.email ||
+                  "Unnamed";
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setContactId(c.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors",
+                      contactId === c.id
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-surface-2 text-foreground",
+                    )}
+                  >
+                    <span className="text-[12.5px] font-medium truncate">{label}</span>
+                    {contactId === c.id && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {runMode === "live" && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-[12px] text-amber-700 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-px" />
+              Live mode performs real sends and CRM updates. Steps without configured provider keys
+              are simulated and labelled in the trace.
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 p-4 border-t border-border">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border bg-surface-2 px-4 py-2 text-[13px] font-medium text-foreground hover:bg-surface-1 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onRun(runMode, contactId || null)}
+            disabled={running}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
+          >
+            {running ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Play className="h-3.5 w-3.5" />
+            )}
+            Run {runMode}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

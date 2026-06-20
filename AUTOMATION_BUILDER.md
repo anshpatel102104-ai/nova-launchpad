@@ -87,13 +87,60 @@ and HubSpot-style **workflows/sequences + enrollment** on the Nova (operate) sid
 
 ---
 
+---
+
+## Execution engine (shipped + deployed live)
+
+The Builder is no longer write-only — workflows actually run.
+
+- **`run-workflow` edge function** (`supabase/functions/run-workflow/`, deployed to
+  the live project) walks a block-graph and performs the real side effect for each
+  step, writing a per-step trace.
+- **`automation_workflow_runs`** table (migration `20260619000002`) records every
+  run (mode, status, trace, duration) under org-scoped RLS.
+- **Builder → Run modal**: the Test / Live tabs open a run dialog where you pick a
+  contact and execute. `mode: "test"` simulates everything; `mode: "live"` performs
+  real sends/updates. The real trace renders inline on the canvas.
+- **`get_user_integration`** decrypt RPC (service-role only) lets the engine read an
+  operator's **bring-your-own** SendGrid / Slack credentials from `user_integrations`
+  (the GoHighLevel sub-account model), falling back to platform secrets.
+
+### What executes live vs. simulated
+
+| Step | Status | Credential |
+| --- | --- | --- |
+| AI (generate / classify / score) | **LIVE now** | `ANTHROPIC_API_KEY` — already set (powers `nova-chat`) |
+| Outbound webhook | **LIVE now** | none needed |
+| CRM writes (add/remove tag, move stage, set field, add note, memory) | **LIVE now** | service role |
+| If/Else, A/B split, wait | **LIVE now** (waits are recorded; real delays need the queue) | none |
+| Send Email | simulated until key set | `SENDGRID_API_KEY` (+ `SENDGRID_FROM_EMAIL`) **or** connect SendGrid in Integrations |
+| Send SMS | simulated until keys set | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` |
+| Notify team (Slack) | simulated until set | `SLACK_WEBHOOK_URL` **or** connect Slack in Integrations |
+
+Any step without credentials is clearly labelled `simulated` in the trace, so the
+engine works today and each channel goes live the instant its key is added.
+
+### Provider credentials — what's needed
+
+These are paid third-party accounts that must be created by the account owner (they
+can't be provisioned from here). Add them as Supabase Edge Function secrets:
+
+```bash
+supabase secrets set SENDGRID_API_KEY=SG.xxxx SENDGRID_FROM_EMAIL=you@yourdomain.com
+supabase secrets set TWILIO_ACCOUNT_SID=ACxxxx TWILIO_AUTH_TOKEN=xxxx TWILIO_FROM_NUMBER=+1xxxxxxxxxx
+supabase secrets set SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx   # optional
+```
+
+Or — per operator, no platform secret needed — connect **SendGrid** / **Slack** under
+**Integrations**; the engine decrypts and uses those automatically.
+
 ## Follow-ups / deferred
 
-- **Apply the migration** (`20260619000001_automation_templates.sql`) to the live
-  Supabase project so publish/install work at runtime. The UI degrades gracefully
-  (a toast error) until then.
-- **Execution engine** — blocks currently describe intent and run in a simulated
-  test pass. Wiring triggers/actions to real delivery (email/SMS/telephony) is the
-  same deferred infra called out in `GAP_ANALYSIS.md` §F.
-- **Branch rendering** — If/Else and A/B Split show Yes/No paths visually but the
+- **Scheduled waits**: `logic_wait` / `logic_wait_until` are recorded but not yet
+  suspended-and-resumed. Real delays should enqueue onto the existing
+  `nova-automation-queue` + consumer worker (which already has SendGrid/Twilio).
+- **Event triggers**: the engine runs on demand (manual / API). Auto-firing on real
+  events (new lead, tag added, payment) means wiring CRM/Stripe/webhook events to
+  call `run-workflow` — a thin follow-up on top of this runtime.
+- **Branch rendering**: If/Else and A/B Split evaluate and log their path, but the
   canvas is still a linear list; true branching layout is a future enhancement.
