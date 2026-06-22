@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { X, Send, RotateCcw, ArrowUpRight, Zap, ChevronDown } from "lucide-react";
-import { invokeEdgeStream } from "@/lib/invokeEdge";
+import { X, Send, RotateCcw, ArrowUpRight, Zap, ChevronDown, Check } from "lucide-react";
+import { invokeEdge, invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,18 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   pending?: boolean;
+  actionId?: string;
+};
+
+type NovaActionStatus = "pending" | "working" | "executed" | "failed" | "skipped";
+
+type NovaProposedAction = {
+  id: string;
+  action_type: string;
+  payload: Record<string, unknown>;
+  plain_english: string;
+  status: NovaActionStatus;
+  error?: string;
 };
 
 // Page-context greetings Nova sends on first open
@@ -150,6 +162,79 @@ function renderContent(text: string, onNavigate: (path: string) => void): React.
   return segments;
 }
 
+function renderActionCard(
+  action: NovaProposedAction,
+  onDecision: (actionId: string, decision: "approve" | "skip") => void,
+): React.ReactNode {
+  const isPending = action.status === "pending";
+  const isWorking = action.status === "working";
+  return (
+    <div
+      style={{
+        marginTop: 8,
+        padding: "8px 10px",
+        borderRadius: 10,
+        border: "1px solid rgba(255,107,26,0.35)",
+        background: "rgba(255,107,26,0.06)",
+      }}
+    >
+      <div style={{ fontSize: 12, color: "var(--foreground)", marginBottom: 8 }}>
+        {action.plain_english}
+      </div>
+      {isPending || isWorking ? (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            disabled={isWorking}
+            onClick={() => onDecision(action.id, "approve")}
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "none",
+              background: "var(--primary)",
+              color: "#fff",
+              fontSize: 11.5,
+              fontWeight: 600,
+              cursor: isWorking ? "default" : "pointer",
+              opacity: isWorking ? 0.6 : 1,
+              fontFamily: "inherit",
+            }}
+          >
+            {isWorking ? "Executing…" : "Yes, do it"}
+          </button>
+          <button
+            disabled={isWorking}
+            onClick={() => onDecision(action.id, "skip")}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid var(--border)",
+              background: "transparent",
+              color: "var(--muted-foreground)",
+              fontSize: 11.5,
+              fontWeight: 600,
+              cursor: isWorking ? "default" : "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Skip
+          </button>
+        </div>
+      ) : action.status === "executed" ? (
+        <div style={{ display: "flex", gap: 6, alignItems: "center", color: "#22c55e", fontSize: 11.5, fontWeight: 600 }}>
+          <Check style={{ width: 12, height: 12 }} /> Done
+        </div>
+      ) : action.status === "skipped" ? (
+        <div style={{ fontSize: 11.5, color: "var(--muted-foreground)" }}>Skipped</div>
+      ) : (
+        <div style={{ fontSize: 11.5, color: "#ef4444" }}>
+          Failed{action.error ? `: ${action.error}` : ""}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface IntelligenceRailProps {
   open: boolean;
   onClose: () => void;
@@ -161,6 +246,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [actions, setActions] = useState<Record<string, NovaProposedAction>>({});
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
@@ -170,6 +256,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   // Load workspace context once
   useEffect(() => {
@@ -243,6 +330,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     setStreaming(true);
 
     const history = [...messages, userMsg];
+    const ctxAny = context as Record<string, unknown>;
 
     try {
       const abort = new AbortController();
@@ -251,8 +339,12 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
       const resp = await invokeEdgeStream(
         "nova-chat",
         {
-          messages: history.map((m) => ({ role: m.role, content: m.content })),
-          context,
+          message: trimmed,
+          conversation_history: history
+            .slice(0, -1) // exclude the message we just added
+            .map((m) => ({ role: m.role, content: m.content })),
+          session_id: sessionIdRef.current,
+          org_id: (ctxAny.organization_id as string) || undefined,
         },
         { signal: abort.signal, timeoutMs: 45_000 },
       );
@@ -274,12 +366,27 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              accumulated += parsed.delta.text;
+            if (typeof parsed.text === "string" && parsed.text) {
+              accumulated += parsed.text;
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsg.id ? { ...m, content: accumulated, pending: false } : m,
                 ),
+              );
+            }
+            if (parsed.action) {
+              const proposed = parsed.action as {
+                id: string;
+                action_type: string;
+                payload: Record<string, unknown>;
+                plain_english: string;
+              };
+              setActions((prev) => ({
+                ...prev,
+                [proposed.id]: { ...proposed, status: "pending" },
+              }));
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantMsg.id ? { ...m, actionId: proposed.id } : m)),
               );
             }
           } catch {
@@ -312,6 +419,30 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     }
   };
 
+  const handleActionDecision = async (actionId: string, decision: "approve" | "skip") => {
+    setActions((prev) => ({
+      ...prev,
+      [actionId]: { ...prev[actionId], status: decision === "skip" ? "skipped" : "working" },
+    }));
+    if (decision === "skip") {
+      await invokeEdge("nova-action", { action_id: actionId, decision: "skip" }).catch(() => {});
+      return;
+    }
+    try {
+      await invokeEdge("nova-action", { action_id: actionId, decision: "approve" });
+      setActions((prev) => ({ ...prev, [actionId]: { ...prev[actionId], status: "executed" } }));
+    } catch (err) {
+      setActions((prev) => ({
+        ...prev,
+        [actionId]: {
+          ...prev[actionId],
+          status: "failed",
+          error: err instanceof Error ? err.message : "Action failed",
+        },
+      }));
+    }
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -325,6 +456,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     setInput("");
     setGreeted(false);
     setMessages([]);
+    setActions({});
   };
 
   if (!open) return null;
@@ -511,6 +643,9 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                   ) : (
                     msg.content
                   )}
+                  {msg.actionId &&
+                    actions[msg.actionId] &&
+                    renderActionCard(actions[msg.actionId], handleActionDecision)}
                 </div>
               </div>
             ))}

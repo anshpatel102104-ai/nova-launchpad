@@ -294,7 +294,7 @@ Deno.serve(async (req: Request) => {
 
     const latencyMs = Date.now() - t0;
 
-    if (admin && fullText) {
+    if (admin && serviceKey && fullText) {
       const rates = COST_PER_1K[model] ?? COST_PER_1K["claude-sonnet-4-6"];
       const actualCostUsd = (tokensIn / 1000) * rates.input + (tokensOut / 1000) * rates.output;
       const credits = Math.max(1, Math.ceil((tokensIn + tokensOut * 2) / 1000));
