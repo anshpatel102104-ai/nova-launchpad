@@ -112,10 +112,10 @@ The Builder is no longer write-only — workflows actually run.
 | AI (generate / classify / score) | **LIVE now** | `ANTHROPIC_API_KEY` — already set (powers `nova-chat`) |
 | Outbound webhook | **LIVE now** | none needed |
 | CRM writes (add/remove tag, move stage, set field, add note, memory) | **LIVE now** | service role |
-| If/Else, A/B split, wait | **LIVE now** (waits are recorded; real delays need the queue) | none |
-| Send Email | simulated until key set | `SENDGRID_API_KEY` (+ `SENDGRID_FROM_EMAIL`) **or** connect SendGrid in Integrations |
-| Send SMS | simulated until keys set | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` |
-| Notify team (Slack) | simulated until set | `SLACK_WEBHOOK_URL` **or** connect Slack in Integrations |
+| If/Else, A/B split | **LIVE now** — the engine takes only the chosen lane (waits are recorded; real delays need the queue) | none |
+| Send Email | simulated until key set | `SENDGRID_API_KEY` (+ `SENDGRID_FROM_EMAIL`) **or** operator connects SendGrid in Integrations |
+| Send SMS | simulated until keys set | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` **or** operator connects Twilio in Integrations |
+| Notify team (Slack) | simulated until set | `SLACK_WEBHOOK_URL` **or** operator connects Slack in Integrations |
 
 Any step without credentials is clearly labelled `simulated` in the trace, so the
 engine works today and each channel goes live the instant its key is added.
@@ -131,8 +131,23 @@ supabase secrets set TWILIO_ACCOUNT_SID=ACxxxx TWILIO_AUTH_TOKEN=xxxx TWILIO_FRO
 supabase secrets set SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx   # optional
 ```
 
-Or — per operator, no platform secret needed — connect **SendGrid** / **Slack** under
-**Integrations**; the engine decrypts and uses those automatically.
+### Operators bring their own (no platform secret needed)
+
+Each operator can connect their **own** provider accounts under **Integrations** —
+credentials are encrypted (`pgp_sym_encrypt`) and decrypted only inside the
+`run-workflow` service path, scoped to the automation's owner. BYO always takes
+priority over the platform secret fallback. Providers that need more than one value
+capture them as **multi-field** credentials (stored under separate keys):
+
+| Provider | Fields captured | Stored keys |
+| --- | --- | --- |
+| SendGrid | API key + verified from-email | `sendgrid`, `sendgrid_from` |
+| Twilio | Account SID + auth token + from-number | `twilio_sid`, `twilio`, `twilio_from` |
+| Slack | Incoming webhook URL | `slack` |
+| Anthropic (Claude) | API key | `anthropic` |
+
+So an agency operator can run client automations entirely on their own SendGrid /
+Twilio / Slack / Claude accounts without any platform-wide secret being set.
 
 ## Autonomous triggering (shipped + deployed live)
 
@@ -175,5 +190,20 @@ Re-running migration `20260619000003` then schedules `automation-dispatch-1min`.
 - **More event sources**: `contact.created` and `tag.added` fire today. `payment.received`
   is mapped and ready — wiring it just needs a one-line enqueue in `payments-webhook`.
   Form/stage/appointment triggers are next on the same pattern.
-- **Branch rendering**: If/Else and A/B Split evaluate and log their path, but the
-  canvas is still a linear list; true branching layout is a future enhancement.
+
+## Branching canvas (shipped)
+
+If/Else and A/B Split are now **true branches**, not just logged decisions:
+
+- A workflow is a **tree** — `WorkflowBlock.branches` holds nested lanes
+  (If/Else → `Yes` / `No`, A/B Split → `Path A` / `Path B`), each its own ordered
+  list of blocks. Flat (branch-less) workflows stay valid, so older templates and
+  recipes load unchanged.
+- The **Builder** renders the lanes side-by-side under the branch block. Drag a
+  palette block straight into a lane, click **Add step**, reorder within a lane with
+  ↑/↓, and select/configure nested steps like any other. Published branching
+  workflows round-trip through `rehydrateBlocks` (lanes are re-keyed recursively).
+- The **engine** (`run-workflow`) executes recursively: If/Else evaluates its
+  condition and runs **only** the matching lane; A/B Split honours the configured
+  ratio (e.g. `70 / 30`). The run trace indents nested steps by depth, so you see
+  exactly which path was taken. `steps_total` counts every nested block.

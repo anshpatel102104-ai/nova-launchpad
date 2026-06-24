@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, createContext, useContext } from "react";
 import {
   DndContext,
   DragOverlay,
   useDraggable,
   useDroppable,
+  pointerWithin,
   type DragEndEvent,
   type DragStartEvent,
   PointerSensor,
@@ -30,9 +31,18 @@ import {
   BLOCK_CATEGORIES,
   getPaletteBlock,
   buildSentencePreview,
+  isBranchingType,
+  makeBranches,
+  countBlocksDeep,
+  findBlockDeep,
+  updateBlockDeep,
+  removeBlockDeep,
+  insertBlockDeep,
+  moveBlockDeep,
   type BlockCategory,
   type BlockType,
   type WorkflowBlock,
+  type WorkflowBranch,
 } from "@/lib/automation-blocks";
 import {
   AUTOMATION_RECIPES,
@@ -52,7 +62,6 @@ import {
 import { runWorkflow, type RunResult } from "@/lib/automation-run";
 import {
   Zap,
-  GitBranch,
   Play,
   Clock,
   Save,
@@ -66,6 +75,8 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowDown,
+  ChevronUp,
+  ChevronDown,
   LayoutTemplate,
   Upload,
   Search,
@@ -95,20 +106,38 @@ function recipeToBlocks(recipe: AutomationRecipe): WorkflowBlock[] {
     type: b.type,
     label: b.label ?? "",
     config: { ...(b.config ?? {}) },
+    // Recipes are linear; give any branch block empty lanes so they're editable.
+    ...(isBranchingType(b.type) ? { branches: makeBranches(b.type) } : {}),
   }));
 }
 
-/** Re-key persisted blocks so drag/drop ids stay unique within this session. */
+/**
+ * Re-key persisted blocks so drag/drop ids stay unique within this session.
+ * Recurses through branch lanes so published branching workflows round-trip.
+ */
 function rehydrateBlocks(raw: unknown): WorkflowBlock[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter((b): b is WorkflowBlock => !!b && typeof (b as WorkflowBlock).type === "string")
-    .map((b) => ({
-      id: makeId(),
-      type: (b as WorkflowBlock).type,
-      label: (b as WorkflowBlock).label ?? "",
-      config: { ...((b as WorkflowBlock).config ?? {}) },
-    }));
+    .map((b) => {
+      const block = b as WorkflowBlock;
+      const next: WorkflowBlock = {
+        id: makeId(),
+        type: block.type,
+        label: block.label ?? "",
+        config: { ...(block.config ?? {}) },
+      };
+      if (Array.isArray(block.branches) && block.branches.length > 0) {
+        next.branches = block.branches.map((br) => ({
+          id: br.id,
+          label: br.label,
+          blocks: rehydrateBlocks(br.blocks),
+        }));
+      } else if (isBranchingType(block.type)) {
+        next.branches = makeBranches(block.type);
+      }
+      return next;
+    });
 }
 
 /* ─── Palette Block (draggable from palette) ──────────────── */
@@ -149,39 +178,51 @@ function PaletteItem({ block }: { block: (typeof PALETTE_BLOCKS)[number] }) {
   );
 }
 
-/* ─── Canvas Block (sortable, on canvas) ─────────────────── */
-function CanvasBlock({
+/* ─── Builder context (shared block handlers for recursion) ─ */
+interface BuilderCtxValue {
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+  onMove: (id: string, dir: -1 | 1) => void;
+  onAddInBranch: (containerId: string, branchId: string) => void;
+}
+const BuilderCtx = createContext<BuilderCtxValue | null>(null);
+const useBuilderCtx = () => {
+  const ctx = useContext(BuilderCtx);
+  if (!ctx) throw new Error("BuilderCtx missing");
+  return ctx;
+};
+
+/* ─── Presentational block card ──────────────────────────── */
+function BlockBody({
   block,
   isSelected,
   onSelect,
   onDelete,
   isFirst,
+  controls,
+  isDragging,
 }: {
   block: WorkflowBlock;
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
   isFirst: boolean;
+  controls: React.ReactNode;
+  isDragging?: boolean;
 }) {
   const def = getPaletteBlock(block.type);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: block.id,
-  });
-  const style = { transform: CSS.Transform.toString(transform), transition };
   const colors = BLOCK_COLOR[def?.color ?? "blue"];
   const Icon = def?.icon ?? Zap;
-  const isConnector = block.type === "logic_if_branch";
+  const branching = isBranchingType(block.type);
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
-      {/* Arrow connector */}
+    <>
       {!isFirst && (
         <div className="flex justify-center py-1">
           <ArrowDown className="h-4 w-4 text-muted-foreground/50" />
         </div>
       )}
-
-      {/* Block card */}
       <div
         onClick={onSelect}
         className={cn(
@@ -191,20 +232,12 @@ function CanvasBlock({
             ? "border-primary shadow-md shadow-primary/10"
             : cn(colors.border, "hover:border-primary/40"),
           isDragging && "opacity-50 shadow-xl",
-          isConnector && "border-dashed",
+          branching && "border-dashed",
         )}
       >
         <div className="flex items-start gap-3">
-          {/* Drag handle */}
-          <div
-            {...listeners}
-            {...attributes}
-            className="mt-0.5 flex h-5 w-5 shrink-0 cursor-grab active:cursor-grabbing items-center justify-center opacity-0 group-hover:opacity-50"
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </div>
+          {controls}
 
-          {/* Icon */}
           <div
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
@@ -216,18 +249,15 @@ function CanvasBlock({
             <Icon className={cn("h-4.5 w-4.5", colors.text)} />
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "text-[11px] font-bold uppercase tracking-widest opacity-60",
-                  colors.text,
-                )}
-              >
-                {def?.category.toUpperCase() ?? "STEP"}
-              </span>
-            </div>
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-widest opacity-60",
+                colors.text,
+              )}
+            >
+              {def?.category.toUpperCase() ?? "STEP"}
+            </span>
             <div className="text-[13.5px] font-semibold text-foreground mt-0.5">
               {block.label || def?.label}
             </div>
@@ -238,7 +268,6 @@ function CanvasBlock({
             )}
           </div>
 
-          {/* Delete */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -249,19 +278,152 @@ function CanvasBlock({
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
+      </div>
+    </>
+  );
+}
 
-        {/* If block: show branch labels */}
-        {isConnector && (
-          <div className="mt-2.5 flex gap-2 ml-11">
-            <div className="rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2.5 py-1 text-[11px] font-semibold border border-green-200 dark:border-green-800">
-              ✓ Yes path
-            </div>
-            <div className="rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2.5 py-1 text-[11px] font-semibold border border-red-200 dark:border-red-800">
-              ✗ No path
-            </div>
+/* ─── Branch lanes (the Yes/No · A/B columns under a branch block) ─ */
+const LANE_TONE: Record<string, { ring: string; text: string; dot: string }> = {
+  yes: {
+    ring: "border-emerald-300 dark:border-emerald-800",
+    text: "text-emerald-600",
+    dot: "bg-emerald-500",
+  },
+  a: {
+    ring: "border-emerald-300 dark:border-emerald-800",
+    text: "text-emerald-600",
+    dot: "bg-emerald-500",
+  },
+  no: { ring: "border-rose-300 dark:border-rose-800", text: "text-rose-600", dot: "bg-rose-500" },
+  b: {
+    ring: "border-violet-300 dark:border-violet-800",
+    text: "text-violet-600",
+    dot: "bg-violet-500",
+  },
+};
+
+function BranchLane({ block, branch }: { block: WorkflowBlock; branch: WorkflowBranch }) {
+  const { onAddInBranch } = useBuilderCtx();
+  const { setNodeRef, isOver } = useDroppable({ id: `branch::${block.id}::${branch.id}` });
+  const tone = LANE_TONE[branch.id] ?? LANE_TONE.yes;
+
+  return (
+    <div className={cn("rounded-xl border bg-surface-1/30 p-2", tone.ring)}>
+      <div className="flex items-center gap-1.5 px-1 pb-1.5">
+        <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
+        <span className={cn("text-[10.5px] font-bold uppercase tracking-widest", tone.text)}>
+          {branch.label}
+        </span>
+        <span className="text-[10px] text-muted-foreground/60">· {branch.blocks.length}</span>
+      </div>
+
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "rounded-lg border-2 border-dashed transition-all min-h-[52px] p-1.5",
+          isOver ? "border-primary bg-primary/5" : "border-border/50",
+        )}
+      >
+        {branch.blocks.length === 0 ? (
+          <div className="flex items-center justify-center py-2 text-center text-[11px] text-muted-foreground/70">
+            Drop steps for the {branch.label} path
           </div>
+        ) : (
+          branch.blocks.map((cb, i) => <NestedBlock key={cb.id} block={cb} isFirst={i === 0} />)
         )}
       </div>
+
+      <button
+        onClick={() => onAddInBranch(block.id, branch.id)}
+        className="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
+      >
+        <Plus className="h-3 w-3" /> Add step
+      </button>
+    </div>
+  );
+}
+
+function BranchLanes({ block }: { block: WorkflowBlock }) {
+  const branches = block.branches ?? [];
+  if (branches.length === 0) return null;
+  return (
+    <div className="ml-6 mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {branches.map((br) => (
+        <BranchLane key={br.id} block={block} branch={br} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Nested block (inside a branch lane — reordered via ↑/↓) ─ */
+function NestedBlock({ block, isFirst }: { block: WorkflowBlock; isFirst: boolean }) {
+  const { selectedId, onSelect, onDelete, onMove } = useBuilderCtx();
+  const controls = (
+    <div className="mt-0.5 flex flex-col items-center gap-0.5 opacity-0 group-hover:opacity-60">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onMove(block.id, -1);
+        }}
+        className="hover:text-primary"
+      >
+        <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onMove(block.id, 1);
+        }}
+        className="hover:text-primary"
+      >
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+    </div>
+  );
+  return (
+    <div className="relative">
+      <BlockBody
+        block={block}
+        isSelected={selectedId === block.id}
+        onSelect={() => onSelect(block.id)}
+        onDelete={() => onDelete(block.id)}
+        isFirst={isFirst}
+        controls={controls}
+      />
+      {isBranchingType(block.type) && <BranchLanes block={block} />}
+    </div>
+  );
+}
+
+/* ─── Top-level block (drag-to-reorder on the trunk) ─────── */
+function SortableTopBlock({ block, isFirst }: { block: WorkflowBlock; isFirst: boolean }) {
+  const { selectedId, onSelect, onDelete } = useBuilderCtx();
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: block.id,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const controls = (
+    <div
+      {...listeners}
+      {...attributes}
+      className="mt-0.5 flex h-5 w-5 shrink-0 cursor-grab active:cursor-grabbing items-center justify-center opacity-0 group-hover:opacity-50"
+    >
+      <GripVertical className="h-4 w-4 text-muted-foreground" />
+    </div>
+  );
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <BlockBody
+        block={block}
+        isSelected={selectedId === block.id}
+        onSelect={() => onSelect(block.id)}
+        onDelete={() => onDelete(block.id)}
+        isFirst={isFirst}
+        controls={controls}
+        isDragging={isDragging}
+      />
+      {isBranchingType(block.type) && <BranchLanes block={block} />}
     </div>
   );
 }
@@ -910,7 +1072,7 @@ function BuilderPage() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
-  const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
+  const selectedBlock = selectedId ? findBlockDeep(blocks, selectedId) : null;
 
   // Deep-link: ?recipe=slug loads a prebuilt recipe; ?template=id loads a published template.
   useEffect(() => {
@@ -937,30 +1099,41 @@ function BuilderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addBlock = useCallback((type: BlockType, insertAfterIdx?: number) => {
-    const def = getPaletteBlock(type);
-    if (!def) return;
-    const newBlock: WorkflowBlock = { id: makeId(), type, label: "", config: {} };
-    setBlocks((prev) => {
-      const copy = [...prev];
-      if (insertAfterIdx !== undefined) copy.splice(insertAfterIdx + 1, 0, newBlock);
-      else copy.push(newBlock);
-      return copy;
-    });
-    setSelectedId(newBlock.id);
-  }, []);
+  const addBlock = useCallback(
+    (type: BlockType, container?: { containerId: string; branchId: string }) => {
+      const def = getPaletteBlock(type);
+      if (!def) return;
+      const newBlock: WorkflowBlock = {
+        id: makeId(),
+        type,
+        label: "",
+        config: {},
+        ...(isBranchingType(type) ? { branches: makeBranches(type) } : {}),
+      };
+      setBlocks((prev) =>
+        insertBlockDeep(
+          prev,
+          container?.containerId ?? null,
+          container?.branchId ?? null,
+          newBlock,
+        ),
+      );
+      setSelectedId(newBlock.id);
+    },
+    [],
+  );
 
   const updateBlock = useCallback((id: string, updates: Partial<WorkflowBlock>) => {
-    setBlocks((prev) =>
-      prev.map((b) =>
-        b.id === id ? { ...b, ...updates, config: { ...b.config, ...updates.config } } : b,
-      ),
-    );
+    setBlocks((prev) => updateBlockDeep(prev, id, updates));
   }, []);
 
   const deleteBlock = useCallback((id: string) => {
-    setBlocks((prev) => prev.filter((b) => b.id !== id));
+    setBlocks((prev) => removeBlockDeep(prev, id));
     setSelectedId((s) => (s === id ? null : s));
+  }, []);
+
+  const moveBlock = useCallback((id: string, dir: -1 | 1) => {
+    setBlocks((prev) => moveBlockDeep(prev, id, dir));
   }, []);
 
   const loadBlocks = useCallback(
@@ -987,19 +1160,25 @@ function BuilderPage() {
     if (!over) return;
 
     const activeData = active.data.current;
+    const overId = String(over.id);
 
-    if (activeData?.fromPalette && over.id === "canvas") {
-      addBlock(activeData.type as BlockType);
+    // Dropping a palette block: into a branch lane, or onto the trunk.
+    if (activeData?.fromPalette) {
+      const type = activeData.type as BlockType;
+      if (overId.startsWith("branch::")) {
+        const [, containerId, branchId] = overId.split("::");
+        addBlock(type, { containerId, branchId });
+      } else {
+        addBlock(type);
+      }
       return;
     }
 
-    // Reorder within canvas
-    if (!activeData?.fromPalette) {
-      const oldIdx = blocks.findIndex((b) => b.id === active.id);
-      const newIdx = blocks.findIndex((b) => b.id === over.id);
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-        setBlocks((prev) => arrayMove(prev, oldIdx, newIdx));
-      }
+    // Reorder on the trunk (only when both ends are top-level blocks).
+    const oldIdx = blocks.findIndex((b) => b.id === active.id);
+    const newIdx = blocks.findIndex((b) => b.id === over.id);
+    if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
+      setBlocks((prev) => arrayMove(prev, oldIdx, newIdx));
     }
   }
 
@@ -1075,8 +1254,24 @@ function BuilderPage() {
   const categories = BLOCK_CATEGORIES;
   const sentence = buildSentencePreview(blocks);
 
+  const builderCtx: BuilderCtxValue = {
+    selectedId,
+    onSelect: (id) => setSelectedId((s) => (s === id ? null : id)),
+    onDelete: deleteBlock,
+    onMove: moveBlock,
+    onAddInBranch: (containerId, branchId) => {
+      const firstAction = PALETTE_BLOCKS.find((b) => b.category === "action");
+      if (firstAction) addBlock(firstAction.type, { containerId, branchId });
+    },
+  };
+
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerWithin}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <div className="flex flex-col h-[calc(100vh-52px)] overflow-hidden">
         {/* ── Top bar ── */}
         <div
@@ -1245,6 +1440,7 @@ function BuilderPage() {
                     <div
                       key={`${step.block_id}-${i}`}
                       className={cn("flex items-start gap-2 text-[12.5px]", color)}
+                      style={{ paddingLeft: (step.depth ?? 0) * 16 }}
                     >
                       {step.status === "ok" ? (
                         <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-px" />
@@ -1262,50 +1458,48 @@ function BuilderPage() {
               </div>
             )}
 
-            <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-              <CanvasDropZone isEmpty={blocks.length === 0}>
-                {blocks.length === 0 && (
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-10">
-                    <button
-                      onClick={() => setShowStartFrom(true)}
-                      className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-[12.5px] font-semibold text-primary hover:bg-primary/20 transition-all"
-                    >
-                      <Sparkles className="h-4 w-4" /> Start from a recipe
-                    </button>
-                  </div>
-                )}
-                <div className="space-y-0">
-                  {blocks.map((block, idx) => (
-                    <CanvasBlock
-                      key={block.id}
-                      block={block}
-                      isFirst={idx === 0}
-                      isSelected={selectedId === block.id}
-                      onSelect={() => setSelectedId(block.id === selectedId ? null : block.id)}
-                      onDelete={() => deleteBlock(block.id)}
-                    />
-                  ))}
-                </div>
-
-                {/* Add block button at bottom */}
-                {blocks.length > 0 && (
-                  <div className="flex flex-col items-center gap-1 mt-2 pt-2">
-                    <ArrowDown className="h-4 w-4 text-muted-foreground/40" />
-                    <div className="relative group">
+            <BuilderCtx.Provider value={builderCtx}>
+              <SortableContext
+                items={blocks.map((b) => b.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <CanvasDropZone isEmpty={blocks.length === 0}>
+                  {blocks.length === 0 && (
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-10">
                       <button
-                        className="flex items-center gap-2 rounded-lg border-2 border-dashed border-border px-4 py-2.5 text-[12.5px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
-                        onClick={() => {
-                          const firstAction = PALETTE_BLOCKS.find((b) => b.category === "action");
-                          if (firstAction) addBlock(firstAction.type);
-                        }}
+                        onClick={() => setShowStartFrom(true)}
+                        className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-[12.5px] font-semibold text-primary hover:bg-primary/20 transition-all"
                       >
-                        <Plus className="h-4 w-4" /> Add next step
+                        <Sparkles className="h-4 w-4" /> Start from a recipe
                       </button>
                     </div>
+                  )}
+                  <div className="space-y-0">
+                    {blocks.map((block, idx) => (
+                      <SortableTopBlock key={block.id} block={block} isFirst={idx === 0} />
+                    ))}
                   </div>
-                )}
-              </CanvasDropZone>
-            </SortableContext>
+
+                  {/* Add block button at bottom */}
+                  {blocks.length > 0 && (
+                    <div className="flex flex-col items-center gap-1 mt-2 pt-2">
+                      <ArrowDown className="h-4 w-4 text-muted-foreground/40" />
+                      <div className="relative group">
+                        <button
+                          className="flex items-center gap-2 rounded-lg border-2 border-dashed border-border px-4 py-2.5 text-[12.5px] font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-all"
+                          onClick={() => {
+                            const firstAction = PALETTE_BLOCKS.find((b) => b.category === "action");
+                            if (firstAction) addBlock(firstAction.type);
+                          }}
+                        >
+                          <Plus className="h-4 w-4" /> Add next step
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </CanvasDropZone>
+              </SortableContext>
+            </BuilderCtx.Provider>
 
             {/* Mobile palette (shown below canvas on small screens) */}
             <div className="lg:hidden mt-4">

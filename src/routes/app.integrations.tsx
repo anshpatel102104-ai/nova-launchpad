@@ -6,7 +6,7 @@ import { StatusPill } from "@/components/app/StatusPill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
-import { integrationsQuery, saveIntegration } from "@/lib/queries";
+import { integrationsQuery, saveIntegration, type MaskedIntegration } from "@/lib/queries";
 import { blockIfGuest } from "@/lib/guest";
 import { toast } from "sonner";
 import {
@@ -23,6 +23,7 @@ import {
   POPULAR_INTEGRATIONS,
   searchCatalog,
   type IntegrationDef,
+  type IntegrationField,
   type IntegrationCategory,
 } from "@/lib/integrations-catalog";
 
@@ -88,30 +89,68 @@ function IntegrationIcon({
 // ── Connect modal ─────────────────────────────────────────────────────────────
 function ConnectModal({
   item,
-  existingLast4,
-  isConnected,
+  connected,
   onClose,
   onSaved,
 }: {
   item: IntegrationDef;
-  existingLast4?: string | null;
-  isConnected: boolean;
+  connected: MaskedIntegration[];
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { user } = useAuth();
-  const [val, setVal] = useState("");
+  const [vals, setVals] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Single-value integrations are modelled as a one-field list for uniformity.
+  const fields: IntegrationField[] = item.fields ?? [
+    {
+      key: item.key,
+      label: item.inputType === "url" ? "Webhook URL" : "API Key / Token",
+      hint: item.hint,
+      inputType: item.inputType === "url" ? "url" : "key",
+    },
+  ];
+
+  const last4For = (key: string) =>
+    connected.find((c) => c.integration_key === key)?.value_last4 ?? null;
+  const isFieldConnected = (key: string) =>
+    connected.some((c) => c.integration_key === key && c.is_connected);
+  const anyConnected = fields.some((f) => isFieldConnected(f.key));
+
+  const setVal = (key: string, v: string) => {
+    setVals((prev) => ({ ...prev, [key]: v }));
+    setErr(null);
+  };
 
   const save = async () => {
     if (blockIfGuest("Sign up to connect integrations.")) return;
     if (!user) return;
+
+    // Fields the user actually typed into this time.
+    const entered = fields.filter((f) => (vals[f.key] ?? "").trim().length > 0);
+
+    // Require every non-optional field that isn't already connected.
+    const missing = fields.filter(
+      (f) => !f.optional && !isFieldConnected(f.key) && (vals[f.key] ?? "").trim().length === 0,
+    );
+    if (missing.length > 0) {
+      setErr(`Enter ${missing.map((f) => f.label).join(", ")}`);
+      return;
+    }
+    if (entered.length === 0) {
+      onClose();
+      return;
+    }
+
     setSaving(true);
     setErr(null);
     try {
-      await saveIntegration(item.key, val);
-      toast.success(`${item.name} ${val ? "connected" : "disconnected"}`);
+      for (const f of entered) {
+        await saveIntegration(f.key, vals[f.key].trim());
+      }
+      toast.success(`${item.name} ${anyConnected ? "updated" : "connected"}`);
       onSaved();
       onClose();
     } catch (e) {
@@ -126,7 +165,9 @@ function ConnectModal({
     if (!user) return;
     setSaving(true);
     try {
-      await saveIntegration(item.key, "");
+      for (const f of fields) {
+        if (isFieldConnected(f.key)) await saveIntegration(f.key, "");
+      }
       toast.success(`${item.name} disconnected`);
       onSaved();
       onClose();
@@ -163,44 +204,53 @@ function ConnectModal({
             </div>
           ) : (
             <>
-              <div>
-                <label
-                  htmlFor="integration-credential"
-                  className="block mb-1.5 text-[12px] font-medium"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {item.inputType === "url" ? "Webhook URL" : "API Key / Token"}
-                  {isConnected && (
-                    <span
-                      className="ml-2 text-[11px] font-normal"
-                      style={{ color: "var(--success)" }}
+              {item.fields && (
+                <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                  Connect your own account — these credentials are encrypted and used to run your
+                  automations on your behalf.
+                </div>
+              )}
+
+              {fields.map((f) => {
+                const fieldConnected = isFieldConnected(f.key);
+                return (
+                  <div key={f.key}>
+                    <label
+                      htmlFor={`integration-${f.key}`}
+                      className="block mb-1.5 text-[12px] font-medium"
+                      style={{ color: "var(--foreground)" }}
                     >
-                      Currently connected (ending …{existingLast4})
-                    </span>
-                  )}
-                </label>
-                <Input
-                  id="integration-credential"
-                  name="integration_credential"
-                  placeholder={item.hint}
-                  value={val}
-                  onChange={(e) => {
-                    setVal(e.target.value);
-                    setErr(null);
-                  }}
-                  type={item.inputType === "url" ? "text" : "password"}
-                  className="rounded-xl text-[12.5px]"
-                  style={{
-                    background: "var(--surface-2)",
-                    ...(err
-                      ? {
-                          border:
-                            "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)",
-                        }
-                      : {}),
-                  }}
-                />
-              </div>
+                      {f.label}
+                      {fieldConnected && (
+                        <span
+                          className="ml-2 text-[11px] font-normal"
+                          style={{ color: "var(--success)" }}
+                        >
+                          Saved (…{last4For(f.key)})
+                        </span>
+                      )}
+                    </label>
+                    <Input
+                      id={`integration-${f.key}`}
+                      name={`integration_${f.key}`}
+                      placeholder={fieldConnected ? "Leave blank to keep current" : f.hint}
+                      value={vals[f.key] ?? ""}
+                      onChange={(e) => setVal(f.key, e.target.value)}
+                      type={f.inputType === "key" ? "password" : "text"}
+                      className="rounded-xl text-[12.5px]"
+                      style={{
+                        background: "var(--surface-2)",
+                        ...(err
+                          ? {
+                              border:
+                                "1px solid color-mix(in oklab, var(--destructive) 60%, transparent)",
+                            }
+                          : {}),
+                      }}
+                    />
+                  </div>
+                );
+              })}
 
               {err && (
                 <div
@@ -215,16 +265,16 @@ function ConnectModal({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={save}
-                  disabled={saving || !val}
+                  disabled={saving}
                   className="flex-1 rounded-xl py-2 text-[13px] font-semibold text-white transition disabled:opacity-40"
                   style={{
                     background: "linear-gradient(135deg, var(--primary), var(--accent))",
                     boxShadow: "0 3px 10px color-mix(in oklab, var(--primary) 30%, transparent)",
                   }}
                 >
-                  {saving ? "Saving…" : isConnected ? "Update" : "Connect"}
+                  {saving ? "Saving…" : anyConnected ? "Update" : "Connect"}
                 </button>
-                {isConnected && (
+                {anyConnected && (
                   <button
                     onClick={disconnect}
                     disabled={saving}
@@ -714,8 +764,7 @@ function IntegrationsPage() {
       {connecting && (
         <ConnectModal
           item={connecting}
-          isConnected={isConnected(connecting.key)}
-          existingLast4={getLast4(connecting.key)}
+          connected={connected}
           onClose={() => setConnecting(null)}
           onSaved={refresh}
         />
