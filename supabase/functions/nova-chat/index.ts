@@ -238,7 +238,10 @@ Deno.serve(async (req: Request) => {
               });
             }
 
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "input_json_delta") {
+            if (
+              parsed.type === "content_block_delta" &&
+              parsed.delta?.type === "input_json_delta"
+            ) {
               const block = toolBlocks.get(parsed.index);
               if (block) block.json += parsed.delta.partial_json ?? "";
             }
@@ -270,7 +273,9 @@ Deno.serve(async (req: Request) => {
                     .select("id, action_type, payload, plain_english, confirmation_required")
                     .single();
                   if (row) {
-                    await writer.write(encoder.encode(`data: ${JSON.stringify({ action: row })}\n\n`));
+                    await writer.write(
+                      encoder.encode(`data: ${JSON.stringify({ action: row })}\n\n`),
+                    );
                   }
                 } catch {
                   /* malformed tool input — drop the proposal silently */

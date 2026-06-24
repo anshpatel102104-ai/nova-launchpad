@@ -27,12 +27,7 @@ export const NOVA_ACTION_TOOL = {
     properties: {
       action_type: {
         type: "string",
-        enum: [
-          "update_lead_stage",
-          "log_crm_note",
-          "log_memory",
-          "trigger_n8n_workflow",
-        ],
+        enum: ["update_lead_stage", "log_crm_note", "log_memory", "trigger_n8n_workflow"],
       },
       payload: {
         type: "object",

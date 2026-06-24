@@ -226,13 +226,24 @@ function renderActionCard(
           </button>
         </div>
       ) : action.status === "executed" ? (
-        <div style={{ display: "flex", gap: 6, alignItems: "center", color: "#22c55e", fontSize: 12, fontWeight: 600 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            alignItems: "center",
+            color: "#22c55e",
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
           <Check style={{ width: 13, height: 13 }} /> Done
         </div>
       ) : action.status === "skipped" ? (
         <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Skipped</div>
       ) : (
-        <div style={{ fontSize: 12, color: "#ef4444" }}>Failed{action.error ? `: ${action.error}` : ""}</div>
+        <div style={{ fontSize: 12, color: "#ef4444" }}>
+          Failed{action.error ? `: ${action.error}` : ""}
+        </div>
       )}
     </div>
   );

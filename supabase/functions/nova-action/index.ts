@@ -32,7 +32,10 @@ Deno.serve(async (req: Request) => {
   const decision = body.decision ?? "approve";
   if (!actionId) return jsonResponse({ error: "Missing action_id" }, 400);
 
-  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
 
   const { data: action, error: fetchErr } = await admin
     .from("nova_actions")
