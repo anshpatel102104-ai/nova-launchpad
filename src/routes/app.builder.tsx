@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useCallback, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -18,603 +18,101 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
+  PALETTE_BLOCKS,
+  CATEGORY_META,
+  BLOCK_COLOR,
+  BLOCK_CATEGORIES,
+  getPaletteBlock,
+  buildSentencePreview,
+  type BlockCategory,
+  type BlockType,
+  type WorkflowBlock,
+} from "@/lib/automation-blocks";
+import {
+  AUTOMATION_RECIPES,
+  RECIPE_BY_SLUG,
+  RECIPE_CATEGORY_META,
+  type AutomationRecipe,
+  type RecipeBlock,
+} from "@/lib/automation-recipes";
+import {
+  AUDIENCE_META,
+  publishTemplate,
+  myTemplatesQuery,
+  clientContactsQuery,
+  type AudienceScope,
+  type AutomationTemplate,
+} from "@/lib/automation-templates";
+import { runWorkflow, type RunResult } from "@/lib/automation-run";
+import {
   Zap,
-  Mail,
-  MessageSquare,
   GitBranch,
-  Clock,
-  Brain,
-  Target,
   Play,
+  Clock,
   Save,
   Plus,
   X,
   GripVertical,
-  ChevronRight,
   FlaskConical,
   Radio,
   Loader2,
   Sparkles,
-  Database,
-  Phone,
-  Globe,
-  Calendar,
-  Bell,
   CheckCircle2,
   AlertCircle,
   ArrowDown,
+  LayoutTemplate,
+  Upload,
+  Search,
+  FolderOpen,
+  Globe,
+  Users,
+  User,
+  Building2,
 } from "lucide-react";
 
-export const Route = createFileRoute("/app/builder")({ component: BuilderPage });
+export const Route = createFileRoute("/app/builder")({
+  validateSearch: (search: Record<string, unknown>): { recipe?: string; template?: string } => ({
+    recipe: typeof search.recipe === "string" ? search.recipe : undefined,
+    template: typeof search.template === "string" ? search.template : undefined,
+  }),
+  component: BuilderPage,
+});
 
-/* ─── Types ─────────────────────────────────────────────── */
-type BlockCategory = "trigger" | "action" | "logic" | "ai" | "memory";
-type BlockType =
-  | "trigger_new_lead"
-  | "trigger_form_submit"
-  | "trigger_schedule"
-  | "trigger_webhook"
-  | "trigger_payment"
-  | "action_send_email"
-  | "action_send_sms"
-  | "action_update_crm"
-  | "action_create_task"
-  | "action_notify_team"
-  | "action_webhook_out"
-  | "logic_if_branch"
-  | "logic_wait"
-  | "logic_loop"
-  | "ai_classify"
-  | "ai_generate"
-  | "ai_score"
-  | "memory_write"
-  | "memory_read"
-  | "goal_check";
-
+/* ─── Local types ───────────────────────────────────────── */
 type RunMode = "build" | "test" | "live";
 
-interface BlockConfig {
-  [key: string]: string;
+const makeId = () => `block_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+function recipeToBlocks(recipe: AutomationRecipe): WorkflowBlock[] {
+  return recipe.blocks.map((b: RecipeBlock) => ({
+    id: makeId(),
+    type: b.type,
+    label: b.label ?? "",
+    config: { ...(b.config ?? {}) },
+  }));
 }
 
-interface WorkflowBlock {
-  id: string;
-  type: BlockType;
-  label: string;
-  config: BlockConfig;
-  branches?: Array<{ id: string; label: string }>;
-}
-
-interface WorkflowDraft {
-  id?: string;
-  name: string;
-  description: string;
-  blocks: WorkflowBlock[];
-  is_active: boolean;
-  org_id: string;
-}
-
-/* ─── Block palette definitions ─────────────────────────── */
-interface PaletteBlock {
-  type: BlockType;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  category: BlockCategory;
-  color: string;
-  configFields: Array<{
-    key: string;
-    label: string;
-    placeholder?: string;
-    type: "text" | "textarea" | "select";
-    options?: string[];
-  }>;
-}
-
-const PALETTE_BLOCKS: PaletteBlock[] = [
-  /* TRIGGERS */
-  {
-    type: "trigger_new_lead",
-    label: "New Lead",
-    description: "When a new lead arrives in your CRM",
-    icon: Zap,
-    category: "trigger",
-    color: "orange",
-    configFields: [
-      {
-        key: "source",
-        label: "Lead source",
-        type: "select",
-        options: ["Any source", "Website form", "Ad campaign", "Manual entry"],
-      },
-    ],
-  },
-  {
-    type: "trigger_form_submit",
-    label: "Form Submitted",
-    description: "When someone fills out a form",
-    icon: Globe,
-    category: "trigger",
-    color: "orange",
-    configFields: [
-      {
-        key: "form_name",
-        label: "Form name or URL",
-        placeholder: "e.g. Contact form, Waitlist form",
-        type: "text",
-      },
-    ],
-  },
-  {
-    type: "trigger_schedule",
-    label: "Scheduled Time",
-    description: "Run at a specific time or on repeat",
-    icon: Calendar,
-    category: "trigger",
-    color: "orange",
-    configFields: [
-      {
-        key: "schedule",
-        label: "When to run",
-        type: "select",
-        options: ["Every day at 9am", "Every Monday", "First of month", "Every hour", "Custom"],
-      },
-    ],
-  },
-  {
-    type: "trigger_webhook",
-    label: "Webhook",
-    description: "When data arrives from an outside app",
-    icon: Radio,
-    category: "trigger",
-    color: "orange",
-    configFields: [
-      {
-        key: "endpoint_note",
-        label: "What triggers this?",
-        placeholder: "e.g. Stripe payment, Typeform response",
-        type: "text",
-      },
-    ],
-  },
-  {
-    type: "trigger_payment",
-    label: "Payment Received",
-    description: "When a customer pays via Stripe",
-    icon: CheckCircle2,
-    category: "trigger",
-    color: "orange",
-    configFields: [
-      {
-        key: "amount_filter",
-        label: "Minimum amount (optional)",
-        placeholder: "e.g. $100",
-        type: "text",
-      },
-    ],
-  },
-  /* ACTIONS */
-  {
-    type: "action_send_email",
-    label: "Send Email",
-    description: "Send an email to a contact or list",
-    icon: Mail,
-    category: "action",
-    color: "blue",
-    configFields: [
-      {
-        key: "to",
-        label: "Send to",
-        placeholder: "e.g. {{lead.email}} or team@company.com",
-        type: "text",
-      },
-      {
-        key: "subject",
-        label: "Subject line",
-        placeholder: "e.g. Your {{product}} is ready!",
-        type: "text",
-      },
-      {
-        key: "body",
-        label: "Email body",
-        placeholder: "Write the email content here...",
-        type: "textarea",
-      },
-    ],
-  },
-  {
-    type: "action_send_sms",
-    label: "Send SMS",
-    description: "Send a text message via Twilio",
-    icon: MessageSquare,
-    category: "action",
-    color: "blue",
-    configFields: [
-      { key: "to", label: "Phone number", placeholder: "e.g. {{lead.phone}}", type: "text" },
-      {
-        key: "message",
-        label: "Message",
-        placeholder: "Keep it under 160 characters",
-        type: "textarea",
-      },
-    ],
-  },
-  {
-    type: "action_update_crm",
-    label: "Update CRM",
-    description: "Change a lead's stage or add a note",
-    icon: Database,
-    category: "action",
-    color: "blue",
-    configFields: [
-      {
-        key: "field",
-        label: "What to update",
-        type: "select",
-        options: ["Lead stage", "Lead score", "Add tag", "Add note", "Assign owner"],
-      },
-      { key: "value", label: "New value", placeholder: "e.g. Qualified, Hot lead", type: "text" },
-    ],
-  },
-  {
-    type: "action_create_task",
-    label: "Create Task",
-    description: "Add a to-do or follow-up task",
-    icon: CheckCircle2,
-    category: "action",
-    color: "blue",
-    configFields: [
-      {
-        key: "title",
-        label: "Task title",
-        placeholder: "e.g. Follow up with {{lead.name}}",
-        type: "text",
-      },
-      {
-        key: "due_in",
-        label: "Due in",
-        type: "select",
-        options: ["1 hour", "1 day", "3 days", "1 week"],
-      },
-    ],
-  },
-  {
-    type: "action_notify_team",
-    label: "Notify Team",
-    description: "Alert your team via Slack or email",
-    icon: Bell,
-    category: "action",
-    color: "blue",
-    configFields: [
-      {
-        key: "channel",
-        label: "Where to notify",
-        type: "select",
-        options: ["Slack channel", "Email to team", "Both"],
-      },
-      {
-        key: "message",
-        label: "Message",
-        placeholder: "e.g. New hot lead: {{lead.name}} — {{lead.company}}",
-        type: "textarea",
-      },
-    ],
-  },
-  {
-    type: "action_webhook_out",
-    label: "Call Webhook",
-    description: "Send data to any external app",
-    icon: Globe,
-    category: "action",
-    color: "blue",
-    configFields: [
-      { key: "url", label: "Webhook URL", placeholder: "https://...", type: "text" },
-      {
-        key: "note",
-        label: "What this connects to",
-        placeholder: "e.g. Zapier, Make.com, custom app",
-        type: "text",
-      },
-    ],
-  },
-  /* LOGIC */
-  {
-    type: "logic_if_branch",
-    label: "If / Else",
-    description: "Take a different path based on a condition",
-    icon: GitBranch,
-    category: "logic",
-    color: "purple",
-    configFields: [
-      {
-        key: "condition",
-        label: "If this is true…",
-        placeholder: "e.g. Lead score > 70, Email opened, Tag = VIP",
-        type: "text",
-      },
-    ],
-  },
-  {
-    type: "logic_wait",
-    label: "Wait",
-    description: "Pause before the next step runs",
-    icon: Clock,
-    category: "logic",
-    color: "purple",
-    configFields: [
-      {
-        key: "duration",
-        label: "Wait for",
-        type: "select",
-        options: ["1 hour", "4 hours", "1 day", "2 days", "3 days", "1 week", "Until replied"],
-      },
-    ],
-  },
-  {
-    type: "logic_loop",
-    label: "Loop / Repeat",
-    description: "Repeat a set of steps N times",
-    icon: ChevronRight,
-    category: "logic",
-    color: "purple",
-    configFields: [
-      {
-        key: "times",
-        label: "Repeat",
-        type: "select",
-        options: ["2 times", "3 times", "5 times", "Until condition met"],
-      },
-    ],
-  },
-  /* AI */
-  {
-    type: "ai_classify",
-    label: "AI Classify",
-    description: "Let AI label or categorize incoming data",
-    icon: Brain,
-    category: "ai",
-    color: "emerald",
-    configFields: [
-      {
-        key: "what_to_classify",
-        label: "What to classify",
-        placeholder: "e.g. Lead intent, Email reply, Support ticket",
-        type: "text",
-      },
-      {
-        key: "categories",
-        label: "Possible labels",
-        placeholder: "e.g. Hot, Warm, Cold — separate with commas",
-        type: "text",
-      },
-    ],
-  },
-  {
-    type: "ai_generate",
-    label: "AI Write",
-    description: "Have AI draft a message or document",
-    icon: Sparkles,
-    category: "ai",
-    color: "emerald",
-    configFields: [
-      {
-        key: "output_type",
-        label: "What to write",
-        type: "select",
-        options: [
-          "Personalized email",
-          "Follow-up message",
-          "SMS message",
-          "Proposal draft",
-          "Meeting summary",
-        ],
-      },
-      {
-        key: "context",
-        label: "Extra context for AI",
-        placeholder: "e.g. Use a friendly, helpful tone. Mention their industry.",
-        type: "textarea",
-      },
-    ],
-  },
-  {
-    type: "ai_score",
-    label: "AI Score",
-    description: "Have AI rate a lead, reply, or outcome",
-    icon: Target,
-    category: "ai",
-    color: "emerald",
-    configFields: [
-      {
-        key: "what_to_score",
-        label: "What to score",
-        placeholder: "e.g. Lead quality, Email engagement",
-        type: "text",
-      },
-      {
-        key: "scale",
-        label: "Score scale",
-        type: "select",
-        options: ["1–10", "1–100", "Low / Medium / High"],
-      },
-    ],
-  },
-  /* MEMORY */
-  {
-    type: "memory_write",
-    label: "Remember This",
-    description: "Save something to your platform memory",
-    icon: Database,
-    category: "memory",
-    color: "rose",
-    configFields: [
-      {
-        key: "what_to_save",
-        label: "What to remember",
-        placeholder: "e.g. Customer outcome, Campaign result, Lead insight",
-        type: "text",
-      },
-      {
-        key: "category",
-        label: "Memory category",
-        type: "select",
-        options: [
-          "Customer data",
-          "Campaign result",
-          "Strategy insight",
-          "Experiment result",
-          "General",
-        ],
-      },
-    ],
-  },
-  {
-    type: "goal_check",
-    label: "Goal Check",
-    description: "Check if your target was hit. Stop or continue based on result.",
-    icon: Target,
-    category: "memory",
-    color: "rose",
-    configFields: [
-      {
-        key: "goal",
-        label: "What is the goal?",
-        placeholder: "e.g. Booked a call, Replied to email, Made a purchase",
-        type: "text",
-      },
-      {
-        key: "if_not_met",
-        label: "If goal not met",
-        type: "select",
-        options: ["Send follow-up", "Re-try from start", "Mark as lost", "Escalate to team"],
-      },
-    ],
-  },
-];
-
-const CATEGORY_META: Record<BlockCategory, { label: string; color: string; bg: string }> = {
-  trigger: {
-    label: "Triggers",
-    color: "text-orange-600",
-    bg: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800",
-  },
-  action: {
-    label: "Actions",
-    color: "text-blue-600",
-    bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
-  },
-  logic: {
-    label: "Logic",
-    color: "text-purple-600",
-    bg: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
-  },
-  ai: {
-    label: "AI Steps",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
-  },
-  memory: {
-    label: "Memory & Goals",
-    color: "text-rose-600",
-    bg: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800",
-  },
-};
-
-const BLOCK_COLOR: Record<string, { bg: string; text: string; border: string; dot: string }> = {
-  orange: {
-    bg: "bg-orange-50 dark:bg-orange-950/40",
-    text: "text-orange-700 dark:text-orange-300",
-    border: "border-orange-200 dark:border-orange-800",
-    dot: "bg-orange-500",
-  },
-  blue: {
-    bg: "bg-blue-50 dark:bg-blue-950/40",
-    text: "text-blue-700 dark:text-blue-300",
-    border: "border-blue-200 dark:border-blue-800",
-    dot: "bg-blue-500",
-  },
-  purple: {
-    bg: "bg-purple-50 dark:bg-purple-950/40",
-    text: "text-purple-700 dark:text-purple-300",
-    border: "border-purple-200 dark:border-purple-800",
-    dot: "bg-purple-500",
-  },
-  emerald: {
-    bg: "bg-emerald-50 dark:bg-emerald-950/40",
-    text: "text-emerald-700 dark:text-emerald-300",
-    border: "border-emerald-200 dark:border-emerald-800",
-    dot: "bg-emerald-500",
-  },
-  rose: {
-    bg: "bg-rose-50 dark:bg-rose-950/40",
-    text: "text-rose-700 dark:text-rose-300",
-    border: "border-rose-200 dark:border-rose-800",
-    dot: "bg-rose-500",
-  },
-};
-
-function getPaletteBlock(type: BlockType): PaletteBlock {
-  return PALETTE_BLOCKS.find((b) => b.type === type)!;
-}
-
-function buildSentencePreview(blocks: WorkflowBlock[]): string {
-  if (blocks.length === 0) return "Add your first block to start building a workflow.";
-  const parts: string[] = [];
-  for (const block of blocks) {
-    const def = getPaletteBlock(block.type);
-    if (!def) continue;
-    const label = block.label || def.label;
-    switch (block.type) {
-      case "trigger_new_lead":
-        parts.push(`When a new lead arrives`);
-        break;
-      case "trigger_form_submit":
-        parts.push(`When a form is submitted`);
-        break;
-      case "trigger_schedule":
-        parts.push(`On a schedule`);
-        break;
-      case "trigger_webhook":
-        parts.push(`When a webhook fires`);
-        break;
-      case "trigger_payment":
-        parts.push(`When a payment is received`);
-        break;
-      case "logic_wait":
-        parts.push(`Wait ${block.config.duration || "..."}`);
-        break;
-      case "logic_if_branch":
-        parts.push(`If ${block.config.condition || "condition is met"}`);
-        break;
-      case "ai_classify":
-        parts.push(`AI classifies the ${block.config.what_to_classify || "data"}`);
-        break;
-      case "ai_generate":
-        parts.push(`AI writes a ${block.config.output_type || "message"}`);
-        break;
-      case "ai_score":
-        parts.push(`AI scores the ${block.config.what_to_score || "result"}`);
-        break;
-      case "memory_write":
-        parts.push(`Remember ${block.config.what_to_save || "the result"}`);
-        break;
-      case "goal_check":
-        parts.push(`Check goal: ${block.config.goal || "..."}`);
-        break;
-      default:
-        parts.push(label);
-    }
-  }
-  return parts.join(" → ");
+/** Re-key persisted blocks so drag/drop ids stay unique within this session. */
+function rehydrateBlocks(raw: unknown): WorkflowBlock[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((b): b is WorkflowBlock => !!b && typeof (b as WorkflowBlock).type === "string")
+    .map((b) => ({
+      id: makeId(),
+      type: (b as WorkflowBlock).type,
+      label: (b as WorkflowBlock).label ?? "",
+      config: { ...((b as WorkflowBlock).config ?? {}) },
+    }));
 }
 
 /* ─── Palette Block (draggable from palette) ──────────────── */
-function PaletteItem({ block }: { block: PaletteBlock }) {
+function PaletteItem({ block }: { block: (typeof PALETTE_BLOCKS)[number] }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `palette:${block.type}`,
     data: { type: block.type, fromPalette: true },
@@ -672,7 +170,7 @@ function CanvasBlock({
   const style = { transform: CSS.Transform.toString(transform), transition };
   const colors = BLOCK_COLOR[def?.color ?? "blue"];
   const Icon = def?.icon ?? Zap;
-  const isConnector = block.type.startsWith("logic_if_branch");
+  const isConnector = block.type === "logic_if_branch";
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
@@ -790,7 +288,7 @@ function CanvasDropZone({ children, isEmpty }: { children: React.ReactNode; isEm
             </div>
             <div className="text-[13px] text-muted-foreground mt-1">
               Start with a <span className="text-orange-500 font-medium">Trigger</span> — the event
-              that kicks things off.
+              that kicks things off, or load a recipe.
             </div>
           </div>
         </div>
@@ -900,9 +398,502 @@ function PropertiesPanel({
   );
 }
 
+/* ─── Recipes / Load panel ───────────────────────────────── */
+function StartFromPanel({
+  orgId,
+  onClose,
+  onLoad,
+}: {
+  orgId: string | null;
+  onClose: () => void;
+  onLoad: (blocks: WorkflowBlock[], name: string) => void;
+}) {
+  const [tab, setTab] = useState<"recipes" | "mine">("recipes");
+  const myQ = useQuery({ ...myTemplatesQuery(orgId ?? ""), enabled: !!orgId && tab === "mine" });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-3xl max-h-[88vh] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
+          <div className="flex items-center gap-2">
+            <LayoutTemplate className="h-4.5 w-4.5 text-primary" />
+            <div className="text-[15px] font-bold text-foreground">Start from a workflow</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 px-4 pt-3 shrink-0">
+          {(
+            [
+              ["recipes", "Prebuilt recipes"],
+              ["mine", "My published templates"],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-all",
+                tab === k
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-surface-2",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          {tab === "recipes" ? (
+            <div className="space-y-5">
+              {Object.entries(RECIPE_CATEGORY_META).map(([cat, meta]) => {
+                const recipes = AUTOMATION_RECIPES.filter((r) => r.category === cat);
+                if (recipes.length === 0) return null;
+                return (
+                  <div key={cat}>
+                    <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">
+                      {meta.label}
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-2.5">
+                      {recipes.map((r) => (
+                        <button
+                          key={r.slug}
+                          onClick={() => onLoad(recipeToBlocks(r), r.name)}
+                          className="text-left rounded-xl border border-border p-3.5 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span className="text-[22px] leading-none">{r.emoji}</span>
+                            <div className="min-w-0">
+                              <div className="text-[13px] font-semibold text-foreground group-hover:text-primary transition-colors">
+                                {r.name}
+                              </div>
+                              <div className="text-[11.5px] text-muted-foreground mt-0.5 line-clamp-2">
+                                {r.description}
+                              </div>
+                              <div className="text-[10.5px] text-muted-foreground/70 mt-1.5 flex items-center gap-1">
+                                <Zap className="h-3 w-3" />
+                                {r.blocks.length} steps · {r.triggerSummary}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              {myQ.isLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : (myQ.data ?? []).length === 0 ? (
+                <div className="text-center py-12">
+                  <FolderOpen className="h-9 w-9 mx-auto text-muted-foreground/30 mb-3" />
+                  <div className="text-[13px] font-semibold text-foreground">
+                    No published templates yet
+                  </div>
+                  <div className="text-[12px] text-muted-foreground mt-1">
+                    Build a workflow and hit <strong>Publish</strong> to save it here.
+                  </div>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-2.5">
+                  {(myQ.data as AutomationTemplate[]).map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onLoad(rehydrateBlocks(t.blocks), t.name)}
+                      className="text-left rounded-xl border border-border p-3.5 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                    >
+                      <div className="text-[13px] font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {t.name}
+                      </div>
+                      <div className="text-[11.5px] text-muted-foreground mt-0.5 line-clamp-2">
+                        {t.description || t.trigger_summary}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-2 text-[10.5px] text-muted-foreground/70">
+                        <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium">
+                          {AUDIENCE_META[t.audience_scope].short}
+                        </span>
+                        <span>{(t.blocks ?? []).length} steps</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Publish modal ──────────────────────────────────────── */
+const PUBLISH_CATEGORIES = [
+  "lead-nurture",
+  "booking",
+  "sales",
+  "retention",
+  "reputation",
+  "onboarding",
+  "general",
+];
+
+function PublishModal({
+  blocks,
+  defaultName,
+  orgId,
+  userId,
+  onClose,
+  onPublished,
+}: {
+  blocks: WorkflowBlock[];
+  defaultName: string;
+  orgId: string;
+  userId: string;
+  onClose: () => void;
+  onPublished: () => void;
+}) {
+  const [name, setName] = useState(defaultName);
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("general");
+  const [tags, setTags] = useState("");
+  const [scope, setScope] = useState<AudienceScope>("self");
+  const [contactId, setContactId] = useState<string>("");
+  const [contactSearch, setContactSearch] = useState("");
+  const [publishing, setPublishing] = useState(false);
+
+  const contactsQ = useQuery({
+    ...clientContactsQuery(userId),
+    enabled: scope === "client",
+  });
+
+  const firstTrigger = blocks.find((b) => b.type.startsWith("trigger_"));
+  const triggerSummary = firstTrigger
+    ? buildSentencePreview([firstTrigger])
+    : "Manual / no trigger set";
+  const triggerIcon = firstTrigger ? (getPaletteBlock(firstTrigger.type)?.icon ?? Zap) : Zap;
+
+  const contacts = (contactsQ.data ?? []).filter((c) => {
+    if (!contactSearch) return true;
+    const s = contactSearch.toLowerCase();
+    return (
+      `${c.first_name ?? ""} ${c.last_name ?? ""}`.toLowerCase().includes(s) ||
+      (c.company ?? "").toLowerCase().includes(s) ||
+      (c.email ?? "").toLowerCase().includes(s)
+    );
+  });
+  const selectedContact = (contactsQ.data ?? []).find((c) => c.id === contactId);
+
+  const canPublish =
+    name.trim().length > 0 && blocks.length > 0 && (scope !== "client" || !!contactId);
+
+  const handlePublish = async () => {
+    if (!canPublish) {
+      if (!name.trim()) toast.error("Give your template a name");
+      else if (blocks.length === 0) toast.error("Add at least one step first");
+      else if (scope === "client" && !contactId) toast.error("Pick a client to publish for");
+      return;
+    }
+    setPublishing(true);
+    try {
+      const targetLabel =
+        scope === "client" && selectedContact
+          ? `${selectedContact.first_name ?? ""} ${selectedContact.last_name ?? ""}`.trim() ||
+            selectedContact.company ||
+            selectedContact.email ||
+            "Client"
+          : null;
+      await publishTemplate({
+        organization_id: orgId,
+        created_by: userId,
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        blocks,
+        trigger_summary: triggerSummary,
+        audience_scope: scope,
+        target_contact_id: scope === "client" ? contactId : null,
+        target_label: targetLabel,
+        tags: tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      });
+      toast.success(
+        scope === "marketplace"
+          ? "Published to the marketplace 🎉"
+          : scope === "client"
+            ? "Published for your client"
+            : "Template published",
+      );
+      onPublished();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Publish failed");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const TriggerIcon = triggerIcon;
+  const scopeIcon: Record<AudienceScope, React.ComponentType<{ className?: string }>> = {
+    self: User,
+    client: Building2,
+    all_clients: Users,
+    marketplace: Globe,
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 p-5 border-b border-border bg-background">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <Upload className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-foreground">Publish automation</div>
+              <div className="text-[12px] text-muted-foreground">
+                Save it as a template and choose who it's for
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Trigger summary */}
+          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-1/40 px-3.5 py-2.5">
+            <TriggerIcon className="h-4 w-4 text-orange-500 shrink-0" />
+            <div className="text-[12.5px] text-muted-foreground">
+              <span className="font-semibold text-foreground">{blocks.length} steps</span> ·{" "}
+              {triggerSummary}
+            </div>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+              Template name
+            </label>
+            <input
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[13.5px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              placeholder="e.g. Speed-to-Lead SMS + Email"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+              What does it do?
+            </label>
+            <textarea
+              rows={2}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[13.5px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none"
+              placeholder="One line on what this automation accomplishes…"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {/* Category + tags */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+                Category
+              </label>
+              <select
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 capitalize"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {PUBLISH_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c.replace(/-/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+                Tags
+              </label>
+              <input
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                placeholder="sms, follow-up"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Audience scope */}
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-2">
+              Who is this for?
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(AUDIENCE_META) as AudienceScope[]).map((s) => {
+                const ScopeIcon = scopeIcon[s];
+                const active = scope === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setScope(s)}
+                    className={cn(
+                      "flex items-start gap-2.5 rounded-xl border p-3 text-left transition-all",
+                      active
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/30",
+                    )}
+                  >
+                    <ScopeIcon
+                      className={cn(
+                        "h-4 w-4 mt-0.5 shrink-0",
+                        active ? "text-primary" : "text-muted-foreground",
+                      )}
+                    />
+                    <div className="min-w-0">
+                      <div
+                        className={cn(
+                          "text-[12.5px] font-semibold",
+                          active ? "text-primary" : "text-foreground",
+                        )}
+                      >
+                        {AUDIENCE_META[s].label}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                        {AUDIENCE_META[s].description}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Client picker */}
+          {scope === "client" && (
+            <div className="rounded-xl border border-border bg-surface-1/40 p-3 space-y-2">
+              <label className="text-[12px] font-semibold text-foreground block">
+                Pick the client
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  className="w-full rounded-lg border border-border bg-background pl-8 pr-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                  placeholder="Search your contacts…"
+                  value={contactSearch}
+                  onChange={(e) => setContactSearch(e.target.value)}
+                />
+              </div>
+              {contactsQ.isLoading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : contacts.length === 0 ? (
+                <div className="text-[12px] text-muted-foreground py-3 text-center">
+                  No contacts found. Add clients under Contacts first.
+                </div>
+              ) : (
+                <div className="max-h-44 overflow-y-auto space-y-1">
+                  {contacts.slice(0, 50).map((c) => {
+                    const label =
+                      `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() ||
+                      c.company ||
+                      c.email ||
+                      "Unnamed";
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setContactId(c.id)}
+                        className={cn(
+                          "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors",
+                          contactId === c.id
+                            ? "bg-primary/10 text-primary"
+                            : "hover:bg-surface-2 text-foreground",
+                        )}
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[12.5px] font-medium truncate">{label}</div>
+                          {c.company && (
+                            <div className="text-[11px] text-muted-foreground truncate">
+                              {c.company}
+                            </div>
+                          )}
+                        </div>
+                        {contactId === c.id && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 flex items-center justify-end gap-2 p-4 border-t border-border bg-background">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border bg-surface-2 px-4 py-2 text-[13px] font-medium text-foreground hover:bg-surface-1 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePublish}
+            disabled={publishing || !canPublish}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
+          >
+            {publishing ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Upload className="h-3.5 w-3.5" />
+            )}
+            Publish
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Builder Page ──────────────────────────────────── */
 function BuilderPage() {
-  const { currentOrgId } = useAuth();
+  const { currentOrgId, user } = useAuth();
+  const navigate = useNavigate();
+  const search = Route.useSearch();
 
   const [workflowName, setWorkflowName] = useState("My first workflow");
   const [blocks, setBlocks] = useState<WorkflowBlock[]>([]);
@@ -911,15 +902,40 @@ function BuilderPage() {
   const [draggingType, setDraggingType] = useState<BlockType | null>(null);
   const [activePaletteCategory, setActivePaletteCategory] = useState<BlockCategory>("trigger");
   const [saving, setSaving] = useState(false);
-  const [testLogs, setTestLogs] = useState<
-    Array<{ id: string; status: "ok" | "error" | "running"; message: string }>
-  >([]);
+  const [showStartFrom, setShowStartFrom] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
+  const [showRun, setShowRun] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<RunResult | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
 
-  const makeId = () => `block_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  // Deep-link: ?recipe=slug loads a prebuilt recipe; ?template=id loads a published template.
+  useEffect(() => {
+    if (search.recipe && RECIPE_BY_SLUG[search.recipe]) {
+      const r = RECIPE_BY_SLUG[search.recipe];
+      setBlocks(recipeToBlocks(r));
+      setWorkflowName(r.name);
+      navigate({ to: "/app/builder", search: {}, replace: true });
+    } else if (search.template) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any)
+        .from("automation_templates")
+        .select("name, blocks")
+        .eq("id", search.template)
+        .single()
+        .then(({ data }: { data: { name: string; blocks: unknown } | null }) => {
+          if (data) {
+            setBlocks(rehydrateBlocks(data.blocks));
+            setWorkflowName(data.name);
+          }
+          navigate({ to: "/app/builder", search: {}, replace: true });
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addBlock = useCallback((type: BlockType, insertAfterIdx?: number) => {
     const def = getPaletteBlock(type);
@@ -946,6 +962,19 @@ function BuilderPage() {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
     setSelectedId((s) => (s === id ? null : s));
   }, []);
+
+  const loadBlocks = useCallback(
+    (next: WorkflowBlock[], name: string) => {
+      if (blocks.length > 0 && !window.confirm("Replace the current canvas with this workflow?"))
+        return;
+      setBlocks(next);
+      setWorkflowName(name);
+      setSelectedId(null);
+      setShowStartFrom(false);
+      toast.success(`Loaded "${name}"`);
+    },
+    [blocks.length],
+  );
 
   function handleDragStart(event: DragStartEvent) {
     const data = event.active.data.current;
@@ -974,34 +1003,41 @@ function BuilderPage() {
     }
   }
 
-  const runTest = () => {
+  const executeRun = async (runMode: "test" | "live", contactId: string | null) => {
+    if (!currentOrgId) return;
     if (blocks.length === 0) {
       toast.error("Add at least one block first");
       return;
     }
-    setMode("test");
-    setTestLogs([]);
-    const newLogs: typeof testLogs = [];
-    blocks.forEach((block, i) => {
-      const def = getPaletteBlock(block.type);
-      setTimeout(
-        () => {
-          newLogs.push({
-            id: block.id,
-            status: "ok",
-            message: `✓ ${def?.label ?? block.type} — OK`,
-          });
-          setTestLogs([...newLogs]);
-        },
-        (i + 1) * 600,
-      );
-    });
-    setTimeout(
-      () => {
-        toast.success("Test complete — all steps passed!");
-      },
-      (blocks.length + 1) * 600,
-    );
+    setRunning(true);
+    setRunResult(null);
+    setMode(runMode === "live" ? "live" : "test");
+    try {
+      const result = await runWorkflow({
+        blocks,
+        orgId: currentOrgId,
+        workflowName,
+        contactId,
+        mode: runMode,
+      });
+      setRunResult(result);
+      setShowRun(false);
+      if (result.status === "failed") {
+        toast.error("Run finished with errors — see the trace");
+      } else if (result.simulated) {
+        toast.success(
+          runMode === "test"
+            ? "Test run complete — steps simulated"
+            : "Run complete — some steps simulated (add provider keys to go fully live)",
+        );
+      } else {
+        toast.success("Workflow executed live ✓");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Run failed");
+    } finally {
+      setRunning(false);
+    }
   };
 
   const saveWorkflow = async () => {
@@ -1013,23 +1049,19 @@ function BuilderPage() {
     setSaving(true);
     try {
       const {
-        data: { user },
+        data: { user: authUser },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!authUser) throw new Error("Not authenticated");
       const payload = {
-        user_id: user.id,
-        description: workflowName,
-        workflow_json: JSON.parse(
-          JSON.stringify({
-            name: workflowName,
-            blocks,
-            mode,
-            created_at: new Date().toISOString(),
-          }),
-        ),
-        status: "draft" as const,
+        user_id: authUser.id,
+        org_id: currentOrgId,
+        name: workflowName,
+        description: buildSentencePreview(blocks),
+        blocks: JSON.parse(JSON.stringify(blocks)),
+        mode,
       };
-      const { error } = await supabase.from("automation_drafts").insert(payload);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).from("workflow_builders").insert(payload);
       if (error) throw error;
       toast.success("Workflow saved!");
     } catch (e) {
@@ -1040,7 +1072,7 @@ function BuilderPage() {
   };
 
   const visiblePalette = PALETTE_BLOCKS.filter((b) => b.category === activePaletteCategory);
-  const categories = ["trigger", "action", "logic", "ai", "memory"] as BlockCategory[];
+  const categories = BLOCK_CATEGORIES;
   const sentence = buildSentencePreview(blocks);
 
   return (
@@ -1063,12 +1095,28 @@ function BuilderPage() {
             </div>
           </div>
 
+          {/* Start from / templates */}
+          <button
+            onClick={() => setShowStartFrom(true)}
+            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-[12.5px] font-medium text-foreground hover:border-primary/40 hover:text-primary transition-all"
+          >
+            <LayoutTemplate className="h-3.5 w-3.5" />
+            Templates
+          </button>
+
           {/* Mode tabs */}
           <div className="flex items-center gap-1 rounded-lg border border-border p-0.5 bg-surface-1/50">
             {(["build", "test", "live"] as RunMode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => (m === "test" ? runTest() : setMode(m))}
+                onClick={() => {
+                  if (m === "build") {
+                    setMode("build");
+                  } else {
+                    setMode(m);
+                    setShowRun(true);
+                  }
+                }}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium capitalize transition-all",
                   mode === m
@@ -1091,7 +1139,7 @@ function BuilderPage() {
           <button
             onClick={saveWorkflow}
             disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-[13px] font-semibold text-foreground hover:bg-surface-2 disabled:opacity-50 transition-all"
           >
             {saving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1099,6 +1147,20 @@ function BuilderPage() {
               <Save className="h-3.5 w-3.5" />
             )}
             Save
+          </button>
+
+          <button
+            onClick={() => {
+              if (blocks.length === 0) {
+                toast.error("Add at least one step before publishing");
+                return;
+              }
+              setShowPublish(true);
+            }}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 transition-all"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Publish
           </button>
         </div>
 
@@ -1152,38 +1214,66 @@ function BuilderPage() {
 
           {/* ── Center: Canvas ── */}
           <div className="flex-1 overflow-y-auto p-4">
-            {mode === "test" && testLogs.length > 0 && (
+            {runResult && (
               <div className="mb-4 rounded-xl border border-border bg-surface-1/50 p-4 space-y-2">
-                <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <FlaskConical className="h-3.5 w-3.5 text-blue-500" /> Test run
-                </div>
-                {testLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className={cn(
-                      "flex items-center gap-2 text-[12.5px]",
-                      log.status === "ok"
-                        ? "text-emerald-600"
-                        : log.status === "error"
-                          ? "text-destructive"
-                          : "text-muted-foreground",
-                    )}
-                  >
-                    {log.status === "running" ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : log.status === "ok" ? (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                    ) : (
-                      <AlertCircle className="h-3.5 w-3.5" />
-                    )}
-                    {log.message}
+                <div className="flex items-center justify-between">
+                  <div className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <FlaskConical className="h-3.5 w-3.5 text-blue-500" />
+                    {runResult.mode === "live" ? "Live run" : "Test run"}
+                    <span className="text-muted-foreground/60 normal-case font-medium">
+                      {runResult.steps_completed}/{runResult.steps_total} steps ·{" "}
+                      {runResult.duration_ms}ms
+                    </span>
                   </div>
-                ))}
+                  <button
+                    onClick={() => setRunResult(null)}
+                    className="text-muted-foreground/60 hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {runResult.trace.map((step, i) => {
+                  const color =
+                    step.status === "ok"
+                      ? "text-emerald-600"
+                      : step.status === "error"
+                        ? "text-destructive"
+                        : step.status === "simulated"
+                          ? "text-amber-600"
+                          : "text-muted-foreground";
+                  return (
+                    <div
+                      key={`${step.block_id}-${i}`}
+                      className={cn("flex items-start gap-2 text-[12.5px]", color)}
+                    >
+                      {step.status === "ok" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : step.status === "error" ? (
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : step.status === "simulated" ? (
+                        <FlaskConical className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      ) : (
+                        <Clock className="h-3.5 w-3.5 shrink-0 mt-px" />
+                      )}
+                      <span className="leading-snug">{step.detail}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
             <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
               <CanvasDropZone isEmpty={blocks.length === 0}>
+                {blocks.length === 0 && (
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-6 z-10">
+                    <button
+                      onClick={() => setShowStartFrom(true)}
+                      className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-[12.5px] font-semibold text-primary hover:bg-primary/20 transition-all"
+                    >
+                      <Sparkles className="h-4 w-4" /> Start from a recipe
+                    </button>
+                  </div>
+                )}
                 <div className="space-y-0">
                   {blocks.map((block, idx) => (
                     <CanvasBlock
@@ -1322,6 +1412,213 @@ function BuilderPage() {
             );
           })()}
       </DragOverlay>
+
+      {/* Modals */}
+      {showStartFrom && (
+        <StartFromPanel
+          orgId={currentOrgId}
+          onClose={() => setShowStartFrom(false)}
+          onLoad={loadBlocks}
+        />
+      )}
+      {showPublish && currentOrgId && user && (
+        <PublishModal
+          blocks={blocks}
+          defaultName={workflowName}
+          orgId={currentOrgId}
+          userId={user.id}
+          onClose={() => setShowPublish(false)}
+          onPublished={() => {
+            setShowPublish(false);
+            navigate({ to: "/app/workflow-templates" });
+          }}
+        />
+      )}
+      {showRun && user && (
+        <RunModal
+          userId={user.id}
+          running={running}
+          onClose={() => setShowRun(false)}
+          onRun={executeRun}
+        />
+      )}
     </DndContext>
+  );
+}
+
+/* ─── Run modal — pick test/live + an optional contact ───── */
+function RunModal({
+  userId,
+  running,
+  onClose,
+  onRun,
+}: {
+  userId: string;
+  running: boolean;
+  onClose: () => void;
+  onRun: (mode: "test" | "live", contactId: string | null) => void;
+}) {
+  const [runMode, setRunMode] = useState<"test" | "live">("test");
+  const [contactId, setContactId] = useState<string>("");
+  const [contactSearch, setContactSearch] = useState("");
+
+  const contactsQ = useQuery({ ...clientContactsQuery(userId) });
+  const contacts = (contactsQ.data ?? []).filter((c) => {
+    if (!contactSearch) return true;
+    const s = contactSearch.toLowerCase();
+    return (
+      `${c.first_name ?? ""} ${c.last_name ?? ""}`.toLowerCase().includes(s) ||
+      (c.company ?? "").toLowerCase().includes(s) ||
+      (c.email ?? "").toLowerCase().includes(s)
+    );
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 p-5 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <Play className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-foreground">Run workflow</div>
+              <div className="text-[12px] text-muted-foreground">
+                Execute the steps and see a live trace
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-surface-2 transition-colors"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Test vs Live */}
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["test", "Test", "Simulate every step. Nothing is sent.", FlaskConical],
+                ["live", "Live", "Actually send / update. Uses your providers.", Radio],
+              ] as const
+            ).map(([m, label, desc, Icon]) => {
+              const active = runMode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setRunMode(m)}
+                  className={cn(
+                    "flex flex-col gap-1 rounded-xl border p-3 text-left transition-all",
+                    active
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/30",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-[13px] font-semibold",
+                      active ? "text-primary" : "text-foreground",
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground leading-snug">{desc}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Contact */}
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
+              Run against a contact (optional)
+            </label>
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                className="w-full rounded-lg border border-border bg-background pl-8 pr-3 py-2 text-[13px] outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+                placeholder="Search your contacts…"
+                value={contactSearch}
+                onChange={(e) => setContactSearch(e.target.value)}
+              />
+            </div>
+            <div className="max-h-40 overflow-y-auto space-y-1">
+              <button
+                onClick={() => setContactId("")}
+                className={cn(
+                  "w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left text-[12.5px] transition-colors",
+                  contactId === ""
+                    ? "bg-primary/10 text-primary"
+                    : "hover:bg-surface-2 text-muted-foreground",
+                )}
+              >
+                <User className="h-3.5 w-3.5" /> No contact — sample run
+              </button>
+              {contacts.slice(0, 40).map((c) => {
+                const label =
+                  `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() ||
+                  c.company ||
+                  c.email ||
+                  "Unnamed";
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setContactId(c.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors",
+                      contactId === c.id
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-surface-2 text-foreground",
+                    )}
+                  >
+                    <span className="text-[12.5px] font-medium truncate">{label}</span>
+                    {contactId === c.id && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {runMode === "live" && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-[12px] text-amber-700 dark:text-amber-300">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-px" />
+              Live mode performs real sends and CRM updates. Steps without configured provider keys
+              are simulated and labelled in the trace.
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 p-4 border-t border-border">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border bg-surface-2 px-4 py-2 text-[13px] font-medium text-foreground hover:bg-surface-1 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onRun(runMode, contactId || null)}
+            disabled={running}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-all"
+          >
+            {running ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Play className="h-3.5 w-3.5" />
+            )}
+            Run {runMode}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

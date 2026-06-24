@@ -22,6 +22,7 @@ import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthInviteRouteImport } from './routes/auth.invite'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AppWorkflowTemplatesRouteImport } from './routes/app.workflow-templates'
 import { Route as AppTutorialsRouteImport } from './routes/app.tutorials'
 import { Route as AppTemplatesRouteImport } from './routes/app.templates'
 import { Route as AppSopLibraryRouteImport } from './routes/app.sop-library'
@@ -139,6 +140,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/auth/forgot-password',
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppWorkflowTemplatesRoute = AppWorkflowTemplatesRouteImport.update({
+  id: '/workflow-templates',
+  path: '/workflow-templates',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTutorialsRoute = AppTutorialsRouteImport.update({
   id: '/tutorials',
@@ -441,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/tutorials': typeof AppTutorialsRoute
+  '/app/workflow-templates': typeof AppWorkflowTemplatesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -507,6 +514,7 @@ export interface FileRoutesByTo {
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/tutorials': typeof AppTutorialsRoute
+  '/app/workflow-templates': typeof AppWorkflowTemplatesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -575,6 +583,7 @@ export interface FileRoutesById {
   '/app/sop-library': typeof AppSopLibraryRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/tutorials': typeof AppTutorialsRoute
+  '/app/workflow-templates': typeof AppWorkflowTemplatesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/invite': typeof AuthInviteRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -644,6 +653,7 @@ export interface FileRouteTypes {
     | '/app/sop-library'
     | '/app/templates'
     | '/app/tutorials'
+    | '/app/workflow-templates'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -710,6 +720,7 @@ export interface FileRouteTypes {
     | '/app/sop-library'
     | '/app/templates'
     | '/app/tutorials'
+    | '/app/workflow-templates'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -777,6 +788,7 @@ export interface FileRouteTypes {
     | '/app/sop-library'
     | '/app/templates'
     | '/app/tutorials'
+    | '/app/workflow-templates'
     | '/auth/forgot-password'
     | '/auth/invite'
     | '/auth/reset-password'
@@ -913,6 +925,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/forgot-password'
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/workflow-templates': {
+      id: '/app/workflow-templates'
+      path: '/workflow-templates'
+      fullPath: '/app/workflow-templates'
+      preLoaderRoute: typeof AppWorkflowTemplatesRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/tutorials': {
       id: '/app/tutorials'
@@ -1369,6 +1388,7 @@ interface AppRouteChildren {
   AppSopLibraryRoute: typeof AppSopLibraryRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
   AppTutorialsRoute: typeof AppTutorialsRoute
+  AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBlogIdRoute: typeof AppBlogIdRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
@@ -1417,6 +1437,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSopLibraryRoute: AppSopLibraryRoute,
   AppTemplatesRoute: AppTemplatesRoute,
   AppTutorialsRoute: AppTutorialsRoute,
+  AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
   AppBlogIdRoute: AppBlogIdRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,

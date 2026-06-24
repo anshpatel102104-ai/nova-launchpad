@@ -1,0 +1,147 @@
+// automation-dispatch — drains the automation_events queue and fires every
+// matching live automation. Invoked two ways:
+//   • pg_cron (service-role bearer) → drains every org's queue, once a minute;
+//   • an authenticated org member (app nudge) → drains only their own org(s),
+//     so activated automations fire in near-real-time without waiting on cron.
+//
+// For each pending event it finds the org's active_automations whose entry
+// trigger matches the event, then invokes run-workflow (internal/service path)
+// to execute each one live. No execution logic is duplicated here.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+// event name → builder trigger block types that it fires
+const TRIGGERS_FOR_EVENT: Record<string, string[]> = {
+  "contact.created": ["trigger_new_lead", "trigger_contact_created"],
+  "tag.added": ["trigger_tag_added"],
+  "payment.received": ["trigger_payment"],
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+
+interface EventRow {
+  id: string;
+  organization_id: string;
+  event_type: string;
+  contact_id: string | null;
+}
+interface ActiveRow {
+  id: string;
+  template_id: string;
+  trigger_type: string;
+  created_by: string | null;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204 });
+
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+  // Two callers:
+  //  • the pg_cron job (service-role bearer) drains every org's queue;
+  //  • an authenticated org member nudges a drain of only their own org(s),
+  //    so activated automations fire in near-real-time without waiting on cron.
+  let orgFilter: string[] | null = null;
+  if (token !== SERVICE_ROLE_KEY) {
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    });
+    const {
+      data: { user },
+    } = await userClient.auth.getUser();
+    if (!user) return json({ error: "Unauthorized" }, 401);
+    const { data: members } = await admin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id);
+    orgFilter = (members ?? []).map((m) => m.organization_id as string);
+    if (orgFilter.length === 0) return json({ processed: 0, fired: 0 });
+  }
+
+  // Claim a batch of pending events.
+  let pendingQuery = admin
+    .from("automation_events")
+    .select("id, organization_id, event_type, contact_id")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (orgFilter) pendingQuery = pendingQuery.in("organization_id", orgFilter);
+  const { data: pending } = await pendingQuery;
+
+  const events = (pending ?? []) as EventRow[];
+  if (events.length === 0) return json({ processed: 0, fired: 0 });
+
+  await admin
+    .from("automation_events")
+    .update({ status: "processing" })
+    .in(
+      "id",
+      events.map((e) => e.id),
+    );
+
+  let fired = 0;
+
+  for (const ev of events) {
+    try {
+      const triggers = TRIGGERS_FOR_EVENT[ev.event_type] ?? [];
+      let matched: ActiveRow[] = [];
+      if (triggers.length > 0) {
+        const { data: active } = await admin
+          .from("active_automations")
+          .select("id, template_id, trigger_type, created_by")
+          .eq("organization_id", ev.organization_id)
+          .eq("is_active", true)
+          .in("trigger_type", triggers);
+        matched = (active ?? []) as ActiveRow[];
+      }
+
+      for (const a of matched) {
+        if (!a.created_by) continue; // need an owner to run as
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/run-workflow`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            internal: true,
+            user_id: a.created_by,
+            org_id: ev.organization_id,
+            template_id: a.template_id,
+            contact_id: ev.contact_id,
+            mode: "live",
+          }),
+        });
+        if (res.ok) {
+          fired++;
+          await admin.rpc("bump_active_automation", { _id: a.id }).then(
+            () => {},
+            () => {},
+          );
+        }
+      }
+
+      await admin
+        .from("automation_events")
+        .update({ status: "done", processed_at: new Date().toISOString() })
+        .eq("id", ev.id);
+    } catch (e) {
+      await admin
+        .from("automation_events")
+        .update({
+          status: "error",
+          error: e instanceof Error ? e.message : String(e),
+          attempts: 1,
+          processed_at: new Date().toISOString(),
+        })
+        .eq("id", ev.id);
+    }
+  }
+
+  return json({ processed: events.length, fired });
+});
