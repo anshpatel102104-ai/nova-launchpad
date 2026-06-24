@@ -221,7 +221,16 @@ function renderActionCard(
           </button>
         </div>
       ) : action.status === "executed" ? (
-        <div style={{ display: "flex", gap: 6, alignItems: "center", color: "#22c55e", fontSize: 11.5, fontWeight: 600 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            alignItems: "center",
+            color: "#22c55e",
+            fontSize: 11.5,
+            fontWeight: 600,
+          }}
+        >
           <Check style={{ width: 12, height: 12 }} /> Done
         </div>
       ) : action.status === "skipped" ? (
