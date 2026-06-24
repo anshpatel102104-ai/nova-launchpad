@@ -3,10 +3,10 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { invokeEdgeStream } from "@/lib/invokeEdge";
+import { invokeEdge, invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
-import { Sparkles, Send, X, RotateCcw, ArrowUpRight, Zap, Activity } from "lucide-react";
+import { Sparkles, Send, X, RotateCcw, ArrowUpRight, Zap, Activity, Check } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 type Message = {
@@ -14,6 +14,18 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   pending?: boolean;
+  actionId?: string;
+};
+
+type NovaActionStatus = "pending" | "working" | "executed" | "failed" | "skipped";
+
+type NovaProposedAction = {
+  id: string;
+  action_type: string;
+  payload: Record<string, unknown>;
+  plain_english: string;
+  status: NovaActionStatus;
+  error?: string;
 };
 
 const QUICK_PROMPTS_BASE = [
@@ -155,6 +167,77 @@ function renderContent(text: string, onNavigate: (path: string) => void): React.
   return segments;
 }
 
+function renderActionCard(
+  action: NovaProposedAction,
+  onDecision: (actionId: string, decision: "approve" | "skip") => void,
+): React.ReactNode {
+  const isPending = action.status === "pending";
+  const isWorking = action.status === "working";
+  return (
+    <div
+      style={{
+        marginTop: 10,
+        padding: "10px 12px",
+        borderRadius: 10,
+        border: "1px solid rgba(249,115,22,0.35)",
+        background: "rgba(249,115,22,0.06)",
+      }}
+    >
+      <div style={{ fontSize: 12.5, color: "var(--foreground)", marginBottom: 8 }}>
+        {action.plain_english}
+      </div>
+      {isPending || isWorking ? (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            disabled={isWorking}
+            onClick={() => onDecision(action.id, "approve")}
+            style={{
+              flex: 1,
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "none",
+              background: "#F97316",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: isWorking ? "default" : "pointer",
+              opacity: isWorking ? 0.6 : 1,
+              fontFamily: "inherit",
+            }}
+          >
+            {isWorking ? "Executing…" : "Yes, do it"}
+          </button>
+          <button
+            disabled={isWorking}
+            onClick={() => onDecision(action.id, "skip")}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "transparent",
+              color: "var(--muted-foreground)",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: isWorking ? "default" : "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Skip
+          </button>
+        </div>
+      ) : action.status === "executed" ? (
+        <div style={{ display: "flex", gap: 6, alignItems: "center", color: "#22c55e", fontSize: 12, fontWeight: 600 }}>
+          <Check style={{ width: 13, height: 13 }} /> Done
+        </div>
+      ) : action.status === "skipped" ? (
+        <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Skipped</div>
+      ) : (
+        <div style={{ fontSize: 12, color: "#ef4444" }}>Failed{action.error ? `: ${action.error}` : ""}</div>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -165,6 +248,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [actions, setActions] = useState<Record<string, NovaProposedAction>>({});
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
@@ -232,6 +316,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
   const resetChat = () => {
     abortRef.current?.abort();
     setMessages([]);
+    setActions({});
     setInput("");
     setStreaming(false);
     setTimeout(() => inputRef.current?.focus(), 80);
@@ -306,12 +391,27 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              accumulated += parsed.delta.text;
+            if (typeof parsed.text === "string" && parsed.text) {
+              accumulated += parsed.text;
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsg.id ? { ...m, content: accumulated, pending: false } : m,
                 ),
+              );
+            }
+            if (parsed.action) {
+              const proposed = parsed.action as {
+                id: string;
+                action_type: string;
+                payload: Record<string, unknown>;
+                plain_english: string;
+              };
+              setActions((prev) => ({
+                ...prev,
+                [proposed.id]: { ...proposed, status: "pending" },
+              }));
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantMsg.id ? { ...m, actionId: proposed.id } : m)),
               );
             }
           } catch {
@@ -342,6 +442,30 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
       );
     } finally {
       setStreaming(false);
+    }
+  };
+
+  const handleActionDecision = async (actionId: string, decision: "approve" | "skip") => {
+    setActions((prev) => ({
+      ...prev,
+      [actionId]: { ...prev[actionId], status: decision === "skip" ? "skipped" : "working" },
+    }));
+    if (decision === "skip") {
+      await invokeEdge("nova-action", { action_id: actionId, decision: "skip" }).catch(() => {});
+      return;
+    }
+    try {
+      await invokeEdge("nova-action", { action_id: actionId, decision: "approve" });
+      setActions((prev) => ({ ...prev, [actionId]: { ...prev[actionId], status: "executed" } }));
+    } catch (err) {
+      setActions((prev) => ({
+        ...prev,
+        [actionId]: {
+          ...prev[actionId],
+          status: "failed",
+          error: err instanceof Error ? err.message : "Action failed",
+        },
+      }));
     }
   };
 
@@ -809,6 +933,9 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
                     ) : (
                       msg.content
                     )}
+                    {msg.actionId &&
+                      actions[msg.actionId] &&
+                      renderActionCard(actions[msg.actionId], handleActionDecision)}
                   </div>
                 </div>
               ))}

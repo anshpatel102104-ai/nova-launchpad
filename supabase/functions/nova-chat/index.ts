@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { assembleContext } from "../_shared/context.ts";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
+import { NOVA_ACTION_TOOL, type NovaActionType } from "../_shared/novaActions.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -172,6 +173,7 @@ Deno.serve(async (req: Request) => {
       stream: true,
       system: systemPrompt,
       messages,
+      ...(org_id ? { tools: [NOVA_ACTION_TOOL] } : {}),
     }),
   });
 
@@ -188,6 +190,13 @@ Deno.serve(async (req: Request) => {
   let tokensIn = 0;
   let tokensOut = 0;
   const t0 = Date.now();
+
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const admin = serviceKey ? createClient(Deno.env.get("SUPABASE_URL")!, serviceKey) : null;
+
+  // Tracks in-progress tool_use content blocks by their stream index so we
+  // can reassemble the input_json_delta fragments into one JSON payload.
+  const toolBlocks = new Map<number, { id: string; name: string; json: string }>();
 
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
@@ -218,6 +227,57 @@ Deno.serve(async (req: Request) => {
               tokensOut = parsed.usage.output_tokens ?? 0;
             }
 
+            if (
+              parsed.type === "content_block_start" &&
+              parsed.content_block?.type === "tool_use"
+            ) {
+              toolBlocks.set(parsed.index, {
+                id: parsed.content_block.id,
+                name: parsed.content_block.name,
+                json: "",
+              });
+            }
+
+            if (parsed.type === "content_block_delta" && parsed.delta?.type === "input_json_delta") {
+              const block = toolBlocks.get(parsed.index);
+              if (block) block.json += parsed.delta.partial_json ?? "";
+            }
+
+            if (parsed.type === "content_block_stop" && toolBlocks.has(parsed.index)) {
+              const block = toolBlocks.get(parsed.index)!;
+              toolBlocks.delete(parsed.index);
+              if (block.name === "propose_action" && admin && org_id) {
+                try {
+                  const input = JSON.parse(block.json || "{}") as {
+                    action_type: NovaActionType;
+                    payload: Record<string, unknown>;
+                    plain_english: string;
+                  };
+                  // Every proposal shows an explicit confirm card in this UI — there's no
+                  // chat-affirmation auto-exec path yet, so all actions require confirmation.
+                  const confirmationRequired = true;
+                  const { data: row } = await admin
+                    .from("nova_actions")
+                    .insert({
+                      organization_id: org_id,
+                      user_id: user.id,
+                      session_id: sid,
+                      action_type: input.action_type,
+                      payload: input.payload,
+                      plain_english: input.plain_english,
+                      confirmation_required: confirmationRequired,
+                    })
+                    .select("id, action_type, payload, plain_english, confirmation_required")
+                    .single();
+                  if (row) {
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({ action: row })}\n\n`));
+                  }
+                } catch {
+                  /* malformed tool input — drop the proposal silently */
+                }
+              }
+            }
+
             const text = parsed.delta?.text ?? "";
             if (text) {
               fullText += text;
@@ -233,10 +293,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const latencyMs = Date.now() - t0;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (serviceKey && fullText) {
-      const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
+    if (admin && serviceKey && fullText) {
       const rates = COST_PER_1K[model] ?? COST_PER_1K["claude-sonnet-4-6"];
       const actualCostUsd = (tokensIn / 1000) * rates.input + (tokensOut / 1000) * rates.output;
       const credits = Math.max(1, Math.ceil((tokensIn + tokensOut * 2) / 1000));
