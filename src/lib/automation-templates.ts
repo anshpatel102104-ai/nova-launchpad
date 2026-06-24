@@ -184,3 +184,71 @@ export async function archiveTemplate(id: string): Promise<void> {
     .eq("id", id);
   if (error) throw error;
 }
+
+/* ─── Active automations (autonomous event-triggered execution) ─── */
+export interface ActiveAutomation {
+  id: string;
+  organization_id: string;
+  template_id: string;
+  trigger_type: string;
+  is_active: boolean;
+  run_count: number;
+  last_fired_at: string | null;
+}
+
+/** Map of template_id → active automation row, for the org. */
+export function activeAutomationsQuery(orgId: string) {
+  return {
+    queryKey: ["active_automations", orgId],
+    queryFn: async (): Promise<ActiveAutomation[]> => {
+      const { data } = await db.from("active_automations").select("*").eq("organization_id", orgId);
+      return (data ?? []) as ActiveAutomation[];
+    },
+  };
+}
+
+/**
+ * Turn a published template into a live automation that fires automatically on
+ * its entry trigger. Only contact-driven triggers can auto-fire today; others
+ * activate but run manually until their event source is wired.
+ */
+export async function activateAutomation(
+  template: AutomationTemplate,
+  orgId: string,
+  userId: string,
+): Promise<void> {
+  const triggerType =
+    (template.blocks ?? []).find((b) => b.type?.startsWith("trigger_"))?.type ?? "trigger_new_lead";
+  const { error } = await db.from("active_automations").upsert(
+    {
+      organization_id: orgId,
+      template_id: template.id,
+      created_by: userId,
+      trigger_type: triggerType,
+      is_active: true,
+    },
+    { onConflict: "organization_id,template_id" },
+  );
+  if (error) throw error;
+}
+
+export async function deactivateAutomation(templateId: string, orgId: string): Promise<void> {
+  const { error } = await db
+    .from("active_automations")
+    .update({ is_active: false })
+    .eq("organization_id", orgId)
+    .eq("template_id", templateId);
+  if (error) throw error;
+}
+
+const AUTO_FIRE_TRIGGERS = new Set([
+  "trigger_new_lead",
+  "trigger_contact_created",
+  "trigger_tag_added",
+]);
+
+/** Whether a template's entry trigger can currently fire autonomously. */
+export function canAutoFire(template: AutomationTemplate): boolean {
+  const t = (template.blocks ?? []).find((b) => b.type?.startsWith("trigger_"))?.type;
+  return !!t && AUTO_FIRE_TRIGGERS.has(t);
+}

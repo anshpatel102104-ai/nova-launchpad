@@ -53,6 +53,19 @@ export async function runWorkflow(input: RunWorkflowInput): Promise<RunResult> {
   return data as RunResult;
 }
 
+/**
+ * Fire-and-forget nudge to drain this org's pending automation events now, so
+ * activated automations run within seconds instead of waiting for the cron.
+ * Safe to call optimistically — failures are swallowed.
+ */
+export function nudgeAutomationDispatch(): void {
+  try {
+    void supabase.functions.invoke("automation-dispatch", { body: {} });
+  } catch {
+    /* best-effort */
+  }
+}
+
 /** Recent execution runs for an org (history surface). */
 export function workflowRunsQuery(orgId: string, limit = 25) {
   return {

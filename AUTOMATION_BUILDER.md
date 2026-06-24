@@ -134,13 +134,46 @@ supabase secrets set SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx   # 
 Or — per operator, no platform secret needed — connect **SendGrid** / **Slack** under
 **Integrations**; the engine decrypts and uses those automatically.
 
+## Autonomous triggering (shipped + deployed live)
+
+Active automations now fire on their own — no one has to click Run.
+
+- **Activate** a published template (toggle on its card in Workflow Templates) →
+  it's registered in `active_automations` with its entry trigger and goes live.
+- **Safe event capture**: `AFTER` triggers on `contacts` (insert + tag change),
+  added in migration `20260619000003`, enqueue an `automation_events` row. They're
+  `SECURITY DEFINER`, exception-guarded (can never break a contact write), and only
+  enqueue when a matching active automation exists for the org (verified by an
+  assert-and-rollback DB test: no event with no automation, exactly one on
+  `contact.created` and on `tag.added`).
+- **`automation-dispatch`** edge function (deployed) drains the queue and runs each
+  matching automation via `run-workflow`'s internal service path. Two callers:
+  the **app nudge** (an org member, scoped to their own org — fires within seconds
+  of a new contact/tag) and **pg_cron** (every minute, all orgs).
+- New in-app contacts are now org-scoped and nudge the dispatcher on create, so
+  "new lead" automations fire immediately.
+
+### Enabling the server-side cron (one-time, optional)
+
+The app-nudge path works today. For fully server-driven firing (e.g. contacts
+created by external APIs/forms), enable the same prerequisites the repo's existing
+crons already need — they're currently dormant because these were never set:
+
+1. Dashboard → Database → Extensions: enable **pg_cron** and **pg_net**.
+2. Configure the GUCs the cron reads:
+   ```sql
+   alter database postgres set app.settings.supabase_url = 'https://<ref>.supabase.co';
+   alter database postgres set app.settings.service_role_key = '<service_role_key>';
+   ```
+Re-running migration `20260619000003` then schedules `automation-dispatch-1min`.
+
 ## Follow-ups / deferred
 
 - **Scheduled waits**: `logic_wait` / `logic_wait_until` are recorded but not yet
   suspended-and-resumed. Real delays should enqueue onto the existing
   `nova-automation-queue` + consumer worker (which already has SendGrid/Twilio).
-- **Event triggers**: the engine runs on demand (manual / API). Auto-firing on real
-  events (new lead, tag added, payment) means wiring CRM/Stripe/webhook events to
-  call `run-workflow` — a thin follow-up on top of this runtime.
+- **More event sources**: `contact.created` and `tag.added` fire today. `payment.received`
+  is mapped and ready — wiring it just needs a one-line enqueue in `payments-webhook`.
+  Form/stage/appointment triggers are next on the same pattern.
 - **Branch rendering**: If/Else and A/B Split evaluate and log their path, but the
   canvas is still a linear list; true branching layout is a future enhancement.

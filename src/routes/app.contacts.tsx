@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore, GUEST_CONTACTS } from "@/lib/guest";
 import { computeLeadScore } from "@/lib/lead-scoring";
+import { nudgeAutomationDispatch } from "@/lib/automation-run";
 import { toast } from "sonner";
 import {
   Users,
@@ -43,6 +44,7 @@ const db = supabase as any;
 interface Contact {
   id: string;
   user_id: string;
+  org_id?: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
@@ -1014,6 +1016,7 @@ function AddContactModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { currentOrgId } = useAuth();
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -1035,6 +1038,7 @@ function AddContactModal({
     try {
       await createContact({
         user_id: userId,
+        org_id: currentOrgId,
         first_name: form.first_name || null,
         last_name: form.last_name || null,
         email: form.email || null,
@@ -1047,6 +1051,8 @@ function AddContactModal({
         tags: null,
         last_contacted_at: null,
       });
+      // Fire any "new lead / contact created" automations the org has switched on.
+      nudgeAutomationDispatch();
       onSaved();
     } catch (err) {
       setError((err as Error).message ?? "Failed to create contact");

@@ -191,14 +191,8 @@ Deno.serve(async (req: Request) => {
   if (!authHeader) return json({ error: "Missing authorization" }, 401);
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-  const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const {
-    data: { user },
-    error: authErr,
-  } = await userClient.auth.getUser();
-  if (authErr || !user) return json({ error: "Unauthorized" }, 401);
+  const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const token = authHeader.replace("Bearer ", "");
 
   let body: {
     blocks?: Block[];
@@ -207,6 +201,8 @@ Deno.serve(async (req: Request) => {
     org_id?: string;
     workflow_name?: string;
     mode?: "test" | "live";
+    internal?: boolean;
+    user_id?: string;
   };
   try {
     body = await req.json();
@@ -214,8 +210,27 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
+  // Two auth paths:
+  //  • internal — the automation-dispatch service (service-role token) running an
+  //    active automation on a real event. No user session; ids come from the body.
+  //  • user     — a person clicking Run in the Builder (validated JWT).
+  let user: { id: string; email: string | null };
+  if (body.internal && token === SERVICE_ROLE_KEY && body.user_id) {
+    user = { id: body.user_id, email: null };
+  } else {
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const {
+      data: { user: authedUser },
+      error: authErr,
+    } = await userClient.auth.getUser();
+    if (authErr || !authedUser) return json({ error: "Unauthorized" }, 401);
+    user = { id: authedUser.id, email: authedUser.email ?? null };
+  }
+
   const mode = body.mode === "live" ? "live" : "test";
-  const admin = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
   // Resolve blocks (from request, or load the published template).
   let blocks: Block[] = Array.isArray(body.blocks) ? body.blocks : [];

@@ -9,11 +9,16 @@ import {
   marketplaceTemplatesQuery,
   installTemplate,
   archiveTemplate,
+  activeAutomationsQuery,
+  activateAutomation,
+  deactivateAutomation,
+  canAutoFire,
   AUDIENCE_META,
   type AutomationTemplate,
   type AudienceScope,
 } from "@/lib/automation-templates";
 import { AUTOMATION_RECIPES } from "@/lib/automation-recipes";
+import { nudgeAutomationDispatch } from "@/lib/automation-run";
 import {
   Workflow,
   Blocks,
@@ -31,6 +36,8 @@ import {
   Pencil,
   Store,
   FolderOpen,
+  Power,
+  PowerOff,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/workflow-templates")({
@@ -60,6 +67,9 @@ function TemplateCard({
   onEdit,
   onInstall,
   onArchive,
+  onToggleActive,
+  active,
+  autoFire,
   busy,
 }: {
   template: AutomationTemplate;
@@ -67,6 +77,9 @@ function TemplateCard({
   onEdit: () => void;
   onInstall: () => void;
   onArchive: () => void;
+  onToggleActive: () => void;
+  active: boolean;
+  autoFire: boolean;
   busy: boolean;
 }) {
   const steps = Array.isArray(template.blocks) ? template.blocks.length : 0;
@@ -86,7 +99,14 @@ function TemplateCard({
             </div>
           </div>
         </div>
-        <AudienceBadge scope={template.audience_scope} label={template.target_label} />
+        <div className="flex flex-col items-end gap-1">
+          <AudienceBadge scope={template.audience_scope} label={template.target_label} />
+          {owned && active && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+            </span>
+          )}
+        </div>
       </div>
 
       <p className="text-[12px] text-muted-foreground leading-relaxed line-clamp-2 flex-1">
@@ -115,6 +135,44 @@ function TemplateCard({
             </span>
           ))}
         </div>
+      )}
+
+      {owned && (
+        <button
+          onClick={onToggleActive}
+          disabled={busy}
+          title={
+            autoFire
+              ? active
+                ? "Turn off — stop firing automatically"
+                : "Turn on — fire automatically on its trigger"
+              : "This trigger can't auto-fire yet; activate to run it manually"
+          }
+          className={cn(
+            "flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-[12px] font-medium transition-all disabled:opacity-50",
+            active
+              ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
+              : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+          )}
+        >
+          <span className="flex items-center gap-1.5">
+            {active ? <Power className="h-3.5 w-3.5" /> : <PowerOff className="h-3.5 w-3.5" />}
+            {active ? "Active — firing on trigger" : autoFire ? "Activate (auto-fire)" : "Activate"}
+          </span>
+          <span
+            className={cn(
+              "relative h-4 w-7 rounded-full transition-colors",
+              active ? "bg-emerald-500" : "bg-muted-foreground/30",
+            )}
+          >
+            <span
+              className={cn(
+                "absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all",
+                active ? "left-3.5" : "left-0.5",
+              )}
+            />
+          </span>
+        </button>
       )}
 
       <div className="flex items-center gap-2 pt-1">
@@ -169,6 +227,10 @@ function WorkflowTemplatesPage() {
 
   const mineQ = useQuery({ ...myTemplatesQuery(orgId), enabled: !!orgId && tab === "mine" });
   const marketQ = useQuery({ ...marketplaceTemplatesQuery(), enabled: tab === "marketplace" });
+  const activeQ = useQuery({ ...activeAutomationsQuery(orgId), enabled: !!orgId });
+  const activeByTemplate = new Map(
+    (activeQ.data ?? []).filter((a) => a.is_active).map((a) => [a.template_id, a]),
+  );
 
   const list = (tab === "mine" ? mineQ.data : marketQ.data) ?? [];
   const filtered = list.filter((t) => {
@@ -209,6 +271,31 @@ function WorkflowTemplatesPage() {
       toast.success("Template archived");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Archive failed");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleToggleActive = async (t: AutomationTemplate) => {
+    if (!orgId || !user) return;
+    const isActive = activeByTemplate.has(t.id);
+    setBusyId(t.id);
+    try {
+      if (isActive) {
+        await deactivateAutomation(t.id, orgId);
+        toast.success(`"${t.name}" turned off`);
+      } else {
+        await activateAutomation(t, orgId, user.id);
+        nudgeAutomationDispatch(); // drain any events that queued while it was off
+        toast.success(
+          canAutoFire(t)
+            ? `"${t.name}" is live — it'll fire automatically on its trigger`
+            : `"${t.name}" activated`,
+        );
+      }
+      await qc.invalidateQueries({ queryKey: ["active_automations", orgId] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't update");
     } finally {
       setBusyId(null);
     }
@@ -347,10 +434,13 @@ function WorkflowTemplatesPage() {
                 key={t.id}
                 template={t}
                 owned={owned}
+                active={activeByTemplate.has(t.id)}
+                autoFire={canAutoFire(t)}
                 busy={busyId === t.id}
                 onEdit={() => openInBuilder(t.id)}
                 onInstall={() => (owned ? openInBuilder(t.id) : handleInstall(t))}
                 onArchive={() => handleArchive(t)}
+                onToggleActive={() => handleToggleActive(t)}
               />
             );
           })}
