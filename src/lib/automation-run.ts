@@ -16,6 +16,8 @@ export interface RunStep {
   label: string;
   status: RunStepStatus;
   detail: string;
+  /** Nesting level: 0 = trunk, 1+ = inside a taken branch lane. */
+  depth?: number;
 }
 
 export interface RunResult {

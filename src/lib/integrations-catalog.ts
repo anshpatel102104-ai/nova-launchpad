@@ -21,6 +21,20 @@ export const CATEGORIES = [
 
 export type IntegrationCategory = (typeof CATEGORIES)[number];
 
+/**
+ * A single credential field. Most integrations capture one value (the API key),
+ * but some providers need several (e.g. Twilio = SID + token + from-number). Each
+ * field is stored under its own `key` in user_integrations so the run-workflow
+ * engine can resolve them independently as operator BYO credentials.
+ */
+export interface IntegrationField {
+  key: string;
+  label: string;
+  hint: string;
+  inputType: "key" | "url" | "text";
+  optional?: boolean;
+}
+
 export interface IntegrationDef {
   key: string;
   name: string;
@@ -31,6 +45,8 @@ export interface IntegrationDef {
   hint: string;
   popular?: boolean;
   comingSoon?: boolean;
+  // When present, the Connect modal captures these fields instead of a single value.
+  fields?: IntegrationField[];
 }
 
 export const CATALOG: IntegrationDef[] = [
@@ -198,6 +214,11 @@ export const CATALOG: IntegrationDef[] = [
     iconSlug: "twilio",
     inputType: "key",
     hint: "Auth token",
+    fields: [
+      { key: "twilio_sid", label: "Account SID", hint: "AC…", inputType: "key" },
+      { key: "twilio", label: "Auth token", hint: "Your Twilio auth token", inputType: "key" },
+      { key: "twilio_from", label: "From number", hint: "+15551234567", inputType: "text" },
+    ],
   },
   {
     key: "sendgrid",
@@ -208,6 +229,15 @@ export const CATALOG: IntegrationDef[] = [
     inputType: "key",
     hint: "API key (SG...)",
     popular: true,
+    fields: [
+      { key: "sendgrid", label: "API key", hint: "API key (SG…)", inputType: "key" },
+      {
+        key: "sendgrid_from",
+        label: "From email (verified sender)",
+        hint: "you@yourdomain.com",
+        inputType: "text",
+      },
+    ],
   },
   {
     key: "mailchimp",

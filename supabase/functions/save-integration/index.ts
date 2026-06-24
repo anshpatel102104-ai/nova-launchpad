@@ -35,6 +35,22 @@ function validateValue(integrationKey: string, value: string): string | null {
       if (value.length < 10) return "API key is too short";
       return null;
 
+    // ── BYO provider sub-fields (multi-field credentials) ──
+    case "sendgrid_from":
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))
+        return "Enter a valid sender email (e.g. you@yourdomain.com)";
+      return null;
+
+    case "twilio_sid":
+      if (!/^AC[A-Za-z0-9]{10,}$/.test(value)) return "Twilio Account SID starts with AC…";
+      return null;
+
+    case "twilio_from":
+      // Either an E.164 phone number (+15551234567) or a Messaging Service SID (MG…).
+      if (!/^\+?[1-9]\d{6,15}$/.test(value) && !/^MG[A-Za-z0-9]{10,}$/.test(value))
+        return "Enter an E.164 number (e.g. +15551234567) or a Messaging Service SID";
+      return null;
+
     case "zapier": {
       let url: URL;
       try {

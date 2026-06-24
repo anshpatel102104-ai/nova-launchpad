@@ -26,11 +26,17 @@ const corsHeaders = {
 };
 
 /* ─── Types ─── */
+interface Branch {
+  id: string;
+  label: string;
+  blocks: Block[];
+}
 interface Block {
   id: string;
   type: string;
   label?: string;
   config?: Record<string, string>;
+  branches?: Branch[];
 }
 interface Contact {
   id: string;
@@ -51,6 +57,7 @@ interface StepResult {
   label: string;
   status: StepStatus;
   detail: string;
+  depth: number;
 }
 interface Creds {
   sendgridKey?: string;
@@ -91,6 +98,26 @@ function buildVars(contact: Contact | null, ai: Record<string, string>): Record<
 function interpolate(s: string | undefined, vars: Record<string, string>): string {
   if (!s) return "";
   return s.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, k) => vars[k] ?? "");
+}
+
+/* ─── Tree helpers ─── */
+function countBlocksDeep(blocks: Block[]): number {
+  let n = 0;
+  for (const b of blocks) {
+    n += 1;
+    for (const br of b.branches ?? []) n += countBlocksDeep(br.blocks);
+  }
+  return n;
+}
+/** Probability (0–1) of taking Path A from a "70 / 30"-style split config. */
+function splitProbabilityA(cfg: string | undefined): number {
+  if (!cfg) return 0.5;
+  const m = cfg.match(/(\d+)\s*\/\s*(\d+)/);
+  if (!m) return 0.5;
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  if (!a && !b) return 0.5;
+  return a / (a + b);
 }
 
 /* ─── Providers ─── */
@@ -281,19 +308,26 @@ Deno.serve(async (req: Request) => {
     });
     return (typeof data === "string" && data) || undefined;
   };
+  // Operator BYO credentials (decrypted from the run owner's connected
+  // integrations) take priority; platform-wide secrets are the fallback so the
+  // engine still works before any operator connects their own provider.
   const creds: Creds = {
     sendgridKey: (await byo("sendgrid")) ?? Deno.env.get("SENDGRID_API_KEY") ?? undefined,
-    sendgridFrom: Deno.env.get("SENDGRID_FROM_EMAIL") ?? "nova@launchpad.nova-ops.space",
-    twilioSid: Deno.env.get("TWILIO_ACCOUNT_SID") ?? undefined,
-    twilioToken: Deno.env.get("TWILIO_AUTH_TOKEN") ?? undefined,
-    twilioFrom: Deno.env.get("TWILIO_FROM_NUMBER") ?? undefined,
+    sendgridFrom:
+      (await byo("sendgrid_from")) ??
+      Deno.env.get("SENDGRID_FROM_EMAIL") ??
+      "nova@launchpad.nova-ops.space",
+    twilioSid: (await byo("twilio_sid")) ?? Deno.env.get("TWILIO_ACCOUNT_SID") ?? undefined,
+    twilioToken: (await byo("twilio")) ?? Deno.env.get("TWILIO_AUTH_TOKEN") ?? undefined,
+    twilioFrom: (await byo("twilio_from")) ?? Deno.env.get("TWILIO_FROM_NUMBER") ?? undefined,
     slackWebhook: (await byo("slack")) ?? Deno.env.get("SLACK_WEBHOOK_URL") ?? undefined,
-    anthropicKey: Deno.env.get("ANTHROPIC_API_KEY") ?? undefined,
+    anthropicKey: (await byo("anthropic")) ?? Deno.env.get("ANTHROPIC_API_KEY") ?? undefined,
     aiGatewayUrl: Deno.env.get("CLOUDFLARE_AI_GATEWAY_URL") ?? undefined,
   };
   const live = mode === "live";
 
   const triggerType = blocks.find((b) => b.type.startsWith("trigger_"))?.type ?? null;
+  const stepsTotal = countBlocksDeep(blocks);
 
   // Open a run record.
   const { data: runRow } = await admin
@@ -307,7 +341,7 @@ Deno.serve(async (req: Request) => {
       contact_id: contact?.id ?? null,
       mode,
       status: "running",
-      steps_total: blocks.length,
+      steps_total: stepsTotal,
     })
     .select("id")
     .single();
@@ -319,23 +353,59 @@ Deno.serve(async (req: Request) => {
   let hadError = false;
   const started = Date.now();
 
-  const push = (b: Block, status: StepStatus, detail: string) => {
+  const pushTrace = (b: Block, status: StepStatus, detail: string, depth: number) => {
     if (status === "simulated") anySimulated = true;
     if (status === "error") hadError = true;
-    trace.push({ block_id: b.id, type: b.type, label: b.label || b.type, status, detail });
+    trace.push({ block_id: b.id, type: b.type, label: b.label || b.type, status, detail, depth });
   };
 
-  for (const b of blocks) {
-    const cfg = b.config ?? {};
-    const vars = buildVars(contact, ai);
-    try {
-      // Triggers — entry points, nothing to execute.
-      if (b.type.startsWith("trigger_")) {
-        push(b, "ok", `Listening: ${b.label || b.type.replace(/^trigger_/, "").replace(/_/g, " ")}`);
-        continue;
-      }
+  // Execute an ordered list of blocks. Branching blocks evaluate which lane to
+  // take and recurse into only that lane, so the trace reflects the real path.
+  const runBlocks = async (list: Block[], depth: number): Promise<void> => {
+    // depth-bound trace helper so every step in this lane records its nesting.
+    const push = (b: Block, status: StepStatus, detail: string) =>
+      pushTrace(b, status, detail, depth);
+    for (const b of list) {
+      const cfg = b.config ?? {};
+      const vars = buildVars(contact, ai);
+      try {
+        // Triggers — entry points, nothing to execute.
+        if (b.type.startsWith("trigger_")) {
+          push(
+            b,
+            "ok",
+            `Listening: ${b.label || b.type.replace(/^trigger_/, "").replace(/_/g, " ")}`,
+          );
+          continue;
+        }
 
-      switch (b.type) {
+        // Branching blocks with real lanes: choose a path and recurse into it.
+        if (
+          (b.type === "logic_if_branch" || b.type === "logic_split_test") &&
+          (b.branches?.length ?? 0) > 0
+        ) {
+          const branches = b.branches!;
+          let chosenIdx: number;
+          let detail: string;
+          if (b.type === "logic_if_branch") {
+            const cond = interpolate(cfg.condition, vars);
+            const yes = evalCondition(cond, contact, ai);
+            chosenIdx = yes ? 0 : 1;
+            detail = `If "${cond || "condition"}" → ${branches[chosenIdx]?.label ?? (yes ? "Yes" : "No")} path`;
+          } else {
+            const probA = splitProbabilityA(cfg.split);
+            chosenIdx = Math.random() < probA ? 0 : 1;
+            detail = `A/B split (${cfg.split || "50 / 50"}) → ${branches[chosenIdx]?.label ?? (chosenIdx === 0 ? "A" : "B")} path`;
+          }
+          push(b, "ok", detail);
+          const lane = branches[chosenIdx];
+          if (lane && lane.blocks.length > 0) {
+            await runBlocks(lane.blocks, depth + 1);
+          }
+          continue;
+        }
+
+        switch (b.type) {
         case "action_send_email": {
           const to = interpolate(cfg.to, vars) || contact?.email || "";
           const subject = interpolate(cfg.subject, vars);
@@ -505,10 +575,13 @@ Deno.serve(async (req: Request) => {
           // Actions we record but don't yet have a side-effecting integration for.
           push(b, "simulated", `${(b.label || b.type).replace(/_/g, " ")} — recorded`);
       }
-    } catch (e) {
-      push(b, "error", e instanceof Error ? e.message : String(e));
+      } catch (e) {
+        push(b, "error", e instanceof Error ? e.message : String(e));
+      }
     }
-  }
+  };
+
+  await runBlocks(blocks, 0);
 
   const duration = Date.now() - started;
   const completed = trace.filter((t) => t.status === "ok").length;
@@ -526,7 +599,7 @@ Deno.serve(async (req: Request) => {
     status,
     mode,
     simulated: anySimulated || !live,
-    steps_total: blocks.length,
+    steps_total: stepsTotal,
     steps_completed: completed,
     duration_ms: duration,
     trace,

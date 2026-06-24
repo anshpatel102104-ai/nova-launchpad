@@ -93,12 +93,28 @@ export interface BlockConfig {
   [key: string]: string;
 }
 
+/**
+ * A single lane underneath a branching block (If/Else → Yes/No,
+ * A/B Split → Path A/Path B). Each lane is its own ordered list of blocks,
+ * so the canvas and the runtime can both treat a workflow as a tree.
+ */
+export interface WorkflowBranch {
+  id: string;
+  label: string;
+  blocks: WorkflowBlock[];
+}
+
 export interface WorkflowBlock {
   id: string;
   type: BlockType;
   label: string;
   config: BlockConfig;
-  branches?: Array<{ id: string; label: string }>;
+  /**
+   * Present on branching blocks (logic_if_branch / logic_split_test). Each entry
+   * is a nested lane of blocks that only runs when that branch is taken. Absent
+   * (or empty) means the block runs linearly — keeps older flat workflows valid.
+   */
+  branches?: WorkflowBranch[];
 }
 
 export interface PaletteConfigField {
@@ -969,6 +985,161 @@ export function getPaletteBlock(type: BlockType): PaletteBlock | undefined {
   return PALETTE_BLOCKS.find((b) => b.type === type);
 }
 
+/* ─── Branching ─────────────────────────────────────────────
+ * Blocks that split the flow into parallel lanes. The first lane is the
+ * "primary" path (Yes / Path A), the second is the alternate (No / Path B).
+ * The runtime evaluates which lane to take; the canvas renders them side by side.
+ */
+export const BRANCH_SPECS: Partial<Record<BlockType, { id: string; label: string }[]>> = {
+  logic_if_branch: [
+    { id: "yes", label: "Yes" },
+    { id: "no", label: "No" },
+  ],
+  logic_split_test: [
+    { id: "a", label: "Path A" },
+    { id: "b", label: "Path B" },
+  ],
+};
+
+export function isBranchingType(type: BlockType): boolean {
+  return type in BRANCH_SPECS;
+}
+
+/** Default (empty) lanes for a freshly-added branching block. */
+export function makeBranches(type: BlockType): WorkflowBranch[] | undefined {
+  const spec = BRANCH_SPECS[type];
+  if (!spec) return undefined;
+  return spec.map((s) => ({ id: s.id, label: s.label, blocks: [] }));
+}
+
+/* ─── Recursive tree helpers ────────────────────────────────
+ * A workflow is a tree: an ordered list of blocks where branching blocks carry
+ * nested lanes. These helpers keep the Builder's edits and the run preview in
+ * sync without mutating in place.
+ */
+
+/** Total number of blocks, counting every nested branch lane. */
+export function countBlocksDeep(blocks: WorkflowBlock[]): number {
+  let n = 0;
+  for (const b of blocks) {
+    n += 1;
+    for (const br of b.branches ?? []) n += countBlocksDeep(br.blocks);
+  }
+  return n;
+}
+
+/** Find a block anywhere in the tree by id. */
+export function findBlockDeep(blocks: WorkflowBlock[], id: string): WorkflowBlock | null {
+  for (const b of blocks) {
+    if (b.id === id) return b;
+    for (const br of b.branches ?? []) {
+      const hit = findBlockDeep(br.blocks, id);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/** Return a new tree with `updates` applied to the block matching `id`. */
+export function updateBlockDeep(
+  blocks: WorkflowBlock[],
+  id: string,
+  updates: Partial<WorkflowBlock>,
+): WorkflowBlock[] {
+  return blocks.map((b) => {
+    if (b.id === id) {
+      return {
+        ...b,
+        ...updates,
+        config: { ...b.config, ...(updates.config ?? {}) },
+      };
+    }
+    if (b.branches) {
+      return {
+        ...b,
+        branches: b.branches.map((br) => ({
+          ...br,
+          blocks: updateBlockDeep(br.blocks, id, updates),
+        })),
+      };
+    }
+    return b;
+  });
+}
+
+/** Return a new tree with the block matching `id` removed (at any depth). */
+export function removeBlockDeep(blocks: WorkflowBlock[], id: string): WorkflowBlock[] {
+  return blocks
+    .filter((b) => b.id !== id)
+    .map((b) =>
+      b.branches
+        ? {
+            ...b,
+            branches: b.branches.map((br) => ({
+              ...br,
+              blocks: removeBlockDeep(br.blocks, id),
+            })),
+          }
+        : b,
+    );
+}
+
+/**
+ * Insert `block` at the end of a container. `containerId === null` targets the
+ * top-level trunk; otherwise it targets the lane (`branchId`) of that block.
+ */
+export function insertBlockDeep(
+  blocks: WorkflowBlock[],
+  containerId: string | null,
+  branchId: string | null,
+  block: WorkflowBlock,
+): WorkflowBlock[] {
+  if (containerId === null) return [...blocks, block];
+  return blocks.map((b) => {
+    if (b.id === containerId && b.branches) {
+      return {
+        ...b,
+        branches: b.branches.map((br) =>
+          br.id === branchId ? { ...br, blocks: [...br.blocks, block] } : br,
+        ),
+      };
+    }
+    if (b.branches) {
+      return {
+        ...b,
+        branches: b.branches.map((br) => ({
+          ...br,
+          blocks: insertBlockDeep(br.blocks, containerId, branchId, block),
+        })),
+      };
+    }
+    return b;
+  });
+}
+
+/** Move a block up/down within whatever list it lives in. */
+export function moveBlockDeep(blocks: WorkflowBlock[], id: string, dir: -1 | 1): WorkflowBlock[] {
+  const idx = blocks.findIndex((b) => b.id === id);
+  if (idx !== -1) {
+    const next = idx + dir;
+    if (next < 0 || next >= blocks.length) return blocks;
+    const copy = [...blocks];
+    [copy[idx], copy[next]] = [copy[next], copy[idx]];
+    return copy;
+  }
+  return blocks.map((b) =>
+    b.branches
+      ? {
+          ...b,
+          branches: b.branches.map((br) => ({
+            ...br,
+            blocks: moveBlockDeep(br.blocks, id, dir),
+          })),
+        }
+      : b,
+  );
+}
+
 /** Plain-English one-liner describing a sequence of blocks. */
 export function buildSentencePreview(blocks: WorkflowBlock[]): string {
   if (blocks.length === 0) return "Add your first block to start building a workflow.";
@@ -1029,12 +1200,30 @@ export function buildSentencePreview(blocks: WorkflowBlock[]): string {
       case "logic_wait_until":
         parts.push(`Wait until ${block.config.until || "…"}`);
         break;
-      case "logic_if_branch":
-        parts.push(`If ${block.config.condition || "condition is met"}`);
+      case "logic_if_branch": {
+        const yes = block.branches?.[0]?.blocks ?? [];
+        const no = block.branches?.[1]?.blocks ?? [];
+        let s = `If ${block.config.condition || "condition is met"}`;
+        if (yes.length || no.length) {
+          s += ` [Yes: ${yes.length ? buildSentencePreview(yes) : "—"} | No: ${
+            no.length ? buildSentencePreview(no) : "—"
+          }]`;
+        }
+        parts.push(s);
         break;
-      case "logic_split_test":
-        parts.push(`Split test ${block.config.split || ""}`.trim());
+      }
+      case "logic_split_test": {
+        const a = block.branches?.[0]?.blocks ?? [];
+        const b = block.branches?.[1]?.blocks ?? [];
+        let s = `Split test ${block.config.split || ""}`.trim();
+        if (a.length || b.length) {
+          s += ` [A: ${a.length ? buildSentencePreview(a) : "—"} | B: ${
+            b.length ? buildSentencePreview(b) : "—"
+          }]`;
+        }
+        parts.push(s);
         break;
+      }
       case "action_add_tag":
         parts.push(`Add tag "${block.config.tag || "…"}"`);
         break;
