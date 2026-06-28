@@ -160,7 +160,12 @@ async function sendSlack(c: Creds, text: string): Promise<boolean> {
   });
   return res.ok;
 }
-async function callClaude(c: Creds, system: string, prompt: string, maxTokens = 600): Promise<string> {
+async function callClaude(
+  c: Creds,
+  system: string,
+  prompt: string,
+  maxTokens = 600,
+): Promise<string> {
   if (!c.anthropicKey) return "";
   const url = c.aiGatewayUrl
     ? `${c.aiGatewayUrl.replace(/\/$/, "")}/anthropic/v1/messages`
@@ -194,11 +199,16 @@ function evalCondition(cond: string, contact: Contact | null, ai: Record<string,
     const score = Number(contact?.lead_score ?? ai.score ?? 0);
     const n = Number(m[2]);
     switch (m[1]) {
-      case ">": return score > n;
-      case "<": return score < n;
-      case ">=": return score >= n;
-      case "<=": return score <= n;
-      case "=": return score === n;
+      case ">":
+        return score > n;
+      case "<":
+        return score < n;
+      case ">=":
+        return score >= n;
+      case "<=":
+        return score <= n;
+      case "=":
+        return score === n;
     }
   }
   // tag check: "tag = vip"
@@ -262,7 +272,7 @@ Deno.serve(async (req: Request) => {
   // Resolve blocks (from request, or load the published template).
   let blocks: Block[] = Array.isArray(body.blocks) ? body.blocks : [];
   let workflowName = body.workflow_name ?? "Workflow";
-  let templateId = body.template_id ?? null;
+  const templateId = body.template_id ?? null;
   if (blocks.length === 0 && templateId) {
     const { data: tpl } = await admin
       .from("automation_templates")
@@ -406,175 +416,226 @@ Deno.serve(async (req: Request) => {
         }
 
         switch (b.type) {
-        case "action_send_email": {
-          const to = interpolate(cfg.to, vars) || contact?.email || "";
-          const subject = interpolate(cfg.subject, vars);
-          const text = interpolate(cfg.body, vars);
-          if (!to) { push(b, "skipped", "No recipient email"); break; }
-          if (live && creds.sendgridKey) {
-            const ok = await sendEmail(creds, to, subject, text);
-            push(b, ok ? "ok" : "error", ok ? `Email sent to ${to}` : `SendGrid send failed for ${to}`);
-          } else {
-            push(b, "simulated", `Would email ${to}: "${subject || text.slice(0, 40)}"${creds.sendgridKey ? "" : " (no SendGrid key)"}`);
-          }
-          break;
-        }
-        case "action_send_sms": {
-          const to = interpolate(cfg.to, vars) || contact?.phone || "";
-          const msg = interpolate(cfg.message, vars);
-          if (!to) { push(b, "skipped", "No recipient phone"); break; }
-          if (live && creds.twilioSid) {
-            const ok = await sendSMS(creds, to, msg);
-            push(b, ok ? "ok" : "error", ok ? `SMS sent to ${to}` : `Twilio send failed for ${to}`);
-          } else {
-            push(b, "simulated", `Would text ${to}: "${msg.slice(0, 48)}"${creds.twilioSid ? "" : " (no Twilio creds)"}`);
-          }
-          break;
-        }
-        case "action_notify_team": {
-          const msg = interpolate(cfg.message, vars) || `Workflow "${workflowName}" notification`;
-          if (live && creds.slackWebhook) {
-            const ok = await sendSlack(creds, msg);
-            push(b, ok ? "ok" : "error", ok ? "Notified team via Slack" : "Slack notify failed");
-          } else if (live && creds.sendgridKey && user.email) {
-            const ok = await sendEmail(creds, user.email, "Workflow alert", msg);
-            push(b, ok ? "ok" : "error", ok ? `Notified ${user.email}` : "Notify email failed");
-          } else {
-            push(b, "simulated", `Would notify team: "${msg.slice(0, 48)}"`);
-          }
-          break;
-        }
-        case "action_webhook_out": {
-          const url = interpolate(cfg.url, vars);
-          if (!url || !/^https?:\/\//.test(url)) { push(b, "skipped", "No valid webhook URL"); break; }
-          if (live) {
-            const ok = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ workflow: workflowName, contact, vars }),
-            }).then((r) => r.ok).catch(() => false);
-            push(b, ok ? "ok" : "error", ok ? `Posted to ${url}` : `Webhook POST failed: ${url}`);
-          } else {
-            push(b, "simulated", `Would POST to ${url}`);
-          }
-          break;
-        }
-        case "action_add_tag":
-        case "action_remove_tag": {
-          const tag = interpolate(cfg.tag, vars).trim();
-          if (!tag || !contact) { push(b, "skipped", contact ? "No tag set" : "No contact"); break; }
-          if (live) {
-            const current = contact.tags ?? [];
-            const next =
-              b.type === "action_add_tag"
-                ? Array.from(new Set([...current, tag]))
-                : current.filter((x) => x.toLowerCase() !== tag.toLowerCase());
-            await admin.from("contacts").update({ tags: next }).eq("id", contact.id);
-            contact.tags = next;
-            push(b, "ok", `${b.type === "action_add_tag" ? "Added" : "Removed"} tag "${tag}"`);
-          } else {
-            push(b, "simulated", `Would ${b.type === "action_add_tag" ? "add" : "remove"} tag "${tag}"`);
-          }
-          break;
-        }
-        case "action_move_stage":
-        case "action_update_crm":
-        case "action_set_field": {
-          const stage = interpolate(cfg.stage || cfg.value || cfg.field, vars).trim();
-          if (!contact) { push(b, "skipped", "No contact"); break; }
-          if (live && stage) {
-            await admin.from("contacts").update({ status: stage }).eq("id", contact.id);
-            contact.status = stage;
-            push(b, "ok", `Updated contact → "${stage}"`);
-          } else {
-            push(b, stage ? "simulated" : "skipped", stage ? `Would update contact → "${stage}"` : "Nothing to update");
-          }
-          break;
-        }
-        case "action_add_note": {
-          const note = interpolate(cfg.note, vars).trim();
-          if (!note || !contact) { push(b, "skipped", contact ? "No note text" : "No contact"); break; }
-          if (live) {
-            await admin
-              .from("contact_notes")
-              .insert({ contact_id: contact.id, user_id: user.id, body: note })
-              .then(() => {}, () => {});
-            push(b, "ok", "Logged note on contact");
-          } else {
-            push(b, "simulated", `Would log note: "${note.slice(0, 48)}"`);
-          }
-          break;
-        }
-        case "memory_write": {
-          const what = interpolate(cfg.what_to_save, vars).trim() || "Workflow result";
-          if (live) {
-            await admin
-              .from("operator_memory")
-              .insert({
-                user_id: user.id,
-                org_id: orgId,
-                memory_type: "automation_outcome",
-                content: `${workflowName}: ${what}`,
-                tags: ["workflow", "automation_result"],
-                pruned: false,
-              })
-              .then(() => {}, () => {});
-            push(b, "ok", `Remembered: "${what.slice(0, 48)}"`);
-          } else {
-            push(b, "simulated", `Would remember: "${what.slice(0, 48)}"`);
-          }
-          break;
-        }
-        case "ai_generate":
-        case "ai_classify":
-        case "ai_score": {
-          if (!creds.anthropicKey) {
-            push(b, "simulated", "Would run AI step (no ANTHROPIC_API_KEY)");
-            ai.last = "[simulated]";
+          case "action_send_email": {
+            const to = interpolate(cfg.to, vars) || contact?.email || "";
+            const subject = interpolate(cfg.subject, vars);
+            const text = interpolate(cfg.body, vars);
+            if (!to) {
+              push(b, "skipped", "No recipient email");
+              break;
+            }
+            if (live && creds.sendgridKey) {
+              const ok = await sendEmail(creds, to, subject, text);
+              push(
+                b,
+                ok ? "ok" : "error",
+                ok ? `Email sent to ${to}` : `SendGrid send failed for ${to}`,
+              );
+            } else {
+              push(
+                b,
+                "simulated",
+                `Would email ${to}: "${subject || text.slice(0, 40)}"${creds.sendgridKey ? "" : " (no SendGrid key)"}`,
+              );
+            }
             break;
           }
-          let system = "You are an automation step. Be concise.";
-          let prompt = "";
-          if (b.type === "ai_generate") {
-            system = "You write short, personalized outreach. No preamble — output only the message.";
-            prompt = `Write a ${cfg.output_type ?? "message"} for ${vars["lead.name"]}${vars["lead.company"] ? ` at ${vars["lead.company"]}` : ""}. ${cfg.context ?? ""}`;
-          } else if (b.type === "ai_classify") {
-            system = "Classify into exactly one of the labels. Output only the label.";
-            prompt = `Classify "${cfg.what_to_classify ?? "the contact"}" into one of: ${cfg.categories ?? "Hot, Warm, Cold"}. Contact: ${vars["lead.name"]} ${vars["lead.company"]}.`;
-          } else {
-            system = "Score the item. Output only a single integer.";
-            prompt = `Score "${cfg.what_to_score ?? "the lead"}" on scale ${cfg.scale ?? "1-100"}. Contact: ${vars["lead.name"]} ${vars["lead.company"]}, current score ${contact?.lead_score ?? "n/a"}.`;
+          case "action_send_sms": {
+            const to = interpolate(cfg.to, vars) || contact?.phone || "";
+            const msg = interpolate(cfg.message, vars);
+            if (!to) {
+              push(b, "skipped", "No recipient phone");
+              break;
+            }
+            if (live && creds.twilioSid) {
+              const ok = await sendSMS(creds, to, msg);
+              push(
+                b,
+                ok ? "ok" : "error",
+                ok ? `SMS sent to ${to}` : `Twilio send failed for ${to}`,
+              );
+            } else {
+              push(
+                b,
+                "simulated",
+                `Would text ${to}: "${msg.slice(0, 48)}"${creds.twilioSid ? "" : " (no Twilio creds)"}`,
+              );
+            }
+            break;
           }
-          const out = (await callClaude(creds, system, prompt, 400)).trim();
-          ai.last = out;
-          if (b.type === "ai_score") {
-            const n = out.match(/\d+/);
-            if (n) ai.score = n[0];
+          case "action_notify_team": {
+            const msg = interpolate(cfg.message, vars) || `Workflow "${workflowName}" notification`;
+            if (live && creds.slackWebhook) {
+              const ok = await sendSlack(creds, msg);
+              push(b, ok ? "ok" : "error", ok ? "Notified team via Slack" : "Slack notify failed");
+            } else if (live && creds.sendgridKey && user.email) {
+              const ok = await sendEmail(creds, user.email, "Workflow alert", msg);
+              push(b, ok ? "ok" : "error", ok ? `Notified ${user.email}` : "Notify email failed");
+            } else {
+              push(b, "simulated", `Would notify team: "${msg.slice(0, 48)}"`);
+            }
+            break;
           }
-          push(b, "ok", `AI → ${out.slice(0, 80)}`);
-          break;
+          case "action_webhook_out": {
+            const url = interpolate(cfg.url, vars);
+            if (!url || !/^https?:\/\//.test(url)) {
+              push(b, "skipped", "No valid webhook URL");
+              break;
+            }
+            if (live) {
+              const ok = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ workflow: workflowName, contact, vars }),
+              })
+                .then((r) => r.ok)
+                .catch(() => false);
+              push(b, ok ? "ok" : "error", ok ? `Posted to ${url}` : `Webhook POST failed: ${url}`);
+            } else {
+              push(b, "simulated", `Would POST to ${url}`);
+            }
+            break;
+          }
+          case "action_add_tag":
+          case "action_remove_tag": {
+            const tag = interpolate(cfg.tag, vars).trim();
+            if (!tag || !contact) {
+              push(b, "skipped", contact ? "No tag set" : "No contact");
+              break;
+            }
+            if (live) {
+              const current = contact.tags ?? [];
+              const next =
+                b.type === "action_add_tag"
+                  ? Array.from(new Set([...current, tag]))
+                  : current.filter((x) => x.toLowerCase() !== tag.toLowerCase());
+              await admin.from("contacts").update({ tags: next }).eq("id", contact.id);
+              contact.tags = next;
+              push(b, "ok", `${b.type === "action_add_tag" ? "Added" : "Removed"} tag "${tag}"`);
+            } else {
+              push(
+                b,
+                "simulated",
+                `Would ${b.type === "action_add_tag" ? "add" : "remove"} tag "${tag}"`,
+              );
+            }
+            break;
+          }
+          case "action_move_stage":
+          case "action_update_crm":
+          case "action_set_field": {
+            const stage = interpolate(cfg.stage || cfg.value || cfg.field, vars).trim();
+            if (!contact) {
+              push(b, "skipped", "No contact");
+              break;
+            }
+            if (live && stage) {
+              await admin.from("contacts").update({ status: stage }).eq("id", contact.id);
+              contact.status = stage;
+              push(b, "ok", `Updated contact → "${stage}"`);
+            } else {
+              push(
+                b,
+                stage ? "simulated" : "skipped",
+                stage ? `Would update contact → "${stage}"` : "Nothing to update",
+              );
+            }
+            break;
+          }
+          case "action_add_note": {
+            const note = interpolate(cfg.note, vars).trim();
+            if (!note || !contact) {
+              push(b, "skipped", contact ? "No note text" : "No contact");
+              break;
+            }
+            if (live) {
+              await admin
+                .from("contact_notes")
+                .insert({ contact_id: contact.id, user_id: user.id, body: note })
+                .then(
+                  () => {},
+                  () => {},
+                );
+              push(b, "ok", "Logged note on contact");
+            } else {
+              push(b, "simulated", `Would log note: "${note.slice(0, 48)}"`);
+            }
+            break;
+          }
+          case "memory_write": {
+            const what = interpolate(cfg.what_to_save, vars).trim() || "Workflow result";
+            if (live) {
+              await admin
+                .from("operator_memory")
+                .insert({
+                  user_id: user.id,
+                  org_id: orgId,
+                  memory_type: "automation_outcome",
+                  content: `${workflowName}: ${what}`,
+                  tags: ["workflow", "automation_result"],
+                  pruned: false,
+                })
+                .then(
+                  () => {},
+                  () => {},
+                );
+              push(b, "ok", `Remembered: "${what.slice(0, 48)}"`);
+            } else {
+              push(b, "simulated", `Would remember: "${what.slice(0, 48)}"`);
+            }
+            break;
+          }
+          case "ai_generate":
+          case "ai_classify":
+          case "ai_score": {
+            if (!creds.anthropicKey) {
+              push(b, "simulated", "Would run AI step (no ANTHROPIC_API_KEY)");
+              ai.last = "[simulated]";
+              break;
+            }
+            let system = "You are an automation step. Be concise.";
+            let prompt = "";
+            if (b.type === "ai_generate") {
+              system =
+                "You write short, personalized outreach. No preamble — output only the message.";
+              prompt = `Write a ${cfg.output_type ?? "message"} for ${vars["lead.name"]}${vars["lead.company"] ? ` at ${vars["lead.company"]}` : ""}. ${cfg.context ?? ""}`;
+            } else if (b.type === "ai_classify") {
+              system = "Classify into exactly one of the labels. Output only the label.";
+              prompt = `Classify "${cfg.what_to_classify ?? "the contact"}" into one of: ${cfg.categories ?? "Hot, Warm, Cold"}. Contact: ${vars["lead.name"]} ${vars["lead.company"]}.`;
+            } else {
+              system = "Score the item. Output only a single integer.";
+              prompt = `Score "${cfg.what_to_score ?? "the lead"}" on scale ${cfg.scale ?? "1-100"}. Contact: ${vars["lead.name"]} ${vars["lead.company"]}, current score ${contact?.lead_score ?? "n/a"}.`;
+            }
+            const out = (await callClaude(creds, system, prompt, 400)).trim();
+            ai.last = out;
+            if (b.type === "ai_score") {
+              const n = out.match(/\d+/);
+              if (n) ai.score = n[0];
+            }
+            push(b, "ok", `AI → ${out.slice(0, 80)}`);
+            break;
+          }
+          case "logic_if_branch": {
+            const cond = interpolate(cfg.condition, vars);
+            const result = evalCondition(cond, contact, ai);
+            push(b, "ok", `If "${cond || "condition"}" → ${result ? "YES path" : "NO path"}`);
+            break;
+          }
+          case "logic_split_test": {
+            const yes = Math.random() < 0.5;
+            push(b, "ok", `A/B split → path ${yes ? "A" : "B"}`);
+            break;
+          }
+          case "logic_wait":
+          case "logic_wait_until": {
+            const d = cfg.duration || cfg.until || "a delay";
+            push(b, "skipped", `Wait "${d}" — scheduled (delays run via the queue, not inline)`);
+            break;
+          }
+          default:
+            // Actions we record but don't yet have a side-effecting integration for.
+            push(b, "simulated", `${(b.label || b.type).replace(/_/g, " ")} — recorded`);
         }
-        case "logic_if_branch": {
-          const cond = interpolate(cfg.condition, vars);
-          const result = evalCondition(cond, contact, ai);
-          push(b, "ok", `If "${cond || "condition"}" → ${result ? "YES path" : "NO path"}`);
-          break;
-        }
-        case "logic_split_test": {
-          const yes = Math.random() < 0.5;
-          push(b, "ok", `A/B split → path ${yes ? "A" : "B"}`);
-          break;
-        }
-        case "logic_wait":
-        case "logic_wait_until": {
-          const d = cfg.duration || cfg.until || "a delay";
-          push(b, "skipped", `Wait "${d}" — scheduled (delays run via the queue, not inline)`);
-          break;
-        }
-        default:
-          // Actions we record but don't yet have a side-effecting integration for.
-          push(b, "simulated", `${(b.label || b.type).replace(/_/g, " ")} — recorded`);
-      }
       } catch (e) {
         push(b, "error", e instanceof Error ? e.message : String(e));
       }
