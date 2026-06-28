@@ -781,6 +781,131 @@ export type Database = {
           },
         ];
       };
+      memory_artifacts: {
+        Row: {
+          content: string | null;
+          content_hash: string | null;
+          content_preview: string | null;
+          created_at: string;
+          id: string;
+          metadata: Json;
+          org_id: string;
+          source_id: string | null;
+          source_label: string | null;
+          source_type: string | null;
+          status: string;
+          title: string;
+          token_count: number | null;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          content?: string | null;
+          content_hash?: string | null;
+          content_preview?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          org_id: string;
+          source_id?: string | null;
+          source_label?: string | null;
+          source_type?: string | null;
+          status?: string;
+          title: string;
+          token_count?: number | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          content?: string | null;
+          content_hash?: string | null;
+          content_preview?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          org_id?: string;
+          source_id?: string | null;
+          source_label?: string | null;
+          source_type?: string | null;
+          status?: string;
+          title?: string;
+          token_count?: number | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_artifacts_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "memory_artifacts_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "memory_sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      memory_sources: {
+        Row: {
+          artifact_count: number;
+          created_at: string;
+          error_message: string | null;
+          id: string;
+          last_synced_at: string | null;
+          metadata: Json;
+          org_id: string;
+          source_label: string | null;
+          source_type: string;
+          source_url: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          artifact_count?: number;
+          created_at?: string;
+          error_message?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          metadata?: Json;
+          org_id: string;
+          source_label?: string | null;
+          source_type: string;
+          source_url?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          artifact_count?: number;
+          created_at?: string;
+          error_message?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          metadata?: Json;
+          org_id?: string;
+          source_label?: string | null;
+          source_type?: string;
+          source_url?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_sources_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mission_steps: {
         Row: {
           completed_at: string | null;
