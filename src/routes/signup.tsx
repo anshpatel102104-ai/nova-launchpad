@@ -95,25 +95,29 @@ function SignupPage() {
       const userId = session?.user?.id ?? signUpData.user?.id;
 
       if (session && userId) {
-        const orgName = `${fullName.trim()}'s Business`;
-        const { data: org, error: orgErr } = await supabase
-          .from("organizations")
-          .insert({ owner_id: userId, name: orgName })
-          .select("id")
-          .single();
-        if (orgErr) throw orgErr;
+        // The handle_new_user() DB trigger already provisioned an
+        // organization + membership + starter subscription for this user.
+        // Adopt that org here and apply the plan/name the user picked.
+        const { data: member } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
 
-        await supabase.from("organization_members").insert({
-          organization_id: org.id,
-          user_id: userId,
-          role: "owner",
-        });
+        if (member) {
+          const orgName = `${fullName.trim()}'s Business`;
+          await supabase
+            .from("organizations")
+            .update({ name: orgName })
+            .eq("id", member.organization_id);
 
-        await supabase.from("subscriptions").insert({
-          organization_id: org.id,
-          plan,
-          status: "trialing",
-        });
+          await supabase
+            .from("subscriptions")
+            .update({ plan })
+            .eq("organization_id", member.organization_id);
+        }
 
         toast.success("Account created — welcome to Nova!");
         navigate({ to: "/onboarding" });
