@@ -29,8 +29,13 @@ begin
   insert into public.organization_members (organization_id, user_id, role)
     values (v_org_id, new.id, 'owner');
 
+  -- An `on_organization_created` trigger may already auto-provision the
+  -- subscription for the new org, so guard against a duplicate. This also keeps
+  -- the insert correct on environments (e.g. CI preview branches) that don't
+  -- have that trigger, where this statement does the provisioning itself.
   insert into public.subscriptions (organization_id, plan, status)
-    values (v_org_id, 'starter', 'trialing');
+    values (v_org_id, 'starter', 'trialing')
+    on conflict (organization_id) do nothing;
 
   return new;
 end $$;
@@ -58,7 +63,10 @@ begin
     insert into public.organization_members (organization_id, user_id, role)
       values (v_org_id, r.user_id, 'owner');
 
+    -- Same guard as handle_new_user(): the on_organization_created trigger may
+    -- have already created this subscription when the org row was inserted.
     insert into public.subscriptions (organization_id, plan, status)
-      values (v_org_id, 'starter', 'trialing');
+      values (v_org_id, 'starter', 'trialing')
+      on conflict (organization_id) do nothing;
   end loop;
 end $$;
