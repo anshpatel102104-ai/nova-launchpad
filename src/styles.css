@@ -360,6 +360,37 @@
   --modal-overlay: rgba(17, 24, 39, 0.5);
 }
 
+/* ───────────────── Nova GHL design-system tokens ─────────────────
+   Fixed brand surfaces for the Launchpad/CRM "GHL-native" UI (master build
+   §System E). These are theme-independent on purpose: command surfaces are
+   always dark, work surfaces always light, so the new screens render as
+   designed regardless of the app's light/dark mode. Reference them from
+   components as arbitrary values, e.g. bg-[--bg-page], text-[--text-primary].
+   Tokens that already existed (--accent, --border, --border-strong,
+   --success, --warning, --danger, --info, --text-inverse, --accent-glow)
+   are reused, not redefined. */
+:root {
+  --bg-page: #f4f4f8;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #f9f9fc;
+  --bg-command: #0d0d1a;
+  --bg-command-2: #13132a;
+
+  --text-primary: #0f0f1a;
+  --text-secondary: #52526e;
+  --text-muted: #9494aa;
+
+  --border-focus: #6b46e8;
+
+  --accent-hover: #5a38d6;
+  --accent-light: #ede9fb;
+
+  --success-light: #f0fdf4;
+  --warning-light: #fffbeb;
+  --danger-light: #fef2f2;
+  --info-light: #eff6ff;
+}
+
 /* ─────────────────────────── Base ─────────────────────────── */
 @layer base {
   * {
