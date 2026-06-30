@@ -25,6 +25,8 @@ import {
 import { useOwnerMode } from "@/lib/ownerMode";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
 
+import { FounderHome } from "@/components/launchpad/FounderHome";
+
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
 
 const STAGE_TABS = [
@@ -173,9 +175,11 @@ function LaunchpadOverview() {
   );
 
   return (
-    <div className="flex gap-5 items-start">
-      {/* ── Main content ── */}
-      <div className="flex-1 min-w-0 space-y-5">
+    <>
+      {currentOrgId && user ? <FounderHome orgId={currentOrgId} userId={user.id} /> : null}
+      <div className="flex gap-5 items-start">
+        {/* ── Main content ── */}
+        <div className="flex-1 min-w-0 space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -586,7 +590,8 @@ function LaunchpadOverview() {
           </Link>
         </aside>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
