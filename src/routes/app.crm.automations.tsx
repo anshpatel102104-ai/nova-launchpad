@@ -153,7 +153,7 @@ function AutomationsPage() {
         created_by: user.id,
         name: t.name,
         trigger_type: t.trigger_type,
-        steps: t.steps,
+        steps: t.steps as never,
         status: "draft",
       })
       .select("id, name, description, trigger_type, steps, is_active, run_count, status, last_triggered_at")
@@ -319,7 +319,7 @@ function WorkflowBuilder({
       created_by: userId,
       name: name.trim(),
       trigger_type: trigger,
-      steps,
+      steps: steps as never,
       is_active: activate,
       status: activate ? "active" : "draft",
     };

@@ -141,27 +141,28 @@ function MentorsPage() {
   const { user, currentOrgId } = useAuth();
   const [tab, setTab] = useState<"mentors" | "insights">("mentors");
   const [selected, setSelected] = useState<Mentor | null>(null);
-  const [planTier, setPlanTier] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
 
-  const locked = planTier !== null && ["0", "49"].includes(planTier);
+  // Mentors require the Operate/Scale tiers (master build: plan_tier 149/299).
+  const locked = plan !== null && ["starter", "launch"].includes(plan);
 
-  // Resolve plan tier for the gate.
+  // Resolve the org's plan for the gate (subscriptions.plan is the canonical source).
   useEffect(() => {
-    if (!user) return;
+    if (!currentOrgId) return;
     let active = true;
     void supabase
-      .from("profiles")
-      .select("plan_tier")
-      .eq("id", user.id)
+      .from("subscriptions")
+      .select("plan")
+      .eq("organization_id", currentOrgId)
       .maybeSingle()
       .then(({ data }) => {
-        if (active) setPlanTier((data?.plan_tier as string) ?? "0");
+        if (active) setPlan((data?.plan as string) ?? "starter");
       });
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [currentOrgId]);
 
   // Load insights for the org.
   useEffect(() => {

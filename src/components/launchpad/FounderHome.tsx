@@ -88,7 +88,9 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
   const guidance = GUIDANCE_BY_STAGE[STAGES[stageIndex]] ?? GUIDANCE_BY_STAGE.Validate;
   const activeMission = mission.data?.mission ?? null;
   const steps = mission.data?.steps ?? [];
-  const doneSteps = steps.filter((s) => s.status === "done" || s.status === "completed").length;
+  const doneSteps = steps.filter(
+    (s) => (s.status as string) === "done" || s.status === "completed",
+  ).length;
 
   return (
     <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-[1.62fr_1fr]">
