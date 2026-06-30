@@ -176,6 +176,7 @@ const NAV_GROUPS: NavGroup[] = [
           p.startsWith("/app/launchpad") &&
           p !== "/app/launchpad-path" &&
           p !== "/app/launchpad/history" &&
+          p !== "/app/launchpad/mentors" &&
           p !== "/app/launchpad/first-customers",
       },
       {
@@ -183,6 +184,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/research",
         icon: Search,
         match: (p) => p === "/app/research",
+      },
+      {
+        label: "Mentors",
+        to: "/app/launchpad/mentors",
+        icon: Brain,
+        match: (p) => p === "/app/launchpad/mentors",
       },
       {
         label: "History",
