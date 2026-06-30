@@ -363,17 +363,12 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return json({ error: "Missing auth" }, 401);
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceKey) return json({ error: "Server not configured" }, 503);
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
 
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const {
-    data: { user },
-    error: authErr,
-  } = await supabase.auth.getUser();
-  if (authErr || !user) return json({ error: "Unauthorized" }, 401);
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const token = authHeader.replace("Bearer ", "");
 
   let body: {
     workflow_id?: string;
@@ -383,6 +378,7 @@ Deno.serve(async (req: Request) => {
     trigger_payload?: Record<string, unknown>;
     payload?: Record<string, unknown>;
     mode?: string;
+    internal?: boolean;
   };
   try {
     body = await req.json();
@@ -390,20 +386,36 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const live = body.mode === "live";
-  const contactId = body.contact_id ?? null;
+  // Internal service path: automation-dispatch (and other service callers) invoke
+  // with the service-role bearer + internal:true to fire workflows autonomously,
+  // bypassing the per-user RLS/membership checks below.
+  const internal = body.internal === true && token === serviceKey;
 
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!serviceKey) return json({ error: "Server not configured" }, 503);
-  const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
+  // User-scoped client for the interactive (UI) path.
+  let userId: string | null = null;
+  let userClient = null as ReturnType<typeof createClient> | null;
+  if (!internal) {
+    if (!authHeader) return json({ error: "Missing auth" }, 401);
+    userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data, error: authErr } = await userClient.auth.getUser();
+    if (authErr || !data?.user) return json({ error: "Unauthorized" }, 401);
+    userId = data.user.id;
+  }
+
+  const live = internal ? body.mode !== "test" : body.mode === "live";
+  const contactId = body.contact_id ?? null;
 
   // ── Run a single workflow by id ──
   if (body.workflow_id) {
-    const { data: wf } = await supabase
+    // Internal: load via service role. UI: load via RLS-scoped client.
+    const reader = internal ? admin : userClient!;
+    const { data: wf } = await reader
       .from("automation_workflows")
       .select("id, organization_id, name, trigger_type, steps, run_count")
       .eq("id", body.workflow_id)
-      .maybeSingle(); // RLS scopes this to the caller's org
+      .maybeSingle();
     if (!wf) return json({ error: "Workflow not found" }, 404);
     const result = await runWorkflow(admin, wf, contactId, live);
     return json({ ran: 1, results: [result] });
@@ -411,21 +423,22 @@ Deno.serve(async (req: Request) => {
 
   // ── Fan out by event to all active matching workflows ──
   if (body.event) {
-    // Resolve + verify org.
     let orgId = body.org_id ?? null;
-    if (orgId) {
-      const { data: m } = await supabase
+    if (internal) {
+      if (!orgId) return json({ error: "org_id required for internal event dispatch" }, 400);
+    } else if (orgId) {
+      const { data: m } = await userClient!
         .from("organization_members")
         .select("organization_id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("organization_id", orgId)
         .maybeSingle();
       if (!m) return json({ error: "Forbidden" }, 403);
     } else {
-      const { data: m } = await supabase
+      const { data: m } = await userClient!
         .from("organization_members")
         .select("organization_id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
