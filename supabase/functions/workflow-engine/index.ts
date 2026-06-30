@@ -208,13 +208,37 @@ async function executeSteps(
         case "send_email":
         case "send_sms":
         case "send_internal_notification": {
-          // Message delivery is stubbed in this engine version: the rendered
-          // content is recorded so the run is auditable. A delivery worker can
-          // pick these up later. Nothing is sent here.
           entry.channel = type === "send_sms" ? "sms" : "email";
           entry.subject = cfg.subject ? render(String(cfg.subject), ctx.contact) : undefined;
           entry.body = render(String(cfg.body ?? cfg.message ?? ""), ctx.contact).slice(0, 2000);
-          entry.delivery = "simulated";
+          // Live email/SMS route through the native delivery functions, which
+          // no-op gracefully when no provider is configured (delivery:"skipped").
+          if (ctx.live && (type === "send_email" || type === "send_sms")) {
+            try {
+              const fn = type === "send_email" ? "send-email" : "send-sms";
+              const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/${fn}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  internal: true,
+                  org_id: ctx.orgId,
+                  contact_id: ctx.contactId,
+                  subject: entry.subject,
+                  body: entry.body,
+                }),
+              });
+              const out = await res.json().catch(() => ({}));
+              entry.delivery = res.ok ? (out.sent ? "sent" : "skipped") : "failed";
+            } catch (e) {
+              entry.delivery = "failed";
+              entry.error = e instanceof Error ? e.message : String(e);
+            }
+          } else {
+            entry.delivery = "simulated";
+          }
           break;
         }
         case "wait": {

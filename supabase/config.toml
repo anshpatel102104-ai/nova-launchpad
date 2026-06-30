@@ -83,3 +83,11 @@ verify_jwt = true
 # Public self-serve booking — called from /book/[slug] without auth.
 [functions.book-appointment]
 verify_jwt = false
+
+# Native email delivery (Resend) — internal service calls + authed members.
+[functions.send-email]
+verify_jwt = true
+
+# Native SMS delivery (Twilio) — internal service calls + authed members.
+[functions.send-sms]
+verify_jwt = true
