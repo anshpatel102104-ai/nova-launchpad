@@ -99,3 +99,12 @@ verify_jwt = true
 # Appointment reminder worker — cron-invoked (service role), checks token itself.
 [functions.process-reminders]
 verify_jwt = false
+
+# Inbound message webhook for the unified inbox — providers can't send a
+# Supabase JWT, so this is keyed by an HMAC-derived org key instead.
+[functions.receive-message]
+verify_jwt = false
+
+# Returns the caller's org-scoped inbound webhook URL for display in Settings.
+[functions.get-inbound-url]
+verify_jwt = true
