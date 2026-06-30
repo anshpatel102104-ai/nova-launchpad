@@ -18,6 +18,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as FFormIdRouteImport } from './routes/f.$formId'
+import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
@@ -30,6 +31,7 @@ import { Route as AppSopLibraryRouteImport } from './routes/app.sop-library'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScaleRouteImport } from './routes/app.scale'
 import { Route as AppResearchRouteImport } from './routes/app.research'
+import { Route as AppReputationRouteImport } from './routes/app.reputation'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
 import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
@@ -77,6 +79,8 @@ import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$to
 import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
 import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
 import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
+import { Route as AppCrmCampaignsRouteImport } from './routes/app.crm.campaigns'
+import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
 import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
@@ -125,6 +129,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const FFormIdRoute = FFormIdRouteImport.update({
   id: '/f/$formId',
   path: '/f/$formId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookSlugRoute = BookSlugRouteImport.update({
+  id: '/book/$slug',
+  path: '/book/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
@@ -185,6 +194,11 @@ const AppScaleRoute = AppScaleRouteImport.update({
 const AppResearchRoute = AppResearchRouteImport.update({
   id: '/research',
   path: '/research',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReputationRoute = AppReputationRouteImport.update({
+  id: '/reputation',
+  path: '/reputation',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlaybookRoute = AppPlaybookRouteImport.update({
@@ -423,6 +437,16 @@ const AppCrmConversationsRoute = AppCrmConversationsRouteImport.update({
   path: '/crm/conversations',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCrmCampaignsRoute = AppCrmCampaignsRouteImport.update({
+  id: '/crm/campaigns',
+  path: '/crm/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmCalendarRoute = AppCrmCalendarRouteImport.update({
+  id: '/crm/calendar',
+  path: '/crm/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmAutomationsRoute = AppCrmAutomationsRouteImport.update({
   id: '/crm/automations',
   path: '/crm/automations',
@@ -477,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
@@ -489,12 +514,15 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
   '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -550,6 +578,7 @@ export interface FileRoutesByTo {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
@@ -562,12 +591,15 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
   '/f/$formId': typeof FFormIdRoute
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -625,6 +657,7 @@ export interface FileRoutesById {
   '/app/nova-full': typeof AppNovaFullRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
@@ -637,12 +670,15 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
   '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -701,6 +737,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
     | '/app/scale'
     | '/app/settings'
@@ -713,12 +750,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
     | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -774,6 +814,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
     | '/app/scale'
     | '/app/settings'
@@ -786,12 +827,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
     | '/f/$formId'
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -848,6 +892,7 @@ export interface FileRouteTypes {
     | '/app/nova-full'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
     | '/app/scale'
     | '/app/settings'
@@ -860,12 +905,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
     | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
     | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -903,6 +951,7 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  BookSlugRoute: typeof BookSlugRoute
   FFormIdRoute: typeof FFormIdRoute
 }
 
@@ -969,6 +1018,13 @@ declare module '@tanstack/react-router' {
       path: '/f/$formId'
       fullPath: '/f/$formId'
       preLoaderRoute: typeof FFormIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$slug': {
+      id: '/book/$slug'
+      path: '/book/$slug'
+      fullPath: '/book/$slug'
+      preLoaderRoute: typeof BookSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-up': {
@@ -1053,6 +1109,13 @@ declare module '@tanstack/react-router' {
       path: '/research'
       fullPath: '/app/research'
       preLoaderRoute: typeof AppResearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reputation': {
+      id: '/app/reputation'
+      path: '/reputation'
+      fullPath: '/app/reputation'
+      preLoaderRoute: typeof AppReputationRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/playbook': {
@@ -1384,6 +1447,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmConversationsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/crm/campaigns': {
+      id: '/app/crm/campaigns'
+      path: '/crm/campaigns'
+      fullPath: '/app/crm/campaigns'
+      preLoaderRoute: typeof AppCrmCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/calendar': {
+      id: '/app/crm/calendar'
+      path: '/crm/calendar'
+      fullPath: '/app/crm/calendar'
+      preLoaderRoute: typeof AppCrmCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm/automations': {
       id: '/app/crm/automations'
       path: '/crm/automations'
@@ -1497,6 +1574,7 @@ interface AppRouteChildren {
   AppNovaFullRoute: typeof AppNovaFullRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
   AppPlaybookRoute: typeof AppPlaybookRoute
+  AppReputationRoute: typeof AppReputationRoute
   AppResearchRoute: typeof AppResearchRoute
   AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1507,6 +1585,8 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppBlogIdRoute: typeof AppBlogIdRoute
   AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
+  AppCrmCalendarRoute: typeof AppCrmCalendarRoute
+  AppCrmCampaignsRoute: typeof AppCrmCampaignsRoute
   AppCrmConversationsRoute: typeof AppCrmConversationsRoute
   AppCrmFormsRoute: typeof AppCrmFormsRoute
   AppCrmTasksRoute: typeof AppCrmTasksRoute
@@ -1551,6 +1631,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNovaFullRoute: AppNovaFullRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
   AppPlaybookRoute: AppPlaybookRoute,
+  AppReputationRoute: AppReputationRoute,
   AppResearchRoute: AppResearchRoute,
   AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
@@ -1561,6 +1642,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppBlogIdRoute: AppBlogIdRoute,
   AppCrmAutomationsRoute: AppCrmAutomationsRoute,
+  AppCrmCalendarRoute: AppCrmCalendarRoute,
+  AppCrmCampaignsRoute: AppCrmCampaignsRoute,
   AppCrmConversationsRoute: AppCrmConversationsRoute,
   AppCrmFormsRoute: AppCrmFormsRoute,
   AppCrmTasksRoute: AppCrmTasksRoute,
@@ -1594,6 +1677,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  BookSlugRoute: BookSlugRoute,
   FFormIdRoute: FFormIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -79,3 +79,7 @@ verify_jwt = true
 # Automation workflow trigger evaluation + step execution.
 [functions.workflow-engine]
 verify_jwt = true
+
+# Public self-serve booking — called from /book/[slug] without auth.
+[functions.book-appointment]
+verify_jwt = false
