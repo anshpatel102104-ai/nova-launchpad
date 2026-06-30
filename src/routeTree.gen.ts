@@ -73,6 +73,7 @@ import { Route as AppNovaCrmRouteImport } from './routes/app.nova.crm'
 import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
 import { Route as AppNovaOsSlugRouteImport } from './routes/app.nova-os.$slug'
 import { Route as AppLaunchpadNovaRouteImport } from './routes/app.launchpad.nova'
+import { Route as AppLaunchpadMissionsRouteImport } from './routes/app.launchpad.missions'
 import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.mentors'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
@@ -408,6 +409,11 @@ const AppLaunchpadNovaRoute = AppLaunchpadNovaRouteImport.update({
   path: '/launchpad/nova',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLaunchpadMissionsRoute = AppLaunchpadMissionsRouteImport.update({
+  id: '/launchpad/missions',
+  path: '/launchpad/missions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLaunchpadMentorsRoute = AppLaunchpadMentorsRouteImport.update({
   id: '/launchpad/mentors',
   path: '/launchpad/mentors',
@@ -543,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
   '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -622,6 +629,7 @@ export interface FileRoutesByTo {
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
   '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -703,6 +711,7 @@ export interface FileRoutesById {
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
   '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
@@ -785,6 +794,7 @@ export interface FileRouteTypes {
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
     | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
@@ -864,6 +874,7 @@ export interface FileRouteTypes {
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
     | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
@@ -944,6 +955,7 @@ export interface FileRouteTypes {
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
     | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
@@ -1429,6 +1441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadNovaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/launchpad/missions': {
+      id: '/app/launchpad/missions'
+      path: '/launchpad/missions'
+      fullPath: '/app/launchpad/missions'
+      preLoaderRoute: typeof AppLaunchpadMissionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/launchpad/mentors': {
       id: '/app/launchpad/mentors'
       path: '/launchpad/mentors'
@@ -1633,6 +1652,7 @@ interface AppRouteChildren {
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
   AppLaunchpadMentorsRoute: typeof AppLaunchpadMentorsRoute
+  AppLaunchpadMissionsRoute: typeof AppLaunchpadMissionsRoute
   AppLaunchpadNovaRoute: typeof AppLaunchpadNovaRoute
   AppNovaClientsRoute: typeof AppNovaClientsRoute
   AppNovaCrmRoute: typeof AppNovaCrmRoute
@@ -1692,6 +1712,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
   AppLaunchpadMentorsRoute: AppLaunchpadMentorsRoute,
+  AppLaunchpadMissionsRoute: AppLaunchpadMissionsRoute,
   AppLaunchpadNovaRoute: AppLaunchpadNovaRoute,
   AppNovaClientsRoute: AppNovaClientsRoute,
   AppNovaCrmRoute: AppNovaCrmRoute,
