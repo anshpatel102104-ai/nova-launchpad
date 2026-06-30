@@ -91,3 +91,7 @@ verify_jwt = true
 # Native SMS delivery (Twilio) — internal service calls + authed members.
 [functions.send-sms]
 verify_jwt = true
+
+# Campaign sender — audience resolution + per-recipient delivery; cron-drainable.
+[functions.send-campaign]
+verify_jwt = true

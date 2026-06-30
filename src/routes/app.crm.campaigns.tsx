@@ -10,6 +10,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ArrowLeft, Mail, MessageSquare, Megaphone, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 
 export const Route = createFileRoute("/app/crm/campaigns")({ component: CampaignsPage });
 
@@ -182,6 +183,7 @@ function CampaignBuilder({
   const [statusFilter, setStatusFilter] = useState((initial?.audience_filter?.status as string) ?? "");
   const [estimate, setEstimate] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [sendResult, setSendResult] = useState<string | null>(null);
 
   // Live recipient estimate from contacts (contacts uses org_id).
   useEffect(() => {
@@ -198,9 +200,8 @@ function CampaignBuilder({
     };
   }, [orgId, tagFilter, statusFilter]);
 
-  async function save(status: "draft" | "scheduled") {
-    if (!orgId || !userId || !name.trim()) return;
-    setSaving(true);
+  async function persist(status: "draft" | "scheduled"): Promise<string | null> {
+    if (!orgId || !userId || !name.trim()) return null;
     const payload = {
       organization_id: orgId,
       created_by: userId,
@@ -212,10 +213,40 @@ function CampaignBuilder({
       status,
       recipient_count: estimate ?? 0,
     };
-    if (initial) await supabase.from("campaigns").update(payload).eq("id", initial.id);
-    else await supabase.from("campaigns").insert(payload);
+    if (initial) {
+      await supabase.from("campaigns").update(payload).eq("id", initial.id);
+      return initial.id;
+    }
+    const { data } = await supabase.from("campaigns").insert(payload).select("id").single();
+    return (data?.id as string) ?? null;
+  }
+
+  async function save(status: "draft" | "scheduled") {
+    if (!name.trim()) return;
+    setSaving(true);
+    await persist(status);
     setSaving(false);
     onSaved();
+  }
+
+  async function sendNow() {
+    if (!name.trim()) return;
+    setSaving(true);
+    setSendResult(null);
+    const id = await persist("scheduled");
+    if (!id) {
+      setSaving(false);
+      return;
+    }
+    try {
+      const res = await invokeEdge<{ sent: number; recipients: number }>("send-campaign", { campaign_id: id }, { timeoutMs: 120_000 });
+      setSendResult(`Sent to ${res.sent}/${res.recipients} recipients.`);
+      setTimeout(onSaved, 1200);
+    } catch (e) {
+      setSendResult(e instanceof Error ? e.message : "Send failed.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -275,12 +306,21 @@ function CampaignBuilder({
             <p className="-mt-3 text-xs text-[--text-muted]">{bodyText.length} chars · {Math.max(1, Math.ceil(bodyText.length / 160))} segment(s)</p>
           )}
 
-          <div className="flex items-center gap-2 border-t border-[--border] pt-4">
+          {sendResult && (
+            <div className="rounded-xl border border-[--border] bg-[--bg-surface-2] px-4 py-3 text-xs text-[--text-secondary]">
+              {sendResult}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2 border-t border-[--border] pt-4">
             <button onClick={() => save("draft")} disabled={saving || !name.trim()} className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary] disabled:opacity-50">
               Save Draft
             </button>
-            <button onClick={() => save("scheduled")} disabled={saving || !name.trim() || !bodyText.trim()} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover] disabled:opacity-50">
+            <button onClick={() => save("scheduled")} disabled={saving || !name.trim() || !bodyText.trim()} className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary] disabled:opacity-50">
               Schedule
+            </button>
+            <button onClick={sendNow} disabled={saving || !name.trim() || !bodyText.trim()} className="ml-auto rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover] disabled:opacity-50">
+              {saving ? "Sending…" : "Send Now"}
             </button>
           </div>
         </div>
