@@ -53,6 +53,7 @@ function ConversationsPage() {
   const [loading, setLoading] = useState(true);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread" | "email" | "sms">("all");
+  const [showConnect, setShowConnect] = useState(false);
 
   async function load() {
     if (!currentOrgId) return;
@@ -140,7 +141,16 @@ function ConversationsPage() {
       {/* Thread list */}
       <aside className="flex w-full max-w-[300px] flex-col border-r border-[--border] bg-[--bg-surface]">
         <div className="border-b border-[--border] p-3">
-          <h1 className="px-1 pb-2 text-[15px] font-semibold text-[--text-primary]">Inbox</h1>
+          <div className="flex items-center justify-between px-1 pb-2">
+            <h1 className="text-[15px] font-semibold text-[--text-primary]">Inbox</h1>
+            <button
+              onClick={() => setShowConnect((s) => !s)}
+              className="text-xs font-semibold text-[--accent] hover:underline"
+            >
+              Connect
+            </button>
+          </div>
+          {showConnect && <ConnectChannelPanel orgId={currentOrgId ?? null} />}
           <div className="flex gap-1">
             {(["all", "unread", "email", "sms"] as const).map((f) => (
               <button
@@ -341,5 +351,65 @@ function ThreadView({
         </div>
       </div>
     </>
+  );
+}
+
+// Connect-a-channel panel: shows the org's inbound webhook URL (from
+// get-inbound-url) for the founder to paste into their email/SMS provider so
+// inbound messages flow into this inbox via receive-message.
+function ConnectChannelPanel({ orgId }: { orgId: string | null }) {
+  const [state, setState] = useState<
+    { status: "loading" } | { status: "ready"; url: string } | { status: "unconfigured" } | { status: "error" }
+  >({ status: "loading" });
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!orgId) return;
+    let active = true;
+    void invokeEdge<{ configured: boolean; url?: string }>("get-inbound-url", { org_id: orgId })
+      .then((r) => {
+        if (!active) return;
+        setState(r.configured && r.url ? { status: "ready", url: r.url } : { status: "unconfigured" });
+      })
+      .catch(() => active && setState({ status: "error" }));
+    return () => {
+      active = false;
+    };
+  }, [orgId]);
+
+  return (
+    <div className="mb-2 rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-xs">
+      <p className="mb-1.5 font-semibold text-[--text-primary]">Inbound webhook</p>
+      {state.status === "loading" && <div className="h-8 animate-pulse rounded-lg bg-[--bg-surface]" />}
+      {state.status === "unconfigured" && (
+        <p className="text-[--text-muted]">
+          Inbound messaging isn’t configured yet. Add an INBOUND_WEBHOOK_SECRET in project settings to
+          enable it.
+        </p>
+      )}
+      {state.status === "error" && <p className="text-[--danger]">Couldn’t load your webhook URL.</p>}
+      {state.status === "ready" && (
+        <>
+          <p className="mb-1.5 text-[--text-muted]">
+            POST inbound emails/SMS here to land them in this inbox:
+          </p>
+          <div className="flex items-center gap-1.5">
+            <code className="flex-1 truncate rounded-lg bg-[--bg-surface] px-2 py-1.5 font-mono text-[10px] text-[--text-secondary]">
+              {state.url}
+            </code>
+            <button
+              onClick={() => {
+                void navigator.clipboard?.writeText(state.url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              className="shrink-0 rounded-lg border border-[--border] px-2 py-1.5 font-medium text-[--text-secondary] hover:text-[--text-primary]"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
