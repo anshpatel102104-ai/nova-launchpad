@@ -34,6 +34,7 @@ import {
   Calendar,
   Star,
   Inbox,
+  Building2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -214,6 +215,7 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/nova/crm" ||
       p === "/app/nova/leads" ||
       p === "/app/launchpad/first-customers" ||
+      p === "/app/crm/companies" ||
       p === "/app/crm/tasks" ||
       p === "/app/crm/conversations" ||
       p === "/app/crm/calendar" ||
@@ -231,6 +233,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/nova/crm",
         icon: Workflow,
         match: (p) => p === "/app/nova/crm" || p === "/app/nova",
+      },
+      {
+        label: "Companies",
+        to: "/app/crm/companies",
+        icon: Building2,
+        match: (p) => p === "/app/crm/companies",
       },
       {
         label: "Conversations",
