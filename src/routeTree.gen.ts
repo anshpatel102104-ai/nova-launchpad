@@ -17,6 +17,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as FFormIdRouteImport } from './routes/f.$formId'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
@@ -73,6 +74,10 @@ import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
+import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
+import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
+import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
+import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
@@ -116,6 +121,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const FFormIdRoute = FFormIdRouteImport.update({
+  id: '/f/$formId',
+  path: '/f/$formId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/auth/sign-up',
@@ -398,6 +408,26 @@ const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
   path: '/launchpad/$tool',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCrmTasksRoute = AppCrmTasksRouteImport.update({
+  id: '/crm/tasks',
+  path: '/crm/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmFormsRoute = AppCrmFormsRouteImport.update({
+  id: '/crm/forms',
+  path: '/crm/forms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmConversationsRoute = AppCrmConversationsRouteImport.update({
+  id: '/crm/conversations',
+  path: '/crm/conversations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmAutomationsRoute = AppCrmAutomationsRouteImport.update({
+  id: '/crm/automations',
+  path: '/crm/automations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBlogIdRoute = AppBlogIdRouteImport.update({
   id: '/blog/$id',
   path: '/blog/$id',
@@ -459,10 +489,15 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -527,10 +562,15 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -597,10 +637,15 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
   '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -668,10 +713,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -736,10 +786,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/f/$formId'
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -805,10 +860,15 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
     | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -843,6 +903,7 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  FFormIdRoute: typeof FFormIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -902,6 +963,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/f/$formId': {
+      id: '/f/$formId'
+      path: '/f/$formId'
+      fullPath: '/f/$formId'
+      preLoaderRoute: typeof FFormIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/sign-up': {
       id: '/auth/sign-up'
@@ -1295,6 +1363,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadToolRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/crm/tasks': {
+      id: '/app/crm/tasks'
+      path: '/crm/tasks'
+      fullPath: '/app/crm/tasks'
+      preLoaderRoute: typeof AppCrmTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/forms': {
+      id: '/app/crm/forms'
+      path: '/crm/forms'
+      fullPath: '/app/crm/forms'
+      preLoaderRoute: typeof AppCrmFormsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/conversations': {
+      id: '/app/crm/conversations'
+      path: '/crm/conversations'
+      fullPath: '/app/crm/conversations'
+      preLoaderRoute: typeof AppCrmConversationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/automations': {
+      id: '/app/crm/automations'
+      path: '/crm/automations'
+      fullPath: '/app/crm/automations'
+      preLoaderRoute: typeof AppCrmAutomationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/blog/$id': {
       id: '/app/blog/$id'
       path: '/blog/$id'
@@ -1410,6 +1506,10 @@ interface AppRouteChildren {
   AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBlogIdRoute: typeof AppBlogIdRoute
+  AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
+  AppCrmConversationsRoute: typeof AppCrmConversationsRoute
+  AppCrmFormsRoute: typeof AppCrmFormsRoute
+  AppCrmTasksRoute: typeof AppCrmTasksRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
@@ -1460,6 +1560,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
   AppBlogIdRoute: AppBlogIdRoute,
+  AppCrmAutomationsRoute: AppCrmAutomationsRoute,
+  AppCrmConversationsRoute: AppCrmConversationsRoute,
+  AppCrmFormsRoute: AppCrmFormsRoute,
+  AppCrmTasksRoute: AppCrmTasksRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
@@ -1490,6 +1594,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  FFormIdRoute: FFormIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
