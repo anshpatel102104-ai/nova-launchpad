@@ -84,6 +84,27 @@ function ConversationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrgId]);
 
+  // Live updates: reload when a conversation row for this org changes (e.g. an
+  // inbound message arrives via receive-message). conversations is in the
+  // realtime publication.
+  useEffect(() => {
+    if (!currentOrgId) return;
+    const channel = supabase
+      .channel(`conversations:${currentOrgId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "conversations", filter: `organization_id=eq.${currentOrgId}` },
+        () => {
+          void load();
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrgId]);
+
   const threads = useMemo<Thread[]>(() => {
     const map = new Map<string, Message[]>();
     for (const m of messages) {
