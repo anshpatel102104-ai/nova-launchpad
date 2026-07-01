@@ -104,6 +104,28 @@ Deno.serve(async (req) => {
     .single();
   if (evErr) return json({ error: "Could not book the appointment" }, 500);
 
+  // Cross-system Connection 5: open a conversation thread for this contact with
+  // a confirmation message, so the booking shows up in the unified inbox.
+  if (contactId) {
+    const when = start.toLocaleString("en-US", { dateStyle: "full", timeStyle: "short" });
+    await admin
+      .from("conversations")
+      .insert({
+        organization_id: page.organization_id,
+        contact_id: contactId,
+        channel: "email",
+        direction: "outbound",
+        subject: `Appointment confirmed: ${page.title}`,
+        body: `Your ${page.title} is confirmed for ${when}.`,
+        status: "open",
+        metadata: { source: "booking", event_id: event.id },
+      })
+      .then(
+        () => {},
+        () => {},
+      );
+  }
+
   return json({
     ok: true,
     event_id: event.id,

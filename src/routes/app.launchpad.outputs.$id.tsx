@@ -15,7 +15,17 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronDown, Sparkles, Target, ShieldAlert, CheckCircle2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { formatLabel, verdictCategory, pickScore, type VerdictCategory } from "@/lib/casefile";
+
+// Offer/GTM analyses are the ones worth turning into a pipeline deal (Connection 2).
+const DEAL_TOOLS = new Set([
+  "generate-offer",
+  "positioning",
+  "generate-gtm-strategy",
+  "gtm-strategy-builder",
+  "generate-pitch",
+]);
 
 export const Route = createFileRoute("/app/launchpad/outputs/$id")({ component: CasefilePage });
 
@@ -51,6 +61,8 @@ type NextAction = { type?: string; label?: string; reason?: string; target?: str
 
 function CasefilePage() {
   const { id } = useParams({ from: "/app/launchpad/outputs/$id" });
+  const { currentOrgId } = useAuth();
+  const [dealState, setDealState] = useState<"idle" | "creating" | "done">("idle");
   const runQ = useQuery({
     queryKey: ["tool_run", id],
     queryFn: async () => {
@@ -212,6 +224,39 @@ function CasefilePage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Create Deal from this analysis (Connection 2) */}
+            {DEAL_TOOLS.has(run.tool_key) && currentOrgId && (
+              <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--bg-surface] p-4 shadow-sm">
+                <div>
+                  <p className="text-sm font-semibold text-[--text-primary]">Turn this into a deal</p>
+                  <p className="text-xs text-[--text-muted]">Start a pipeline opportunity from this analysis.</p>
+                </div>
+                {dealState === "done" ? (
+                  <Link to="/app/nova/crm" className="text-sm font-semibold text-[--success] hover:underline">
+                    Deal created — view pipeline →
+                  </Link>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      setDealState("creating");
+                      const { error } = await supabase.from("leads").insert({
+                        organization_id: currentOrgId,
+                        name: run.title || `${formatLabel(run.tool_key)} lead`,
+                        stage: "New",
+                        source: "casefile",
+                        notes: `Created from ${formatLabel(run.tool_key)} (case ${run.id.slice(0, 8)}). ${recommendation}`.slice(0, 500),
+                      });
+                      setDealState(error ? "idle" : "done");
+                    }}
+                    disabled={dealState === "creating"}
+                    className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50"
+                  >
+                    {dealState === "creating" ? "Creating…" : "Create Deal"}
+                  </button>
+                )}
               </div>
             )}
 
