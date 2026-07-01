@@ -253,6 +253,57 @@ Deno.serve(async (req: Request) => {
           messages: nextMessages,
         });
       }
+
+      // Cross-system Connection 3: Mentor → memory. Fold this mentor's advice into
+      // the Business Context Graph so it surfaces in Recent Memory and is queryable
+      // by Nova and the tools. One rolling artifact per session (keyed by
+      // session_key) keeps memory high-signal instead of one row per turn. Only
+      // log substantive advice; skip trivial one-liners.
+      if (fullText.trim().length > 80) {
+        const nowIso = new Date().toISOString();
+        const preview = fullText.slice(0, 500);
+        const { data: existingArtifact } = await admin
+          .from("memory_artifacts")
+          .select("id, title")
+          .eq("org_id", orgId)
+          .eq("source_type", "mentor")
+          .eq("source_label", agentId)
+          .eq("metadata->>session_key", sessionKey)
+          .maybeSingle();
+
+        const artifactMeta = {
+          source: "mentor",
+          agent_id: agentId,
+          mentor_name: mentor.name,
+          session_key: sessionKey,
+          last_question: message.slice(0, 240),
+        };
+
+        if (existingArtifact?.id) {
+          await admin
+            .from("memory_artifacts")
+            .update({
+              content: fullText,
+              content_preview: preview,
+              status: "indexed",
+              metadata: artifactMeta,
+              updated_at: nowIso,
+            })
+            .eq("id", existingArtifact.id);
+        } else {
+          await admin.from("memory_artifacts").insert({
+            org_id: orgId,
+            user_id: user.id,
+            source_type: "mentor",
+            source_label: agentId,
+            title: `${mentor.name}: ${message.slice(0, 70)}`,
+            content: fullText,
+            content_preview: preview,
+            status: "indexed",
+            metadata: artifactMeta,
+          });
+        }
+      }
     }
   })();
 
