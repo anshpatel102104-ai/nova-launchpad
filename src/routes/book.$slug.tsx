@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdge } from "@/lib/invokeEdge";
+import { nextDays, slotsFor } from "@/lib/booking";
 
 export const Route = createFileRoute("/book/$slug")({ component: PublicBooking });
 
@@ -26,33 +27,6 @@ type BookingPage = {
   confirmation_message: string | null;
 };
 
-function nextDays(count: number, allowed: number[]): Date[] {
-  const out: Date[] = [];
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  let guard = 0;
-  while (out.length < count && guard < 60) {
-    guard++;
-    d.setDate(d.getDate() + 1);
-    if (allowed.includes(d.getDay())) out.push(new Date(d));
-  }
-  return out;
-}
-
-function slotsFor(day: Date, start: string, end: string, duration: number): Date[] {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  const out: Date[] = [];
-  const cur = new Date(day);
-  cur.setHours(sh, sm, 0, 0);
-  const stop = new Date(day);
-  stop.setHours(eh, em, 0, 0);
-  while (cur.getTime() + duration * 60_000 <= stop.getTime() + 1) {
-    out.push(new Date(cur));
-    cur.setMinutes(cur.getMinutes() + duration);
-  }
-  return out;
-}
 
 function PublicBooking() {
   const { slug } = useParams({ from: "/book/$slug" });

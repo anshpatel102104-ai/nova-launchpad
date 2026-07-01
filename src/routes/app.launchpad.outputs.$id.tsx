@@ -15,6 +15,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronDown, Sparkles, Target, ShieldAlert, CheckCircle2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { formatLabel, verdictCategory, pickScore, type VerdictCategory } from "@/lib/casefile";
 
 export const Route = createFileRoute("/app/launchpad/outputs/$id")({ component: CasefilePage });
 
@@ -30,26 +31,15 @@ type ToolRun = {
 
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
-// Format label per tool family (master build §Founder Casefile variants).
-function formatLabel(toolKey: string): string {
-  if (["validate-idea", "idea-validator", "kill-my-idea", "funding-readiness-score"].includes(toolKey))
-    return "Investment Assessment";
-  if (["generate-offer", "positioning", "persona-builder"].includes(toolKey)) return "Founder Review";
-  if (["generate-gtm-strategy", "gtm-strategy-builder", "competitor-scanner", "research"].includes(toolKey))
-    return "Viability Brief";
-  if (["pricing-calculator", "decision"].includes(toolKey)) return "Decision Memo";
-  return "Founder Casefile";
-}
+const TONE_CLASSES: Record<VerdictCategory, { badge: string; card: string }> = {
+  danger: { badge: "bg-[--danger-light] text-[--danger] border-red-100", card: "border-l-[--danger] bg-[--danger-light]" },
+  success: { badge: "bg-[--success-light] text-[--success] border-green-100", card: "border-l-[--success] bg-[--success-light]" },
+  warning: { badge: "bg-[--warning-light] text-[--warning] border-amber-100", card: "border-l-[--warning] bg-[--warning-light]" },
+  neutral: { badge: "bg-[--accent-light] text-[--accent] border-violet-200", card: "border-l-[--accent] bg-[--accent-light]" },
+};
 
 function verdictTone(v: string): { badge: string; card: string } {
-  const s = v.toLowerCase();
-  if (/(kill|lost|fail|no-go|reject)/.test(s))
-    return { badge: "bg-[--danger-light] text-[--danger] border-red-100", card: "border-l-[--danger] bg-[--danger-light]" };
-  if (/(go|pass|won|strong|proceed|fundable|yes)/.test(s))
-    return { badge: "bg-[--success-light] text-[--success] border-green-100", card: "border-l-[--success] bg-[--success-light]" };
-  if (/(conditional|maybe|caution|revise|pivot)/.test(s))
-    return { badge: "bg-[--warning-light] text-[--warning] border-amber-100", card: "border-l-[--warning] bg-[--warning-light]" };
-  return { badge: "bg-[--accent-light] text-[--accent] border-violet-200", card: "border-l-[--accent] bg-[--accent-light]" };
+  return TONE_CLASSES[verdictCategory(v)];
 }
 
 function asArray(v: unknown): string[] {
@@ -76,10 +66,7 @@ function CasefilePage() {
   const run = runQ.data;
   const out = (run?.output ?? {}) as Record<string, unknown>;
 
-  const score = useMemo(() => {
-    const n = out.total_score ?? out.viabilityScore ?? out.score ?? null;
-    return typeof n === "number" ? n : n != null && !isNaN(Number(n)) ? Number(n) : null;
-  }, [out]);
+  const score = useMemo(() => pickScore(out), [out]);
   const verdict = String(out.verdict ?? "").trim();
   const tone = verdictTone(verdict || "review");
   const scores = (out.scores && typeof out.scores === "object" ? out.scores : {}) as Record<string, number>;
