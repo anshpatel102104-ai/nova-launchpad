@@ -6,7 +6,10 @@
  */
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, ArrowLeft, Trash2, FileText, Copy, ExternalLink } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, FileText, Copy, ExternalLink, GripVertical } from "lucide-react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -167,6 +170,50 @@ function CopyLinkButton({ path }: { path: string }) {
   );
 }
 
+function SortableField({
+  field: f,
+  onUpdate,
+  onRemove,
+}: {
+  field: Field;
+  onUpdate: (patch: Partial<Field>) => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: f.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 rounded-xl border border-[--border] bg-[--bg-surface-2] p-3"
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab touch-none text-[--text-muted] hover:text-[--text-secondary] active:cursor-grabbing"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </button>
+      <span className="rounded-md bg-[--accent-light] px-2 py-0.5 text-[10px] font-semibold text-[--accent]">
+        {FIELD_TYPES.find(([t]) => t === f.type)?.[1] ?? f.type}
+      </span>
+      <input
+        value={f.label}
+        onChange={(e) => onUpdate({ label: e.target.value })}
+        className="flex-1 rounded-lg border border-[--border] bg-[--bg-surface] px-3 py-1.5 text-xs text-[--text-primary] focus:border-[--border-focus] focus:outline-none"
+      />
+      <label className="flex items-center gap-1 text-xs text-[--text-secondary]">
+        <input type="checkbox" checked={f.required} onChange={(e) => onUpdate({ required: e.target.checked })} />
+        Required
+      </label>
+      <button onClick={onRemove} className="text-[--text-muted] hover:text-[--danger]" aria-label="Remove field">
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function FormBuilder({
   initial,
   orgId,
@@ -185,6 +232,18 @@ function FormBuilder({
   const [submitMessage, setSubmitMessage] = useState(initial?.submit_message ?? "Thanks! We'll be in touch.");
   const [active, setActive] = useState(initial?.is_active ?? true);
   const [saving, setSaving] = useState(false);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  function onDragEnd(e: DragEndEvent) {
+    const { active: a, over } = e;
+    if (over && a.id !== over.id) {
+      setFields((prev) => {
+        const oldIdx = prev.findIndex((f) => f.id === a.id);
+        const newIdx = prev.findIndex((f) => f.id === over.id);
+        return oldIdx < 0 || newIdx < 0 ? prev : arrayMove(prev, oldIdx, newIdx);
+      });
+    }
+  }
 
   function addField(type: string) {
     setFields((prev) => [
@@ -234,32 +293,25 @@ function FormBuilder({
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Fields</p>
-            <div className="space-y-2">
-              {fields.map((f) => (
-                <div key={f.id} className="flex items-center gap-2 rounded-xl border border-[--border] bg-[--bg-surface-2] p-3">
-                  <span className="rounded-md bg-[--accent-light] px-2 py-0.5 text-[10px] font-semibold text-[--accent]">
-                    {FIELD_TYPES.find(([t]) => t === f.type)?.[1] ?? f.type}
-                  </span>
-                  <input
-                    value={f.label}
-                    onChange={(e) => updateField(f.id, { label: e.target.value })}
-                    className="flex-1 rounded-lg border border-[--border] bg-[--bg-surface] px-3 py-1.5 text-xs text-[--text-primary] focus:border-[--border-focus] focus:outline-none"
-                  />
-                  <label className="flex items-center gap-1 text-xs text-[--text-secondary]">
-                    <input type="checkbox" checked={f.required} onChange={(e) => updateField(f.id, { required: e.target.checked })} />
-                    Required
-                  </label>
-                  <button onClick={() => removeField(f.id)} className="text-[--text-muted] hover:text-[--danger]" aria-label="Remove field">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {fields.map((f) => (
+                    <SortableField
+                      key={f.id}
+                      field={f}
+                      onUpdate={(patch) => updateField(f.id, patch)}
+                      onRemove={() => removeField(f.id)}
+                    />
+                  ))}
+                  {fields.length === 0 && (
+                    <p className="rounded-xl border border-dashed border-[--border] px-4 py-6 text-center text-xs text-[--text-muted]">
+                      Add fields below.
+                    </p>
+                  )}
                 </div>
-              ))}
-              {fields.length === 0 && (
-                <p className="rounded-xl border border-dashed border-[--border] px-4 py-6 text-center text-xs text-[--text-muted]">
-                  Add fields below.
-                </p>
-              )}
-            </div>
+              </SortableContext>
+            </DndContext>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {FIELD_TYPES.map(([type, label]) => (
                 <button

@@ -6,9 +6,12 @@
  * the workflow-engine edge function (Phase 2) in dry-run mode; "Activate"
  * flips it live. Prebuilt templates seed common flows.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Play, Trash2, Zap, ArrowLeft, FlaskConical } from "lucide-react";
+import { Plus, Play, Trash2, Zap, ArrowLeft, FlaskConical, GripVertical } from "lucide-react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdge } from "@/lib/invokeEdge";
@@ -44,6 +47,7 @@ const STEP_TYPES = [
 ] as const;
 
 type Step = { type: string; config: Record<string, unknown> };
+type EditStep = Step & { _id: string };
 
 type Workflow = {
   id: string;
@@ -297,12 +301,17 @@ function WorkflowBuilder({
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [trigger, setTrigger] = useState(initial?.trigger_type ?? "contact_created");
-  const [steps, setSteps] = useState<Step[]>(initial?.steps ?? []);
+  // Local editing state carries a stable _id per step for drag-reorder; it's
+  // stripped before persisting (workflow-engine reads only type/config).
+  const [steps, setSteps] = useState<EditStep[]>(() =>
+    (initial?.steps ?? []).map((s) => ({ ...s, _id: crypto.randomUUID() })),
+  );
   const [saving, setSaving] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   function addStep(type: string) {
-    setSteps((prev) => [...prev, { type, config: {} }]);
+    setSteps((prev) => [...prev, { type, config: {}, _id: crypto.randomUUID() }]);
   }
   function updateStep(i: number, config: Record<string, unknown>) {
     setSteps((prev) => prev.map((s, j) => (j === i ? { ...s, config } : s)));
@@ -310,6 +319,17 @@ function WorkflowBuilder({
   function removeStep(i: number) {
     setSteps((prev) => prev.filter((_, j) => j !== i));
   }
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    if (over && active.id !== over.id) {
+      setSteps((prev) => {
+        const oldIdx = prev.findIndex((s) => s._id === active.id);
+        const newIdx = prev.findIndex((s) => s._id === over.id);
+        return oldIdx < 0 || newIdx < 0 ? prev : arrayMove(prev, oldIdx, newIdx);
+      });
+    }
+  }
+  const cleanSteps = (): Step[] => steps.map(({ _id: _drop, ...s }) => s);
 
   async function save(activate: boolean) {
     if (!orgId || !userId || !name.trim()) return;
@@ -319,7 +339,7 @@ function WorkflowBuilder({
       created_by: userId,
       name: name.trim(),
       trigger_type: trigger,
-      steps: steps as never,
+      steps: cleanSteps() as never,
       is_active: activate,
       status: activate ? "active" : "draft",
     };
@@ -391,22 +411,27 @@ function WorkflowBuilder({
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Steps</p>
-            <div className="space-y-2">
-              {steps.map((s, i) => (
-                <StepEditor
-                  key={i}
-                  index={i}
-                  step={s}
-                  onChange={(cfg) => updateStep(i, cfg)}
-                  onRemove={() => removeStep(i)}
-                />
-              ))}
-              {steps.length === 0 && (
-                <p className="rounded-xl border border-dashed border-[--border] px-4 py-6 text-center text-xs text-[--text-muted]">
-                  Add steps below to build the flow.
-                </p>
-              )}
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={steps.map((s) => s._id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {steps.map((s, i) => (
+                    <SortableStep
+                      key={s._id}
+                      id={s._id}
+                      index={i}
+                      step={s}
+                      onChange={(cfg) => updateStep(i, cfg)}
+                      onRemove={() => removeStep(i)}
+                    />
+                  ))}
+                  {steps.length === 0 && (
+                    <p className="rounded-xl border border-dashed border-[--border] px-4 py-6 text-center text-xs text-[--text-muted]">
+                      Add steps below to build the flow.
+                    </p>
+                  )}
+                </div>
+              </SortableContext>
+            </DndContext>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {STEP_TYPES.map(([type, label]) => (
                 <button
@@ -454,16 +479,59 @@ function WorkflowBuilder({
   );
 }
 
-function StepEditor({
+function SortableStep({
+  id,
   index,
   step,
   onChange,
   onRemove,
 }: {
+  id: string;
   index: number;
   step: Step;
   onChange: (cfg: Record<string, unknown>) => void;
   onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <StepEditor
+        index={index}
+        step={step}
+        onChange={onChange}
+        onRemove={onRemove}
+        handle={
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab touch-none text-[--text-muted] hover:text-[--text-secondary] active:cursor-grabbing"
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </button>
+        }
+      />
+    </div>
+  );
+}
+
+function StepEditor({
+  index,
+  step,
+  onChange,
+  onRemove,
+  handle,
+}: {
+  index: number;
+  step: Step;
+  onChange: (cfg: Record<string, unknown>) => void;
+  onRemove: () => void;
+  handle?: ReactNode;
 }) {
   const label = STEP_TYPES.find(([t]) => t === step.type)?.[1] ?? step.type;
   const cfg = step.config;
@@ -480,6 +548,7 @@ function StepEditor({
   return (
     <div className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3">
       <div className="mb-2 flex items-center gap-2">
+        {handle}
         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[--accent-light] text-[10px] font-bold text-[--accent]">
           {index + 1}
         </span>
