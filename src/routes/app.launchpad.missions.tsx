@@ -67,7 +67,9 @@ function MissionDetail() {
                 {data.mission.title}
               </h1>
               {data.mission.description && (
-                <p className="mt-2 text-sm leading-relaxed text-[--text-secondary]">{data.mission.description}</p>
+                <p className="mt-2 text-sm leading-relaxed text-[--text-secondary]">
+                  {data.mission.description}
+                </p>
               )}
             </div>
 
@@ -85,7 +87,9 @@ function MissionDetail() {
                     <div
                       key={s.id}
                       className={`flex gap-3 rounded-2xl border bg-[--bg-surface] p-4 shadow-sm ${
-                        isActive ? "border-[--border] border-l-4 border-l-[--accent]" : "border-[--border]"
+                        isActive
+                          ? "border-[--border] border-l-4 border-l-[--accent]"
+                          : "border-[--border]"
                       } ${locked ? "opacity-60" : ""}`}
                     >
                       <div className="mt-0.5 shrink-0">
@@ -99,16 +103,24 @@ function MissionDetail() {
                           </span>
                         ) : (
                           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[--bg-surface-2] text-[--text-muted]">
-                            {locked ? <Lock className="h-3 w-3" /> : <span className="text-xs font-semibold">{i + 1}</span>}
+                            {locked ? (
+                              <Lock className="h-3 w-3" />
+                            ) : (
+                              <span className="text-xs font-semibold">{i + 1}</span>
+                            )}
                           </span>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-semibold ${isActive ? "text-[--text-primary]" : done ? "text-[--text-secondary]" : "text-[--text-primary]"}`}>
+                        <p
+                          className={`text-sm font-semibold ${isActive ? "text-[--text-primary]" : done ? "text-[--text-secondary]" : "text-[--text-primary]"}`}
+                        >
                           {s.title}
                         </p>
                         {s.description && (
-                          <p className="mt-0.5 text-xs leading-relaxed text-[--text-muted]">{s.description}</p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-[--text-muted]">
+                            {s.description}
+                          </p>
                         )}
                         {isActive && s.tool_key && (
                           <Link
@@ -130,7 +142,9 @@ function MissionDetail() {
             <div className="mt-6 rounded-2xl border border-[--border] bg-[--bg-command] p-5 text-white shadow-sm">
               <div className="mb-1 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-[#b9a4ff]" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">Nova</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">
+                  Nova
+                </span>
               </div>
               <p className="text-sm leading-relaxed text-white/90">
                 {activeIndex === -1

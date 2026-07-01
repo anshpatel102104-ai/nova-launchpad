@@ -85,7 +85,9 @@ function PublicForm() {
       <div className="flex min-h-screen items-center justify-center bg-[--bg-page] px-4">
         <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-8 text-center">
           <p className="text-sm font-semibold text-[--text-primary]">Form not found</p>
-          <p className="mt-1 text-xs text-[--text-muted]">This form may be unpublished or removed.</p>
+          <p className="mt-1 text-xs text-[--text-muted]">
+            This form may be unpublished or removed.
+          </p>
         </div>
       </div>
     );
@@ -105,8 +107,12 @@ function PublicForm() {
           </div>
         ) : (
           <>
-            <h1 className="text-xl font-bold tracking-[-0.02em] text-[--text-primary]">{form.name}</h1>
-            {form.description && <p className="mt-1 text-sm text-[--text-secondary]">{form.description}</p>}
+            <h1 className="text-xl font-bold tracking-[-0.02em] text-[--text-primary]">
+              {form.name}
+            </h1>
+            {form.description && (
+              <p className="mt-1 text-sm text-[--text-secondary]">{form.description}</p>
+            )}
             <div className="mt-6 space-y-4">
               {form.fields.map((f) => (
                 <div key={f.id}>
@@ -126,13 +132,25 @@ function PublicForm() {
                       <input
                         type="checkbox"
                         checked={values[f.id] === "yes"}
-                        onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.checked ? "yes" : "" }))}
+                        onChange={(e) =>
+                          setValues((v) => ({ ...v, [f.id]: e.target.checked ? "yes" : "" }))
+                        }
                       />
                       {f.placeholder || "Yes"}
                     </label>
                   ) : (
                     <input
-                      type={f.type === "email" ? "email" : f.type === "phone" ? "tel" : f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                      type={
+                        f.type === "email"
+                          ? "email"
+                          : f.type === "phone"
+                            ? "tel"
+                            : f.type === "number"
+                              ? "number"
+                              : f.type === "date"
+                                ? "date"
+                                : "text"
+                      }
                       value={values[f.id] ?? ""}
                       onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}
                       className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"

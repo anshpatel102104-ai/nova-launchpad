@@ -20,10 +20,23 @@ export const Route = createFileRoute("/app/launchpad/nova")({ component: NovaPag
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
 const QUICK_BY_STAGE: Record<string, string[]> = {
-  Clarify: ["Who exactly is my customer?", "What problem am I really solving?", "Is this worth pursuing?"],
-  Validate: ["Stress-test my pricing", "Validate this idea", "Find my first 10 customers", "Build my GTM path"],
+  Clarify: [
+    "Who exactly is my customer?",
+    "What problem am I really solving?",
+    "Is this worth pursuing?",
+  ],
+  Validate: [
+    "Stress-test my pricing",
+    "Validate this idea",
+    "Find my first 10 customers",
+    "Build my GTM path",
+  ],
   Build: ["What's the smallest MVP?", "What should I cut?", "Plan my build sprint"],
-  Launch: ["Which channel should I test first?", "Write my launch checklist", "Draft my landing page hero"],
+  Launch: [
+    "Which channel should I test first?",
+    "Write my launch checklist",
+    "Draft my landing page hero",
+  ],
   Operate: ["Tighten my follow-up", "What should I automate first?", "Where am I losing deals?"],
   Scale: ["What's my growth lever?", "How do I lower CAC?", "What breaks at 10x?"],
 };
@@ -53,7 +66,8 @@ function NovaPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const stage = (org.data?.stage as string) || jsonText(ctx.data?.stage) || "Validate";
-  const stageKey = STAGES.find((s) => s.toLowerCase() === String(stage).toLowerCase()) ?? "Validate";
+  const stageKey =
+    STAGES.find((s) => s.toLowerCase() === String(stage).toLowerCase()) ?? "Validate";
   const belief = jsonText(ctx.data?.identity) || (org.data?.offer as string) || "";
   const quickPrompts = QUICK_BY_STAGE[stageKey] ?? QUICK_BY_STAGE.Validate;
 
@@ -75,7 +89,12 @@ function NovaPage() {
     if (!trimmed || streaming) return;
     setInput("");
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: trimmed };
-    const assistantMsg: Message = { id: crypto.randomUUID(), role: "assistant", content: "", pending: true };
+    const assistantMsg: Message = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: "",
+      pending: true,
+    };
     const history = [...messages, userMsg];
     setMessages([...history, assistantMsg]);
     setStreaming(true);
@@ -115,7 +134,9 @@ function NovaPage() {
             if (chunk) {
               acc += chunk;
               setMessages((prev) =>
-                prev.map((m) => (m.id === assistantMsg.id ? { ...m, content: acc, pending: false } : m)),
+                prev.map((m) =>
+                  m.id === assistantMsg.id ? { ...m, content: acc, pending: false } : m,
+                ),
               );
             }
           } catch {
@@ -125,14 +146,20 @@ function NovaPage() {
       }
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === assistantMsg.id ? { ...m, content: acc || "No response generated.", pending: false } : m,
+          m.id === assistantMsg.id
+            ? { ...m, content: acc || "No response generated.", pending: false }
+            : m,
         ),
       );
     } catch {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantMsg.id
-            ? { ...m, content: "Something went wrong reaching Nova. Please try again.", pending: false }
+            ? {
+                ...m,
+                content: "Something went wrong reaching Nova. Please try again.",
+                pending: false,
+              }
             : m,
         ),
       );
@@ -153,7 +180,9 @@ function NovaPage() {
       {/* Business Snapshot Bar (read-only) */}
       <div className="shrink-0 border-b border-[--border] bg-[--bg-surface] px-5 py-3">
         <div className="mx-auto flex max-w-3xl items-center gap-2">
-          <span className="text-sm font-semibold text-[--text-primary]">{org.data?.name || "Your business"}</span>
+          <span className="text-sm font-semibold text-[--text-primary]">
+            {org.data?.name || "Your business"}
+          </span>
           <span className="rounded-full border border-violet-200 bg-[--accent-light] px-2.5 py-0.5 text-xs font-semibold text-[--accent]">
             {stageKey}
           </span>
@@ -169,18 +198,26 @@ function NovaPage() {
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[--bg-command] text-white">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <p className="text-sm font-semibold text-[--text-primary]">Tell Nova what you want to achieve</p>
+              <p className="text-sm font-semibold text-[--text-primary]">
+                Tell Nova what you want to achieve
+              </p>
               <p className="mt-1 max-w-sm text-xs text-[--text-muted]">
-                Nova knows your business context and your stage. Ask for a plan, a critique, or the next move.
+                Nova knows your business context and your stage. Ask for a plan, a critique, or the
+                next move.
               </p>
             </div>
           ) : (
             messages.map((m) =>
               m.role === "assistant" ? (
-                <div key={m.id} className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--bg-surface] p-4 shadow-sm">
+                <div
+                  key={m.id}
+                  className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--bg-surface] p-4 shadow-sm"
+                >
                   <div className="mb-1 flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">Nova</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
+                      Nova
+                    </span>
                   </div>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--text-primary]">
                     {m.content || (m.pending ? <TypingDots /> : null)}

@@ -49,9 +49,13 @@ Deno.serve(async (req) => {
   const internal = body.internal === true && token === serviceKey;
   if (!internal) {
     if (!authHeader) return json({ error: "Missing auth" }, 401);
-    const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const userClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      {
+        global: { headers: { Authorization: authHeader } },
+      },
+    );
     const { data, error } = await userClient.auth.getUser();
     if (error || !data?.user) return json({ error: "Unauthorized" }, 401);
   }
@@ -96,6 +100,9 @@ Deno.serve(async (req) => {
     const out = await res.json().catch(() => ({}));
     return json({ sent: true, id: out.id ?? null, to });
   } catch (e) {
-    return json({ sent: false, reason: "exception", detail: e instanceof Error ? e.message : String(e) }, 502);
+    return json(
+      { sent: false, reason: "exception", detail: e instanceof Error ? e.message : String(e) },
+      502,
+    );
   }
 });

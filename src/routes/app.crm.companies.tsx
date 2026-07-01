@@ -25,7 +25,9 @@ type Company = {
 function CompaniesPage() {
   const { currentOrgId } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [counts, setCounts] = useState<Record<string, { contacts: number; deals: number; value: number }>>({});
+  const [counts, setCounts] = useState<
+    Record<string, { contacts: number; deals: number; value: number }>
+  >({});
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<Company | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -85,7 +87,9 @@ function CompaniesPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Companies</h1>
+            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+              Companies
+            </h1>
             <p className="mt-1 text-sm text-[--text-secondary]">{companies.length} accounts</p>
           </div>
           <button
@@ -116,7 +120,10 @@ function CompaniesPage() {
             <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
               Group contacts and deals under the accounts they belong to.
             </p>
-            <button onClick={() => setShowAdd(true)} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]">
+            <button
+              onClick={() => setShowAdd(true)}
+              className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+            >
               Add Company
             </button>
           </div>
@@ -126,7 +133,12 @@ function CompaniesPage() {
               <thead>
                 <tr className="border-b border-[--border] text-left">
                   {["Name", "Domain", "Industry", "Contacts", "Deals", "Pipeline", ""].map((h) => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">{h}</th>
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[--text-muted]"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -134,10 +146,20 @@ function CompaniesPage() {
                 {filtered.map((c) => {
                   const a = counts[c.id] ?? { contacts: 0, deals: 0, value: 0 };
                   return (
-                    <tr key={c.id} className="cursor-pointer border-b border-[--border] last:border-b-0 hover:bg-[--bg-surface-2]" onClick={() => setActive(c)}>
-                      <td className="px-4 py-3.5 text-sm font-medium text-[--text-primary]">{c.name}</td>
-                      <td className="px-4 py-3.5 text-sm text-[--text-secondary]">{c.domain ?? "—"}</td>
-                      <td className="px-4 py-3.5 text-sm text-[--text-secondary]">{c.industry ?? "—"}</td>
+                    <tr
+                      key={c.id}
+                      className="cursor-pointer border-b border-[--border] last:border-b-0 hover:bg-[--bg-surface-2]"
+                      onClick={() => setActive(c)}
+                    >
+                      <td className="px-4 py-3.5 text-sm font-medium text-[--text-primary]">
+                        {c.name}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-[--text-secondary]">
+                        {c.domain ?? "—"}
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-[--text-secondary]">
+                        {c.industry ?? "—"}
+                      </td>
                       <td className="px-4 py-3.5 text-sm text-[--text-secondary]">{a.contacts}</td>
                       <td className="px-4 py-3.5 text-sm text-[--text-secondary]">{a.deals}</td>
                       <td className="px-4 py-3.5 text-sm font-semibold text-[--accent]">
@@ -164,35 +186,79 @@ function CompaniesPage() {
         )}
       </div>
 
-      {active && <CompanyDrawer company={active} orgId={currentOrgId ?? null} onClose={() => setActive(null)} />}
-      {showAdd && <AddCompanyModal orgId={currentOrgId ?? null} onClose={() => setShowAdd(false)} onAdded={load} />}
+      {active && (
+        <CompanyDrawer
+          company={active}
+          orgId={currentOrgId ?? null}
+          onClose={() => setActive(null)}
+        />
+      )}
+      {showAdd && (
+        <AddCompanyModal
+          orgId={currentOrgId ?? null}
+          onClose={() => setShowAdd(false)}
+          onAdded={load}
+        />
+      )}
     </div>
   );
 }
 
-function CompanyDrawer({ company, orgId, onClose }: { company: Company; orgId: string | null; onClose: () => void }) {
+function CompanyDrawer({
+  company,
+  orgId,
+  onClose,
+}: {
+  company: Company;
+  orgId: string | null;
+  onClose: () => void;
+}) {
   const [tab, setTab] = useState<"profile" | "contacts" | "deals">("profile");
-  const [contacts, setContacts] = useState<{ id: string; first_name: string | null; last_name: string | null; email: string | null }[]>([]);
-  const [deals, setDeals] = useState<{ id: string; name: string; stage: string; value: number | null }[]>([]);
+  const [contacts, setContacts] = useState<
+    { id: string; first_name: string | null; last_name: string | null; email: string | null }[]
+  >([]);
+  const [deals, setDeals] = useState<
+    { id: string; name: string; stage: string; value: number | null }[]
+  >([]);
 
   useEffect(() => {
     if (!orgId) return;
-    void supabase.from("contacts").select("id, first_name, last_name, email").eq("company_id", company.id).then(({ data }) => setContacts(data ?? []));
-    void supabase.from("leads").select("id, name, stage, value").eq("company_id", company.id).then(({ data }) => setDeals((data as typeof deals) ?? []));
+    void supabase
+      .from("contacts")
+      .select("id, first_name, last_name, email")
+      .eq("company_id", company.id)
+      .then(({ data }) => setContacts(data ?? []));
+    void supabase
+      .from("leads")
+      .select("id, name, stage, value")
+      .eq("company_id", company.id)
+      .then(({ data }) => setDeals((data as typeof deals) ?? []));
   }, [company.id, orgId]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={onClose}>
-      <div className="h-full w-full overflow-y-auto bg-[--bg-surface] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] sm:w-[420px]" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="h-full w-full overflow-y-auto bg-[--bg-surface] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] sm:w-[420px]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-3 border-b border-[--border] px-5 py-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[--accent-light] text-sm font-semibold text-[--accent]">
             {company.name.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-semibold text-[--text-primary]">{company.name}</p>
-            <p className="truncate text-xs text-[--text-muted]">{company.domain ?? company.industry ?? "Company"}</p>
+            <p className="truncate text-[15px] font-semibold text-[--text-primary]">
+              {company.name}
+            </p>
+            <p className="truncate text-xs text-[--text-muted]">
+              {company.domain ?? company.industry ?? "Company"}
+            </p>
           </div>
-          <button onClick={onClose} className="text-[--text-muted] hover:text-[--text-primary]">✕</button>
+          <button onClick={onClose} className="text-[--text-muted] hover:text-[--text-primary]">
+            ✕
+          </button>
         </div>
 
         <div className="flex gap-1 border-b border-[--border] px-3">
@@ -201,7 +267,9 @@ function CompanyDrawer({ company, orgId, onClose }: { company: Company; orgId: s
               key={t}
               onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-3 py-2.5 text-sm font-medium capitalize ${
-                tab === t ? "border-[--accent] text-[--accent]" : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
+                tab === t
+                  ? "border-[--accent] text-[--accent]"
+                  : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
               }`}
             >
               {t}
@@ -220,50 +288,68 @@ function CompanyDrawer({ company, orgId, onClose }: { company: Company; orgId: s
                 ["Notes", company.notes],
               ].map(([k, v]) => (
                 <div key={k as string}>
-                  <dt className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">{k}</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+                    {k}
+                  </dt>
                   <dd className="text-sm text-[--text-primary]">{v || "—"}</dd>
                 </div>
               ))}
             </dl>
           )}
-          {tab === "contacts" && (
-            contacts.length === 0 ? (
+          {tab === "contacts" &&
+            (contacts.length === 0 ? (
               <p className="py-8 text-center text-xs text-[--text-muted]">No contacts linked.</p>
             ) : (
               <div className="space-y-2">
                 {contacts.map((c) => (
-                  <div key={c.id} className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-sm">
-                    <p className="font-medium text-[--text-primary]">{[c.first_name, c.last_name].filter(Boolean).join(" ") || "Contact"}</p>
+                  <div
+                    key={c.id}
+                    className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-sm"
+                  >
+                    <p className="font-medium text-[--text-primary]">
+                      {[c.first_name, c.last_name].filter(Boolean).join(" ") || "Contact"}
+                    </p>
                     <p className="text-xs text-[--text-muted]">{c.email ?? "—"}</p>
                   </div>
                 ))}
               </div>
-            )
-          )}
-          {tab === "deals" && (
-            deals.length === 0 ? (
+            ))}
+          {tab === "deals" &&
+            (deals.length === 0 ? (
               <p className="py-8 text-center text-xs text-[--text-muted]">No deals linked.</p>
             ) : (
               <div className="space-y-2">
                 {deals.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-sm">
+                  <div
+                    key={d.id}
+                    className="flex items-center justify-between rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-sm"
+                  >
                     <div>
                       <p className="font-medium text-[--text-primary]">{d.name}</p>
                       <p className="text-xs text-[--text-muted]">{d.stage}</p>
                     </div>
-                    <span className="font-semibold text-[--accent]">{d.value ? `$${Number(d.value).toLocaleString()}` : "—"}</span>
+                    <span className="font-semibold text-[--accent]">
+                      {d.value ? `$${Number(d.value).toLocaleString()}` : "—"}
+                    </span>
                   </div>
                 ))}
               </div>
-            )
-          )}
+            ))}
         </div>
       </div>
     </div>
   );
 }
 
-function AddCompanyModal({ orgId, onClose, onAdded }: { orgId: string | null; onClose: () => void; onAdded: () => void }) {
+function AddCompanyModal({
+  orgId,
+  onClose,
+  onAdded,
+}: {
+  orgId: string | null;
+  onClose: () => void;
+  onAdded: () => void;
+}) {
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [industry, setIndustry] = useState("");
@@ -284,17 +370,49 @@ function AddCompanyModal({ orgId, onClose, onAdded }: { orgId: string | null; on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="mb-4 text-[18px] font-semibold text-[--text-primary]">Add Company</h2>
         <div className="space-y-3">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Company name *" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25" />
-          <input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="Domain (e.g. acme.com)" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none" />
-          <input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Industry" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none" />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Company name *"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+          />
+          <input
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+            placeholder="Domain (e.g. acme.com)"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none"
+          />
+          <input
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            placeholder="Industry"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none"
+          />
         </div>
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]">Cancel</button>
-          <button onClick={save} disabled={saving || !name.trim()} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50">Add</button>
+          <button
+            onClick={onClose}
+            className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving || !name.trim()}
+            className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50"
+          >
+            Add
+          </button>
         </div>
       </div>
     </div>

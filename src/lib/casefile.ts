@@ -7,10 +7,17 @@ export type VerdictCategory = "danger" | "success" | "warning" | "neutral";
 
 /** Format label shown in the casefile command header, by tool family. */
 export function formatLabel(toolKey: string): string {
-  if (["validate-idea", "idea-validator", "kill-my-idea", "funding-readiness-score"].includes(toolKey))
+  if (
+    ["validate-idea", "idea-validator", "kill-my-idea", "funding-readiness-score"].includes(toolKey)
+  )
     return "Investment Assessment";
-  if (["generate-offer", "positioning", "persona-builder"].includes(toolKey)) return "Founder Review";
-  if (["generate-gtm-strategy", "gtm-strategy-builder", "competitor-scanner", "research"].includes(toolKey))
+  if (["generate-offer", "positioning", "persona-builder"].includes(toolKey))
+    return "Founder Review";
+  if (
+    ["generate-gtm-strategy", "gtm-strategy-builder", "competitor-scanner", "research"].includes(
+      toolKey,
+    )
+  )
     return "Viability Brief";
   if (["pricing-calculator", "decision"].includes(toolKey)) return "Decision Memo";
   return "Founder Casefile";

@@ -63,11 +63,18 @@ Deno.serve(async (req) => {
         });
         // Only bump the counter on a genuinely new (distinct) engagement.
         if (!insErr) {
-          const col = type === "open" ? "open_count" : type === "click" ? "click_count" : "unsubscribe_count";
+          const col =
+            type === "open" ? "open_count" : type === "click" ? "click_count" : "unsubscribe_count";
           const current = (campaign as Record<string, number>)[col] ?? 0;
-          await admin.from("campaigns").update({ [col]: current + 1 }).eq("id", campaignId);
+          await admin
+            .from("campaigns")
+            .update({ [col]: current + 1 })
+            .eq("id", campaignId);
           if (type === "unsubscribe" && contactId) {
-            await admin.from("contacts").update({ do_not_contact: true, opted_out_sms: true }).eq("id", contactId);
+            await admin
+              .from("contacts")
+              .update({ do_not_contact: true, opted_out_sms: true })
+              .eq("id", contactId);
           }
         }
       }

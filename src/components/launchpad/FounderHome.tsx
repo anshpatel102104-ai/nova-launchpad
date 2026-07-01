@@ -22,12 +22,18 @@ import {
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
 const GUIDANCE_BY_STAGE: Record<string, { prompt: string; cta: string }> = {
-  Clarify: { prompt: "Let's pin down exactly who you're building for.", cta: "Clarify my customer" },
+  Clarify: {
+    prompt: "Let's pin down exactly who you're building for.",
+    cta: "Clarify my customer",
+  },
   Validate: { prompt: "Stress-test your idea before you build more.", cta: "Validate my idea" },
   Build: { prompt: "Turn your plan into the smallest shippable slice.", cta: "Plan my MVP" },
   Launch: { prompt: "Line up the assets and channels to go live.", cta: "Build my GTM path" },
   Operate: { prompt: "Tighten your follow-up so no lead goes cold.", cta: "Draft follow-ups" },
-  Scale: { prompt: "Find the channel that compounds and double down.", cta: "Find my growth lever" },
+  Scale: {
+    prompt: "Find the channel that compounds and double down.",
+    cta: "Find my growth lever",
+  },
 };
 
 function jsonText(v: unknown): string {
@@ -67,9 +73,15 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
   });
 
   const stage = (org.data?.stage as string) || jsonText(ctx.data?.stage) || "Validate";
-  const stageIndex = Math.max(0, STAGES.findIndex((s) => s.toLowerCase() === String(stage).toLowerCase()));
+  const stageIndex = Math.max(
+    0,
+    STAGES.findIndex((s) => s.toLowerCase() === String(stage).toLowerCase()),
+  );
   const belief =
-    jsonText(ctx.data?.identity) || (org.data?.offer as string) || (org.data?.niche as string) || "";
+    jsonText(ctx.data?.identity) ||
+    (org.data?.offer as string) ||
+    (org.data?.niche as string) ||
+    "";
   const customer = jsonText(ctx.data?.customer) || (org.data?.target_customer as string) || "";
 
   const pipeline = useMemo(() => {
@@ -80,7 +92,8 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
     const won = rows.filter(
-      (l) => l.stage === "Won" && new Date((l as { updated_at?: string }).updated_at ?? 0) >= monthStart,
+      (l) =>
+        l.stage === "Won" && new Date((l as { updated_at?: string }).updated_at ?? 0) >= monthStart,
     ).length;
     return { active: active.length, value, won };
   }, [leads.data]);
@@ -126,8 +139,12 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
           <div className="mt-4 flex gap-1.5">
             {STAGES.map((s, i) => (
               <div key={s} className="flex-1">
-                <div className={`h-1.5 rounded-full ${i <= stageIndex ? "bg-[--accent]" : "bg-[--bg-surface-2]"}`} />
-                <span className={`mt-1 block text-[10px] font-medium ${i === stageIndex ? "text-[--accent]" : "text-[--text-muted]"}`}>
+                <div
+                  className={`h-1.5 rounded-full ${i <= stageIndex ? "bg-[--accent]" : "bg-[--bg-surface-2]"}`}
+                />
+                <span
+                  className={`mt-1 block text-[10px] font-medium ${i === stageIndex ? "text-[--accent]" : "text-[--text-muted]"}`}
+                >
                   {s}
                 </span>
               </div>
@@ -139,15 +156,21 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
         <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--bg-surface] p-5 shadow-sm">
           <div className="mb-1 flex items-center gap-2">
             <Target className="h-4 w-4 text-[--accent]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Active Mission</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Active Mission
+            </span>
           </div>
           {mission.isLoading ? (
             <div className="h-20 animate-pulse rounded-xl bg-[--bg-surface-2]" />
           ) : activeMission ? (
             <>
-              <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[--text-primary]">{activeMission.title}</h2>
+              <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[--text-primary]">
+                {activeMission.title}
+              </h2>
               {activeMission.description && (
-                <p className="mt-1 text-sm leading-relaxed text-[--text-secondary]">{activeMission.description}</p>
+                <p className="mt-1 text-sm leading-relaxed text-[--text-secondary]">
+                  {activeMission.description}
+                </p>
               )}
               {steps.length > 0 && (
                 <div className="mt-3 flex items-center gap-2">
@@ -171,8 +194,12 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
             </>
           ) : (
             <div className="py-2">
-              <h2 className="text-[18px] font-semibold text-[--text-primary]">Start your first mission</h2>
-              <p className="mt-1 text-sm text-[--text-secondary]">Nova will sequence the right moves for your stage.</p>
+              <h2 className="text-[18px] font-semibold text-[--text-primary]">
+                Start your first mission
+              </h2>
+              <p className="mt-1 text-sm text-[--text-secondary]">
+                Nova will sequence the right moves for your stage.
+              </p>
               <Link
                 to="/app/launchpad/nova"
                 className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]"
@@ -190,7 +217,9 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
         <div className="rounded-2xl border border-[--border] bg-[--bg-command] p-5 text-[--text-inverse] shadow-sm">
           <div className="mb-2 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[#b9a4ff]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">Nova Guidance</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">
+              Nova Guidance
+            </span>
           </div>
           <p className="text-sm leading-relaxed text-white/90">{guidance.prompt}</p>
           <Link
@@ -204,24 +233,41 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
         {/* Pipeline Snapshot */}
         <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Pipeline</span>
-            <Link to="/app/nova/crm" className="text-xs font-semibold text-[--accent] hover:underline">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Pipeline
+            </span>
+            <Link
+              to="/app/nova/crm"
+              className="text-xs font-semibold text-[--accent] hover:underline"
+            >
               View Pipeline →
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Stat label="Active Deals" value={pipeline.active} />
-            <Stat label="Pipeline Value" value={pipeline.value ? `$${pipeline.value.toLocaleString()}` : "$0"} />
+            <Stat
+              label="Pipeline Value"
+              value={pipeline.value ? `$${pipeline.value.toLocaleString()}` : "$0"}
+            />
             <Stat label="Won This Month" value={pipeline.won} />
-            <Stat label="Tasks Due" value={tasksDue.data ?? 0} icon={<Clock className="h-3 w-3" />} />
+            <Stat
+              label="Tasks Due"
+              value={tasksDue.data ?? 0}
+              icon={<Clock className="h-3 w-3" />}
+            />
           </div>
         </div>
 
         {/* Recent Memory */}
         <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Recent Memory</span>
-            <Link to="/app/launchpad/history" className="text-xs font-semibold text-[--accent] hover:underline">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Recent Memory
+            </span>
+            <Link
+              to="/app/launchpad/history"
+              className="text-xs font-semibold text-[--accent] hover:underline"
+            >
               View all →
             </Link>
           </div>
@@ -236,7 +282,10 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
           ) : (
             <div className="space-y-2">
               {(memory.data ?? []).slice(0, 3).map((m) => (
-                <div key={(m as { id: string }).id} className="flex items-center gap-2 rounded-lg border border-[--border] bg-[--bg-surface-2] px-3 py-2">
+                <div
+                  key={(m as { id: string }).id}
+                  className="flex items-center gap-2 rounded-lg border border-[--border] bg-[--bg-surface-2] px-3 py-2"
+                >
                   <span className="truncate text-sm text-[--text-primary]">
                     {(m as { title?: string }).title || "Saved insight"}
                   </span>
@@ -253,7 +302,15 @@ export function FounderHome({ orgId, userId }: { orgId: string; userId: string }
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: string | number; icon?: React.ReactNode }) {
+function Stat({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3">
       <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[--text-muted]">

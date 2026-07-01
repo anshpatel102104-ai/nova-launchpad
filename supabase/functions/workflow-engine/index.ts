@@ -106,9 +106,7 @@ async function executeSteps(
           const tag = String(cfg.tag ?? "");
           entry.tag = tag;
           if (ctx.live && ctx.contactId && tag) {
-            const current = Array.isArray(ctx.contact?.tags)
-              ? (ctx.contact!.tags as string[])
-              : [];
+            const current = Array.isArray(ctx.contact?.tags) ? (ctx.contact!.tags as string[]) : [];
             const next =
               type === "add_tag"
                 ? Array.from(new Set([...current, tag]))
@@ -341,7 +339,12 @@ async function runWorkflow(
   let status = "completed";
   let errorMsg: string | null = null;
   try {
-    await executeSteps(steps, { admin, orgId: workflow.organization_id, contactId, contact, live }, trace, budget);
+    await executeSteps(
+      steps,
+      { admin, orgId: workflow.organization_id, contactId, contact, live },
+      trace,
+      budget,
+    );
   } catch (e) {
     status = "failed";
     errorMsg = e instanceof Error ? e.message : String(e);

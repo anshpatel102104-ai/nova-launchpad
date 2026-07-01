@@ -50,7 +50,9 @@ Deno.serve(async (req) => {
   // Resolve the active booking page.
   const { data: page } = await admin
     .from("booking_pages")
-    .select("id, organization_id, title, duration_minutes, event_type, confirmation_message, is_active")
+    .select(
+      "id, organization_id, title, duration_minutes, event_type, confirmation_message, is_active",
+    )
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();

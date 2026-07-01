@@ -180,416 +180,423 @@ function LaunchpadOverview() {
       <div className="flex gap-5 items-start">
         {/* ── Main content ── */}
         <div className="flex-1 min-w-0 space-y-5">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "32px",
-                fontWeight: 800,
-                color: "var(--foreground)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.1,
-              }}
-            >
-              Workbench
-            </h1>
-            <p
-              className="mt-1"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "15px",
-                color: "var(--muted-foreground)",
-              }}
-            >
-              Outcome engines, playbooks, and asset generators — sequenced for your business, not
-              browsed.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              to="/app/launchpad/history"
-              className="hidden sm:inline-flex items-center gap-2 rounded-lg transition-colors"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "13px",
-                fontWeight: 500,
-                padding: "8px 14px",
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                color: "var(--muted-foreground)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-              }}
-            >
-              <History style={{ width: 14, height: 14 }} />
-              History
-            </Link>
-            <button
-              onClick={() => setNovaSidebarOpen((o) => !o)}
-              className="hidden lg:inline-flex items-center gap-2 rounded-lg transition-colors"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "13px",
-                fontWeight: 500,
-                padding: "8px 14px",
-                background: novaSidebarOpen ? "var(--primary-soft)" : "var(--surface)",
-                border: `1px solid ${novaSidebarOpen ? "var(--primary-border)" : "var(--border)"}`,
-                color: novaSidebarOpen ? "var(--primary)" : "var(--muted-foreground)",
-                cursor: "pointer",
-              }}
-            >
-              <MessageSquare style={{ width: 14, height: 14 }} />
-              Nova
-            </button>
-          </div>
-        </div>
-
-        {/* Recommended next — context-ranked, with the WHY on every card */}
-        {recommendations.length > 0 && !search && (
-          <div
-            className="rounded-2xl border p-4"
-            style={{
-              borderColor: "color-mix(in oklab, var(--primary) 25%, var(--border))",
-              background: "color-mix(in oklab, var(--primary) 4%, transparent)",
-            }}
-          >
-            <div
-              className="mb-3 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
-              style={{ color: "var(--primary)" }}
-            >
-              Recommended next
-              {wsQ.data?.lane && (
-                <span
-                  className="font-normal normal-case tracking-normal"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  · based on your {wsQ.data.lane} lane
-                  {wsQ.data?.mode === "operate" ? " (operator mode)" : ""}
-                </span>
-              )}
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "32px",
+                  fontWeight: 800,
+                  color: "var(--foreground)",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.1,
+                }}
+              >
+                Workbench
+              </h1>
+              <p
+                className="mt-1"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "15px",
+                  color: "var(--muted-foreground)",
+                }}
+              >
+                Outcome engines, playbooks, and asset generators — sequenced for your business, not
+                browsed.
+              </p>
             </div>
-            <div className="grid gap-2.5 sm:grid-cols-3">
-              {recommendations.map((rec, i) => {
-                const tool = allTools.find((t) => t.slug === rec.slug);
-                if (!tool) return null;
-                return (
-                  <Link
-                    key={rec.slug}
-                    to="/app/launchpad/$tool"
-                    params={{ tool: rec.slug }}
-                    className="group rounded-xl border p-3.5 transition-all hover:-translate-y-0.5"
-                    style={{
-                      borderColor:
-                        i === 0
-                          ? "color-mix(in oklab, var(--primary) 40%, transparent)"
-                          : "var(--border)",
-                      background: "var(--surface)",
-                    }}
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                to="/app/launchpad/history"
+                className="hidden sm:inline-flex items-center gap-2 rounded-lg transition-colors"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  padding: "8px 14px",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--muted-foreground)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                }}
+              >
+                <History style={{ width: 14, height: 14 }} />
+                History
+              </Link>
+              <button
+                onClick={() => setNovaSidebarOpen((o) => !o)}
+                className="hidden lg:inline-flex items-center gap-2 rounded-lg transition-colors"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  padding: "8px 14px",
+                  background: novaSidebarOpen ? "var(--primary-soft)" : "var(--surface)",
+                  border: `1px solid ${novaSidebarOpen ? "var(--primary-border)" : "var(--border)"}`,
+                  color: novaSidebarOpen ? "var(--primary)" : "var(--muted-foreground)",
+                  cursor: "pointer",
+                }}
+              >
+                <MessageSquare style={{ width: 14, height: 14 }} />
+                Nova
+              </button>
+            </div>
+          </div>
+
+          {/* Recommended next — context-ranked, with the WHY on every card */}
+          {recommendations.length > 0 && !search && (
+            <div
+              className="rounded-2xl border p-4"
+              style={{
+                borderColor: "color-mix(in oklab, var(--primary) 25%, var(--border))",
+                background: "color-mix(in oklab, var(--primary) 4%, transparent)",
+              }}
+            >
+              <div
+                className="mb-3 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: "var(--primary)" }}
+              >
+                Recommended next
+                {wsQ.data?.lane && (
+                  <span
+                    className="font-normal normal-case tracking-normal"
+                    style={{ color: "var(--muted-foreground)" }}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[18px]">{tool.emoji}</span>
-                      {i === 0 && (
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider"
-                          style={{
-                            background: "color-mix(in oklab, var(--primary) 14%, transparent)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          Start here
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 text-[13.5px] font-semibold leading-snug">{tool.name}</div>
-                    <p
-                      className="mt-1 text-[11.5px] leading-relaxed"
-                      style={{ color: "var(--muted-foreground)" }}
+                    · based on your {wsQ.data.lane} lane
+                    {wsQ.data?.mode === "operate" ? " (operator mode)" : ""}
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-2.5 sm:grid-cols-3">
+                {recommendations.map((rec, i) => {
+                  const tool = allTools.find((t) => t.slug === rec.slug);
+                  if (!tool) return null;
+                  return (
+                    <Link
+                      key={rec.slug}
+                      to="/app/launchpad/$tool"
+                      params={{ tool: rec.slug }}
+                      className="group rounded-xl border p-3.5 transition-all hover:-translate-y-0.5"
+                      style={{
+                        borderColor:
+                          i === 0
+                            ? "color-mix(in oklab, var(--primary) 40%, transparent)"
+                            : "var(--border)",
+                        background: "var(--surface)",
+                      }}
                     >
-                      {rec.reason}
-                    </p>
-                    <div
-                      className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold opacity-0 transition-opacity group-hover:opacity-100"
-                      style={{ color: "var(--primary)" }}
-                    >
-                      Run it <ArrowRight className="h-3 w-3" />
+                      <div className="flex items-center justify-between">
+                        <span className="text-[18px]">{tool.emoji}</span>
+                        {i === 0 && (
+                          <span
+                            className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider"
+                            style={{
+                              background: "color-mix(in oklab, var(--primary) 14%, transparent)",
+                              color: "var(--primary)",
+                            }}
+                          >
+                            Start here
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 text-[13.5px] font-semibold leading-snug">
+                        {tool.name}
+                      </div>
+                      <p
+                        className="mt-1 text-[11.5px] leading-relaxed"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {rec.reason}
+                      </p>
+                      <div
+                        className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold opacity-0 transition-opacity group-hover:opacity-100"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        Run it <ArrowRight className="h-3 w-3" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Stage tabs */}
+          <div
+            className="flex items-center gap-0 border-b"
+            style={{ borderColor: "var(--border)" }}
+          >
+            {STAGE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className="relative px-4 pb-2.5 pt-0.5 transition-colors"
+                style={{
+                  fontFamily: activeTab === tab.key ? "var(--font-display)" : "var(--font-body)",
+                  fontSize: "14px",
+                  fontWeight: activeTab === tab.key ? 600 : 400,
+                  color: activeTab === tab.key ? "var(--foreground)" : "var(--muted-foreground)",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  borderBottom:
+                    activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
+                  marginBottom: "-1px",
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "14px",
+                height: "14px",
+                color: "var(--muted-foreground)",
+                pointerEvents: "none",
+              }}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search tools..."
+              style={{
+                width: "100%",
+                borderRadius: "8px",
+                padding: "9px 14px 9px 38px",
+                fontFamily: "var(--font-body)",
+                fontSize: "14px",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+                outline: "none",
+                transition: "border-color 160ms",
+              }}
+              onFocus={(e) =>
+                ((e.currentTarget as HTMLElement).style.borderColor = "var(--primary)")
+              }
+              onBlur={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")}
+            />
+          </div>
+
+          {/* Tools */}
+          {filtered.length === 0 ? (
+            <div
+              className="rounded-xl p-12 text-center"
+              style={{ border: "1px dashed var(--border)", color: "var(--muted-foreground)" }}
+            >
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>
+                No tools match your search.
+              </p>
+            </div>
+          ) : showCategorised ? (
+            <div className="space-y-8">
+              {categories.map((cat) => {
+                const catTools = filtered.filter((t) => t.category === cat);
+                const meta = CATEGORY_META[cat];
+                if (!catTools.length || !meta) return null;
+                return (
+                  <div key={cat}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          letterSpacing: "0.14em",
+                          textTransform: "uppercase",
+                          color: "var(--muted-foreground)",
+                        }}
+                      >
+                        {meta.label}
+                      </span>
+                      <div className="flex-1 h-px" style={{ background: "var(--divider)" }} />
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "10px",
+                          color: "var(--text-faint)",
+                        }}
+                      >
+                        {catTools.length}
+                      </span>
                     </div>
-                  </Link>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {catTools.map((tool, i) => (
+                        <ToolCard
+                          key={tool.slug}
+                          slug={tool.slug}
+                          name={tool.name}
+                          description={tool.description}
+                          available={isToolAvailable(tool.slug)}
+                          runCount={runsByTool.get(tool.slug) ?? 0}
+                          estimatedMinutes={tool.estimatedMinutes}
+                          icon={tool.icon}
+                          isRecommended={runCount === 0 && i === 0 && cat === "validate"}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          </div>
-        )}
-
-        {/* Stage tabs */}
-        <div className="flex items-center gap-0 border-b" style={{ borderColor: "var(--border)" }}>
-          {STAGE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="relative px-4 pb-2.5 pt-0.5 transition-colors"
-              style={{
-                fontFamily: activeTab === tab.key ? "var(--font-display)" : "var(--font-body)",
-                fontSize: "14px",
-                fontWeight: activeTab === tab.key ? 600 : 400,
-                color: activeTab === tab.key ? "var(--foreground)" : "var(--muted-foreground)",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                borderBottom:
-                  activeTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
-                marginBottom: "-1px",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((tool) => (
+                <ToolCard
+                  key={tool.slug}
+                  slug={tool.slug}
+                  name={tool.name}
+                  description={tool.description}
+                  available={isToolAvailable(tool.slug)}
+                  runCount={runsByTool.get(tool.slug) ?? 0}
+                  estimatedMinutes={tool.estimatedMinutes}
+                  icon={tool.icon}
+                  isRecommended={false}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search
+        {/* ── Nova Sidebar ── */}
+        {novaSidebarOpen && (
+          <aside
+            className="hidden lg:flex flex-col shrink-0 rounded-xl p-4 gap-4"
             style={{
-              position: "absolute",
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "14px",
-              height: "14px",
-              color: "var(--muted-foreground)",
-              pointerEvents: "none",
-            }}
-          />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools..."
-            style={{
-              width: "100%",
-              borderRadius: "8px",
-              padding: "9px 14px 9px 38px",
-              fontFamily: "var(--font-body)",
-              fontSize: "14px",
-              background: "var(--surface-2)",
+              width: "280px",
+              background: "var(--surface)",
               border: "1px solid var(--border)",
-              color: "var(--foreground)",
-              outline: "none",
-              transition: "border-color 160ms",
+              position: "sticky",
+              top: "24px",
+              boxShadow: "var(--shadow-sm)",
             }}
-            onFocus={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--primary)")}
-            onBlur={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border)")}
-          />
-        </div>
-
-        {/* Tools */}
-        {filtered.length === 0 ? (
-          <div
-            className="rounded-xl p-12 text-center"
-            style={{ border: "1px dashed var(--border)", color: "var(--muted-foreground)" }}
           >
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "14px" }}>
-              No tools match your search.
-            </p>
-          </div>
-        ) : showCategorised ? (
-          <div className="space-y-8">
-            {categories.map((cat) => {
-              const catTools = filtered.filter((t) => t.category === cat);
-              const meta = CATEGORY_META[cat];
-              if (!catTools.length || !meta) return null;
-              return (
-                <div key={cat}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                        color: "var(--muted-foreground)",
-                      }}
-                    >
-                      {meta.label}
-                    </span>
-                    <div className="flex-1 h-px" style={{ background: "var(--divider)" }} />
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        color: "var(--text-faint)",
-                      }}
-                    >
-                      {catTools.length}
-                    </span>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {catTools.map((tool, i) => (
-                      <ToolCard
-                        key={tool.slug}
-                        slug={tool.slug}
-                        name={tool.name}
-                        description={tool.description}
-                        available={isToolAvailable(tool.slug)}
-                        runCount={runsByTool.get(tool.slug) ?? 0}
-                        estimatedMinutes={tool.estimatedMinutes}
-                        icon={tool.icon}
-                        isRecommended={runCount === 0 && i === 0 && cat === "validate"}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((tool) => (
-              <ToolCard
-                key={tool.slug}
-                slug={tool.slug}
-                name={tool.name}
-                description={tool.description}
-                available={isToolAvailable(tool.slug)}
-                runCount={runsByTool.get(tool.slug) ?? 0}
-                estimatedMinutes={tool.estimatedMinutes}
-                icon={tool.icon}
-                isRecommended={false}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+            <div className="flex items-center gap-2.5">
+              <NovaAvatar size="md" mood={novaMood} />
+              <div>
+                <p
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    color: "var(--foreground)",
+                  }}
+                >
+                  Nova
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "10px",
+                    color: "var(--primary)",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  LAUNCHPAD GUIDE
+                </p>
+              </div>
+            </div>
 
-      {/* ── Nova Sidebar ── */}
-      {novaSidebarOpen && (
-        <aside
-          className="hidden lg:flex flex-col shrink-0 rounded-xl p-4 gap-4"
-          style={{
-            width: "280px",
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            position: "sticky",
-            top: "24px",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          <div className="flex items-center gap-2.5">
-            <NovaAvatar size="md" mood={novaMood} />
-            <div>
+            <div
+              className="rounded-lg p-3"
+              style={{ background: "var(--surface-offset)", border: "1px solid var(--border)" }}
+            >
               <p
                 style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "14px",
-                  fontWeight: 700,
+                  fontFamily: "var(--font-body)",
+                  fontSize: "13px",
                   color: "var(--foreground)",
+                  lineHeight: 1.5,
                 }}
               >
-                Nova
+                {novaAnalysis}
               </p>
+            </div>
+
+            <div className="space-y-1.5">
               <p
                 style={{
                   fontFamily: "var(--font-mono)",
                   fontSize: "10px",
-                  color: "var(--primary)",
-                  letterSpacing: "0.06em",
+                  fontWeight: 600,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                  color: "var(--muted-foreground)",
+                  marginBottom: "6px",
                 }}
               >
-                LAUNCHPAD GUIDE
+                Ask Nova
               </p>
+              {novaPrompts.map((prompt) => (
+                <Link
+                  key={prompt}
+                  to="/app/mentor"
+                  className="flex items-center gap-2 rounded-lg transition-colors"
+                  style={{
+                    padding: "8px 12px",
+                    border: "1px solid var(--border)",
+                    background: "transparent",
+                    fontFamily: "var(--font-body)",
+                    fontSize: "12px",
+                    color: "var(--muted-foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+                    (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
+                >
+                  <span className="flex-1">{prompt}</span>
+                </Link>
+              ))}
             </div>
-          </div>
 
-          <div
-            className="rounded-lg p-3"
-            style={{ background: "var(--surface-offset)", border: "1px solid var(--border)" }}
-          >
-            <p
+            <Link
+              to="/app/mentor"
+              className="flex items-center justify-center gap-2 rounded-lg py-2.5 transition-colors"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "13px",
-                color: "var(--foreground)",
-                lineHeight: 1.5,
+                fontWeight: 500,
+                border: "1px solid var(--primary-border)",
+                color: "var(--primary)",
+                background: "transparent",
+                marginTop: "auto",
               }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = "transparent")
+              }
             >
-              {novaAnalysis}
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "10px",
-                fontWeight: 600,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                color: "var(--muted-foreground)",
-                marginBottom: "6px",
-              }}
-            >
-              Ask Nova
-            </p>
-            {novaPrompts.map((prompt) => (
-              <Link
-                key={prompt}
-                to="/app/mentor"
-                className="flex items-center gap-2 rounded-lg transition-colors"
-                style={{
-                  padding: "8px 12px",
-                  border: "1px solid var(--border)",
-                  background: "transparent",
-                  fontFamily: "var(--font-body)",
-                  fontSize: "12px",
-                  color: "var(--muted-foreground)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--primary-border)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                  (e.currentTarget as HTMLElement).style.background = "var(--primary-soft)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--muted-foreground)";
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                }}
-              >
-                <span className="flex-1">{prompt}</span>
-              </Link>
-            ))}
-          </div>
-
-          <Link
-            to="/app/mentor"
-            className="flex items-center justify-center gap-2 rounded-lg py-2.5 transition-colors"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "13px",
-              fontWeight: 500,
-              border: "1px solid var(--primary-border)",
-              color: "var(--primary)",
-              background: "transparent",
-              marginTop: "auto",
-            }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "var(--primary-soft)")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "transparent")
-            }
-          >
-            Open full chat
-            <ArrowRight style={{ width: 13, height: 13 }} />
-          </Link>
-        </aside>
-      )}
+              Open full chat
+              <ArrowRight style={{ width: 13, height: 13 }} />
+            </Link>
+          </aside>
+        )}
       </div>
     </>
   );

@@ -9,8 +9,20 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Play, Trash2, Zap, ArrowLeft, FlaskConical, GripVertical } from "lucide-react";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,7 +78,10 @@ const TEMPLATES: { name: string; trigger_type: string; steps: Step[] }[] = [
     name: "New Lead Follow-Up",
     trigger_type: "contact_created",
     steps: [
-      { type: "send_email", config: { subject: "Welcome!", body: "Hi {{first_name}}, thanks for reaching out." } },
+      {
+        type: "send_email",
+        config: { subject: "Welcome!", body: "Hi {{first_name}}, thanks for reaching out." },
+      },
       { type: "wait", config: { duration: 1, unit: "days" } },
       { type: "send_sms", config: { body: "Hi {{first_name}}, just following up!" } },
       { type: "wait", config: { duration: 3, unit: "days" } },
@@ -77,7 +92,10 @@ const TEMPLATES: { name: string; trigger_type: string; steps: Step[] }[] = [
     name: "Appointment Reminder",
     trigger_type: "appointment_booked",
     steps: [
-      { type: "send_email", config: { subject: "Booking confirmed", body: "You're booked, {{first_name}}." } },
+      {
+        type: "send_email",
+        config: { subject: "Booking confirmed", body: "You're booked, {{first_name}}." },
+      },
       { type: "wait", config: { duration: 24, unit: "hours" } },
       { type: "send_sms", config: { body: "Reminder: your appointment is tomorrow." } },
     ],
@@ -88,7 +106,10 @@ const TEMPLATES: { name: string; trigger_type: string; steps: Step[] }[] = [
     steps: [
       { type: "add_tag", config: { tag: "lead" } },
       { type: "create_task", config: { title: "Qualify new lead", task_type: "follow_up" } },
-      { type: "send_email", config: { subject: "Thanks!", body: "We got your details, {{first_name}}." } },
+      {
+        type: "send_email",
+        config: { subject: "Thanks!", body: "We got your details, {{first_name}}." },
+      },
     ],
   },
   {
@@ -96,14 +117,20 @@ const TEMPLATES: { name: string; trigger_type: string; steps: Step[] }[] = [
     trigger_type: "lead_stage_changed",
     steps: [
       { type: "add_tag", config: { tag: "customer" } },
-      { type: "send_email", config: { subject: "Welcome aboard", body: "Thank you, {{first_name}}!" } },
+      {
+        type: "send_email",
+        config: { subject: "Welcome aboard", body: "Thank you, {{first_name}}!" },
+      },
     ],
   },
   {
     name: "Re-engagement",
     trigger_type: "schedule",
     steps: [
-      { type: "send_email", config: { subject: "We miss you", body: "Hi {{first_name}}, anything we can help with?" } },
+      {
+        type: "send_email",
+        config: { subject: "We miss you", body: "Hi {{first_name}}, anything we can help with?" },
+      },
       { type: "wait", config: { duration: 3, unit: "days" } },
       { type: "send_sms", config: { body: "Still here if you need us, {{first_name}}." } },
     ],
@@ -122,7 +149,9 @@ function AutomationsPage() {
     setLoading(true);
     const { data } = await supabase
       .from("automation_workflows")
-      .select("id, name, description, trigger_type, steps, is_active, run_count, status, last_triggered_at")
+      .select(
+        "id, name, description, trigger_type, steps, is_active, run_count, status, last_triggered_at",
+      )
       .eq("organization_id", currentOrgId)
       .order("created_at", { ascending: false });
     setWorkflows((data as Workflow[]) ?? []);
@@ -136,7 +165,11 @@ function AutomationsPage() {
 
   async function toggleActive(w: Workflow) {
     const next = !w.is_active;
-    setWorkflows((prev) => prev.map((x) => (x.id === w.id ? { ...x, is_active: next, status: next ? "active" : "paused" } : x)));
+    setWorkflows((prev) =>
+      prev.map((x) =>
+        x.id === w.id ? { ...x, is_active: next, status: next ? "active" : "paused" } : x,
+      ),
+    );
     await supabase
       .from("automation_workflows")
       .update({ is_active: next, status: next ? "active" : "paused" })
@@ -160,7 +193,9 @@ function AutomationsPage() {
         steps: t.steps as never,
         status: "draft",
       })
-      .select("id, name, description, trigger_type, steps, is_active, run_count, status, last_triggered_at")
+      .select(
+        "id, name, description, trigger_type, steps, is_active, run_count, status, last_triggered_at",
+      )
       .single();
     if (data) setWorkflows((prev) => [data as Workflow, ...prev]);
     setShowTemplates(false);
@@ -186,7 +221,9 @@ function AutomationsPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Automations</h1>
+            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+              Automations
+            </h1>
             <p className="mt-1 text-sm text-[--text-secondary]">{workflows.length} workflows</p>
           </div>
           <div className="flex gap-2">
@@ -252,7 +289,8 @@ function AutomationsPage() {
                 <button onClick={() => setEditing(w)} className="min-w-0 flex-1 text-left">
                   <p className="truncate text-sm font-semibold text-[--text-primary]">{w.name}</p>
                   <p className="truncate text-xs text-[--text-muted]">
-                    {w.trigger_type.replace(/_/g, " ")} · {w.steps?.length ?? 0} steps · {w.run_count} runs
+                    {w.trigger_type.replace(/_/g, " ")} · {w.steps?.length ?? 0} steps ·{" "}
+                    {w.run_count} runs
                   </p>
                 </button>
                 <span
@@ -364,7 +402,9 @@ function WorkflowBuilder({
         { workflow_id: initial.id, mode: "test" },
       );
       const r = res.results?.[0];
-      setTestResult(r ? `Dry run OK — ${r.steps_completed}/${r.steps_total} steps traced.` : "No result.");
+      setTestResult(
+        r ? `Dry run OK — ${r.steps_completed}/${r.steps_total} steps traced.` : "No result.",
+      );
     } catch (e) {
       setTestResult(e instanceof Error ? e.message : "Test failed.");
     }
@@ -410,9 +450,14 @@ function WorkflowBuilder({
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Steps</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Steps
+            </p>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-              <SortableContext items={steps.map((s) => s._id)} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={steps.map((s) => s._id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <div className="space-y-2">
                   {steps.map((s, i) => (
                     <SortableStep
@@ -492,7 +537,9 @@ function SortableStep({
   onChange: (cfg: Record<string, unknown>) => void;
   onRemove: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -553,12 +600,16 @@ function StepEditor({
           {index + 1}
         </span>
         <span className="text-sm font-medium text-[--text-primary]">{label}</span>
-        <button onClick={onRemove} className="ml-auto text-[--text-muted] hover:text-[--danger]" aria-label="Remove step">
+        <button
+          onClick={onRemove}
+          className="ml-auto text-[--text-muted] hover:text-[--danger]"
+          aria-label="Remove step"
+        >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
       <div className="space-y-1.5">
-        {(step.type === "send_email") && field("subject", "Subject (use {{first_name}})")}
+        {step.type === "send_email" && field("subject", "Subject (use {{first_name}})")}
         {(step.type === "send_email" || step.type === "send_sms") && field("body", "Message body")}
         {(step.type === "add_tag" || step.type === "remove_tag") && field("tag", "Tag name")}
         {step.type === "update_contact_field" && (

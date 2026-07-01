@@ -7,8 +7,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ArrowLeft, Trash2, FileText, Copy, ExternalLink, GripVertical } from "lucide-react";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +62,9 @@ function FormsPage() {
     setLoading(true);
     const { data } = await supabase
       .from("forms")
-      .select("id, name, description, fields, submit_action, submit_message, is_active, submission_count")
+      .select(
+        "id, name, description, fields, submit_action, submit_message, is_active, submission_count",
+      )
       .eq("organization_id", currentOrgId)
       .order("created_at", { ascending: false });
     setForms((data as FormRow[]) ?? []);
@@ -87,7 +101,9 @@ function FormsPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Forms</h1>
+            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+              Forms
+            </h1>
             <p className="mt-1 text-sm text-[--text-secondary]">{forms.length} forms</p>
           </div>
           <button
@@ -121,7 +137,10 @@ function FormsPage() {
         ) : (
           <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--bg-surface]">
             {forms.map((f) => (
-              <div key={f.id} className="flex items-center gap-3 border-b border-[--border] px-4 py-4 last:border-b-0 hover:bg-[--bg-surface-2]">
+              <div
+                key={f.id}
+                className="flex items-center gap-3 border-b border-[--border] px-4 py-4 last:border-b-0 hover:bg-[--bg-surface-2]"
+              >
                 <button onClick={() => setEditing(f)} className="min-w-0 flex-1 text-left">
                   <p className="truncate text-sm font-semibold text-[--text-primary]">{f.name}</p>
                   <p className="truncate text-xs text-[--text-muted]">
@@ -130,16 +149,25 @@ function FormsPage() {
                 </button>
                 <span
                   className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                    f.is_active ? "border-green-100 bg-[--success-light] text-[--success]" : "border-gray-200 bg-gray-100 text-gray-600"
+                    f.is_active
+                      ? "border-green-100 bg-[--success-light] text-[--success]"
+                      : "border-gray-200 bg-gray-100 text-gray-600"
                   }`}
                 >
                   {f.is_active ? "Active" : "Inactive"}
                 </span>
-                <button onClick={() => setViewing(f)} className="rounded-lg border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] hover:text-[--text-primary]">
+                <button
+                  onClick={() => setViewing(f)}
+                  className="rounded-lg border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] hover:text-[--text-primary]"
+                >
                   Submissions
                 </button>
                 <CopyLinkButton path={`/f/${f.id}`} />
-                <button onClick={() => remove(f.id)} className="rounded-lg p-1.5 text-[--text-muted] hover:text-[--danger]" aria-label="Delete form">
+                <button
+                  onClick={() => remove(f.id)}
+                  className="rounded-lg p-1.5 text-[--text-muted] hover:text-[--danger]"
+                  aria-label="Delete form"
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -179,8 +207,14 @@ function SortableField({
   onUpdate: (patch: Partial<Field>) => void;
   onRemove: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: f.id });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: f.id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
   return (
     <div
       ref={setNodeRef}
@@ -204,10 +238,18 @@ function SortableField({
         className="flex-1 rounded-lg border border-[--border] bg-[--bg-surface] px-3 py-1.5 text-xs text-[--text-primary] focus:border-[--border-focus] focus:outline-none"
       />
       <label className="flex items-center gap-1 text-xs text-[--text-secondary]">
-        <input type="checkbox" checked={f.required} onChange={(e) => onUpdate({ required: e.target.checked })} />
+        <input
+          type="checkbox"
+          checked={f.required}
+          onChange={(e) => onUpdate({ required: e.target.checked })}
+        />
         Required
       </label>
-      <button onClick={onRemove} className="text-[--text-muted] hover:text-[--danger]" aria-label="Remove field">
+      <button
+        onClick={onRemove}
+        className="text-[--text-muted] hover:text-[--danger]"
+        aria-label="Remove field"
+      >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
     </div>
@@ -229,7 +271,9 @@ function FormBuilder({
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [fields, setFields] = useState<Field[]>(initial?.fields ?? []);
-  const [submitMessage, setSubmitMessage] = useState(initial?.submit_message ?? "Thanks! We'll be in touch.");
+  const [submitMessage, setSubmitMessage] = useState(
+    initial?.submit_message ?? "Thanks! We'll be in touch.",
+  );
   const [active, setActive] = useState(initial?.is_active ?? true);
   const [saving, setSaving] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -248,7 +292,12 @@ function FormBuilder({
   function addField(type: string) {
     setFields((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), type, label: FIELD_TYPES.find(([t]) => t === type)?.[1] ?? type, required: false },
+      {
+        id: crypto.randomUUID(),
+        type,
+        label: FIELD_TYPES.find(([t]) => t === type)?.[1] ?? type,
+        required: false,
+      },
     ]);
   }
   function updateField(id: string, patch: Partial<Field>) {
@@ -279,7 +328,10 @@ function FormBuilder({
   return (
     <div className="min-h-full bg-[--bg-page] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <button onClick={onClose} className="mb-4 flex items-center gap-1.5 text-sm font-medium text-[--text-muted] hover:text-[--text-primary]">
+        <button
+          onClick={onClose}
+          className="mb-4 flex items-center gap-1.5 text-sm font-medium text-[--text-muted] hover:text-[--text-primary]"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to forms
         </button>
 
@@ -292,9 +344,14 @@ function FormBuilder({
           />
 
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Fields</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Fields
+            </p>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-              <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext
+                items={fields.map((f) => f.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <div className="space-y-2">
                   {fields.map((f) => (
                     <SortableField
@@ -367,7 +424,9 @@ function FormBuilder({
 }
 
 function SubmissionsDrawer({ form, onClose }: { form: FormRow; onClose: () => void }) {
-  const [rows, setRows] = useState<{ id: string; data: Record<string, unknown>; created_at: string }[] | null>(null);
+  const [rows, setRows] = useState<
+    { id: string; data: Record<string, unknown>; created_at: string }[] | null
+  >(null);
 
   useEffect(() => {
     void supabase
@@ -375,18 +434,29 @@ function SubmissionsDrawer({ form, onClose }: { form: FormRow; onClose: () => vo
       .select("id, data, created_at")
       .eq("form_id", form.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setRows((data as { id: string; data: Record<string, unknown>; created_at: string }[]) ?? []));
+      .then(({ data }) =>
+        setRows(
+          (data as { id: string; data: Record<string, unknown>; created_at: string }[]) ?? [],
+        ),
+      );
   }, [form.id]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className="h-full w-full overflow-y-auto bg-[--bg-surface] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] sm:w-[420px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-[--border] px-5 py-4">
-          <p className="text-[15px] font-semibold text-[--text-primary]">{form.name} — Submissions</p>
-          <button onClick={onClose} className="text-[--text-muted] hover:text-[--text-primary]">✕</button>
+          <p className="text-[15px] font-semibold text-[--text-primary]">
+            {form.name} — Submissions
+          </p>
+          <button onClick={onClose} className="text-[--text-muted] hover:text-[--text-primary]">
+            ✕
+          </button>
         </div>
         <div className="p-5">
           {rows === null ? (
@@ -400,8 +470,13 @@ function SubmissionsDrawer({ form, onClose }: { form: FormRow; onClose: () => vo
           ) : (
             <div className="space-y-3">
               {rows.map((r) => (
-                <div key={r.id} className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-4">
-                  <p className="mb-2 text-xs text-[--text-muted]">{new Date(r.created_at).toLocaleString()}</p>
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-4"
+                >
+                  <p className="mb-2 text-xs text-[--text-muted]">
+                    {new Date(r.created_at).toLocaleString()}
+                  </p>
                   {Object.entries(r.data).map(([k, v]) => (
                     <div key={k} className="flex gap-2 text-sm">
                       <span className="font-medium text-[--text-secondary]">{k}:</span>

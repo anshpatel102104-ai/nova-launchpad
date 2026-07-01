@@ -27,7 +27,6 @@ type BookingPage = {
   confirmation_message: string | null;
 };
 
-
 function PublicBooking() {
   const { slug } = useParams({ from: "/book/$slug" });
   const [page, setPage] = useState<BookingPage | null>(null);
@@ -45,7 +44,9 @@ function PublicBooking() {
   useEffect(() => {
     void supabase
       .from("booking_pages")
-      .select("id, organization_id, slug, title, description, duration_minutes, available_days, available_start, available_end, confirmation_message")
+      .select(
+        "id, organization_id, slug, title, description, duration_minutes, available_days, available_start, available_end, confirmation_message",
+      )
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle()
@@ -56,13 +57,19 @@ function PublicBooking() {
   }, [slug]);
 
   const days = useMemo(
-    () => (page ? nextDays(10, page.available_days?.length ? page.available_days : [1, 2, 3, 4, 5]) : []),
+    () =>
+      page ? nextDays(10, page.available_days?.length ? page.available_days : [1, 2, 3, 4, 5]) : [],
     [page],
   );
   const slots = useMemo(
     () =>
       page && day
-        ? slotsFor(day, page.available_start || "09:00", page.available_end || "17:00", page.duration_minutes || 30)
+        ? slotsFor(
+            day,
+            page.available_start || "09:00",
+            page.available_end || "17:00",
+            page.duration_minutes || 30,
+          )
         : [],
     [page, day],
   );
@@ -109,22 +116,36 @@ function PublicBooking() {
       <div className="w-full max-w-lg rounded-2xl border border-[--border] bg-[--bg-surface] p-6 shadow-sm sm:p-8">
         {confirmation ? (
           <div className="py-8 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[--success-light] text-2xl">✓</div>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[--success-light] text-2xl">
+              ✓
+            </div>
             <p className="text-sm font-semibold text-[--text-primary]">{confirmation}</p>
             {slot && (
               <p className="mt-1 text-xs text-[--text-muted]">
-                {slot.toLocaleString(undefined, { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                {slot.toLocaleString(undefined, {
+                  weekday: "long",
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
               </p>
             )}
           </div>
         ) : (
           <>
-            <h1 className="text-xl font-bold tracking-[-0.02em] text-[--text-primary]">{page.title}</h1>
-            {page.description && <p className="mt-1 text-sm text-[--text-secondary]">{page.description}</p>}
+            <h1 className="text-xl font-bold tracking-[-0.02em] text-[--text-primary]">
+              {page.title}
+            </h1>
+            {page.description && (
+              <p className="mt-1 text-sm text-[--text-secondary]">{page.description}</p>
+            )}
             <p className="mt-1 text-xs text-[--text-muted]">{page.duration_minutes} minutes</p>
 
             {/* Day picker */}
-            <p className="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Pick a day</p>
+            <p className="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              Pick a day
+            </p>
             <div className="flex flex-wrap gap-2">
               {days.map((d) => {
                 const selected = day?.toDateString() === d.toDateString();
@@ -136,10 +157,16 @@ function PublicBooking() {
                       setSlot(null);
                     }}
                     className={`rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
-                      selected ? "border-[--accent] bg-[--accent-light] text-[--accent]" : "border-[--border] text-[--text-secondary] hover:border-[--border-strong]"
+                      selected
+                        ? "border-[--accent] bg-[--accent-light] text-[--accent]"
+                        : "border-[--border] text-[--text-secondary] hover:border-[--border-strong]"
                     }`}
                   >
-                    {d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                    {d.toLocaleDateString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </button>
                 );
               })}
@@ -148,7 +175,9 @@ function PublicBooking() {
             {/* Slot picker */}
             {day && (
               <>
-                <p className="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Pick a time</p>
+                <p className="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+                  Pick a time
+                </p>
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {slots.map((s) => {
                     const selected = slot?.getTime() === s.getTime();
@@ -157,7 +186,9 @@ function PublicBooking() {
                         key={s.toISOString()}
                         onClick={() => setSlot(s)}
                         className={`rounded-xl border px-2 py-2 text-xs font-medium transition-colors ${
-                          selected ? "border-[--accent] bg-[--accent-light] text-[--accent]" : "border-[--border] text-[--text-secondary] hover:border-[--border-strong]"
+                          selected
+                            ? "border-[--accent] bg-[--accent-light] text-[--accent]"
+                            : "border-[--border] text-[--text-secondary] hover:border-[--border-strong]"
                         }`}
                       >
                         {s.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
@@ -171,12 +202,38 @@ function PublicBooking() {
             {/* Details */}
             {slot && (
               <div className="mt-5 space-y-3 border-t border-[--border] pt-5">
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25" />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email *" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25" />
-                <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none" />
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything we should know? (optional)" className="w-full resize-none rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none" />
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name *"
+                  className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email *"
+                  className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+                />
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone (optional)"
+                  className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none"
+                />
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Anything we should know? (optional)"
+                  className="w-full resize-none rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none"
+                />
                 {error && <p className="text-xs text-[--danger]">{error}</p>}
-                <button onClick={book} disabled={submitting || !name.trim() || !email.trim()} className="w-full rounded-xl bg-[--accent] px-5 py-3 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover] disabled:opacity-50">
+                <button
+                  onClick={book}
+                  disabled={submitting || !name.trim() || !email.trim()}
+                  className="w-full rounded-xl bg-[--accent] px-5 py-3 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover] disabled:opacity-50"
+                >
                   {submitting ? "Booking…" : "Confirm Booking"}
                 </button>
               </div>

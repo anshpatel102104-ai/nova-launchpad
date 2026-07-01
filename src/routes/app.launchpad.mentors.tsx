@@ -268,7 +268,8 @@ function TabButton({
 }
 
 function MentorAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
-  const dim = size === "lg" ? "w-11 h-11 text-sm" : size === "sm" ? "w-7 h-7 text-xs" : "w-9 h-9 text-sm";
+  const dim =
+    size === "lg" ? "w-11 h-11 text-sm" : size === "sm" ? "w-7 h-7 text-xs" : "w-9 h-9 text-sm";
   return (
     <div
       className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${avatarColor(name)} ${dim}`}
@@ -278,13 +279,7 @@ function MentorAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" 
   );
 }
 
-function MentorRoster({
-  locked,
-  onSelect,
-}: {
-  locked: boolean;
-  onSelect: (m: Mentor) => void;
-}) {
+function MentorRoster({ locked, onSelect }: { locked: boolean; onSelect: (m: Mentor) => void }) {
   return (
     <div>
       {locked && (

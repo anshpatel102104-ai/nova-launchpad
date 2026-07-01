@@ -7,7 +7,15 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Check, Phone, Mail, CalendarClock, Users as UsersIcon, CheckSquare } from "lucide-react";
+import {
+  Plus,
+  Check,
+  Phone,
+  Mail,
+  CalendarClock,
+  Users as UsersIcon,
+  CheckSquare,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -108,13 +116,7 @@ function TasksPage() {
 
   async function toggleComplete(t: Task) {
     const nextStatus = t.status === "completed" ? "open" : "completed";
-    setTasks((prev) =>
-      prev.map((x) =>
-        x.id === t.id
-          ? { ...x, status: nextStatus, }
-          : x,
-      ),
-    );
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, status: nextStatus } : x)));
     await supabase
       .from("tasks")
       .update({
@@ -152,7 +154,9 @@ function TasksPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Tasks</h1>
+            <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+              Tasks
+            </h1>
             <p className="mt-1 text-sm text-[--text-secondary]">
               {filtered.filter((t) => t.status !== "completed").length} open
             </p>
@@ -221,7 +225,12 @@ function TasksPage() {
                 </h2>
                 <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--bg-surface]">
                   {items.map((t) => (
-                    <TaskRow key={t.id} task={t} onToggle={() => toggleComplete(t)} overdue={bucket === "Overdue"} />
+                    <TaskRow
+                      key={t.id}
+                      task={t}
+                      onToggle={() => toggleComplete(t)}
+                      overdue={bucket === "Overdue"}
+                    />
                   ))}
                 </div>
               </div>
@@ -273,7 +282,9 @@ function TaskRow({
       <button
         onClick={onToggle}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
-          done ? "border-[--success] bg-[--success] text-white" : "border-[--border-strong] hover:border-[--accent]"
+          done
+            ? "border-[--success] bg-[--success] text-white"
+            : "border-[--border-strong] hover:border-[--accent]"
         }`}
         aria-label={done ? "Mark incomplete" : "Mark complete"}
       >
@@ -293,8 +304,13 @@ function TaskRow({
         {task.priority}
       </span>
       {task.due_date && (
-        <span className={`hidden text-xs sm:block ${overdue ? "text-[--danger]" : "text-[--text-muted]"}`}>
-          {new Date(task.due_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+        <span
+          className={`hidden text-xs sm:block ${overdue ? "text-[--danger]" : "text-[--text-muted]"}`}
+        >
+          {new Date(task.due_date).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          })}
         </span>
       )}
     </div>

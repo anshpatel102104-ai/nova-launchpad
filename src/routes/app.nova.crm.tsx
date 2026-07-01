@@ -226,7 +226,12 @@ function CRMPage() {
       .channel(`leads-rt:${currentOrgId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "leads", filter: `organization_id=eq.${currentOrgId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "leads",
+          filter: `organization_id=eq.${currentOrgId}`,
+        },
         () => {
           void qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
         },

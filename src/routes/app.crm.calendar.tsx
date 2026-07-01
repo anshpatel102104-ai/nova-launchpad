@@ -51,13 +51,17 @@ function CalendarPage() {
     <div className="min-h-full bg-[--bg-page] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Calendar</h1>
+          <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+            Calendar
+          </h1>
         </div>
         <div className="mb-6 flex items-center gap-1 border-b border-[--border]">
           <button
             onClick={() => setView("calendar")}
             className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${
-              view === "calendar" ? "border-[--accent] text-[--accent]" : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
+              view === "calendar"
+                ? "border-[--accent] text-[--accent]"
+                : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
             }`}
           >
             Calendar
@@ -65,7 +69,9 @@ function CalendarPage() {
           <button
             onClick={() => setView("booking")}
             className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${
-              view === "booking" ? "border-[--accent] text-[--accent]" : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
+              view === "booking"
+                ? "border-[--accent] text-[--accent]"
+                : "border-transparent text-[--text-secondary] hover:text-[--text-primary]"
             }`}
           >
             Booking Pages
@@ -148,7 +154,10 @@ function CalendarView({ orgId }: { orgId: string | null }) {
           <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
             Book a meeting or share a booking page so clients can self-schedule.
           </p>
-          <button onClick={() => setShowNew(true)} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]">
+          <button
+            onClick={() => setShowNew(true)}
+            className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+          >
             New Appointment
           </button>
         </div>
@@ -156,18 +165,32 @@ function CalendarView({ orgId }: { orgId: string | null }) {
         <div className="space-y-6">
           {grouped.map(([day, items]) => (
             <div key={day}>
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">{day}</h2>
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+                {day}
+              </h2>
               <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--bg-surface]">
                 {items.map((e) => (
-                  <div key={e.id} className="flex items-center gap-3 border-b border-[--border] px-4 py-3.5 last:border-b-0 hover:bg-[--bg-surface-2]">
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-3 border-b border-[--border] px-4 py-3.5 last:border-b-0 hover:bg-[--bg-surface-2]"
+                  >
                     <span className="w-16 shrink-0 text-xs font-medium text-[--text-secondary]">
-                      {new Date(e.start_time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
+                      {new Date(e.start_time).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-[--text-primary]">{e.title}</p>
-                      <p className="truncate text-xs text-[--text-muted] capitalize">{e.event_type.replace(/_/g, " ")}</p>
+                      <p className="truncate text-sm font-medium text-[--text-primary]">
+                        {e.title}
+                      </p>
+                      <p className="truncate text-xs text-[--text-muted] capitalize">
+                        {e.event_type.replace(/_/g, " ")}
+                      </p>
                     </div>
-                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[e.status] ?? STATUS_BADGE.scheduled}`}>
+                    <span
+                      className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[e.status] ?? STATUS_BADGE.scheduled}`}
+                    >
                       {e.status.replace(/_/g, " ")}
                     </span>
                     <select
@@ -189,7 +212,9 @@ function CalendarView({ orgId }: { orgId: string | null }) {
         </div>
       )}
 
-      {showNew && <NewAppointmentModal orgId={orgId} onClose={() => setShowNew(false)} onCreated={load} />}
+      {showNew && (
+        <NewAppointmentModal orgId={orgId} onClose={() => setShowNew(false)} onCreated={load} />
+      )}
     </div>
   );
 }
@@ -227,31 +252,66 @@ function NewAppointmentModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="mb-4 text-[18px] font-semibold text-[--text-primary]">New Appointment</h2>
         <div className="space-y-3">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25" />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+          />
           <div className="flex gap-2">
-            <select value={type} onChange={(e) => setType(e.target.value)} className="flex-1 rounded-xl border border-[--border] bg-[--bg-surface] px-3 py-3 text-sm text-[--text-primary] focus:outline-none">
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="flex-1 rounded-xl border border-[--border] bg-[--bg-surface] px-3 py-3 text-sm text-[--text-primary] focus:outline-none"
+            >
               <option value="appointment">Appointment</option>
               <option value="call">Call</option>
               <option value="demo">Demo</option>
               <option value="follow_up">Follow-up</option>
               <option value="meeting">Meeting</option>
             </select>
-            <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="rounded-xl border border-[--border] bg-[--bg-surface] px-3 py-3 text-sm text-[--text-primary] focus:outline-none">
+            <select
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="rounded-xl border border-[--border] bg-[--bg-surface] px-3 py-3 text-sm text-[--text-primary] focus:outline-none"
+            >
               <option value={15}>15 min</option>
               <option value={30}>30 min</option>
               <option value={45}>45 min</option>
               <option value={60}>60 min</option>
             </select>
           </div>
-          <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] focus:border-[--border-focus] focus:outline-none" />
+          <input
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] focus:border-[--border-focus] focus:outline-none"
+          />
         </div>
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]">Cancel</button>
-          <button onClick={save} disabled={saving || !title.trim() || !start} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50">Save</button>
+          <button
+            onClick={onClose}
+            className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving || !title.trim() || !start}
+            className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50"
+          >
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -288,7 +348,10 @@ function BookingPagesView({ orgId }: { orgId: string | null }) {
   return (
     <div>
       <div className="mb-4 flex justify-end">
-        <button onClick={() => setShowNew(true)} className="flex items-center gap-1.5 rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]">
+        <button
+          onClick={() => setShowNew(true)}
+          className="flex items-center gap-1.5 rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]"
+        >
           <Plus className="h-4 w-4" /> Create Booking Page
         </button>
       </div>
@@ -302,23 +365,36 @@ function BookingPagesView({ orgId }: { orgId: string | null }) {
           <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
             Create a public page so clients can book time with you.
           </p>
-          <button onClick={() => setShowNew(true)} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]">
+          <button
+            onClick={() => setShowNew(true)}
+            className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+          >
             Create Booking Page
           </button>
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--bg-surface]">
           {pages.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 border-b border-[--border] px-4 py-4 last:border-b-0 hover:bg-[--bg-surface-2]">
+            <div
+              key={p.id}
+              className="flex items-center gap-3 border-b border-[--border] px-4 py-4 last:border-b-0 hover:bg-[--bg-surface-2]"
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-[--text-primary]">{p.title}</p>
-                <p className="truncate text-xs text-[--text-muted]">/book/{p.slug} · {p.duration_minutes} min</p>
+                <p className="truncate text-xs text-[--text-muted]">
+                  /book/{p.slug} · {p.duration_minutes} min
+                </p>
               </div>
-              <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${p.is_active ? "border-green-100 bg-[--success-light] text-[--success]" : "border-gray-200 bg-gray-100 text-gray-600"}`}>
+              <span
+                className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${p.is_active ? "border-green-100 bg-[--success-light] text-[--success]" : "border-gray-200 bg-gray-100 text-gray-600"}`}
+              >
                 {p.is_active ? "Active" : "Off"}
               </span>
               <CopyButton path={`/book/${p.slug}`} />
-              <button onClick={() => toggle(p)} className="rounded-lg border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] hover:text-[--text-primary]">
+              <button
+                onClick={() => toggle(p)}
+                className="rounded-lg border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] hover:text-[--text-primary]"
+              >
                 {p.is_active ? "Disable" : "Enable"}
               </button>
             </div>
@@ -326,7 +402,9 @@ function BookingPagesView({ orgId }: { orgId: string | null }) {
         </div>
       )}
 
-      {showNew && <NewBookingPageModal orgId={orgId} onClose={() => setShowNew(false)} onCreated={load} />}
+      {showNew && (
+        <NewBookingPageModal orgId={orgId} onClose={() => setShowNew(false)} onCreated={load} />
+      )}
     </div>
   );
 }
@@ -365,7 +443,10 @@ function NewBookingPageModal({
 
   async function save() {
     if (!orgId || !title.trim()) return;
-    const finalSlug = (slug || title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const finalSlug = (slug || title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
     setSaving(true);
     setError(null);
     const { error: insErr } = await supabase.from("booking_pages").insert({
@@ -376,7 +457,11 @@ function NewBookingPageModal({
     });
     setSaving(false);
     if (insErr) {
-      setError(insErr.message.includes("duplicate") ? "That URL slug is taken — try another." : "Couldn't create page.");
+      setError(
+        insErr.message.includes("duplicate")
+          ? "That URL slug is taken — try another."
+          : "Couldn't create page.",
+      );
       return;
     }
     onCreated();
@@ -384,13 +469,35 @@ function NewBookingPageModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="mb-4 text-[18px] font-semibold text-[--text-primary]">Create Booking Page</h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-[--bg-surface] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="mb-4 text-[18px] font-semibold text-[--text-primary]">
+          Create Booking Page
+        </h2>
         <div className="space-y-3">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Page title (e.g. Discovery Call)" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25" />
-          <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="url-slug (optional)" className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none" />
-          <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] focus:outline-none">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Page title (e.g. Discovery Call)"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+          />
+          <input
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="url-slug (optional)"
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none"
+          />
+          <select
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="w-full rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] focus:outline-none"
+          >
             <option value={15}>15 minutes</option>
             <option value={30}>30 minutes</option>
             <option value={45}>45 minutes</option>
@@ -399,8 +506,19 @@ function NewBookingPageModal({
         </div>
         {error && <p className="mt-3 text-xs text-[--danger]">{error}</p>}
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]">Cancel</button>
-          <button onClick={save} disabled={saving || !title.trim()} className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50">Create</button>
+          <button
+            onClick={onClose}
+            className="rounded-xl border border-[--border] px-5 py-2.5 text-sm font-medium text-[--text-secondary] hover:text-[--text-primary]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={saving || !title.trim()}
+            className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50"
+          >
+            Create
+          </button>
         </div>
       </div>
     </div>

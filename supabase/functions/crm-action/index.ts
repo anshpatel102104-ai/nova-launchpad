@@ -34,7 +34,11 @@ async function updateStage(
   if (!leadId || !VALID_STAGES.has(stage)) return { ok: false, error: "Invalid lead_id or stage" };
   const { data: lead, error } = await admin
     .from("leads")
-    .update({ stage, updated_at: new Date().toISOString(), last_activity_at: new Date().toISOString() })
+    .update({
+      stage,
+      updated_at: new Date().toISOString(),
+      last_activity_at: new Date().toISOString(),
+    })
     .eq("id", leadId)
     .eq("organization_id", orgId)
     .select("id, name, stage")

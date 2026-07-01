@@ -12,7 +12,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  new Response(JSON.stringify(b), {
+    status: s,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
 function render(t: string, c: Record<string, unknown>): string {
   if (!t) return t;
@@ -92,7 +95,10 @@ async function resolveAudience(
   orgId: string,
   filter: Record<string, unknown>,
 ): Promise<Contact[]> {
-  let q = admin.from("contacts").select("id, first_name, last_name, email, phone, company, status, tags").eq("org_id", orgId);
+  let q = admin
+    .from("contacts")
+    .select("id, first_name, last_name, email, phone, company, status, tags")
+    .eq("org_id", orgId);
   if (filter.status) q = q.eq("status", String(filter.status));
   if (filter.tag) q = q.contains("tags", [String(filter.tag)]);
   const { data } = await q.limit(5000);
@@ -106,7 +112,11 @@ async function processCampaign(
   campaign: Record<string, unknown>,
 ): Promise<{ campaign_id: string; sent: number; recipients: number }> {
   await admin.from("campaigns").update({ status: "sending" }).eq("id", campaign.id);
-  const audience = await resolveAudience(admin, campaign.organization_id as string, (campaign.audience_filter as Record<string, unknown>) ?? {});
+  const audience = await resolveAudience(
+    admin,
+    campaign.organization_id as string,
+    (campaign.audience_filter as Record<string, unknown>) ?? {},
+  );
   const sent = await sendOne(url, serviceKey, campaign, audience);
   await admin
     .from("campaigns")
@@ -160,7 +170,11 @@ Deno.serve(async (req) => {
     const { data, error } = await userClient.auth.getUser();
     if (error || !data?.user) return json({ error: "Unauthorized" }, 401);
     // Membership is enforced by reading the campaign through the user's RLS.
-    const { data: camp } = await userClient.from("campaigns").select("id").eq("id", body.campaign_id).maybeSingle();
+    const { data: camp } = await userClient
+      .from("campaigns")
+      .select("id")
+      .eq("id", body.campaign_id)
+      .maybeSingle();
     if (!camp) return json({ error: "Campaign not found" }, 404);
   }
 

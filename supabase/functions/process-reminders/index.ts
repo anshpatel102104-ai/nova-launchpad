@@ -22,7 +22,9 @@ Deno.serve(async (req) => {
 
   const { data: events } = await admin
     .from("calendar_events")
-    .select("id, organization_id, contact_id, title, start_time, meeting_link, reminder_sent, status")
+    .select(
+      "id, organization_id, contact_id, title, start_time, meeting_link, reminder_sent, status",
+    )
     .eq("reminder_sent", false)
     .in("status", ["scheduled", "confirmed"])
     .gte("start_time", now.toISOString())
@@ -43,7 +45,12 @@ Deno.serve(async (req) => {
         await fetch(`${url}/functions/v1/${fn}`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}` },
-          body: JSON.stringify({ internal: true, org_id: ev.organization_id, contact_id: ev.contact_id, ...payload }),
+          body: JSON.stringify({
+            internal: true,
+            org_id: ev.organization_id,
+            contact_id: ev.contact_id,
+            ...payload,
+          }),
         });
       } catch {
         /* non-fatal */

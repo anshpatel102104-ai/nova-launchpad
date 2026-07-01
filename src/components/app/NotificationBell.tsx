@@ -10,7 +10,13 @@ import { Bell, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-type Notif = { id: string; type: string; message: string | null; read: boolean; created_at: string };
+type Notif = {
+  id: string;
+  type: string;
+  message: string | null;
+  read: boolean;
+  created_at: string;
+};
 
 const TYPE_LINK: Record<string, string> = {
   new_lead: "/app/nova/crm",
@@ -78,7 +84,11 @@ export function NotificationBell() {
   async function markAll() {
     if (!user || unread === 0) return;
     setItems((prev) => prev.map((i) => ({ ...i, read: true })));
-    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
   }
 
   async function markOne(id: string) {
@@ -102,13 +112,14 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div
-          className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-lg"
-        >
+        <div className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-lg">
           <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2.5">
             <span className="text-sm font-semibold text-[var(--foreground)]">Notifications</span>
             {unread > 0 && (
-              <button onClick={markAll} className="text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+              <button
+                onClick={markAll}
+                className="text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              >
                 Mark all read
               </button>
             )}
@@ -124,12 +135,18 @@ export function NotificationBell() {
                 const to = TYPE_LINK[n.type];
                 const inner = (
                   <div className="flex items-start gap-2.5">
-                    {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--primary)]" />}
+                    {!n.read && (
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--primary)]" />
+                    )}
                     <div className={`min-w-0 flex-1 ${n.read ? "pl-[18px]" : ""}`}>
-                      <p className={`text-sm ${n.read ? "text-[var(--muted-foreground)]" : "text-[var(--foreground)]"}`}>
+                      <p
+                        className={`text-sm ${n.read ? "text-[var(--muted-foreground)]" : "text-[var(--foreground)]"}`}
+                      >
                         {n.message}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">{timeAgo(n.created_at)}</p>
+                      <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
+                        {timeAgo(n.created_at)}
+                      </p>
                     </div>
                     {!n.read && (
                       <button
@@ -158,7 +175,10 @@ export function NotificationBell() {
                     {inner}
                   </Link>
                 ) : (
-                  <div key={n.id} className="border-b border-[var(--border)] px-4 py-3 last:border-b-0">
+                  <div
+                    key={n.id}
+                    className="border-b border-[var(--border)] px-4 py-3 last:border-b-0"
+                  >
                     {inner}
                   </div>
                 );

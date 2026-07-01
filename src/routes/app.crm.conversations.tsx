@@ -94,7 +94,12 @@ function ConversationsPage() {
       .channel(`conversations:${currentOrgId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversations", filter: `organization_id=eq.${currentOrgId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "conversations",
+          filter: `organization_id=eq.${currentOrgId}`,
+        },
         () => {
           void load();
         },
@@ -118,9 +123,19 @@ function ConversationsPage() {
       const sorted = [...msgs].sort((a, b) => a.created_at.localeCompare(b.created_at));
       const last = sorted[sorted.length - 1];
       const c = last.contact_id ? contacts[last.contact_id] : null;
-      const name = c ? [c.first_name, c.last_name].filter(Boolean).join(" ") || "Contact" : "Unknown";
+      const name = c
+        ? [c.first_name, c.last_name].filter(Boolean).join(" ") || "Contact"
+        : "Unknown";
       const unread = sorted.some((m) => m.direction === "inbound" && m.status === "open");
-      out.push({ key, contactId: last.contact_id, name, channel: last.channel, last, unread, messages: sorted });
+      out.push({
+        key,
+        contactId: last.contact_id,
+        name,
+        channel: last.channel,
+        last,
+        unread,
+        messages: sorted,
+      });
     }
     return out.sort((a, b) => b.last.created_at.localeCompare(a.last.created_at));
   }, [messages, contacts]);
@@ -134,7 +149,10 @@ function ConversationsPage() {
     });
   }, [threads, filter]);
 
-  const active = useMemo(() => threads.find((t) => t.key === activeKey) ?? null, [threads, activeKey]);
+  const active = useMemo(
+    () => threads.find((t) => t.key === activeKey) ?? null,
+    [threads, activeKey],
+  );
 
   return (
     <div className="flex h-[calc(100vh-100px)] min-h-[520px] bg-[--bg-page]">
@@ -198,9 +216,13 @@ function ConversationsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium text-[--text-primary]">{t.name}</span>
+                      <span className="truncate text-sm font-medium text-[--text-primary]">
+                        {t.name}
+                      </span>
                       <Icon className="h-3 w-3 shrink-0 text-[--text-muted]" />
-                      {t.unread && <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-[--accent]" />}
+                      {t.unread && (
+                        <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-[--accent]" />
+                      )}
                     </div>
                     <p className="truncate text-xs text-[--text-muted]">{t.last.body}</p>
                   </div>
@@ -306,7 +328,10 @@ function ThreadView({
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-[--bg-page] px-5 py-5">
         {thread.messages.map((m) => (
-          <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={m.id}
+            className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}
+          >
             <div
               className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm ${
                 m.direction === "outbound"
@@ -359,7 +384,10 @@ function ThreadView({
 // inbound messages flow into this inbox via receive-message.
 function ConnectChannelPanel({ orgId }: { orgId: string | null }) {
   const [state, setState] = useState<
-    { status: "loading" } | { status: "ready"; url: string } | { status: "unconfigured" } | { status: "error" }
+    | { status: "loading" }
+    | { status: "ready"; url: string }
+    | { status: "unconfigured" }
+    | { status: "error" }
   >({ status: "loading" });
   const [copied, setCopied] = useState(false);
 
@@ -369,7 +397,9 @@ function ConnectChannelPanel({ orgId }: { orgId: string | null }) {
     void invokeEdge<{ configured: boolean; url?: string }>("get-inbound-url", { org_id: orgId })
       .then((r) => {
         if (!active) return;
-        setState(r.configured && r.url ? { status: "ready", url: r.url } : { status: "unconfigured" });
+        setState(
+          r.configured && r.url ? { status: "ready", url: r.url } : { status: "unconfigured" },
+        );
       })
       .catch(() => active && setState({ status: "error" }));
     return () => {
@@ -380,14 +410,18 @@ function ConnectChannelPanel({ orgId }: { orgId: string | null }) {
   return (
     <div className="mb-2 rounded-xl border border-[--border] bg-[--bg-surface-2] p-3 text-xs">
       <p className="mb-1.5 font-semibold text-[--text-primary]">Inbound webhook</p>
-      {state.status === "loading" && <div className="h-8 animate-pulse rounded-lg bg-[--bg-surface]" />}
+      {state.status === "loading" && (
+        <div className="h-8 animate-pulse rounded-lg bg-[--bg-surface]" />
+      )}
       {state.status === "unconfigured" && (
         <p className="text-[--text-muted]">
-          Inbound messaging isn’t configured yet. Add an INBOUND_WEBHOOK_SECRET in project settings to
-          enable it.
+          Inbound messaging isn’t configured yet. Add an INBOUND_WEBHOOK_SECRET in project settings
+          to enable it.
         </p>
       )}
-      {state.status === "error" && <p className="text-[--danger]">Couldn’t load your webhook URL.</p>}
+      {state.status === "error" && (
+        <p className="text-[--danger]">Couldn’t load your webhook URL.</p>
+      )}
       {state.status === "ready" && (
         <>
           <p className="mb-1.5 text-[--text-muted]">
