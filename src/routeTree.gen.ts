@@ -88,6 +88,7 @@ import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automati
 import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
+import { Route as AppLaunchpadOutputsIdRouteImport } from './routes/app.launchpad.outputs.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -485,6 +486,11 @@ const AppAcademyModuleRoute = AppAcademyModuleRouteImport.update({
   path: '/$module',
   getParentRoute: () => AppAcademyRoute,
 } as any)
+const AppLaunchpadOutputsIdRoute = AppLaunchpadOutputsIdRouteImport.update({
+  id: '/launchpad/outputs/$id',
+  path: '/launchpad/outputs/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -566,6 +572,7 @@ export interface FileRoutesByFullPath {
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -646,6 +653,7 @@ export interface FileRoutesByTo {
   '/app/blog': typeof AppBlogIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -728,6 +736,7 @@ export interface FileRoutesById {
   '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -811,6 +820,7 @@ export interface FileRouteTypes {
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/launchpad/outputs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -891,6 +901,7 @@ export interface FileRouteTypes {
     | '/app/blog'
     | '/app/launchpad'
     | '/app/nova'
+    | '/app/launchpad/outputs/$id'
   id:
     | '__root__'
     | '/'
@@ -972,6 +983,7 @@ export interface FileRouteTypes {
     | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/launchpad/outputs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1546,6 +1558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAcademyModuleRouteImport
       parentRoute: typeof AppAcademyRoute
     }
+    '/app/launchpad/outputs/$id': {
+      id: '/app/launchpad/outputs/$id'
+      path: '/launchpad/outputs/$id'
+      fullPath: '/app/launchpad/outputs/$id'
+      preLoaderRoute: typeof AppLaunchpadOutputsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -1663,6 +1682,7 @@ interface AppRouteChildren {
   AppBlogIndexRoute: typeof AppBlogIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
+  AppLaunchpadOutputsIdRoute: typeof AppLaunchpadOutputsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1723,6 +1743,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBlogIndexRoute: AppBlogIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,
+  AppLaunchpadOutputsIdRoute: AppLaunchpadOutputsIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
