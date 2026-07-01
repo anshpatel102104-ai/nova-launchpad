@@ -63,6 +63,26 @@ Deno.serve(async (req) => {
   // Find-or-create the contact (contacts uses org_id).
   const [firstName, ...rest] = name.split(" ");
   const lastName = rest.join(" ") || null;
+
+  // contacts.user_id is NOT NULL and contacts are user-owned — system-created
+  // contacts belong to the org owner.
+  const { data: org } = await admin
+    .from("organizations")
+    .select("owner_id, created_by")
+    .eq("id", page.organization_id)
+    .maybeSingle();
+  let ownerId: string | null = org?.owner_id ?? org?.created_by ?? null;
+  if (!ownerId) {
+    const { data: m } = await admin
+      .from("organization_members")
+      .select("user_id")
+      .eq("organization_id", page.organization_id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    ownerId = m?.user_id ?? null;
+  }
+
   let contactId: string | null = null;
   const { data: existing } = await admin
     .from("contacts")
@@ -72,11 +92,12 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (existing) {
     contactId = existing.id;
-  } else {
+  } else if (ownerId) {
     const { data: created } = await admin
       .from("contacts")
       .insert({
         org_id: page.organization_id,
+        user_id: ownerId,
         first_name: firstName || null,
         last_name: lastName,
         email,
