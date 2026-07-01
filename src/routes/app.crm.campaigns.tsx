@@ -23,6 +23,9 @@ type Campaign = {
   audience_filter: Record<string, unknown>;
   status: string;
   recipient_count: number;
+  open_count: number;
+  click_count: number;
+  unsubscribe_count: number;
   sent_at: string | null;
 };
 
@@ -39,6 +42,7 @@ function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Campaign | "new" | null>(null);
+  const [reporting, setReporting] = useState<Campaign | null>(null);
   const [tab, setTab] = useState<"all" | "email" | "sms" | "draft" | "sent">("all");
 
   async function load() {
@@ -46,7 +50,7 @@ function CampaignsPage() {
     setLoading(true);
     const { data } = await supabase
       .from("campaigns")
-      .select("id, name, channel, subject, body, audience_filter, status, recipient_count, sent_at")
+      .select("id, name, channel, subject, body, audience_filter, status, recipient_count, open_count, click_count, unsubscribe_count, sent_at")
       .eq("organization_id", currentOrgId)
       .order("created_at", { ascending: false });
     setCampaigns((data as Campaign[]) ?? []);
@@ -149,6 +153,14 @@ function CampaignsPage() {
                   <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[c.status] ?? STATUS_BADGE.draft}`}>
                     {c.status}
                   </span>
+                  {(c.status === "sent" || c.status === "sending") && (
+                    <button
+                      onClick={() => setReporting(c)}
+                      className="rounded-lg border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] hover:text-[--text-primary]"
+                    >
+                      Report
+                    </button>
+                  )}
                   <button onClick={() => remove(c.id)} className="rounded-lg p-1.5 text-[--text-muted] hover:text-[--danger]" aria-label="Delete campaign">
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -158,6 +170,8 @@ function CampaignsPage() {
           </div>
         )}
       </div>
+
+      {reporting && <CampaignReport campaign={reporting} onClose={() => setReporting(null)} />}
     </div>
   );
 }
@@ -323,6 +337,131 @@ function CampaignBuilder({
               {saving ? "Sending…" : "Send Now"}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Campaign report: headline engagement stats plus a contact-level breakdown of
+// who opened / clicked, read from campaign_events (populated by track-event).
+function CampaignReport({ campaign, onClose }: { campaign: Campaign; onClose: () => void }) {
+  const [rows, setRows] = useState<
+    | null
+    | {
+        contact: string;
+        opened: boolean;
+        clicked: boolean;
+        unsubscribed: boolean;
+      }[]
+  >(null);
+
+  useEffect(() => {
+    let active = true;
+    // campaign_events post-dates the generated types; use an untyped client here.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    void (supabase as any)
+      .from("campaign_events")
+      .select("type, contact_id, contacts(first_name, last_name, email)")
+      .eq("campaign_id", campaign.id)
+      .then(({ data }: { data: unknown }) => {
+        if (!active) return;
+        const byContact = new Map<
+          string,
+          { contact: string; opened: boolean; clicked: boolean; unsubscribed: boolean }
+        >();
+        for (const e of (data as unknown[] as Array<{
+          type: string;
+          contact_id: string | null;
+          contacts: { first_name: string | null; last_name: string | null; email: string | null } | null;
+        }>) ?? []) {
+          const key = e.contact_id ?? "unknown";
+          const name =
+            [e.contacts?.first_name, e.contacts?.last_name].filter(Boolean).join(" ") ||
+            e.contacts?.email ||
+            "Contact";
+          const cur = byContact.get(key) ?? { contact: name, opened: false, clicked: false, unsubscribed: false };
+          if (e.type === "open") cur.opened = true;
+          if (e.type === "click") cur.clicked = true;
+          if (e.type === "unsubscribe") cur.unsubscribed = true;
+          byContact.set(key, cur);
+        }
+        setRows([...byContact.values()]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [campaign.id]);
+
+  const openRate = campaign.recipient_count
+    ? Math.round((campaign.open_count / campaign.recipient_count) * 100)
+    : 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="h-full w-full overflow-y-auto bg-[--bg-surface] shadow-[-8px_0_32px_rgba(0,0,0,0.08)] sm:w-[440px]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[--border] px-5 py-4">
+          <p className="text-[15px] font-semibold text-[--text-primary]">{campaign.name} — Report</p>
+          <button onClick={onClose} className="text-[--text-muted] hover:text-[--text-primary]">
+            ✕
+          </button>
+        </div>
+        <div className="p-5">
+          <div className="mb-5 grid grid-cols-2 gap-3">
+            {[
+              ["Recipients", campaign.recipient_count],
+              ["Opened", `${campaign.open_count} (${openRate}%)`],
+              ["Clicked", campaign.click_count],
+              ["Unsubscribed", campaign.unsubscribe_count],
+            ].map(([label, value]) => (
+              <div key={label as string} className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[--text-muted]">{label}</p>
+                <p className="mt-1 text-lg font-bold text-[--text-primary]">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">Engagement</p>
+          {rows === null ? (
+            <div className="space-y-2">
+              {[0, 1].map((i) => (
+                <div key={i} className="h-10 animate-pulse rounded-lg bg-[--bg-surface-2]" />
+              ))}
+            </div>
+          ) : rows.length === 0 ? (
+            <p className="py-8 text-center text-xs text-[--text-muted]">
+              No opens or clicks recorded yet. Engagement appears here as recipients interact.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {rows.map((r, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 rounded-lg border border-[--border] bg-[--bg-surface-2] px-3 py-2 text-sm"
+                >
+                  <span className="min-w-0 flex-1 truncate text-[--text-primary]">{r.contact}</span>
+                  {r.opened && (
+                    <span className="rounded-full border border-blue-100 bg-[--info-light] px-2 py-0.5 text-[10px] font-semibold text-[--info]">
+                      opened
+                    </span>
+                  )}
+                  {r.clicked && (
+                    <span className="rounded-full border border-green-100 bg-[--success-light] px-2 py-0.5 text-[10px] font-semibold text-[--success]">
+                      clicked
+                    </span>
+                  )}
+                  {r.unsubscribed && (
+                    <span className="rounded-full border border-red-100 bg-[--danger-light] px-2 py-0.5 text-[10px] font-semibold text-[--danger]">
+                      unsubscribed
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

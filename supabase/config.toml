@@ -108,3 +108,7 @@ verify_jwt = false
 # Returns the caller's org-scoped inbound webhook URL for display in Settings.
 [functions.get-inbound-url]
 verify_jwt = true
+
+# Public campaign engagement tracker (open pixel / click redirect / unsubscribe).
+[functions.track-event]
+verify_jwt = false

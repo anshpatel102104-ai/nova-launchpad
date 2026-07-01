@@ -25,6 +25,28 @@ function render(t: string, c: Record<string, unknown>): string {
   return out;
 }
 
+// Build tracked HTML for an email: rewrite links through the click tracker,
+// append a 1x1 open pixel and an unsubscribe link. Falls back to plain wrapping
+// when there's no contact to attribute engagement to.
+function trackedEmailHtml(
+  supabaseUrl: string,
+  campaignId: string,
+  contactId: string | null,
+  textBody: string,
+): string {
+  const escaped = textBody.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  if (!contactId) return `<div>${escaped.split("\n").join("<br>")}</div>`;
+  const base = `${supabaseUrl}/functions/v1/track-event?c=${campaignId}&e=${contactId}`;
+  let html = escaped.replace(/(https?:\/\/[^\s<]+)/g, (m) => {
+    const tracked = `${base}&t=click&u=${encodeURIComponent(btoa(m))}`;
+    return `<a href="${tracked}">${m}</a>`;
+  });
+  html = html.split("\n").join("<br>");
+  const pixel = `<img src="${base}&t=open" width="1" height="1" style="display:none" alt="">`;
+  const unsub = `<div style="margin-top:24px;font-size:12px;color:#888"><a href="${base}&t=unsubscribe">Unsubscribe</a></div>`;
+  return `<div>${html}${pixel}${unsub}</div>`;
+}
+
 type Contact = Record<string, unknown> & { id: string };
 
 async function sendOne(
@@ -37,15 +59,19 @@ async function sendOne(
   const channel = campaign.channel as string;
   for (const c of contacts) {
     const fn = channel === "sms" ? "send-sms" : "send-email";
-    const payload =
-      channel === "sms"
-        ? { internal: true, contact_id: c.id, body: render(String(campaign.body ?? ""), c) }
-        : {
-            internal: true,
-            contact_id: c.id,
-            subject: render(String(campaign.subject ?? ""), c),
-            body: render(String(campaign.body ?? ""), c),
-          };
+    let payload: Record<string, unknown>;
+    if (channel === "sms") {
+      payload = { internal: true, contact_id: c.id, body: render(String(campaign.body ?? ""), c) };
+    } else {
+      const bodyText = render(String(campaign.body ?? ""), c);
+      payload = {
+        internal: true,
+        contact_id: c.id,
+        subject: render(String(campaign.subject ?? ""), c),
+        body: bodyText,
+        html: trackedEmailHtml(url, String(campaign.id), c.id, bodyText),
+      };
+    }
     try {
       const res = await fetch(`${url}/functions/v1/${fn}`, {
         method: "POST",
