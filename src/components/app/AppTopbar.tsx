@@ -12,12 +12,12 @@ import {
   Check,
   Search,
   Zap,
-  Bell,
   HelpCircle,
   Plus,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { NotificationBell } from "@/components/app/NotificationBell";
 import { useGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
@@ -229,9 +229,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           </button>
 
           {/* Bell */}
-          <IconBtn title="Notifications">
-            <Bell className="h-4 w-4" />
-          </IconBtn>
+          <NotificationBell />
 
           {/* Help */}
           <IconBtn title="Help & support">
