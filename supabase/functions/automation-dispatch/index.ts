@@ -17,6 +17,19 @@ const TRIGGERS_FOR_EVENT: Record<string, string[]> = {
   "payment.received": ["trigger_payment"],
 };
 
+// dotted event → automation_workflows.trigger_type (visual workflow engine)
+const WORKFLOW_TRIGGER_FOR_EVENT: Record<string, string> = {
+  "contact.created": "contact_created",
+  "tag.added": "contact_tagged",
+  "payment.received": "payment_received",
+  "lead.stage_changed": "lead_stage_changed",
+  "form.submitted": "form_submitted",
+  "appointment.booked": "appointment_booked",
+  "appointment.cancelled": "appointment_cancelled",
+  "appointment.no_show": "appointment_no_show",
+  "message.received": "message_received",
+};
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -123,6 +136,34 @@ Deno.serve(async (req: Request) => {
             () => {},
             () => {},
           );
+        }
+      }
+
+      // Visual workflow engine: fire every live automation_workflow whose
+      // trigger_type matches this event, via workflow-engine's internal path.
+      const wfTrigger = WORKFLOW_TRIGGER_FOR_EVENT[ev.event_type];
+      if (wfTrigger) {
+        const { data: wfRows } = await admin
+          .from("automation_workflows")
+          .select("id")
+          .eq("organization_id", ev.organization_id)
+          .eq("trigger_type", wfTrigger)
+          .eq("is_active", true);
+        for (const wf of wfRows ?? []) {
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/workflow-engine`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              internal: true,
+              workflow_id: (wf as { id: string }).id,
+              contact_id: ev.contact_id,
+              mode: "live",
+            }),
+          });
+          if (res.ok) fired++;
         }
       }
 

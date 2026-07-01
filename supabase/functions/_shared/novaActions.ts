@@ -8,6 +8,8 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0
 export type NovaActionType =
   | "update_lead_stage"
   | "log_crm_note"
+  | "create_task"
+  | "create_contact"
   | "log_memory"
   | "trigger_n8n_workflow";
 
@@ -27,12 +29,19 @@ export const NOVA_ACTION_TOOL = {
     properties: {
       action_type: {
         type: "string",
-        enum: ["update_lead_stage", "log_crm_note", "log_memory", "trigger_n8n_workflow"],
+        enum: [
+          "update_lead_stage",
+          "log_crm_note",
+          "create_task",
+          "create_contact",
+          "log_memory",
+          "trigger_n8n_workflow",
+        ],
       },
       payload: {
         type: "object",
         description:
-          "update_lead_stage: {lead_id, stage}. log_crm_note: {lead_id, note}. log_memory: {category, content}. trigger_n8n_workflow: {integration_key, data}.",
+          "update_lead_stage: {lead_id, stage}. log_crm_note: {lead_id, note}. create_task: {title, description?, due_date?, priority?(low|medium|high), task_type?(task|call|email|follow_up|meeting), lead_id?, contact_id?}. create_contact: {first_name?, last_name?, email?, phone?, company?, source?, tags?}. log_memory: {category, content}. trigger_n8n_workflow: {integration_key, data}.",
       },
       plain_english: {
         type: "string",
@@ -120,6 +129,78 @@ async function executeLogCrmNote(
   return { ok: true, result: { activity_id: data.id } };
 }
 
+const VALID_TASK_PRIORITY = new Set(["low", "medium", "high"]);
+const VALID_TASK_TYPE = new Set(["task", "call", "email", "follow_up", "meeting"]);
+
+async function executeCreateTask(
+  admin: SupabaseClient,
+  orgId: string,
+  userId: string,
+  payload: Record<string, unknown>,
+): Promise<ExecuteResult> {
+  const title = String(payload.title ?? "").trim();
+  if (!title) return { ok: false, error: "Missing task title" };
+  const priority = VALID_TASK_PRIORITY.has(String(payload.priority))
+    ? String(payload.priority)
+    : "medium";
+  const taskType = VALID_TASK_TYPE.has(String(payload.task_type))
+    ? String(payload.task_type)
+    : "task";
+
+  const { data, error } = await admin
+    .from("tasks")
+    .insert({
+      organization_id: orgId,
+      created_by: userId,
+      title,
+      description: payload.description ? String(payload.description) : null,
+      contact_id: payload.contact_id ? String(payload.contact_id) : null,
+      lead_id: payload.lead_id ? String(payload.lead_id) : null,
+      due_date: payload.due_date ? String(payload.due_date) : null,
+      priority,
+      task_type: taskType,
+    })
+    .select("id, title, status, due_date")
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, result: data };
+}
+
+async function executeCreateContact(
+  admin: SupabaseClient,
+  orgId: string,
+  userId: string,
+  payload: Record<string, unknown>,
+): Promise<ExecuteResult> {
+  const firstName = String(payload.first_name ?? "").trim();
+  const lastName = String(payload.last_name ?? "").trim();
+  const email = payload.email ? String(payload.email).trim() : null;
+  if (!firstName && !lastName && !email) {
+    return { ok: false, error: "Provide at least a name or email" };
+  }
+  // contacts uses org_id (not organization_id) and user_id is NOT NULL — the
+  // founder who approved the action owns the contact.
+  const { data, error } = await admin
+    .from("contacts")
+    .insert({
+      org_id: orgId,
+      user_id: userId,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      email,
+      phone: payload.phone ? String(payload.phone) : null,
+      company: payload.company ? String(payload.company) : null,
+      source: payload.source ? String(payload.source) : "nova",
+      tags: Array.isArray(payload.tags) ? (payload.tags as string[]) : [],
+    })
+    .select("id, first_name, last_name, email")
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, result: data };
+}
+
 const VALID_MEMORY_CATEGORIES = new Set([
   "business_context",
   "goal",
@@ -203,6 +284,10 @@ export async function executeNovaAction(
       return executeUpdateLeadStage(admin, orgId, userId, payload);
     case "log_crm_note":
       return executeLogCrmNote(admin, orgId, userId, payload);
+    case "create_task":
+      return executeCreateTask(admin, orgId, userId, payload);
+    case "create_contact":
+      return executeCreateContact(admin, orgId, userId, payload);
     case "log_memory":
       return executeLogMemory(admin, orgId, userId, payload);
     case "trigger_n8n_workflow":

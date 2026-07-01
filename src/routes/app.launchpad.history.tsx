@@ -146,17 +146,28 @@ function HistoryPage() {
                         {new Date(r.created_at).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {tool ? (
-                          <Link
-                            to="/app/launchpad/$tool"
-                            params={{ tool: tool.key }}
-                            className="inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:opacity-80"
-                          >
-                            Open <ArrowRight className="h-3 w-3" />
-                          </Link>
-                        ) : (
-                          <span className="text-[11.5px] text-muted-foreground">—</span>
-                        )}
+                        <div className="inline-flex items-center gap-3">
+                          {r.status === "succeeded" && (
+                            <Link
+                              to="/app/launchpad/outputs/$id"
+                              params={{ id: r.id }}
+                              className="inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:opacity-80"
+                            >
+                              View
+                            </Link>
+                          )}
+                          {tool ? (
+                            <Link
+                              to="/app/launchpad/$tool"
+                              params={{ tool: tool.key }}
+                              className="inline-flex items-center gap-1 text-[12px] font-medium text-muted-foreground hover:text-foreground"
+                            >
+                              Re-run <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          ) : r.status !== "succeeded" ? (
+                            <span className="text-[11.5px] text-muted-foreground">—</span>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   );

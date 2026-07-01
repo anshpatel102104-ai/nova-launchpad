@@ -31,6 +31,10 @@ import {
   PlayCircle,
   Blocks,
   Search,
+  Calendar,
+  Star,
+  Inbox,
+  Building2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -176,6 +180,7 @@ const NAV_GROUPS: NavGroup[] = [
           p.startsWith("/app/launchpad") &&
           p !== "/app/launchpad-path" &&
           p !== "/app/launchpad/history" &&
+          p !== "/app/launchpad/mentors" &&
           p !== "/app/launchpad/first-customers",
       },
       {
@@ -183,6 +188,12 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/research",
         icon: Search,
         match: (p) => p === "/app/research",
+      },
+      {
+        label: "Mentors",
+        to: "/app/launchpad/mentors",
+        icon: Brain,
+        match: (p) => p === "/app/launchpad/mentors",
       },
       {
         label: "History",
@@ -204,6 +215,11 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/nova/crm" ||
       p === "/app/nova/leads" ||
       p === "/app/launchpad/first-customers" ||
+      p === "/app/crm/companies" ||
+      p === "/app/crm/tasks" ||
+      p === "/app/crm/conversations" ||
+      p === "/app/crm/calendar" ||
+      p === "/app/reputation" ||
       p.startsWith("/app/scale"),
     children: [
       {
@@ -217,6 +233,36 @@ const NAV_GROUPS: NavGroup[] = [
         to: "/app/nova/crm",
         icon: Workflow,
         match: (p) => p === "/app/nova/crm" || p === "/app/nova",
+      },
+      {
+        label: "Companies",
+        to: "/app/crm/companies",
+        icon: Building2,
+        match: (p) => p === "/app/crm/companies",
+      },
+      {
+        label: "Conversations",
+        to: "/app/crm/conversations",
+        icon: Inbox,
+        match: (p) => p === "/app/crm/conversations",
+      },
+      {
+        label: "Calendar",
+        to: "/app/crm/calendar",
+        icon: Calendar,
+        match: (p) => p === "/app/crm/calendar",
+      },
+      {
+        label: "Tasks",
+        to: "/app/crm/tasks",
+        icon: ClipboardList,
+        match: (p) => p === "/app/crm/tasks",
+      },
+      {
+        label: "Reputation",
+        to: "/app/reputation",
+        icon: Star,
+        match: (p) => p === "/app/reputation",
       },
       {
         label: "First Customers",
@@ -242,13 +288,34 @@ const NAV_GROUPS: NavGroup[] = [
       p === "/app/integrations" ||
       p === "/app/builder" ||
       p === "/app/workflow-templates" ||
-      p === "/app/approvals",
+      p === "/app/approvals" ||
+      p === "/app/crm/automations" ||
+      p === "/app/crm/forms" ||
+      p === "/app/crm/campaigns",
     children: [
       {
         label: "Automations",
         to: "/app/automations",
         icon: Workflow,
         match: (p) => p === "/app/automations",
+      },
+      {
+        label: "Workflows",
+        to: "/app/crm/automations",
+        icon: Zap,
+        match: (p) => p === "/app/crm/automations",
+      },
+      {
+        label: "Forms",
+        to: "/app/crm/forms",
+        icon: FileText,
+        match: (p) => p === "/app/crm/forms",
+      },
+      {
+        label: "Campaigns",
+        to: "/app/crm/campaigns",
+        icon: Megaphone,
+        match: (p) => p === "/app/crm/campaigns",
       },
       {
         label: "Builder",
