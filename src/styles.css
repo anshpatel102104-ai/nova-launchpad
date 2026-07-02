@@ -360,6 +360,37 @@
   --modal-overlay: rgba(17, 24, 39, 0.5);
 }
 
+/* ───────────────── Product identity: Launchpad ↔ Nova ─────────────────
+   One ecosystem, two products. Launchpad (create) keeps the default violet
+   accent; Nova (operate) re-accents the whole shell cyan by remapping the
+   semantic primary tokens under [data-product="nova"] — set on the app shell
+   by the active workspace mode. Components keep using var(--primary) and
+   inherit the right product identity for free. */
+:root,
+.light {
+  --nova-accent: #0e7490;
+  --nova-accent-foreground: #ffffff;
+}
+.dark {
+  --nova-accent: #22d3ee;
+  --nova-accent-foreground: #083344;
+}
+[data-product="nova"] {
+  --primary: var(--nova-accent);
+  --primary-foreground: var(--nova-accent-foreground);
+  --primary-hover: color-mix(in oklab, var(--nova-accent) 86%, black);
+  --primary-active: color-mix(in oklab, var(--nova-accent) 74%, black);
+  --primary-soft: color-mix(in oklab, var(--nova-accent) 10%, var(--background));
+  --primary-border: color-mix(in oklab, var(--nova-accent) 32%, var(--background));
+  --primary-glow: color-mix(in oklab, var(--nova-accent) 30%, transparent);
+  --accent: var(--nova-accent);
+  --ring: var(--nova-accent);
+  --border-strong: color-mix(in oklab, var(--nova-accent) 35%, var(--background));
+  --sidebar-primary: var(--nova-accent);
+  --sidebar-accent: color-mix(in oklab, var(--nova-accent) 8%, var(--background));
+  --sidebar-ring: var(--nova-accent);
+}
+
 /* ───────────────── Nova GHL design-system tokens ─────────────────
    Fixed brand surfaces for the Launchpad/CRM "GHL-native" UI (master build
    §System E). These are theme-independent on purpose: command surfaces are
