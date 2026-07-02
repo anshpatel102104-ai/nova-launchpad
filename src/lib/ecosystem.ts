@@ -126,8 +126,7 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
   if (doneById.validate) proven.push("Idea checked against real demand");
   if (doneById.offer) proven.push("Offer defined with a price");
   if (s.hasGtm) proven.push("Customer plan written");
-  if (s.leadCount > 0)
-    proven.push(`${s.leadCount} lead${s.leadCount === 1 ? "" : "s"} saved`);
+  if (s.leadCount > 0) proven.push(`${s.leadCount} lead${s.leadCount === 1 ? "" : "s"} saved`);
   if (won > 0) proven.push(`${won} deal${won === 1 ? "" : "s"} won`);
 
   const needsProof: Array<{ label: string; to: string }> = [];

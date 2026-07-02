@@ -49,12 +49,9 @@ export function NovaHandoffCard({ graph }: { graph: BusinessGraph }) {
       >
         You built the business. Now run it.
       </h2>
-      <p
-        className="mt-1 text-[13px] leading-relaxed"
-        style={{ color: "var(--muted-foreground)" }}
-      >
-        Nova built your operating system from your Launchpad decisions — everything you proved
-        here is already live over there.
+      <p className="mt-1 text-[13px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+        Nova built your operating system from your Launchpad decisions — everything you proved here
+        is already live over there.
       </p>
 
       {inherited.length > 0 && (

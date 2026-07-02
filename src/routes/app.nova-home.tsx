@@ -297,7 +297,10 @@ function NovaHomePage() {
                     <Clock className="h-3 w-3" />
                     {r.estimatedMinutes}m
                   </span>
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+                  <ArrowRight
+                    className="h-3.5 w-3.5 shrink-0"
+                    style={{ color: "var(--primary)" }}
+                  />
                 </Link>
               ))}
             </div>
@@ -331,14 +334,26 @@ function NovaHomePage() {
                   ? "Follow-ups and busywork are handled. Nova flags anything that fails."
                   : "Every task you do by hand eats your week. Turn one on — it takes 15 minutes."}
               </p>
-              <Link
-                to={autos > 0 ? "/app/automations" : "/app/outcomes/automate"}
-                className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
-                style={{ color: "var(--primary)" }}
-              >
-                {autos > 0 ? "View runs" : "Automate one task"}
-                <ArrowRight className="h-3 w-3" />
-              </Link>
+              {autos > 0 ? (
+                <Link
+                  to="/app/automations"
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
+                  style={{ color: "var(--primary)" }}
+                >
+                  View runs
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              ) : (
+                <Link
+                  to="/app/outcomes/$category"
+                  params={{ category: "automate" }}
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
+                  style={{ color: "var(--primary)" }}
+                >
+                  Automate one task
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -416,7 +431,10 @@ function NovaHomePage() {
                     className="flex items-center gap-2.5 px-5 py-2.5"
                     style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
                   >
-                    <Workflow className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+                    <Workflow
+                      className="h-3.5 w-3.5 shrink-0"
+                      style={{ color: "var(--primary)" }}
+                    />
                     <div className="min-w-0 flex-1">
                       <div
                         className="truncate text-[12.5px] font-semibold"

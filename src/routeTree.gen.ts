@@ -34,6 +34,7 @@ import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppReputationRouteImport } from './routes/app.reputation'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
+import { Route as AppNovaHomeRouteImport } from './routes/app.nova-home'
 import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
 import { Route as AppMonitoringRouteImport } from './routes/app.monitoring'
 import { Route as AppMissionControlRouteImport } from './routes/app.mission-control'
@@ -213,6 +214,11 @@ const AppPlaybookRoute = AppPlaybookRouteImport.update({
 const AppNovaOsRoute = AppNovaOsRouteImport.update({
   id: '/nova-os',
   path: '/nova-os',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaHomeRoute = AppNovaHomeRouteImport.update({
+  id: '/nova-home',
+  path: '/nova-home',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNovaFullRoute = AppNovaFullRouteImport.update({
@@ -523,6 +529,7 @@ export interface FileRoutesByFullPath {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
@@ -604,6 +611,7 @@ export interface FileRoutesByTo {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
@@ -687,6 +695,7 @@ export interface FileRoutesById {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
@@ -771,6 +780,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
@@ -852,6 +862,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
@@ -934,6 +945,7 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
@@ -1178,6 +1190,13 @@ declare module '@tanstack/react-router' {
       path: '/nova-os'
       fullPath: '/app/nova-os'
       preLoaderRoute: typeof AppNovaOsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova-home': {
+      id: '/app/nova-home'
+      path: '/nova-home'
+      fullPath: '/app/nova-home'
+      preLoaderRoute: typeof AppNovaHomeRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/nova-full': {
@@ -1648,6 +1667,7 @@ interface AppRouteChildren {
   AppMissionControlRoute: typeof AppMissionControlRoute
   AppMonitoringRoute: typeof AppMonitoringRoute
   AppNovaFullRoute: typeof AppNovaFullRoute
+  AppNovaHomeRoute: typeof AppNovaHomeRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
   AppPlaybookRoute: typeof AppPlaybookRoute
   AppReputationRoute: typeof AppReputationRoute
@@ -1709,6 +1729,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMissionControlRoute: AppMissionControlRoute,
   AppMonitoringRoute: AppMonitoringRoute,
   AppNovaFullRoute: AppNovaFullRoute,
+  AppNovaHomeRoute: AppNovaHomeRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
   AppPlaybookRoute: AppPlaybookRoute,
   AppReputationRoute: AppReputationRoute,

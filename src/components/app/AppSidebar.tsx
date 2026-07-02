@@ -113,11 +113,7 @@ function LaunchpadSidebar() {
   };
 
   return (
-    <SidebarChrome
-      brand="Launchpad"
-      tagline="Build your business"
-      brandIcon={Rocket}
-    >
+    <SidebarChrome brand="Launchpad" tagline="Build your business" brandIcon={Rocket}>
       {({ collapsed }) => (
         <>
           {/* Home */}
@@ -373,13 +369,7 @@ function NavRow({
   );
 }
 
-function SectionLabel({
-  children,
-  collapsed,
-}: {
-  children: React.ReactNode;
-  collapsed: boolean;
-}) {
+function SectionLabel({ children, collapsed }: { children: React.ReactNode; collapsed: boolean }) {
   if (collapsed) return <div className="pt-3" />;
   return (
     <div

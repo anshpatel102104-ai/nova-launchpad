@@ -79,7 +79,10 @@ export function CasefileSummary({
                   className="flex items-center gap-2 text-[13px] font-semibold"
                   style={{ color: "var(--foreground)" }}
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--success)" }} />
+                  <CheckCircle2
+                    className="h-3.5 w-3.5 shrink-0"
+                    style={{ color: "var(--success)" }}
+                  />
                   {p}
                 </li>
               ))}
