@@ -1,11 +1,12 @@
-// Home — Nova holds your hand and walks you across the street.
-// One screen that answers, in plain words, top to bottom:
-//   1. Where am I?            → journey bar ("YOU ARE HERE")
+// Launchpad Home — casefile-driven mission control. Unmistakably Launchpad:
+// staged, guided, evidence-based. One screen that answers, top to bottom:
+//   1. Where am I?            → stage bar (Idea → Validate → Offer → Launch → Revenue)
 //   2. What do I do now?      → one big guided step (NextStepHero)
 //   3. What comes after?      → locked next steps + one thing to fix
-//   4. How am I doing?        → charts and a leads table where every row
-//                               tells you the next move
-// Sharp corners, no decoration. Cards drag-and-drop to rearrange.
+//   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
+//   5. How am I doing?        → charts and a leads table with next moves
+// When the build is proven, the Nova handoff hero takes over the top:
+// "You built the business. Now run it."
 
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -13,21 +14,14 @@ import { SectionTabs } from "@/components/app/SectionTabs";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
-import { ArrowRight, AlertTriangle, Clock, GripVertical, Lock } from "lucide-react";
+import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
+import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
+import { deriveLaunchpadProgress } from "@/lib/ecosystem";
+import { ArrowRight, AlertTriangle, Check, Clock, GripVertical, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
   component: HomePage,
 });
-
-const STAGES = ["Idea", "Validate", "Launch", "Operate", "Scale"] as const;
-// Plain words for each stage of the journey.
-const STAGE_LABELS: Record<(typeof STAGES)[number], string> = {
-  Idea: "Idea",
-  Validate: "Prove it",
-  Launch: "Launch",
-  Operate: "Run",
-  Scale: "Grow",
-};
 
 const LAYOUT_KEY = "nova-home-layout";
 const DEFAULT_ORDER = ["money", "leads", "table"];
@@ -35,9 +29,9 @@ const DEFAULT_ORDER = ["money", "leads", "table"];
 function HomePage() {
   const { user, profile } = useAuth();
   const graph = useBusinessGraph();
+  const progress = deriveLaunchpadProgress(graph);
 
   const name = profile?.full_name?.split(" ")[0] || "Founder";
-  const stageIdx = Math.max(0, STAGES.indexOf(graph.stage));
   const blocker = graph.blockers[0];
   const upNext = graph.recommendations.filter((r) => r.id !== "continue-mission").slice(0, 2);
 
@@ -81,29 +75,32 @@ function HomePage() {
         </span>
       </div>
 
-      {/* ── Journey bar ── */}
+      {/* ── Handoff hero — the build is proven, Nova takes over ── */}
+      {progress.readyForNova && <NovaHandoffCard graph={graph} />}
+
+      {/* ── Stage bar: Idea → Validate → Offer → Launch → Revenue ── */}
       <div
         className="rounded-[6px] border px-6 pb-5 pt-4"
         style={{ borderColor: "var(--border)", background: "var(--surface)" }}
       >
-        <div className="mb-4 flex items-baseline justify-between">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
           <span className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-            Your journey
+            Your build
           </span>
-          <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-            Step {stageIdx + 1} of {STAGES.length}
+          <span className="truncate text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+            {progress.current.headline}
           </span>
         </div>
         <div className="flex items-start">
-          {STAGES.map((s, i) => (
-            <React.Fragment key={s}>
-              <div className="flex w-[72px] shrink-0 flex-col items-center md:w-[86px]">
+          {progress.stages.map((s, i) => (
+            <React.Fragment key={s.id}>
+              <Link to={s.to} className="flex w-[72px] shrink-0 flex-col items-center md:w-[86px]">
                 <div
                   className="flex h-7 w-7 items-center justify-center rounded-[4px] text-[12.5px] font-bold"
                   style={
-                    i < stageIdx
+                    s.done
                       ? { background: "var(--success)", color: "var(--success-foreground)" }
-                      : i === stageIdx
+                      : s.current
                         ? {
                             background: "var(--primary)",
                             color: "var(--primary-foreground)",
@@ -116,22 +113,21 @@ function HomePage() {
                           }
                   }
                 >
-                  {i < stageIdx ? "✓" : i + 1}
+                  {s.done ? <Check className="h-3.5 w-3.5" /> : i + 1}
                 </div>
                 <span
                   className="mt-2 text-[11.5px] font-semibold"
                   style={{
-                    color:
-                      i === stageIdx
-                        ? "var(--primary)"
-                        : i < stageIdx
-                          ? "var(--foreground)"
-                          : "var(--muted-foreground)",
+                    color: s.current
+                      ? "var(--primary)"
+                      : s.done
+                        ? "var(--foreground)"
+                        : "var(--muted-foreground)",
                   }}
                 >
-                  {STAGE_LABELS[s]}
+                  {s.label}
                 </span>
-                {i === stageIdx && (
+                {s.current && (
                   <span
                     className="mt-0.5 text-[10px] font-bold tracking-[0.04em]"
                     style={{ color: "var(--primary)" }}
@@ -139,11 +135,11 @@ function HomePage() {
                     YOU ARE HERE
                   </span>
                 )}
-              </div>
-              {i < STAGES.length - 1 && (
+              </Link>
+              {i < progress.stages.length - 1 && (
                 <div
                   className="mt-[13px] h-[3px] flex-1"
-                  style={{ background: i < stageIdx ? "var(--success)" : "var(--border)" }}
+                  style={{ background: s.done ? "var(--success)" : "var(--border)" }}
                 />
               )}
             </React.Fragment>
@@ -260,7 +256,13 @@ function HomePage() {
         </div>
       </div>
 
-      {/* ── 4 · Your numbers (drag to rearrange) ── */}
+      {/* ── 4 · Casefile: verdict, proof, needs-proof, memory ── */}
+      <div>
+        <SectionLabel>Your casefile</SectionLabel>
+        <CasefileSummary graph={graph} progress={progress} />
+      </div>
+
+      {/* ── 5 · Your numbers (drag to rearrange) ── */}
       <DashboardCards leads={graph.leads} />
     </div>
   );

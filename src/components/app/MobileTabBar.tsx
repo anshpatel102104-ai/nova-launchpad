@@ -1,64 +1,117 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Crosshair, Rocket, Megaphone, TrendingUp, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+// Mobile nav — one bar per product, mirroring each product's sidebar.
+//   Launchpad: Home · Missions · Research · Memory · Ask
+//   Nova:      Home · CRM · Pipeline · Tasks · Ask
+// Same rule as desktop: the two products never share navigation.
 
-// Nova OS mobile nav — mirrors the outcome-first primary sidebar:
-// Mission Control · Build · Launch · Grow · Nova
-const TABS = [
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  Home,
+  Crosshair,
+  Search,
+  Brain,
+  Sparkles,
+  Users,
+  Workflow,
+  ClipboardList,
+  type LucideIcon,
+} from "lucide-react";
+import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
+
+interface Tab {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  match: (p: string) => boolean;
+}
+
+const LAUNCHPAD_TABS: Tab[] = [
   {
     to: "/app/mission-control",
     label: "Home",
+    icon: Home,
+    match: (p) => p === "/app/mission-control" || p === "/app/dashboard" || p === "/app/",
+  },
+  {
+    to: "/app/launchpad/missions",
+    label: "Missions",
     icon: Crosshair,
-    match: (p: string) => p === "/app/mission-control" || p === "/app/dashboard" || p === "/app/",
+    match: (p) =>
+      p === "/app/launchpad/missions" ||
+      p === "/app/launchpad-path" ||
+      p.startsWith("/app/outcomes"),
   },
   {
-    to: "/app/outcomes/build",
-    label: "Build",
-    icon: Rocket,
-    match: (p: string) => p === "/app/outcomes/build" || p.startsWith("/app/launchpad"),
+    to: "/app/research",
+    label: "Research",
+    icon: Search,
+    match: (p) => p === "/app/research" || p.startsWith("/app/launchpad"),
   },
   {
-    to: "/app/outcomes/launch",
-    label: "Launch",
-    icon: Megaphone,
-    match: (p: string) =>
-      p === "/app/outcomes/launch" || p.startsWith("/app/contacts") || p.startsWith("/app/leads"),
-  },
-  {
-    to: "/app/outcomes/grow",
-    label: "Grow",
-    icon: TrendingUp,
-    match: (p: string) =>
-      p === "/app/outcomes/grow" || p.startsWith("/app/automations") || p.startsWith("/app/scale"),
+    to: "/app/memory",
+    label: "Memory",
+    icon: Brain,
+    match: (p) => p.startsWith("/app/memory") || p === "/app/assets",
   },
   {
     to: "/app/mentor",
-    label: "Nova",
+    label: "Ask",
     icon: Sparkles,
-    match: (p: string) => p === "/app/mentor",
+    match: (p) => p === "/app/mentor",
+  },
+];
+
+const NOVA_TABS: Tab[] = [
+  {
+    to: "/app/nova-home",
+    label: "Home",
+    icon: Home,
+    match: (p) => p === "/app/nova-home" || p === "/app/",
+  },
+  {
+    to: "/app/contacts",
+    label: "CRM",
+    icon: Users,
+    match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/crm/companies",
+  },
+  {
+    to: "/app/nova/crm",
+    label: "Pipeline",
+    icon: Workflow,
+    match: (p) => p === "/app/nova/crm" || p === "/app/nova",
+  },
+  {
+    to: "/app/crm/tasks",
+    label: "Tasks",
+    icon: ClipboardList,
+    match: (p) => p === "/app/crm/tasks",
+  },
+  {
+    to: "/app/mentor",
+    label: "Ask",
+    icon: Sparkles,
+    match: (p) => p === "/app/mentor",
   },
 ];
 
 export function MobileTabBar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { isOperate } = useWorkspaceMode();
+  const tabs = isOperate ? NOVA_TABS : LAUNCHPAD_TABS;
+
   return (
     <nav
       className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)]"
       style={{ background: "var(--background)", borderColor: "var(--border)" }}
     >
       <ul className="grid grid-cols-5">
-        {TABS.map((t) => {
-          const active = t.match ? t.match(path) : path === t.to;
+        {tabs.map((t) => {
+          const active = t.match(path);
           return (
             <li key={t.to}>
               <Link
                 to={t.to}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
-                )}
-                style={{
-                  color: active ? "var(--primary)" : "var(--muted-foreground)",
-                }}
+                className="flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition-colors"
+                style={{ color: active ? "var(--primary)" : "var(--muted-foreground)" }}
               >
                 <t.icon className="h-5 w-5" />
                 {t.label}
