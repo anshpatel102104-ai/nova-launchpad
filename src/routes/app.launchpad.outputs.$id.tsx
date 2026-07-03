@@ -56,20 +56,24 @@ const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
 const TONE_CLASSES: Record<VerdictCategory, { badge: string; card: string }> = {
   danger: {
-    badge: "bg-[--danger-light] text-[--danger] border-red-100",
-    card: "border-l-[--danger] bg-[--danger-light]",
+    badge:
+      "bg-[color-mix(in_oklab,var(--destructive)_12%,transparent)] text-[--destructive] border-[color-mix(in_oklab,var(--destructive)_30%,transparent)]",
+    card: "border-l-[--destructive] bg-[color-mix(in_oklab,var(--destructive)_6%,transparent)]",
   },
   success: {
-    badge: "bg-[--success-light] text-[--success] border-green-100",
-    card: "border-l-[--success] bg-[--success-light]",
+    badge:
+      "bg-[color-mix(in_oklab,var(--success)_12%,transparent)] text-[--success] border-[color-mix(in_oklab,var(--success)_30%,transparent)]",
+    card: "border-l-[--success] bg-[color-mix(in_oklab,var(--success)_6%,transparent)]",
   },
   warning: {
-    badge: "bg-[--warning-light] text-[--warning] border-amber-100",
-    card: "border-l-[--warning] bg-[--warning-light]",
+    badge:
+      "bg-[color-mix(in_oklab,var(--warning)_12%,transparent)] text-[--warning] border-[color-mix(in_oklab,var(--warning)_30%,transparent)]",
+    card: "border-l-[--warning] bg-[color-mix(in_oklab,var(--warning)_6%,transparent)]",
   },
   neutral: {
-    badge: "bg-[--accent-light] text-[--accent] border-violet-200",
-    card: "border-l-[--accent] bg-[--accent-light]",
+    badge:
+      "bg-[--primary-soft] text-[--accent] border-[color-mix(in_oklab,var(--accent)_30%,transparent)]",
+    card: "border-l-[--accent] bg-[--primary-soft]",
   },
 };
 
@@ -129,10 +133,10 @@ function CasefilePage() {
 
   if (runQ.isLoading) {
     return (
-      <div className="min-h-full bg-[--bg-page] p-6">
+      <div className="min-h-full bg-[--background] p-6">
         <div className="mx-auto max-w-6xl space-y-4">
-          <div className="h-40 animate-pulse rounded-2xl bg-[--bg-surface-2]" />
-          <div className="h-64 animate-pulse rounded-2xl bg-[--bg-surface-2]" />
+          <div className="h-40 animate-pulse rounded-2xl bg-[--surface-2]" />
+          <div className="h-64 animate-pulse rounded-2xl bg-[--surface-2]" />
         </div>
       </div>
     );
@@ -140,9 +144,9 @@ function CasefilePage() {
 
   if (!run) {
     return (
-      <div className="flex min-h-full items-center justify-center bg-[--bg-page] p-6">
-        <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-8 text-center">
-          <p className="text-sm font-semibold text-[--text-primary]">Casefile not found</p>
+      <div className="flex min-h-full items-center justify-center bg-[--background] p-6">
+        <div className="rounded-2xl border border-[--border] bg-[--surface] p-8 text-center">
+          <p className="text-sm font-semibold text-[--foreground]">Casefile not found</p>
           <Link
             to="/app/launchpad/history"
             className="mt-2 inline-block text-xs font-semibold text-[--accent] hover:underline"
@@ -157,7 +161,7 @@ function CasefilePage() {
   const topDims = Object.entries(scores).slice(0, 4);
 
   return (
-    <div className="min-h-full bg-[--bg-page] pb-12">
+    <div className="min-h-full bg-[--background] pb-12">
       {/* ── LAYER 1: Command header (dark) ── */}
       <div className="bg-[--bg-command] px-4 py-6 text-[--text-inverse] sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
@@ -244,16 +248,16 @@ function CasefilePage() {
             {/* Verdict card */}
             {(verdict || recommendation) && (
               <div
-                className={`rounded-2xl border border-[--border] border-l-4 bg-[--bg-surface] p-5 shadow-sm ${tone.card}`}
+                className={`rounded-2xl border border-[--border] border-l-4 bg-[--surface] p-5 shadow-sm ${tone.card}`}
               >
-                <p className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
                   Verdict
                 </p>
-                <p className="mt-1 text-[17px] font-semibold text-[--text-primary]">
+                <p className="mt-1 text-[17px] font-semibold text-[--foreground]">
                   {verdict || "Assessment complete"}
                 </p>
                 {recommendation && (
-                  <p className="mt-1.5 text-sm leading-relaxed text-[--text-secondary]">
+                  <p className="mt-1.5 text-sm leading-relaxed text-[--muted-foreground]">
                     {recommendation}
                   </p>
                 )}
@@ -262,14 +266,14 @@ function CasefilePage() {
 
             {/* Nova's Take */}
             {novaTake && (
-              <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--bg-surface] p-5 shadow-sm">
+              <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
                 <div className="mb-1 flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
                     Nova's Take
                   </span>
                 </div>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--text-primary]">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
                   {novaTake}
                 </p>
               </div>
@@ -277,10 +281,10 @@ function CasefilePage() {
 
             {/* Recommended move */}
             {nextActions.length > 0 && (
-              <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
+              <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
                 <div className="mb-2 flex items-center gap-1.5">
                   <Target className="h-4 w-4 text-[--accent]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
                     Recommended Move
                   </span>
                 </div>
@@ -288,11 +292,11 @@ function CasefilePage() {
                   {nextActions.slice(0, 3).map((a, i) => (
                     <div
                       key={i}
-                      className="rounded-xl border border-[--border] bg-[--bg-surface-2] p-3"
+                      className="rounded-xl border border-[--border] bg-[--surface-2] p-3"
                     >
-                      <p className="text-sm font-semibold text-[--text-primary]">{a.label}</p>
+                      <p className="text-sm font-semibold text-[--foreground]">{a.label}</p>
                       {a.reason && (
-                        <p className="mt-0.5 text-xs leading-relaxed text-[--text-muted]">
+                        <p className="mt-0.5 text-xs leading-relaxed text-[--text-faint]">
                           {a.reason}
                         </p>
                       )}
@@ -313,12 +317,10 @@ function CasefilePage() {
 
             {/* Create Deal from this analysis (Connection 2) */}
             {DEAL_TOOLS.has(run.tool_key) && currentOrgId && (
-              <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--bg-surface] p-4 shadow-sm">
+              <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--surface] p-4 shadow-sm">
                 <div>
-                  <p className="text-sm font-semibold text-[--text-primary]">
-                    Turn this into a deal
-                  </p>
-                  <p className="text-xs text-[--text-muted]">
+                  <p className="text-sm font-semibold text-[--foreground]">Turn this into a deal</p>
+                  <p className="text-xs text-[--text-faint]">
                     Start a pipeline opportunity from this analysis.
                   </p>
                 </div>
@@ -347,7 +349,7 @@ function CasefilePage() {
                       setDealState(error ? "idle" : "done");
                     }}
                     disabled={dealState === "creating"}
-                    className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--accent-hover] disabled:opacity-50"
+                    className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--primary-hover] disabled:opacity-50"
                   >
                     {dealState === "creating" ? "Creating…" : "Create Deal"}
                   </button>
@@ -356,8 +358,8 @@ function CasefilePage() {
             )}
 
             {/* Mentor bridge */}
-            <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--accent-light] p-4">
-              <p className="text-sm text-[--text-primary]">Want a second opinion on this?</p>
+            <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--primary-soft] p-4">
+              <p className="text-sm text-[--foreground]">Want a second opinion on this?</p>
               <Link
                 to="/app/launchpad/mentors"
                 className="text-sm font-semibold text-[--accent] hover:underline"
@@ -375,7 +377,7 @@ function CasefilePage() {
               >
                 <ul className="space-y-2">
                   {strengths.map((s, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-[--text-secondary]">
+                    <li key={i} className="flex gap-2 text-sm text-[--muted-foreground]">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[--success]" />
                       {s}
                     </li>
@@ -391,7 +393,7 @@ function CasefilePage() {
               >
                 <ul className="space-y-2">
                   {proof.map((s, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-[--text-secondary]">
+                    <li key={i} className="flex gap-2 text-sm text-[--muted-foreground]">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[--warning]" />
                       {s}
                     </li>
@@ -404,18 +406,18 @@ function CasefilePage() {
           {/* Right rail */}
           <div className="space-y-4">
             {Object.keys(scores).length > 0 && (
-              <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+              <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
                   Score Breakdown
                 </p>
                 <div className="space-y-2.5">
                   {Object.entries(scores).map(([k, v]) => (
                     <div key={k}>
                       <div className="mb-1 flex justify-between text-xs">
-                        <span className="text-[--text-secondary]">{k.replace(/_/g, " ")}</span>
-                        <span className="font-semibold text-[--text-primary]">{v}/10</span>
+                        <span className="text-[--muted-foreground]">{k.replace(/_/g, " ")}</span>
+                        <span className="font-semibold text-[--foreground]">{v}/10</span>
                       </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-[--bg-surface-2]">
+                      <div className="h-1.5 overflow-hidden rounded-full bg-[--surface-2]">
                         <div
                           className="h-full rounded-full bg-[--accent] transition-all duration-700"
                           style={{
@@ -429,8 +431,8 @@ function CasefilePage() {
               </div>
             )}
 
-            <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+            <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
                 Case Metadata
               </p>
               <dl className="space-y-2 text-xs">
@@ -441,18 +443,18 @@ function CasefilePage() {
                   ["Status", run.status],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-2">
-                    <dt className="text-[--text-muted]">{k}</dt>
-                    <dd className="truncate font-mono text-[--text-secondary]">{v}</dd>
+                    <dt className="text-[--text-faint]">{k}</dt>
+                    <dd className="truncate font-mono text-[--muted-foreground]">{v}</dd>
                   </div>
                 ))}
               </dl>
             </div>
 
-            <div className="rounded-2xl border border-[--border] bg-[--bg-surface] p-5 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
+            <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
                 Saved to Memory
               </p>
-              <div className="flex items-center gap-2 text-sm text-[--text-secondary]">
+              <div className="flex items-center gap-2 text-sm text-[--muted-foreground]">
                 <span className="h-2 w-2 rounded-full bg-[--success]" />
                 This output is indexed in your Nova memory.
               </div>
@@ -477,18 +479,18 @@ function Drawer({
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--bg-surface] shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--surface] shadow-sm">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-5 py-3.5 text-left hover:bg-[--bg-surface-2]"
+        className="flex w-full items-center gap-2 px-5 py-3.5 text-left hover:bg-[--surface-2]"
       >
         {icon}
-        <span className="text-sm font-semibold text-[--text-primary]">{title}</span>
-        <span className="rounded-full bg-[--bg-surface-2] px-2 py-0.5 text-xs font-semibold text-[--text-muted]">
+        <span className="text-sm font-semibold text-[--foreground]">{title}</span>
+        <span className="rounded-full bg-[--surface-2] px-2 py-0.5 text-xs font-semibold text-[--text-faint]">
           {count}
         </span>
         <ChevronDown
-          className={`ml-auto h-4 w-4 text-[--text-muted] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`ml-auto h-4 w-4 text-[--text-faint] transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && <div className="border-t border-[--border] px-5 py-4">{children}</div>}

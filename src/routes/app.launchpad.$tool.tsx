@@ -1743,6 +1743,9 @@ function ToolPage() {
                 const customer = block(businessCtxQ.data.customer);
                 const stageB = block(businessCtxQ.data.stage);
                 const chips = [
+                  typeof identity.industry === "string" && identity.industry
+                    ? String(identity.industry)
+                    : null,
                   typeof identity.description === "string" && identity.description
                     ? String(identity.description).slice(0, 60) +
                       (String(identity.description).length > 60 ? "…" : "")
