@@ -1,7 +1,7 @@
 // Nova Home — the operating system overview. Unmistakably Nova:
 // operational, calm, command-center. Answers on one screen:
-//   1. Is the business healthy?      → health hero + KPI blocks
-//   2. What needs me right now?      → urgent attention tray
+//   1. Do I need to act right now?   → urgent attention tray, first
+//   2. Is the business healthy?      → health hero + KPI blocks
 //   3. What's moving?                → pipeline snapshot + recent activity
 //   4. What runs by itself?         → automation status
 //   5. What should I do next?        → AI recommendations (closed loop)
@@ -138,6 +138,44 @@ function NovaHomePage() {
         </span>
       </div>
 
+      {/* ── Urgent attention tray — the first thing you see: do I need to act? ── */}
+      <div>
+        <SectionLabel>Needs your attention</SectionLabel>
+        {urgentCount === 0 ? (
+          <div
+            className="flex items-center gap-2.5 rounded-[6px] border px-5 py-4 text-[13px]"
+            style={{
+              borderColor: "var(--border)",
+              background: "var(--surface)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            <CheckCircle2 className="h-4 w-4" style={{ color: "var(--success)" }} />
+            Nothing urgent. Nova is watching the pipeline and will flag anything that stalls.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {stale.length > 0 && (
+              <UrgentRow
+                title={`${stale.length} lead${stale.length === 1 ? "" : "s"} waiting on a reply`}
+                why="They've been quiet 3+ days. Deals die in silence — send the follow-up."
+                to="/app/contacts"
+                cta="Review and follow up"
+              />
+            )}
+            {graph.blockers.map((b) => (
+              <UrgentRow
+                key={b.id}
+                title={b.title}
+                why={b.why}
+                to={b.resolveTo}
+                cta={`${b.resolveLabel} · ${b.estimatedMinutes} min`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* ── KPI blocks ── */}
       <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
         <KpiBlock
@@ -159,44 +197,6 @@ function NovaHomePage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr]">
         <div className="space-y-6 min-w-0">
-          {/* ── Urgent attention tray ── */}
-          <div>
-            <SectionLabel>Needs your attention</SectionLabel>
-            {urgentCount === 0 ? (
-              <div
-                className="flex items-center gap-2.5 rounded-[6px] border px-5 py-4 text-[13px]"
-                style={{
-                  borderColor: "var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                <CheckCircle2 className="h-4 w-4" style={{ color: "var(--success)" }} />
-                Nothing urgent. Nova is watching the pipeline and will flag anything that stalls.
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {stale.length > 0 && (
-                  <UrgentRow
-                    title={`${stale.length} lead${stale.length === 1 ? "" : "s"} waiting on a reply`}
-                    why="They've been quiet 3+ days. Deals die in silence — send the follow-up."
-                    to="/app/contacts"
-                    cta="Review and follow up"
-                  />
-                )}
-                {graph.blockers.map((b) => (
-                  <UrgentRow
-                    key={b.id}
-                    title={b.title}
-                    why={b.why}
-                    to={b.resolveTo}
-                    cta={`${b.resolveLabel} · ${b.estimatedMinutes} min`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* ── Pipeline snapshot ── */}
           <div>
             <SectionLabel>Pipeline</SectionLabel>

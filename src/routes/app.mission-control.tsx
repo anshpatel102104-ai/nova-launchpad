@@ -1,23 +1,31 @@
-// Launchpad Home — casefile-driven mission control. Unmistakably Launchpad:
-// staged, guided, evidence-based. One screen that answers, top to bottom:
-//   1. Where am I?            → stage bar (Idea → Validate → Offer → Launch → Revenue)
-//   2. What do I do now?      → one big guided step (NextStepHero)
-//   3. What comes after?      → locked next steps + one thing to fix
-//   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
-//   5. How am I doing?        → charts and a leads table with next moves
+// Launchpad Home — the simplest possible landing. You open the app and
+// there is exactly one thing to do, front and center:
+//   1. What do I do now?      → one big guided step (NextStepHero), first
+//   2. Anything in my way?    → one blocker card, only if one exists
+//   3. Where am I?            → slim stage bar (Idea → … → Revenue)
+//   4. Everything else        → behind one "See the full picture" reveal
+//                               (what's next, casefile, numbers)
 // When the build is proven, the Nova handoff hero takes over the top:
 // "You built the business. Now run it."
 
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SectionTabs } from "@/components/app/SectionTabs";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
-import { ArrowRight, AlertTriangle, Check, Clock, GripVertical, Lock } from "lucide-react";
+import {
+  ArrowRight,
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  Clock,
+  GripVertical,
+  Lock,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
   component: HomePage,
@@ -33,13 +41,10 @@ function HomePage() {
 
   const name = profile?.full_name?.split(" ")[0] || "Founder";
   const blocker = graph.blockers[0];
-  const upNext = graph.recommendations.filter((r) => r.id !== "continue-mission").slice(0, 2);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <SectionTabs section="path" />
-
-      {/* ── 1 · Header: where am I? ── */}
+      {/* ── Header: one line, one promise ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1
@@ -49,10 +54,7 @@ function HomePage() {
             {greeting()}, {name}
           </h1>
           <p className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-            {graph.businessName} &nbsp;·&nbsp;{" "}
-            {blocker
-              ? "You have one thing to do, and one thing to fix."
-              : "You have one thing to do today. Nova will guide you."}
+            {graph.businessName} &nbsp;·&nbsp; Do the one step below. Nova handles the rest.
           </p>
         </div>
         <span
@@ -78,7 +80,50 @@ function HomePage() {
       {/* ── Handoff hero — the build is proven, Nova takes over ── */}
       {progress.readyForNova && <NovaHandoffCard graph={graph} />}
 
-      {/* ── Stage bar: Idea → Validate → Offer → Launch → Revenue ── */}
+      {/* ── 1 · Do this now — first thing on the screen ── */}
+      <div>
+        <SectionLabel>Do this now</SectionLabel>
+        {user?.id && <NextStepHero userId={user.id} />}
+      </div>
+
+      {/* ── 2 · One thing to fix — only when something is in the way ── */}
+      {blocker && (
+        <div
+          className="rounded-[6px] border px-5 py-4"
+          style={{
+            background: "color-mix(in oklab, var(--warning) 9%, var(--surface))",
+            borderColor: "color-mix(in oklab, var(--warning) 30%, transparent)",
+            borderLeft: "3px solid var(--warning)",
+          }}
+        >
+          <div
+            className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold"
+            style={{ color: "var(--warning)" }}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            One thing to fix
+          </div>
+          <div className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
+            {blocker.title}
+          </div>
+          <div
+            className="mt-0.5 text-[12.5px] leading-relaxed"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            {blocker.why}
+          </div>
+          <Link
+            to={blocker.resolveTo}
+            className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
+            style={{ color: "var(--warning)" }}
+          >
+            {blocker.resolveLabel} · takes {blocker.estimatedMinutes} min
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      )}
+
+      {/* ── 3 · Where am I? Stage bar: Idea → … → Revenue ── */}
       <div
         className="rounded-[6px] border px-6 pb-5 pt-4"
         style={{ borderColor: "var(--border)", background: "var(--surface)" }}
@@ -147,123 +192,132 @@ function HomePage() {
         </div>
       </div>
 
-      {/* ── 2 · Do this now ── */}
-      <div>
-        <SectionLabel>Do this now</SectionLabel>
-        {user?.id && <NextStepHero userId={user.id} />}
-      </div>
+      {/* ── 4 · Everything else — one click away, never in the way ── */}
+      <FullPicture graph={graph} progress={progress} />
+    </div>
+  );
+}
 
-      {/* ── 3 · After this step ── */}
-      <div>
-        <SectionLabel>After this step</SectionLabel>
-        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-[1.4fr_1fr]">
-          <div
-            className="rounded-[6px] border px-5 py-4"
-            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-          >
-            <div
-              className="mb-2 text-[12.5px] font-bold"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Nova unlocks these next — don't worry about them yet
-            </div>
-            {upNext.length === 0 ? (
-              <div className="py-2 text-[12.5px]" style={{ color: "var(--text-faint)" }}>
-                Finish the step above and Nova will line up what's next.
-              </div>
-            ) : (
-              upNext.map((r, i) => (
-                <div
-                  key={r.id}
-                  className="flex items-center gap-3 py-2.5 opacity-80"
-                  style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
-                >
-                  <span
-                    className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[4px] border"
-                    style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
-                  >
-                    <Lock className="h-3 w-3" style={{ color: "var(--text-faint)" }} />
-                  </span>
-                  <div className="min-w-0">
-                    <div
-                      className="text-[13px] font-semibold"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {r.title}
-                    </div>
-                    <div className="text-[12px]" style={{ color: "var(--text-faint)" }}>
-                      {r.impact}
-                    </div>
-                  </div>
-                  <span
-                    className="ml-auto inline-flex shrink-0 items-center gap-1 text-[11.5px] font-semibold"
-                    style={{ color: "var(--text-faint)" }}
-                  >
-                    <Clock className="h-3 w-3" />
-                    {r.estimatedMinutes}m
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+/* ─── The full picture — collapsed by default so the landing stays simple ── */
 
-          {blocker ? (
+const FULL_PICTURE_KEY = "lp-home-full-picture";
+
+function FullPicture({
+  graph,
+  progress,
+}: {
+  graph: ReturnType<typeof useBusinessGraph>;
+  progress: ReturnType<typeof deriveLaunchpadProgress>;
+}) {
+  const [open, setOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem(FULL_PICTURE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggle = () => {
+    setOpen((o) => {
+      const next = !o;
+      try {
+        localStorage.setItem(FULL_PICTURE_KEY, next ? "1" : "0");
+      } catch {
+        /* */
+      }
+      return next;
+    });
+  };
+
+  const upNext = graph.recommendations.filter((r) => r.id !== "continue-mission").slice(0, 2);
+
+  return (
+    <div>
+      <button
+        onClick={toggle}
+        className="flex w-full items-center justify-between gap-3 rounded-[6px] border px-5 py-3.5 text-left transition-colors hover:bg-surface-2"
+        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+      >
+        <span>
+          <span className="block text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
+            {open ? "Hide the full picture" : "See the full picture"}
+          </span>
+          <span className="block text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+            What unlocks next · your casefile · your numbers
+          </span>
+        </span>
+        <ChevronDown
+          className={cn("h-4 w-4 shrink-0 transition-transform duration-150", open && "rotate-180")}
+          style={{ color: "var(--muted-foreground)" }}
+        />
+      </button>
+
+      {open && (
+        <div className="mt-5 space-y-6">
+          {/* After this step */}
+          <div>
+            <SectionLabel>After this step</SectionLabel>
             <div
               className="rounded-[6px] border px-5 py-4"
-              style={{
-                background: "color-mix(in oklab, var(--warning) 9%, var(--surface))",
-                borderColor: "color-mix(in oklab, var(--warning) 30%, transparent)",
-                borderLeft: "3px solid var(--warning)",
-              }}
+              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               <div
-                className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold"
-                style={{ color: "var(--warning)" }}
-              >
-                <AlertTriangle className="h-3.5 w-3.5" />
-                One thing to fix
-              </div>
-              <div className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-                {blocker.title}
-              </div>
-              <div
-                className="mt-0.5 text-[12.5px] leading-relaxed"
+                className="mb-2 text-[12.5px] font-bold"
                 style={{ color: "var(--muted-foreground)" }}
               >
-                {blocker.why}
+                Nova unlocks these next — don't worry about them yet
               </div>
-              <Link
-                to={blocker.resolveTo}
-                className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
-                style={{ color: "var(--warning)" }}
-              >
-                {blocker.resolveLabel} · takes {blocker.estimatedMinutes} min
-                <ArrowRight className="h-3 w-3" />
-              </Link>
+              {upNext.length === 0 ? (
+                <div className="py-2 text-[12.5px]" style={{ color: "var(--text-faint)" }}>
+                  Finish the step above and Nova will line up what's next.
+                </div>
+              ) : (
+                upNext.map((r, i) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 py-2.5 opacity-80"
+                    style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
+                  >
+                    <span
+                      className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[4px] border"
+                      style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
+                    >
+                      <Lock className="h-3 w-3" style={{ color: "var(--text-faint)" }} />
+                    </span>
+                    <div className="min-w-0">
+                      <div
+                        className="text-[13px] font-semibold"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {r.title}
+                      </div>
+                      <div className="text-[12px]" style={{ color: "var(--text-faint)" }}>
+                        {r.impact}
+                      </div>
+                    </div>
+                    <span
+                      className="ml-auto inline-flex shrink-0 items-center gap-1 text-[11.5px] font-semibold"
+                      style={{ color: "var(--text-faint)" }}
+                    >
+                      <Clock className="h-3 w-3" />
+                      {r.estimatedMinutes}m
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
-          ) : (
-            <div
-              className="flex items-center justify-center rounded-[6px] border px-5 py-4 text-center text-[12.5px]"
-              style={{
-                borderColor: "var(--border)",
-                background: "var(--surface)",
-                color: "var(--text-faint)",
-              }}
-            >
-              Nothing is in your way right now. Keep going.
-            </div>
-          )}
+          </div>
+
+          {/* Casefile: verdict, proof, needs-proof, memory */}
+          <div>
+            <SectionLabel>Your casefile</SectionLabel>
+            <CasefileSummary graph={graph} progress={progress} />
+          </div>
+
+          {/* Your numbers (drag to rearrange) */}
+          <DashboardCards leads={graph.leads} />
         </div>
-      </div>
-
-      {/* ── 4 · Casefile: verdict, proof, needs-proof, memory ── */}
-      <div>
-        <SectionLabel>Your casefile</SectionLabel>
-        <CasefileSummary graph={graph} progress={progress} />
-      </div>
-
-      {/* ── 5 · Your numbers (drag to rearrange) ── */}
-      <DashboardCards leads={graph.leads} />
+      )}
     </div>
   );
 }

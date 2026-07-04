@@ -4,10 +4,12 @@
 //   NovaSidebar      — modular, operational.   "I am running my business."
 //
 // AppSidebar only chooses which product shell to render (workspaces.mode).
-// The two navs share chrome (header, footer, collapse) but nothing about
-// their information architecture: Launchpad is a mission progression,
-// Nova is a command center. Crossing between them is an intentional
-// handoff at the bottom of each rail, not a tab toggle.
+// The two navs share chrome (header, switcher, footer, collapse) but nothing
+// about their information architecture: Launchpad is a mission progression,
+// Nova is a command center. The ProductSwitcher at the top of every rail is
+// the dual-screen toggle — flip products anytime, each keeps its own layout.
+// The Launchpad rail still celebrates the milestone with the "Ready to
+// operate" handoff card once the build is proven.
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -53,6 +55,7 @@ import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
 import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import { useBusinessGraph } from "@/hooks/use-business-graph";
+import { ProductSwitcher } from "@/components/app/ProductSwitcher";
 import {
   deriveLaunchpadProgress,
   LAUNCHPAD_SUPPORT_NAV,
@@ -200,9 +203,10 @@ function LaunchpadSidebar() {
             storageKey="lp-casefiles-open"
           />
 
-          {/* Handoff — the only door into Nova from here */}
-          <div className={cn("mt-auto px-2 pt-4", collapsed && "px-1.5")}>
-            {progress.readyForNova ? (
+          {/* Handoff milestone — celebrated when the build is proven.
+              (Everyday switching lives in the ProductSwitcher up top.) */}
+          {progress.readyForNova && (
+            <div className={cn("mt-auto px-2 pt-4", collapsed && "px-1.5")}>
               <button
                 onClick={openNova}
                 title="Open Nova"
@@ -236,28 +240,8 @@ function LaunchpadSidebar() {
                   </>
                 )}
               </button>
-            ) : (
-              <button
-                onClick={openNova}
-                title="Nova — runs your business"
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-colors hover:bg-surface-2",
-                  collapsed && "justify-center px-0 w-8 mx-auto",
-                )}
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                <Gauge className="h-4 w-4 shrink-0 opacity-70" />
-                {!collapsed && (
-                  <span className="flex-1">
-                    <span className="block text-[12.5px] font-medium">Nova</span>
-                    <span className="block text-[10.5px]" style={{ color: "var(--text-faint)" }}>
-                      Runs your business — unlocks at Launch
-                    </span>
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
     </SidebarChrome>
@@ -268,13 +252,6 @@ function LaunchpadSidebar() {
 
 function NovaSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { setMode } = useWorkspaceMode();
-  const navigate = useNavigate();
-
-  const openLaunchpad = () => {
-    setMode("create");
-    navigate({ to: PRODUCT_HOME.launchpad });
-  };
 
   return (
     <SidebarChrome brand="Nova" tagline="Run your business" brandIcon={Gauge}>
@@ -304,29 +281,6 @@ function NovaSidebar() {
             collapsed={collapsed}
             storageKey="nova-operations-open"
           />
-
-          {/* Quiet door back to the creation engine */}
-          <div className={cn("mt-auto px-2 pt-4", collapsed && "px-1.5")}>
-            <button
-              onClick={openLaunchpad}
-              title="Launchpad — build the next thing"
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-colors hover:bg-surface-2",
-                collapsed && "justify-center px-0 w-8 mx-auto",
-              )}
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              <Rocket className="h-4 w-4 shrink-0 opacity-70" />
-              {!collapsed && (
-                <span className="flex-1">
-                  <span className="block text-[12.5px] font-medium">Launchpad</span>
-                  <span className="block text-[10.5px]" style={{ color: "var(--text-faint)" }}>
-                    Build or validate the next thing
-                  </span>
-                </span>
-              )}
-            </button>
-          </div>
         </>
       )}
     </SidebarChrome>
@@ -589,6 +543,9 @@ function SidebarChrome({
           </div>
         )}
       </div>
+
+      {/* ── Dual-screen toggle: Launchpad ⇄ Nova ── */}
+      <ProductSwitcher collapsed={collapsed} />
 
       {/* ── Product nav ── */}
       <nav className="flex flex-1 flex-col overflow-y-auto py-2">{children({ collapsed })}</nav>

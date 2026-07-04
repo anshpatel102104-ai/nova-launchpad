@@ -1,4 +1,4 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef } from "react";
 import {
   LogOut,
@@ -22,6 +22,7 @@ import { useGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
 import { ThemePaletteButton } from "./ThemePaletteButton";
+import { ProductSwitcherCompact } from "./ProductSwitcher";
 
 const PAGE_TITLES: Record<string, string> = {
   "/app/dashboard": "Home",
@@ -149,15 +150,10 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
         className="sticky top-0 z-30 flex h-[52px] items-center gap-4 border-b px-4 shrink-0"
         style={{ background: "var(--background)", borderColor: "var(--border)" }}
       >
-        {/* ── Mobile logo ── */}
-        <Link to="/app/mission-control" className="flex items-center gap-2 lg:hidden shrink-0">
-          <div
-            className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold"
-            style={{ background: "linear-gradient(135deg, var(--primary), var(--orbit-accent))" }}
-          >
-            LN
-          </div>
-        </Link>
+        {/* ── Mobile product switch (desktop has it in the sidebar rail) ── */}
+        <div className="lg:hidden shrink-0">
+          <ProductSwitcherCompact />
+        </div>
 
         {/* ── Desktop breadcrumb ── */}
         <div className="hidden lg:flex items-center gap-1.5 shrink-0 min-w-0">

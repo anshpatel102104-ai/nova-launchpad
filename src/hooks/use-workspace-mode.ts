@@ -7,7 +7,7 @@
 // whole shell re-skins instantly. Guests have no row, so their choice lives
 // in sessionStorage and never hits the database.
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -28,12 +28,27 @@ function readGuestMode(): WorkspaceMode {
   }
 }
 
+// Guest mode is a shared module-level store, not per-component state:
+// the ProductSwitcher, the shell skin, the sidebar chooser, and the mobile
+// bar all read it, and every one of them must re-render on a switch.
+let guestModeState: WorkspaceMode = readGuestMode();
+const guestModeListeners = new Set<() => void>();
+
 function writeGuestMode(mode: WorkspaceMode) {
+  guestModeState = mode;
   try {
     sessionStorage.setItem(GUEST_VIEW_KEY, mode);
   } catch {
     /* ignore */
   }
+  guestModeListeners.forEach((l) => l());
+}
+
+function subscribeGuestMode(listener: () => void) {
+  guestModeListeners.add(listener);
+  return () => {
+    guestModeListeners.delete(listener);
+  };
 }
 
 export function useWorkspaceMode() {
@@ -47,7 +62,11 @@ export function useWorkspaceMode() {
     enabled: !!userId && !isGuest,
   });
 
-  const [guestMode, setGuestMode] = useState<WorkspaceMode>(readGuestMode);
+  const guestMode = useSyncExternalStore(
+    subscribeGuestMode,
+    () => guestModeState,
+    () => "create" as WorkspaceMode,
+  );
 
   const mode: WorkspaceMode = isGuest
     ? guestMode
@@ -70,7 +89,6 @@ export function useWorkspaceMode() {
     },
     onMutate: async (next: WorkspaceMode) => {
       if (isGuest) {
-        setGuestMode(next);
         return {};
       }
       await qc.cancelQueries({ queryKey: statusKey });
