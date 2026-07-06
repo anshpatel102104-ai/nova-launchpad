@@ -99,7 +99,8 @@ function InvitePage() {
       });
       if (error) throw error;
       toast.success("Welcome to Nova OPS! Your account is ready.");
-      navigate({ to: "/app/dashboard" });
+      // /app resolves the mode-aware product home (Launchpad vs Nova).
+      navigate({ to: "/app" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to accept invite");
     } finally {

@@ -53,14 +53,12 @@ import { Route as AppBuilderRouteImport } from './routes/app.builder'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
-import { Route as AppApprovalsRouteImport } from './routes/app.approvals'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppAcademyRouteImport } from './routes/app.academy'
 import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
 import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
-import { Route as AppBlogIndexRouteImport } from './routes/app.blog.index'
 import { Route as AppScaleTeamRouteImport } from './routes/app.scale.team'
 import { Route as AppScaleReportsRouteImport } from './routes/app.scale.reports'
 import { Route as AppScalePipelineRouteImport } from './routes/app.scale.pipeline'
@@ -86,7 +84,6 @@ import { Route as AppCrmCompaniesRouteImport } from './routes/app.crm.companies'
 import { Route as AppCrmCampaignsRouteImport } from './routes/app.crm.campaigns'
 import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
 import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
-import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
 import { Route as AppLaunchpadOutputsIdRouteImport } from './routes/app.launchpad.outputs.$id'
@@ -311,11 +308,6 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
-const AppApprovalsRoute = AppApprovalsRouteImport.update({
-  id: '/approvals',
-  path: '/approvals',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAiDashboardRoute = AppAiDashboardRouteImport.update({
   id: '/ai-dashboard',
   path: '/ai-dashboard',
@@ -344,11 +336,6 @@ const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
 const AppLaunchpadIndexRoute = AppLaunchpadIndexRouteImport.update({
   id: '/launchpad/',
   path: '/launchpad/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBlogIndexRoute = AppBlogIndexRouteImport.update({
-  id: '/blog/',
-  path: '/blog/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScaleTeamRoute = AppScaleTeamRouteImport.update({
@@ -477,11 +464,6 @@ const AppCrmAutomationsRoute = AppCrmAutomationsRouteImport.update({
   path: '/crm/automations',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBlogIdRoute = AppBlogIdRouteImport.update({
-  id: '/blog/$id',
-  path: '/blog/$id',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
   id: '/return',
   path: '/return',
@@ -510,7 +492,6 @@ export interface FileRoutesByFullPath {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -550,7 +531,6 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
@@ -576,7 +556,6 @@ export interface FileRoutesByFullPath {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
@@ -592,7 +571,6 @@ export interface FileRoutesByTo {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -632,7 +610,6 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
@@ -658,7 +635,6 @@ export interface FileRoutesByTo {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog': typeof AppBlogIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
@@ -676,7 +652,6 @@ export interface FileRoutesById {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -716,7 +691,6 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
@@ -742,7 +716,6 @@ export interface FileRoutesById {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
@@ -761,7 +734,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -801,7 +773,6 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
     | '/app/crm/automations'
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
@@ -827,7 +798,6 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
     | '/app/launchpad/outputs/$id'
@@ -843,7 +813,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -883,7 +852,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
     | '/app/crm/automations'
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
@@ -909,7 +877,6 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog'
     | '/app/launchpad'
     | '/app/nova'
     | '/app/launchpad/outputs/$id'
@@ -926,7 +893,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -966,7 +932,6 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
     | '/app/crm/automations'
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
@@ -992,7 +957,6 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
     | '/app/launchpad/outputs/$id'
@@ -1325,13 +1289,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/approvals': {
-      id: '/app/approvals'
-      path: '/approvals'
-      fullPath: '/app/approvals'
-      preLoaderRoute: typeof AppApprovalsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/ai-dashboard': {
       id: '/app/ai-dashboard'
       path: '/ai-dashboard'
@@ -1372,13 +1329,6 @@ declare module '@tanstack/react-router' {
       path: '/launchpad'
       fullPath: '/app/launchpad/'
       preLoaderRoute: typeof AppLaunchpadIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/blog/': {
-      id: '/app/blog/'
-      path: '/blog'
-      fullPath: '/app/blog/'
-      preLoaderRoute: typeof AppBlogIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/scale/team': {
@@ -1556,13 +1506,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmAutomationsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/blog/$id': {
-      id: '/app/blog/$id'
-      path: '/blog/$id'
-      fullPath: '/app/blog/$id'
-      preLoaderRoute: typeof AppBlogIdRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/billing/return': {
       id: '/app/billing/return'
       path: '/return'
@@ -1648,7 +1591,6 @@ interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppAdminRoute: typeof AppAdminRoute
   AppAiDashboardRoute: typeof AppAiDashboardRoute
-  AppApprovalsRoute: typeof AppApprovalsRoute
   AppAssetsRoute: typeof AppAssetsRoute
   AppAutomationsRoute: typeof AppAutomationsRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
@@ -1679,7 +1621,6 @@ interface AppRouteChildren {
   AppTutorialsRoute: typeof AppTutorialsRoute
   AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppBlogIdRoute: typeof AppBlogIdRoute
   AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
   AppCrmCalendarRoute: typeof AppCrmCalendarRoute
   AppCrmCampaignsRoute: typeof AppCrmCampaignsRoute
@@ -1699,7 +1640,6 @@ interface AppRouteChildren {
   AppNovaReportsRoute: typeof AppNovaReportsRoute
   AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
   AppOutcomesCategoryRoute: typeof AppOutcomesCategoryRoute
-  AppBlogIndexRoute: typeof AppBlogIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
   AppLaunchpadOutputsIdRoute: typeof AppLaunchpadOutputsIdRoute
@@ -1710,7 +1650,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppAdminRoute: AppAdminRoute,
   AppAiDashboardRoute: AppAiDashboardRoute,
-  AppApprovalsRoute: AppApprovalsRoute,
   AppAssetsRoute: AppAssetsRoute,
   AppAutomationsRoute: AppAutomationsRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
@@ -1741,7 +1680,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppTutorialsRoute: AppTutorialsRoute,
   AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
-  AppBlogIdRoute: AppBlogIdRoute,
   AppCrmAutomationsRoute: AppCrmAutomationsRoute,
   AppCrmCalendarRoute: AppCrmCalendarRoute,
   AppCrmCampaignsRoute: AppCrmCampaignsRoute,
@@ -1761,7 +1699,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppNovaReportsRoute: AppNovaReportsRoute,
   AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
   AppOutcomesCategoryRoute: AppOutcomesCategoryRoute,
-  AppBlogIndexRoute: AppBlogIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,
   AppLaunchpadOutputsIdRoute: AppLaunchpadOutputsIdRoute,

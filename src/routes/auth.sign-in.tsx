@@ -22,7 +22,8 @@ function SignIn() {
       toast.error(error.message);
       return;
     }
-    navigate({ to: "/app/mission-control" });
+    // /app resolves the mode-aware product home (Launchpad vs Nova).
+    navigate({ to: "/app" });
   };
 
   return (

@@ -194,10 +194,7 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
     label: "Automations",
     to: "/app/automations",
     match: (p) =>
-      p === "/app/automations" ||
-      p === "/app/builder" ||
-      p === "/app/workflow-templates" ||
-      p === "/app/approvals",
+      p === "/app/automations" || p === "/app/builder" || p === "/app/workflow-templates",
   },
   {
     id: "clients",
