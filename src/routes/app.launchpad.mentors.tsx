@@ -18,7 +18,11 @@ import { invokeEdgeStream } from "@/lib/invokeEdge";
 
 export const Route = createFileRoute("/app/launchpad/mentors")({ component: MentorsPage });
 
-type AgentId = "strategist" | "operator" | "growth-hacker" | "builder" | "closer";
+// The six curriculum mentors — the same roster that owns the founder's
+// lessons (src/lib/mentors.ts). agent_id matches mentor-chat personas.
+import { MENTOR_ROSTER } from "@/lib/mentors";
+
+type AgentId = string;
 
 type Mentor = {
   id: AgentId;
@@ -29,73 +33,14 @@ type Mentor = {
   quickPrompts: string[];
 };
 
-const MENTORS: Mentor[] = [
-  {
-    id: "strategist",
-    name: "The Strategist",
-    title: "Business Strategy Advisor",
-    persona:
-      "Pressure-tests your positioning, market choice, and sequencing. Thinks in leverage, moats, and second-order effects.",
-    stages: ["Clarify", "Validate"],
-    quickPrompts: [
-      "Is my positioning sharp enough to win?",
-      "What's the riskiest assumption in my strategy?",
-      "Where should I focus for the next 90 days?",
-    ],
-  },
-  {
-    id: "operator",
-    name: "The Operator",
-    title: "Operations & Execution Advisor",
-    persona:
-      "Turns strategy into systems, SOPs, and weekly execution. Obsesses over throughput, bottlenecks, and what ships this week.",
-    stages: ["Build", "Operate"],
-    quickPrompts: [
-      "What should I systemize first?",
-      "Where is my biggest execution bottleneck?",
-      "Design my weekly operating rhythm.",
-    ],
-  },
-  {
-    id: "growth-hacker",
-    name: "The Growth Hacker",
-    title: "Growth & Acquisition Advisor",
-    persona:
-      "Lives in funnels, channels, and CAC/LTV. Designs testable acquisition experiments and finds the channel that compounds.",
-    stages: ["Launch", "Scale"],
-    quickPrompts: [
-      "Which channel should I test first?",
-      "Design a growth experiment for this week.",
-      "How do I lower my CAC?",
-    ],
-  },
-  {
-    id: "builder",
-    name: "The Builder",
-    title: "Product & Technical Advisor",
-    persona:
-      "Scopes MVPs, cuts features, and chooses boring technology that ships. Translates vision into the smallest buildable slice.",
-    stages: ["Build"],
-    quickPrompts: [
-      "What's the smallest MVP that proves my next assumption?",
-      "What should I cut from scope?",
-      "How do I ship this faster?",
-    ],
-  },
-  {
-    id: "closer",
-    name: "The Closer",
-    title: "Sales & Revenue Advisor",
-    persona:
-      "Designs pipelines, objection-handling, and follow-up cadences that convert. Thinks in deals, discovery, and momentum.",
-    stages: ["Launch", "Operate"],
-    quickPrompts: [
-      "How do I structure my sales pipeline?",
-      "Write my objection-handling playbook.",
-      "What's my follow-up cadence?",
-    ],
-  },
-];
+const MENTORS: Mentor[] = MENTOR_ROSTER.map((m) => ({
+  id: m.id,
+  name: m.name,
+  title: `${m.domain} Mentor`,
+  persona: m.voice,
+  stages: m.stages,
+  quickPrompts: m.prompts,
+}));
 
 const AVATAR_COLORS = [
   "bg-violet-500",
