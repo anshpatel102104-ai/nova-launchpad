@@ -176,17 +176,17 @@ function NovaPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-100px)] min-h-[520px] flex-col bg-[--bg-page]">
+    <div className="flex h-[calc(100vh-100px)] min-h-[520px] flex-col bg-[--background]">
       {/* Business Snapshot Bar (read-only) */}
-      <div className="shrink-0 border-b border-[--border] bg-[--bg-surface] px-5 py-3">
+      <div className="shrink-0 border-b border-[--border] bg-[--surface] px-5 py-3">
         <div className="mx-auto flex max-w-3xl items-center gap-2">
-          <span className="text-sm font-semibold text-[--text-primary]">
+          <span className="text-sm font-semibold text-[--foreground]">
             {org.data?.name || "Your business"}
           </span>
-          <span className="rounded-full border border-violet-200 bg-[--accent-light] px-2.5 py-0.5 text-xs font-semibold text-[--accent]">
+          <span className="rounded-full border border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[--primary-soft] px-2.5 py-0.5 text-xs font-semibold text-[--accent]">
             {stageKey}
           </span>
-          {belief && <span className="truncate text-xs text-[--text-muted]">· {belief}</span>}
+          {belief && <span className="truncate text-xs text-[--text-faint]">· {belief}</span>}
         </div>
       </div>
 
@@ -195,13 +195,16 @@ function NovaPage() {
         <div className="mx-auto max-w-3xl space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[--bg-command] text-white">
+              <div
+                className="mb-3 flex h-12 w-12 items-center justify-center rounded-full text-white"
+                style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+              >
                 <Sparkles className="h-5 w-5" />
               </div>
-              <p className="text-sm font-semibold text-[--text-primary]">
+              <p className="text-sm font-semibold text-[--foreground]">
                 Tell Nova what you want to achieve
               </p>
-              <p className="mt-1 max-w-sm text-xs text-[--text-muted]">
+              <p className="mt-1 max-w-sm text-xs text-[--text-faint]">
                 Nova knows your business context and your stage. Ask for a plan, a critique, or the
                 next move.
               </p>
@@ -211,7 +214,7 @@ function NovaPage() {
               m.role === "assistant" ? (
                 <div
                   key={m.id}
-                  className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--bg-surface] p-4 shadow-sm"
+                  className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-4 shadow-sm"
                 >
                   <div className="mb-1 flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
@@ -219,7 +222,7 @@ function NovaPage() {
                       Nova
                     </span>
                   </div>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--text-primary]">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
                     {m.content || (m.pending ? <TypingDots /> : null)}
                   </p>
                 </div>
@@ -236,7 +239,7 @@ function NovaPage() {
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-[--border] bg-[--bg-surface] px-4 py-3">
+      <div className="shrink-0 border-t border-[--border] bg-[--surface] px-4 py-3">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-end gap-2">
             <textarea
@@ -245,12 +248,12 @@ function NovaPage() {
               onKeyDown={onKeyDown}
               rows={1}
               placeholder="Tell Nova what you want to achieve…"
-              className="max-h-40 flex-1 resize-none rounded-xl border border-[--border] bg-[--bg-surface] px-4 py-3 text-sm text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--border-focus] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
+              className="max-h-40 flex-1 resize-none rounded-xl border border-[--border] bg-[--surface] px-4 py-3 text-sm text-[--foreground] placeholder:text-[--text-faint] focus:border-[--focus-ring] focus:outline-none focus:ring-2 focus:ring-[--accent]/25"
             />
             <button
               onClick={() => void send(input)}
               disabled={!input.trim() || streaming}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[--accent] text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover] disabled:opacity-50"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[--accent] text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--primary-hover] disabled:opacity-50"
               aria-label="Send"
             >
               <Send className="h-4 w-4" />
@@ -262,7 +265,7 @@ function NovaPage() {
                 <button
                   key={p}
                   onClick={() => void send(p)}
-                  className="rounded-full border border-[--border] px-3 py-1.5 text-xs font-medium text-[--text-secondary] transition-colors hover:border-[--border-strong] hover:text-[--text-primary]"
+                  className="rounded-full border border-[--border] px-3 py-1.5 text-xs font-medium text-[--muted-foreground] transition-colors hover:border-[--border-strong] hover:text-[--foreground]"
                 >
                   {p}
                 </button>
@@ -278,9 +281,9 @@ function NovaPage() {
 function TypingDots() {
   return (
     <span className="inline-flex gap-1">
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-muted] [animation-delay:0ms]" />
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-muted] [animation-delay:150ms]" />
-      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-muted] [animation-delay:300ms]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-faint] [animation-delay:0ms]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-faint] [animation-delay:150ms]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[--text-faint] [animation-delay:300ms]" />
     </span>
   );
 }

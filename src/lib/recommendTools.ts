@@ -12,6 +12,8 @@ interface RecommendInput {
   lane?: string | null;
   stage?: string | null;
   mode?: string | null;
+  /** Industry/business type collected during onboarding, if known. */
+  industry?: string | null;
   /** slugs of tools the org has already run at least once */
   completedSlugs: Set<string>;
 }
@@ -69,6 +71,7 @@ export function recommendTools({
   lane,
   stage,
   mode,
+  industry,
   completedSlugs,
 }: RecommendInput): ToolRecommendation[] {
   const playlist =
@@ -84,6 +87,12 @@ export function recommendTools({
     return playlist
       .slice(0, 3)
       .map((t) => ({ slug: t.slug, reason: "Run it again with what you've learned since." }));
+  }
+
+  // Tie the top pick back to the founder's stated business type, so the
+  // "start here" recommendation visibly reflects onboarding, not just stage.
+  if (industry) {
+    next[0] = { ...next[0], reason: `${next[0].reason} Tailored for your ${industry} business.` };
   }
   return next;
 }

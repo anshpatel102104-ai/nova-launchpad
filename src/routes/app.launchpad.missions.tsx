@@ -32,30 +32,30 @@ function MissionDetail() {
   const activeIndex = steps.findIndex((s) => s.status !== "done" && s.status !== "completed");
 
   return (
-    <div className="min-h-full bg-[--bg-page] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-[--background] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link
           to="/app/launchpad"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-[--text-muted] hover:text-[--text-primary]"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-[--text-faint] hover:text-[--foreground]"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Launchpad
         </Link>
 
         {mission.isLoading ? (
           <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-2xl bg-[--bg-surface-2]" />
-            <div className="h-64 animate-pulse rounded-2xl bg-[--bg-surface-2]" />
+            <div className="h-24 animate-pulse rounded-2xl bg-[--surface-2]" />
+            <div className="h-64 animate-pulse rounded-2xl bg-[--surface-2]" />
           </div>
         ) : !data?.mission ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-[--border] bg-[--bg-surface] px-8 py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-[--border] bg-[--surface] px-8 py-16 text-center">
             <Sparkles className="mb-3 h-8 w-8 text-[--accent]" />
-            <p className="mb-1 text-sm font-semibold text-[--text-primary]">No active mission</p>
-            <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
+            <p className="mb-1 text-sm font-semibold text-[--foreground]">No active mission</p>
+            <p className="mb-4 max-w-xs text-xs text-[--text-faint]">
               Ask Nova to set your next mission based on where your business is right now.
             </p>
             <Link
               to="/app/launchpad/nova"
-              className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+              className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--primary-hover]"
             >
               Ask Nova
             </Link>
@@ -63,11 +63,11 @@ function MissionDetail() {
         ) : (
           <>
             <div className="mb-6">
-              <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
+              <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--foreground]">
                 {data.mission.title}
               </h1>
               {data.mission.description && (
-                <p className="mt-2 text-sm leading-relaxed text-[--text-secondary]">
+                <p className="mt-2 text-sm leading-relaxed text-[--muted-foreground]">
                   {data.mission.description}
                 </p>
               )}
@@ -75,7 +75,7 @@ function MissionDetail() {
 
             <div className="space-y-3">
               {steps.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-[--border] px-4 py-8 text-center text-xs text-[--text-muted]">
+                <p className="rounded-2xl border border-dashed border-[--border] px-4 py-8 text-center text-xs text-[--text-faint]">
                   Nova is still sequencing the steps for this mission.
                 </p>
               ) : (
@@ -86,7 +86,7 @@ function MissionDetail() {
                   return (
                     <div
                       key={s.id}
-                      className={`flex gap-3 rounded-2xl border bg-[--bg-surface] p-4 shadow-sm ${
+                      className={`flex gap-3 rounded-2xl border bg-[--surface] p-4 shadow-sm ${
                         isActive
                           ? "border-[--border] border-l-4 border-l-[--accent]"
                           : "border-[--border]"
@@ -98,11 +98,11 @@ function MissionDetail() {
                             <Check className="h-3.5 w-3.5" />
                           </span>
                         ) : isActive ? (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[--accent-light] text-[--accent]">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[--primary-soft] text-[--accent]">
                             <Circle className="h-3 w-3 fill-current" />
                           </span>
                         ) : (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[--bg-surface-2] text-[--text-muted]">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[--surface-2] text-[--text-faint]">
                             {locked ? (
                               <Lock className="h-3 w-3" />
                             ) : (
@@ -113,12 +113,12 @@ function MissionDetail() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p
-                          className={`text-sm font-semibold ${isActive ? "text-[--text-primary]" : done ? "text-[--text-secondary]" : "text-[--text-primary]"}`}
+                          className={`text-sm font-semibold ${isActive ? "text-[--foreground]" : done ? "text-[--muted-foreground]" : "text-[--foreground]"}`}
                         >
                           {s.title}
                         </p>
                         {s.description && (
-                          <p className="mt-0.5 text-xs leading-relaxed text-[--text-muted]">
+                          <p className="mt-0.5 text-xs leading-relaxed text-[--text-faint]">
                             {s.description}
                           </p>
                         )}
@@ -126,7 +126,7 @@ function MissionDetail() {
                           <Link
                             to="/app/launchpad/$tool"
                             params={{ tool: s.tool_key }}
-                            className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]"
+                            className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--primary-hover]"
                           >
                             Start this step <ArrowRight className="h-4 w-4" />
                           </Link>
@@ -139,7 +139,10 @@ function MissionDetail() {
             </div>
 
             {/* Pinned Nova guidance */}
-            <div className="mt-6 rounded-2xl border border-[--border] bg-[--bg-command] p-5 text-white shadow-sm">
+            <div
+              className="mt-6 rounded-2xl border border-[--border] p-5 text-white shadow-sm"
+              style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+            >
               <div className="mb-1 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-[#b9a4ff]" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">
