@@ -40,7 +40,7 @@ export const LEVEL_LABELS: string[] = [
 
 // XP awarded per tool_key value stored in tool_runs.
 // Covers both DB-format keys (e.g. "validate-idea") and slug variants.
-const XP_BY_TOOL: Record<string, number> = {
+export const XP_BY_TOOL: Record<string, number> = {
   "validate-idea": 80,
   "idea-validator": 80,
   "generate-pitch": 60,
@@ -74,7 +74,7 @@ const XP_BY_TOOL: Record<string, number> = {
   "blog-generator": 50,
 };
 
-const DEFAULT_XP = 40;
+export const DEFAULT_XP = 40;
 
 const STAGE_ORDER = ["Idea", "Validate", "Launch", "Operate", "Scale"];
 

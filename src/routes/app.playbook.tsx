@@ -22,6 +22,7 @@ import {
   type Mentor,
 } from "@/lib/mentors";
 import { MentorAvatar } from "@/components/app/MentorAvatar";
+import { ProgressRing } from "@/components/app/ProgressRing";
 
 export const Route = createFileRoute("/app/playbook")({ component: ProgramPage });
 
@@ -95,7 +96,7 @@ function ProgramPage() {
 
           {/* Overall progress dial */}
           <div className="flex items-center gap-3">
-            <ProgressRing pct={pct} />
+            <ProgressRing percent={pct} />
             <div>
               <div
                 className="text-[20px] font-bold leading-none"
@@ -255,38 +256,6 @@ function ProgramPage() {
         </div>
       ))}
     </div>
-  );
-}
-
-function ProgressRing({ pct }: { pct: number }) {
-  const r = 22;
-  const c = 2 * Math.PI * r;
-  return (
-    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden>
-      <circle cx="28" cy="28" r={r} fill="none" stroke="var(--border)" strokeWidth="5" />
-      <circle
-        cx="28"
-        cy="28"
-        r={r}
-        fill="none"
-        stroke="var(--primary)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeDasharray={c}
-        strokeDashoffset={c * (1 - pct / 100)}
-        transform="rotate(-90 28 28)"
-      />
-      <text
-        x="28"
-        y="32"
-        textAnchor="middle"
-        fontSize="12"
-        fontWeight="700"
-        fill="var(--foreground)"
-      >
-        {pct}%
-      </text>
-    </svg>
   );
 }
 

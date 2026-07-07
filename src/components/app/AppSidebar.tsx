@@ -43,6 +43,7 @@ import {
   Rocket,
   Home,
   Briefcase,
+  Map,
   type LucideIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -74,6 +75,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
 
 const LAUNCHPAD_SUPPORT_ICONS: Record<string, LucideIcon> = {
   missions: Crosshair,
+  roadmap: Map,
   research: Search,
   assets: FileText,
   memory: Brain,
@@ -90,6 +92,7 @@ const NOVA_PRIMARY_ICONS: Record<string, LucideIcon> = {
 };
 
 const NOVA_SUPPORT_ICONS: Record<string, LucideIcon> = {
+  roadmap: Map,
   inbox: Inbox,
   workflows: Workflow,
   campaigns: Megaphone,

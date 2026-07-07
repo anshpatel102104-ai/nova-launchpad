@@ -30,6 +30,7 @@ import { Route as AppTemplatesRouteImport } from './routes/app.templates'
 import { Route as AppSopLibraryRouteImport } from './routes/app.sop-library'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScaleRouteImport } from './routes/app.scale'
+import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
 import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppReputationRouteImport } from './routes/app.reputation'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
@@ -191,6 +192,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppScaleRoute = AppScaleRouteImport.update({
   id: '/scale',
   path: '/scale',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoadmapRoute = AppRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
   getParentRoute: () => AppRoute,
 } as any)
 const AppResearchRoute = AppResearchRouteImport.update({
@@ -515,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -594,6 +601,7 @@ export interface FileRoutesByTo {
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -675,6 +683,7 @@ export interface FileRoutesById {
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -757,6 +766,7 @@ export interface FileRouteTypes {
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -836,6 +846,7 @@ export interface FileRouteTypes {
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -916,6 +927,7 @@ export interface FileRouteTypes {
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -1126,6 +1138,13 @@ declare module '@tanstack/react-router' {
       path: '/scale'
       fullPath: '/app/scale'
       preLoaderRoute: typeof AppScaleRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/roadmap': {
+      id: '/app/roadmap'
+      path: '/roadmap'
+      fullPath: '/app/roadmap'
+      preLoaderRoute: typeof AppRoadmapRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/research': {
@@ -1614,6 +1633,7 @@ interface AppRouteChildren {
   AppPlaybookRoute: typeof AppPlaybookRoute
   AppReputationRoute: typeof AppReputationRoute
   AppResearchRoute: typeof AppResearchRoute
+  AppRoadmapRoute: typeof AppRoadmapRoute
   AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
   AppSopLibraryRoute: typeof AppSopLibraryRoute
@@ -1673,6 +1693,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlaybookRoute: AppPlaybookRoute,
   AppReputationRoute: AppReputationRoute,
   AppResearchRoute: AppResearchRoute,
+  AppRoadmapRoute: AppRoadmapRoute,
   AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
   AppSopLibraryRoute: AppSopLibraryRoute,

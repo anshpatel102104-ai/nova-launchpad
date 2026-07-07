@@ -95,7 +95,7 @@ export interface LaunchpadProgress {
   needsProof: Array<{ label: string; to: string }>;
 }
 
-function wonLeadCount(graph: BusinessGraph): number {
+export function wonLeadCount(graph: BusinessGraph): number {
   return graph.leads.filter((l) => {
     const s = (l.stage ?? "").toLowerCase();
     return s.includes("won") || s.includes("closed");
@@ -177,6 +177,7 @@ export const LAUNCHPAD_SUPPORT_NAV: EcosystemNavItem[] = [
     to: "/app/launchpad/missions",
     match: (p) => p === "/app/launchpad/missions" || p === "/app/launchpad-path",
   },
+  { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   { id: "research", label: "Research", to: "/app/research", match: (p) => p === "/app/research" },
   { id: "assets", label: "Assets", to: "/app/assets", match: (p) => p === "/app/assets" },
   { id: "memory", label: "Memory", to: "/app/memory", match: (p) => p.startsWith("/app/memory") },
@@ -226,6 +227,7 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
 
 /** Nova support areas — operational depth, collapsed by default. */
 export const NOVA_SUPPORT_NAV: EcosystemNavItem[] = [
+  { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   {
     id: "inbox",
     label: "Inbox",
