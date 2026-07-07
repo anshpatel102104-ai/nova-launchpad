@@ -1,698 +1,637 @@
-// Launchpad Home — "Campus": a casefile-driven mission control styled as a
-// course dashboard. Unmistakably Launchpad: staged, guided, evidence-based.
-// One screen that answers, top to bottom:
-//   1. Where am I?            → stage bar (Idea → Validate → Offer → Build → Launch → Revenue)
-//   2. What do I do now?      → current course: today's lesson (TodaysLessonHero),
-//                                Business GPA, and the AI Mentor card
-//   3. What comes after?      → daily assignment: locked next steps + one thing to fix
-//   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
-//   5. How am I doing?        → charts and a leads table with next moves
-// When the build is proven, the Nova handoff hero takes over the top:
-// "You built the business. Now run it."
+// Mission Control — the founder's home. One screen, one clear hierarchy:
+//
+//   1. CURRENT MISSION   → the dominant element. Where you are, and the single
+//                          next move, with a big CTA. Nothing competes with it.
+//   2. TASKS             → the queue behind the mission — what's next, ranked.
+//   3. MENTOR            → your AI mentor's lesson and a way to talk to them.
+//   4. PROGRESS          → level, XP, health, next milestone — the game layer.
+//   5. SUPPORTING TOOLS  → everything else, deliberately quiet.
+//
+// This is not a dashboard of equal widgets. It's an operating system that
+// always answers "what do I do next?" before anything else.
 
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SectionTabs } from "@/components/app/SectionTabs";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
+import { useFounderStreak } from "@/hooks/use-founder-streak";
 import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
 import { gradeForScore } from "@/lib/business-grade";
-import { ArrowRight, AlertTriangle, Check, Clock, GripVertical, Lock } from "lucide-react";
+import { HexLevelBadge } from "@/components/app/gamification/HexLevelBadge";
+import { XPProgressBar } from "@/components/app/gamification/XPProgressBar";
+import { ProgressRing } from "@/components/app/ProgressRing";
+import {
+  ArrowRight,
+  AlertTriangle,
+  Check,
+  Clock,
+  Lock,
+  Target,
+  Zap,
+  Trophy,
+  ChevronRight,
+  Map,
+  FlaskConical,
+  FileText,
+  Users,
+  Bot,
+  Radio,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
   component: HomePage,
 });
 
-const LAYOUT_KEY = "nova-home-layout";
-const DEFAULT_ORDER = ["money", "leads", "table"];
-
 function HomePage() {
   const { profile } = useAuth();
   const graph = useBusinessGraph();
   const founder = useFounderProgress();
+  const streak = useFounderStreak();
   const progress = deriveLaunchpadProgress(graph);
   const gpa = gradeForScore(founder.founderScore);
 
   const name = profile?.full_name?.split(" ")[0] || "Founder";
   const blocker = graph.blockers[0];
-  const upNext = graph.recommendations.filter((r) => r.id !== "continue-mission").slice(0, 2);
+  const recs = graph.recommendations;
+
+  // The single most important next move — a blocker to fix always wins,
+  // otherwise the top recommendation, otherwise "continue this stage."
+  const hero: HeroMove = blocker
+    ? {
+        tone: "fix",
+        eyebrow: "Fix this first",
+        title: blocker.title,
+        sub: blocker.why,
+        to: blocker.resolveTo,
+        cta: blocker.resolveLabel,
+        minutes: blocker.estimatedMinutes,
+      }
+    : recs[0]
+      ? {
+          tone: "do",
+          eyebrow: "Do this next",
+          title: recs[0].title,
+          sub: recs[0].impact,
+          to: recs[0].to,
+          cta: "Start now",
+          minutes: recs[0].estimatedMinutes,
+        }
+      : {
+          tone: "do",
+          eyebrow: "Continue your mission",
+          title: progress.current.headline,
+          sub: progress.current.proof,
+          to: progress.current.to,
+          cta: "Continue",
+          minutes: 15,
+        };
+
+  // Task queue behind the hero — the recommendations we didn't surface above.
+  const queue = (blocker ? recs.slice(0, 4) : recs.slice(1, 5)).filter(Boolean);
+
+  const stageNumber = progress.currentIndex + 1;
+  const stageCount = progress.stages.length;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <SectionTabs section="path" />
-
-      {/* ── 1 · Header: where am I? ── */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="mx-auto max-w-5xl space-y-7">
+      {/* ── Greeting ── */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1
-            className="text-[22px] font-bold leading-tight"
-            style={{ color: "var(--foreground)", letterSpacing: "-0.025em" }}
+            className="font-display text-[26px] font-extrabold leading-tight"
+            style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
           >
             Welcome back, {name}
           </h1>
-          <p className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-            {graph.businessName} &nbsp;·&nbsp;{" "}
-            {blocker
-              ? "You have one thing to do, and one thing to fix."
-              : "You have one thing to do today. Nova will guide you."}
+          <p className="mt-1 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
+            {graph.businessName} · you have one clear next move. Nova will guide you.
           </p>
         </div>
-        <span
-          className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-[3px] border px-2.5 py-1 text-[11.5px] font-bold"
-          style={
-            blocker
-              ? {
-                  color: "var(--warning)",
-                  background: "color-mix(in oklab, var(--warning) 10%, var(--surface))",
-                  borderColor: "color-mix(in oklab, var(--warning) 30%, transparent)",
-                }
-              : {
-                  color: "var(--success)",
-                  background: "color-mix(in oklab, var(--success) 9%, var(--surface))",
-                  borderColor: "color-mix(in oklab, var(--success) 30%, transparent)",
-                }
-          }
-        >
+        <StatusChip tone={blocker ? "warning" : "success"}>
           {blocker ? "1 thing to fix" : "On track"}
-        </span>
+        </StatusChip>
       </div>
 
-      {/* ── Handoff hero — the build is proven, Nova takes over ── */}
+      {/* ── Nova handoff — the build is proven, take it live ── */}
       {progress.readyForNova && <NovaHandoffCard graph={graph} />}
 
-      {/* ── Stage bar: Idea → Validate → Offer → Build → Launch → Revenue ── */}
-      <div
-        className="rounded-[6px] border px-6 pb-5 pt-4"
-        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-      >
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <span className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-            Your build
-          </span>
-          <span className="truncate text-[12px]" style={{ color: "var(--muted-foreground)" }}>
-            {progress.current.headline}
-          </span>
-        </div>
-        <div className="flex items-start">
-          {progress.stages.map((s, i) => (
-            <React.Fragment key={s.id}>
-              <Link to={s.to} className="flex w-[72px] shrink-0 flex-col items-center md:w-[86px]">
-                <div
-                  className="flex h-7 w-7 items-center justify-center rounded-[4px] text-[12.5px] font-bold"
-                  style={
-                    s.done
-                      ? { background: "var(--success)", color: "var(--success-foreground)" }
-                      : s.current
-                        ? {
-                            background: "var(--primary)",
-                            color: "var(--primary-foreground)",
-                            boxShadow: "0 0 0 4px var(--primary-soft)",
-                          }
-                        : {
-                            background: "var(--surface)",
-                            color: "var(--text-faint)",
-                            border: "2px solid var(--border)",
-                          }
-                  }
-                >
-                  {s.done ? <Check className="h-3.5 w-3.5" /> : i + 1}
-                </div>
+      {/* ══ 1 · CURRENT MISSION — the dominant element ══ */}
+      <MissionHero
+        hero={hero}
+        stageLabel={progress.current.label}
+        stageNumber={stageNumber}
+        stageCount={stageCount}
+        stages={progress.stages}
+        missionPercent={founder.missionProgressPercent}
+      />
+
+      {/* ══ 2 · TASKS — the queue behind the mission ══ */}
+      <section>
+        <SectionLabel icon={Target}>Your task queue</SectionLabel>
+        <div
+          className="overflow-hidden rounded-2xl border"
+          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+        >
+          {queue.length === 0 ? (
+            <div
+              className="px-5 py-6 text-center text-[13px]"
+              style={{ color: "var(--text-faint)" }}
+            >
+              Finish the mission above and Nova will line up what's next.
+            </div>
+          ) : (
+            queue.map((r, i) => (
+              <Link
+                key={r.id}
+                to={r.to}
+                className="group flex items-center gap-3.5 px-5 py-3.5 transition-colors hover:bg-surface-2"
+                style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
+              >
                 <span
-                  className="mt-2 text-[11.5px] font-semibold"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[12px] font-bold"
                   style={{
-                    color: s.current
-                      ? "var(--primary)"
-                      : s.done
-                        ? "var(--foreground)"
-                        : "var(--muted-foreground)",
+                    background: "var(--primary-soft)",
+                    color: "var(--primary)",
+                    border: "1px solid var(--primary-border)",
                   }}
                 >
-                  {s.label}
+                  {i + 1}
                 </span>
-                {s.current && (
-                  <span
-                    className="mt-0.5 text-[10px] font-bold tracking-[0.04em]"
-                    style={{ color: "var(--primary)" }}
+                <div className="min-w-0 flex-1">
+                  <div
+                    className="truncate text-[13.5px] font-semibold"
+                    style={{ color: "var(--foreground)" }}
                   >
-                    YOU ARE HERE
-                  </span>
-                )}
+                    {r.title}
+                  </div>
+                  <div className="truncate text-[12px]" style={{ color: "var(--text-faint)" }}>
+                    {r.impact}
+                  </div>
+                </div>
+                <span
+                  className="hidden shrink-0 items-center gap-1 text-[11.5px] font-semibold sm:inline-flex"
+                  style={{ color: "var(--text-faint)" }}
+                >
+                  <Clock className="h-3 w-3" />
+                  {r.estimatedMinutes}m
+                </span>
+                <ArrowRight
+                  className="h-4 w-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                  style={{ color: "var(--primary)" }}
+                />
               </Link>
-              {i < progress.stages.length - 1 && (
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* ══ 3 · MENTOR — your AI mentor's lesson ══ */}
+      <section>
+        <SectionLabel icon={Bot}>Your mentor</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.62fr_1fr]">
+          <TodaysLessonHero />
+          <MentorChatCard />
+        </div>
+      </section>
+
+      {/* ══ 4 · PROGRESS — the game layer ══ */}
+      <section>
+        <SectionLabel icon={Trophy}>
+          Your progress
+          <Link
+            to="/app/roadmap"
+            className="ml-auto inline-flex items-center gap-1 text-[11.5px] font-bold normal-case tracking-normal"
+            style={{ color: "var(--primary)" }}
+          >
+            Full report card
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </SectionLabel>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
+          {/* Level + XP */}
+          <div
+            className="flex items-center gap-5 rounded-2xl border p-5"
+            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          >
+            <HexLevelBadge level={founder.level} levelLabel={founder.levelLabel} size={76} />
+            <div className="min-w-0 flex-1">
+              <div
+                className="text-[10.5px] font-bold uppercase tracking-[0.09em]"
+                style={{ color: "var(--text-faint)" }}
+              >
+                Business level
+              </div>
+              <div
+                className="mt-0.5 text-[16px] font-extrabold"
+                style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+              >
+                Level {founder.level} · {founder.levelLabel}
+              </div>
+              <div className="mt-2.5">
+                <XPProgressBar
+                  percent={founder.xpProgressInLevel}
+                  currentXP={founder.totalXP}
+                  xpForNextLevel={founder.xpForNextLevel}
+                  height={6}
+                  showLabel
+                />
+              </div>
+              <div
+                className="mt-2 flex items-center gap-1.5 text-[11.5px] font-semibold"
+                style={{ color: "var(--primary)" }}
+              >
+                <Zap className="h-3 w-3" />
+                {founder.nextMilestone}
+              </div>
+            </div>
+          </div>
+
+          {/* Health / GPA */}
+          <div
+            className="flex items-center gap-4 rounded-2xl border p-5"
+            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          >
+            <ProgressRing
+              percent={founder.founderScore}
+              size={78}
+              strokeWidth={7}
+              color="var(--success)"
+              label={
+                <span
+                  className="font-display font-extrabold"
+                  style={{ color: "var(--foreground)", fontSize: 22 }}
+                >
+                  {gpa.letter}
+                </span>
+              }
+            />
+            <div className="min-w-0 flex-1">
+              <div
+                className="text-[10.5px] font-bold uppercase tracking-[0.09em]"
+                style={{ color: "var(--text-faint)" }}
+              >
+                Business health
+              </div>
+              <div
+                className="mt-0.5 text-[16px] font-extrabold"
+                style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+              >
+                {founder.founderScore}
+                <span className="text-[12px] font-semibold" style={{ color: "var(--text-faint)" }}>
+                  {" "}
+                  / 100
+                </span>
+              </div>
+              <div
+                className="mt-1.5 text-[12px] leading-snug"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {founder.missionProgressPercent > 0
+                  ? `Current mission ${founder.missionProgressPercent}% complete`
+                  : "Complete your mission to raise your grade"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Concrete numbers — quiet, factual */}
+        <div className="mt-4 grid grid-cols-3 gap-4">
+          <StatTile
+            label="Pipeline value"
+            value={formatMoney(graph.leads.reduce((s, l) => s + (l.value ?? 0), 0))}
+            delta={leadDelta(graph.leads).valueDelta}
+            deltaLabel={(v) => `${formatMoney(v)} this week`}
+          />
+          <StatTile
+            label="Leads"
+            value={String(graph.leads.length)}
+            suffix=" / 10 goal"
+            delta={leadDelta(graph.leads).countDelta}
+            deltaLabel={(v) => `+${v} this week`}
+          />
+          <StatTile
+            label="Streak"
+            value={String(streak.currentStreak)}
+            suffix={streak.currentStreak === 1 ? " day" : " days"}
+            delta={0}
+            deltaLabel={() => ""}
+          />
+        </div>
+      </section>
+
+      {/* ══ 5 · SUPPORTING TOOLS — deliberately quiet ══ */}
+      <section>
+        <SectionLabel icon={Radio}>Supporting tools</SectionLabel>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {SUPPORT_TOOLS.map((t) => (
+            <Link
+              key={t.to}
+              to={t.to}
+              className="flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-center transition-all hover:-translate-y-0.5"
+              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+            >
+              <span
+                className="flex h-9 w-9 items-center justify-center rounded-lg"
+                style={{ background: "var(--surface-2)", color: "var(--muted-foreground)" }}
+              >
+                <t.icon className="h-4 w-4" />
+              </span>
+              <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
+                {t.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Casefile — supporting evidence, kept last ── */}
+      <section>
+        <SectionLabel icon={FileText}>Your casefile</SectionLabel>
+        <CasefileSummary graph={graph} progress={progress} />
+      </section>
+    </div>
+  );
+}
+
+/* ─── Current Mission hero ──────────────────────────────────── */
+
+interface HeroMove {
+  tone: "fix" | "do";
+  eyebrow: string;
+  title: string;
+  sub: string;
+  to: string;
+  cta: string;
+  minutes: number;
+}
+
+function MissionHero({
+  hero,
+  stageLabel,
+  stageNumber,
+  stageCount,
+  stages,
+  missionPercent,
+}: {
+  hero: HeroMove;
+  stageLabel: string;
+  stageNumber: number;
+  stageCount: number;
+  stages: ReturnType<typeof deriveLaunchpadProgress>["stages"];
+  missionPercent: number;
+}) {
+  const fix = hero.tone === "fix";
+  const accent = fix ? "var(--warning)" : "var(--primary)";
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-[20px] border p-6 md:p-7"
+      style={{
+        borderColor: fix
+          ? "color-mix(in oklab, var(--warning) 32%, transparent)"
+          : "var(--primary-border)",
+        background:
+          "radial-gradient(120% 140% at 0% 0%, color-mix(in oklab, " +
+          accent +
+          " 12%, var(--surface)) 0%, var(--surface) 55%)",
+        boxShadow: "var(--shadow-glow-primary)",
+      }}
+    >
+      {/* ambient grid */}
+      <div className="bg-grid-faint pointer-events-none absolute inset-0 opacity-40" />
+
+      <div className="relative">
+        {/* stage context + live pill */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em]"
+            style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+          >
+            <Target className="h-3 w-3" />
+            Stage {stageNumber} of {stageCount} · {stageLabel}
+          </span>
+          <span
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em]"
+            style={{ color: fix ? "var(--warning)" : "var(--success)" }}
+          >
+            <span
+              className="nova-live-dot h-1.5 w-1.5 rounded-full"
+              style={{ background: "currentColor" }}
+            />
+            {hero.eyebrow}
+          </span>
+        </div>
+
+        {/* the objective */}
+        <h2
+          className="mt-3.5 font-display text-[24px] font-extrabold leading-[1.15] md:text-[28px]"
+          style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
+        >
+          {hero.title}
+        </h2>
+        <p
+          className="mt-1.5 max-w-2xl text-[14px] leading-relaxed"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          {hero.sub}
+        </p>
+
+        {/* CTA + time */}
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Link
+            to={hero.to}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[14px] font-bold transition-transform hover:-translate-y-0.5"
+            style={{
+              background: accent,
+              color: fix ? "var(--warning-foreground)" : "var(--primary-foreground)",
+              boxShadow: fix
+                ? "0 6px 20px color-mix(in oklab, var(--warning) 35%, transparent)"
+                : "0 6px 20px color-mix(in oklab, var(--primary) 40%, transparent)",
+            }}
+          >
+            {fix ? <AlertTriangle className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+            {hero.cta}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <span
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+            style={{ color: "var(--text-faint)" }}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            About {hero.minutes} min
+          </span>
+        </div>
+
+        {/* stage stepper — the journey at a glance */}
+        <div className="mt-6 flex items-center gap-1.5">
+          {stages.map((s, i) => (
+            <React.Fragment key={s.id}>
+              <div
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10.5px] font-bold"
+                title={s.label}
+                style={
+                  s.done
+                    ? { background: "var(--success)", color: "var(--success-foreground)" }
+                    : s.current
+                      ? {
+                          background: "var(--primary)",
+                          color: "var(--primary-foreground)",
+                          boxShadow: "0 0 0 3px var(--primary-soft)",
+                        }
+                      : {
+                          background: "var(--surface-2)",
+                          color: "var(--text-faint)",
+                          border: "1px solid var(--border)",
+                        }
+                }
+              >
+                {s.done ? (
+                  <Check className="h-3 w-3" />
+                ) : s.upcoming ? (
+                  <Lock className="h-2.5 w-2.5" />
+                ) : (
+                  i + 1
+                )}
+              </div>
+              {i < stages.length - 1 && (
                 <div
-                  className="mt-[13px] h-[3px] flex-1"
+                  className="h-[2px] flex-1 rounded-full"
                   style={{ background: s.done ? "var(--success)" : "var(--border)" }}
                 />
               )}
             </React.Fragment>
           ))}
         </div>
-      </div>
-
-      {/* ── 2 · Current course — one mentor, one assignment ── */}
-      <div>
-        <SectionLabel>Current course</SectionLabel>
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.62fr_1fr]">
-          <TodaysLessonHero />
-          <div className="space-y-3.5">
-            <div
-              className="rounded-[6px] border px-5 py-4"
-              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-            >
-              <div
-                className="text-[11px] font-bold uppercase tracking-[0.07em]"
-                style={{ color: "var(--text-faint)" }}
-              >
-                Your Business GPA
-              </div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span
-                  className="text-[26px] font-extrabold"
-                  style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
-                >
-                  {gpa.letter}
-                </span>
-                <span className="text-[13px] font-semibold" style={{ color: "var(--text-faint)" }}>
-                  {gpa.gpa.toFixed(1)}
-                </span>
-              </div>
-              <Link
-                to="/app/roadmap"
-                className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-bold"
-                style={{ color: "var(--primary)" }}
-              >
-                View report card
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <MentorChatCard />
+        {missionPercent > 0 && (
+          <div className="mt-2 text-[11.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
+            Current mission {missionPercent}% complete
           </div>
-        </div>
-      </div>
-
-      {/* ── 3 · Daily assignment ── */}
-      <div>
-        <SectionLabel>Daily assignment</SectionLabel>
-        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-[1.4fr_1fr]">
-          <div
-            className="rounded-[6px] border px-5 py-4"
-            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-          >
-            <div
-              className="mb-2 text-[12.5px] font-bold"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Nova unlocks these next — don't worry about them yet
-            </div>
-            {upNext.length === 0 ? (
-              <div className="py-2 text-[12.5px]" style={{ color: "var(--text-faint)" }}>
-                Finish the step above and Nova will line up what's next.
-              </div>
-            ) : (
-              upNext.map((r, i) => (
-                <div
-                  key={r.id}
-                  className="flex items-center gap-3 py-2.5 opacity-80"
-                  style={{ borderTop: i > 0 ? "1px solid var(--border-subtle)" : "none" }}
-                >
-                  <span
-                    className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[4px] border"
-                    style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
-                  >
-                    <Lock className="h-3 w-3" style={{ color: "var(--text-faint)" }} />
-                  </span>
-                  <div className="min-w-0">
-                    <div
-                      className="text-[13px] font-semibold"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      {r.title}
-                    </div>
-                    <div className="text-[12px]" style={{ color: "var(--text-faint)" }}>
-                      {r.impact}
-                    </div>
-                  </div>
-                  <span
-                    className="ml-auto inline-flex shrink-0 items-center gap-1 text-[11.5px] font-semibold"
-                    style={{ color: "var(--text-faint)" }}
-                  >
-                    <Clock className="h-3 w-3" />
-                    {r.estimatedMinutes}m
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {blocker ? (
-            <div
-              className="rounded-[6px] border px-5 py-4"
-              style={{
-                background: "color-mix(in oklab, var(--warning) 9%, var(--surface))",
-                borderColor: "color-mix(in oklab, var(--warning) 30%, transparent)",
-                borderLeft: "3px solid var(--warning)",
-              }}
-            >
-              <div
-                className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold"
-                style={{ color: "var(--warning)" }}
-              >
-                <AlertTriangle className="h-3.5 w-3.5" />
-                One thing to fix
-              </div>
-              <div className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-                {blocker.title}
-              </div>
-              <div
-                className="mt-0.5 text-[12.5px] leading-relaxed"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                {blocker.why}
-              </div>
-              <Link
-                to={blocker.resolveTo}
-                className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-bold"
-                style={{ color: "var(--warning)" }}
-              >
-                {blocker.resolveLabel} · takes {blocker.estimatedMinutes} min
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-          ) : (
-            <div
-              className="flex items-center justify-center rounded-[6px] border px-5 py-4 text-center text-[12.5px]"
-              style={{
-                borderColor: "var(--border)",
-                background: "var(--surface)",
-                color: "var(--text-faint)",
-              }}
-            >
-              Nothing is in your way right now. Keep going.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── 4 · Casefile: verdict, proof, needs-proof, memory ── */}
-      <div>
-        <SectionLabel>Your casefile</SectionLabel>
-        <CasefileSummary graph={graph} progress={progress} />
-      </div>
-
-      {/* ── 5 · Your numbers (drag to rearrange) ── */}
-      <DashboardCards leads={graph.leads} />
-    </div>
-  );
-}
-
-/* ─── Draggable dashboard cards ─────────────────────────────── */
-
-function loadOrder(): string[] {
-  try {
-    const raw = localStorage.getItem(LAYOUT_KEY);
-    if (!raw) return DEFAULT_ORDER;
-    const o = JSON.parse(raw) as string[];
-    return DEFAULT_ORDER.every((k) => o.includes(k)) ? o : DEFAULT_ORDER;
-  } catch {
-    return DEFAULT_ORDER;
-  }
-}
-
-function DashboardCards({ leads }: { leads: LeadRow[] }) {
-  const [order, setOrder] = React.useState<string[]>(loadOrder);
-  const dragId = React.useRef<string | null>(null);
-
-  const onDrop = (targetId: string) => {
-    const sourceId = dragId.current;
-    dragId.current = null;
-    if (!sourceId || sourceId === targetId) return;
-    setOrder((prev) => {
-      const next = prev.filter((k) => k !== sourceId);
-      next.splice(
-        next.indexOf(targetId) + (prev.indexOf(sourceId) < prev.indexOf(targetId) ? 1 : 0),
-        0,
-        sourceId,
-      );
-      localStorage.setItem(LAYOUT_KEY, JSON.stringify(next));
-      return next;
-    });
-  };
-
-  const weekly = bucketLeadsByWeek(leads, 8);
-  const totalValue = leads.reduce((sum, l) => sum + (l.value ?? 0), 0);
-
-  const cards: Record<string, React.ReactNode> = {
-    money: (
-      <ChartCard title="Money you could win" key="money">
-        <div className="flex items-baseline gap-2">
-          <span
-            className="text-[24px] font-extrabold"
-            style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
-          >
-            {formatMoney(totalValue)}
-          </span>
-          {weekly.valueDelta > 0 && (
-            <span className="text-[11.5px] font-bold" style={{ color: "var(--success)" }}>
-              ▲ {formatMoney(weekly.valueDelta)} this week
-            </span>
-          )}
-        </div>
-        <div className="mb-2.5 mt-0.5 text-[11.5px]" style={{ color: "var(--text-faint)" }}>
-          {totalValue > 0
-            ? "All your open leads, added up · last 8 weeks"
-            : "This grows when you add leads."}
-        </div>
-        <LineChart points={weekly.cumulativeValue} />
-      </ChartCard>
-    ),
-    leads: (
-      <ChartCard title="Leads — goal: 10" key="leads">
-        <div className="flex items-baseline gap-2">
-          <span
-            className="text-[24px] font-extrabold"
-            style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
-          >
-            {leads.length}
-          </span>
-          <span className="text-[12.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
-            / 10
-          </span>
-          {weekly.countDelta > 0 && (
-            <span className="text-[11.5px] font-bold" style={{ color: "var(--success)" }}>
-              ▲ {weekly.countDelta} this week
-            </span>
-          )}
-        </div>
-        <div className="mb-2.5 mt-0.5 text-[11.5px]" style={{ color: "var(--text-faint)" }}>
-          {leads.length > 0 ? "New leads each week" : "Nova will help you find them."}
-        </div>
-        <BarChart values={weekly.countPerWeek} />
-      </ChartCard>
-    ),
-    table: <LeadsTable leads={leads.slice(0, 5)} key="table" />,
-  };
-
-  return (
-    <div>
-      <SectionLabel>
-        Your numbers
-        <span
-          className="ml-1 inline-flex items-center gap-1 normal-case tracking-normal"
-          style={{ color: "var(--text-faint)", fontWeight: 550 }}
-        >
-          <GripVertical className="h-3 w-3" />
-          drag any card to move it — Nova saves your layout
-        </span>
-      </SectionLabel>
-      <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-        {order.map((id) => (
-          <div
-            key={id}
-            draggable
-            onDragStart={() => (dragId.current = id)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => onDrop(id)}
-            className={id === "table" ? "md:col-span-2" : ""}
-          >
-            {cards[id]}
-          </div>
-        ))}
+        )}
       </div>
     </div>
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+/* ─── Supporting tools ──────────────────────────────────────── */
+
+const SUPPORT_TOOLS = [
+  { label: "Roadmap", to: "/app/roadmap", icon: Map },
+  { label: "Research", to: "/app/research", icon: FlaskConical },
+  { label: "Assets", to: "/app/assets", icon: FileText },
+  { label: "Automations", to: "/app/automations", icon: Zap },
+  { label: "Contacts", to: "/app/contacts", icon: Users },
+  { label: "Ask Nova", to: "/app/mentor", icon: Bot },
+] as const;
+
+/* ─── Small pieces ──────────────────────────────────────────── */
+
+function SectionLabel({
+  children,
+  icon: Icon,
+}: {
+  children: React.ReactNode;
+  icon?: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div
-      className="h-full rounded-[6px] border"
-      style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-    >
-      <div
-        className="flex items-center justify-between px-4.5 py-3"
-        style={{ borderBottom: "1px solid var(--border-subtle)", padding: "12px 18px" }}
-      >
-        <span className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-          {title}
-        </span>
-        <GripVertical className="h-3.5 w-3.5 cursor-grab" style={{ color: "var(--text-faint)" }} />
-      </div>
-      <div style={{ padding: "14px 18px 16px" }}>{children}</div>
-    </div>
-  );
-}
-
-/* ─── Charts (plain SVG, sharp) ─────────────────────────────── */
-
-function LineChart({ points }: { points: number[] }) {
-  const W = 340;
-  const H = 110;
-  const max = Math.max(...points, 1);
-  const x = (i: number) => (i / Math.max(points.length - 1, 1)) * (W - 12);
-  const y = (v: number) => 100 - (v / max) * 75;
-  const path = points.map((v, i) => `${i === 0 ? "M" : "L"}${x(i)} ${y(v)}`).join(" ");
-  const area = `${path} L${x(points.length - 1)} 100 L0 100 Z`;
-  const last = points[points.length - 1] ?? 0;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="block w-full">
-      {[20, 60, 100].map((gy) => (
-        <line
-          key={gy}
-          x1="0"
-          y1={gy}
-          x2={W}
-          y2={gy}
-          stroke="var(--border-subtle)"
-          strokeWidth="1"
-        />
-      ))}
-      <path d={area} fill="var(--primary)" opacity="0.10" />
-      <path d={path} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" />
-      <rect
-        x={x(points.length - 1) - 3.5}
-        y={y(last) - 3.5}
-        width="7"
-        height="7"
-        fill="var(--primary)"
-      />
-    </svg>
-  );
-}
-
-function BarChart({ values }: { values: number[] }) {
-  const W = 340;
-  const H = 110;
-  const max = Math.max(...values, 1);
-  const bw = Math.min(26, (W - 8) / values.length - 14);
-  // Older weeks fade; the current week is full strength.
-  const opacity = (i: number) => 0.3 + (0.7 * i) / Math.max(values.length - 1, 1);
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="block w-full">
-      {[20, 60, 100].map((gy) => (
-        <line
-          key={gy}
-          x1="0"
-          y1={gy}
-          x2={W}
-          y2={gy}
-          stroke="var(--border-subtle)"
-          strokeWidth="1"
-        />
-      ))}
-      {values.map((v, i) => {
-        const h = (v / max) * 75;
-        return (
-          <rect
-            key={i}
-            x={8 + i * ((W - 16) / values.length)}
-            y={100 - h}
-            width={bw}
-            height={Math.max(h, v > 0 ? 4 : 1.5)}
-            fill="var(--primary)"
-            opacity={v > 0 ? opacity(i) : 0.12}
-          />
-        );
-      })}
-    </svg>
-  );
-}
-
-/* ─── Leads table — every row tells you the next move ───────── */
-
-function LeadsTable({ leads }: { leads: LeadRow[] }) {
-  return (
-    <div
-      className="overflow-hidden rounded-[6px] border"
-      style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-    >
-      <div
-        className="flex items-center justify-between"
-        style={{ borderBottom: "1px solid var(--border-subtle)", padding: "12px 18px" }}
-      >
-        <span className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-          Your leads — each row tells you the next move
-        </span>
-        <Link
-          to="/app/contacts"
-          className="text-[12px] font-semibold"
-          style={{ color: "var(--primary)" }}
-        >
-          See all →
-        </Link>
-      </div>
-
-      {leads.length === 0 ? (
-        <div
-          className="px-5 py-6 text-center text-[13px]"
-          style={{ color: "var(--muted-foreground)" }}
-        >
-          No leads yet — that's okay. When you add people, each row here will tell you exactly what
-          to do next.
-        </div>
-      ) : (
-        <table className="w-full border-collapse">
-          <thead>
-            <tr style={{ background: "var(--surface-2)" }}>
-              {["Name", "Came from", "Status", "What to do next"].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-2 text-left text-[10.5px] font-bold uppercase tracking-[0.07em]"
-                  style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((l) => {
-              const next = nextMove(l);
-              return (
-                <tr key={l.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                  <td
-                    className="px-4 py-2.5 text-[13px] font-bold"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {l.name || "No name"}
-                  </td>
-                  <td
-                    className="px-4 py-2.5 text-[12.5px]"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {l.source || "—"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span
-                      className="inline-flex rounded-[3px] border px-2 py-0.5 text-[11px] font-bold"
-                      style={statusStyle(next.tone)}
-                    >
-                      {next.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <Link
-                      to="/app/contacts"
-                      className="inline-flex items-center gap-1.5 rounded-[4px] border px-2.5 py-1 text-[12px] font-bold"
-                      style={{
-                        color: "var(--primary)",
-                        background: "var(--primary-soft)",
-                        borderColor: "var(--primary-border)",
-                      }}
-                    >
-                      {next.action}
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-
-type Tone = "violet" | "amber" | "green" | "muted";
-
-function statusStyle(tone: Tone): React.CSSProperties {
-  const m: Record<Tone, [string, string]> = {
-    violet: ["var(--primary)", "var(--primary-soft)"],
-    amber: ["var(--warning)", "color-mix(in oklab, var(--warning) 10%, var(--surface))"],
-    green: ["var(--success)", "color-mix(in oklab, var(--success) 9%, var(--surface))"],
-    muted: ["var(--muted-foreground)", "var(--surface-2)"],
-  };
-  const [color, background] = m[tone];
-  return { color, background, borderColor: `color-mix(in oklab, ${color} 30%, transparent)` };
-}
-
-/** Plain next move for a lead, from its stage and age. */
-function nextMove(l: LeadRow): { status: string; action: string; tone: Tone } {
-  const stage = (l.stage || "new").toLowerCase();
-  const days = l.created_at
-    ? Math.floor((Date.now() - new Date(l.created_at).getTime()) / 86_400_000)
-    : 0;
-
-  if (stage.includes("won") || stage.includes("closed"))
-    return { status: "Won", action: "Say thanks + ask for a referral", tone: "green" };
-  if (stage.includes("lost"))
-    return { status: "Lost", action: "Move on — add a new lead", tone: "muted" };
-  if (stage.includes("qualified") || stage.includes("interested"))
-    return { status: "Interested", action: "Book the call", tone: "green" };
-  if (stage.includes("proposal") || stage.includes("negotiat"))
-    return { status: "Deciding", action: "Check in — answer questions", tone: "amber" };
-  if (stage.includes("contact"))
-    return days >= 3
-      ? { status: `Waiting ${days} days`, action: "Send the follow-up", tone: "amber" }
-      : { status: "Contacted", action: "Wait, then follow up", tone: "muted" };
-  return { status: "New", action: "Send the intro email", tone: "violet" };
-}
-
-/* ─── Helpers ───────────────────────────────────────────────── */
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="mb-2.5 flex items-center gap-2 px-0.5 text-[12px] font-bold uppercase tracking-[0.07em]"
+      className="mb-3 flex items-center gap-2 px-0.5 text-[12px] font-bold uppercase tracking-[0.08em]"
       style={{ color: "var(--text-faint)" }}
     >
+      {Icon && <Icon className="h-3.5 w-3.5" />}
       {children}
     </div>
   );
 }
 
-function bucketLeadsByWeek(leads: LeadRow[], weeks: number) {
-  const countPerWeek = new Array<number>(weeks).fill(0);
-  const valuePerWeek = new Array<number>(weeks).fill(0);
+function StatusChip({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning";
+  children: React.ReactNode;
+}) {
+  const color = tone === "warning" ? "var(--warning)" : "var(--success)";
+  return (
+    <span
+      className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[11.5px] font-bold"
+      style={{
+        color,
+        background: `color-mix(in oklab, ${color} 12%, var(--surface))`,
+        borderColor: `color-mix(in oklab, ${color} 30%, transparent)`,
+      }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+      {children}
+    </span>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  suffix,
+  delta,
+  deltaLabel,
+}: {
+  label: string;
+  value: string;
+  suffix?: string;
+  delta: number;
+  deltaLabel: (v: number) => string;
+}) {
+  return (
+    <div
+      className="rounded-2xl border px-5 py-4"
+      style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+    >
+      <div
+        className="text-[10.5px] font-bold uppercase tracking-[0.09em]"
+        style={{ color: "var(--text-faint)" }}
+      >
+        {label}
+      </div>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span
+          className="font-display text-[24px] font-extrabold"
+          style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+        >
+          {value}
+        </span>
+        {suffix && (
+          <span className="text-[12px] font-semibold" style={{ color: "var(--text-faint)" }}>
+            {suffix}
+          </span>
+        )}
+      </div>
+      {delta > 0 && (
+        <div className="mt-0.5 text-[11.5px] font-bold" style={{ color: "var(--success)" }}>
+          ▲ {deltaLabel(delta)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Lead deltas (last week) ───────────────────────────────── */
+
+function leadDelta(leads: LeadRow[]): { countDelta: number; valueDelta: number } {
   const now = Date.now();
+  let countDelta = 0;
+  let valueDelta = 0;
   for (const l of leads) {
     if (!l.created_at) continue;
     const age = Math.floor((now - new Date(l.created_at).getTime()) / (7 * 86_400_000));
-    const idx = weeks - 1 - age;
-    if (idx >= 0 && idx < weeks) {
-      countPerWeek[idx] += 1;
-      valuePerWeek[idx] += l.value ?? 0;
+    if (age === 0) {
+      countDelta += 1;
+      valueDelta += l.value ?? 0;
     }
   }
-  const cumulativeValue: number[] = [];
-  let running = 0;
-  for (const v of valuePerWeek) {
-    running += v;
-    cumulativeValue.push(running);
-  }
-  return {
-    countPerWeek,
-    cumulativeValue,
-    countDelta: countPerWeek[weeks - 1],
-    valueDelta: valuePerWeek[weeks - 1],
-  };
+  return { countDelta, valueDelta };
 }
 
 function formatMoney(v: number): string {

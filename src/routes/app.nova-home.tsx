@@ -18,7 +18,6 @@ import {
   Users,
   Trophy,
   DollarSign,
-  Radio,
   CheckCircle2,
   Clock,
 } from "lucide-react";
@@ -93,49 +92,92 @@ function NovaHomePage() {
     ? "Everything is running"
     : urgentCount === 0
       ? "Stable — nothing urgent"
-      : `${urgentCount} item${urgentCount === 1 ? "" : "s"} need attention`;
+      : `${urgentCount} item${urgentCount === 1 ? "" : "s"} need${urgentCount === 1 ? "s" : ""} attention`;
+
+  // Where the hero's "review" CTA sends you — a real blocker first, else stale leads.
+  const firstUrgentTo =
+    graph.blockers[0]?.resolveTo ?? (stale.length > 0 ? "/app/contacts" : "/app/nova/crm");
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {/* ── Health hero: is the business okay? ── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      {/* ── Command hero: is the business okay? ── */}
+      <div
+        className="relative overflow-hidden rounded-[20px] border p-6 md:p-7"
+        style={{
+          borderColor:
+            urgentCount > 0
+              ? "color-mix(in oklab, var(--warning) 32%, transparent)"
+              : "var(--primary-border)",
+          background:
+            "radial-gradient(120% 140% at 0% 0%, color-mix(in oklab, " +
+            (urgentCount > 0 ? "var(--warning)" : "var(--primary)") +
+            " 12%, var(--surface)) 0%, var(--surface) 55%)",
+          boxShadow: "var(--shadow-glow-primary)",
+        }}
+      >
+        <div className="bg-grid-faint pointer-events-none absolute inset-0 opacity-40" />
+        <div className="relative">
+          <span
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em]"
+            style={{ color: urgentCount > 0 ? "var(--warning)" : "var(--success)" }}
+          >
+            <span
+              className="nova-live-dot h-1.5 w-1.5 rounded-full"
+              style={{ background: "currentColor" }}
+            />
+            {urgentCount > 0
+              ? `${urgentCount} item${urgentCount === 1 ? "" : "s"} need${urgentCount === 1 ? "s" : ""} attention`
+              : "All systems operating"}
+          </span>
           <h1
-            className="text-[22px] font-bold leading-tight"
-            style={{ color: "var(--foreground)", letterSpacing: "-0.025em" }}
+            className="mt-2.5 font-display text-[26px] font-extrabold leading-tight md:text-[30px]"
+            style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
           >
             {greeting()}, {name}
           </h1>
-          <p className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-            {graph.businessName} &nbsp;·&nbsp; {healthLabel}
+          <p className="mt-1 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
+            {graph.businessName} · {healthLabel}
           </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {urgentCount > 0 ? (
+              <Link
+                to={firstUrgentTo}
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[14px] font-bold transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "var(--warning)",
+                  color: "var(--warning-foreground)",
+                  boxShadow: "0 6px 20px color-mix(in oklab, var(--warning) 35%, transparent)",
+                }}
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Review what needs you
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link
+                to="/app/nova/crm"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[14px] font-bold transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                  boxShadow: "0 6px 20px color-mix(in oklab, var(--primary) 40%, transparent)",
+                }}
+              >
+                <Workflow className="h-4 w-4" />
+                Open pipeline
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            <span
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+              style={{ color: "var(--text-faint)" }}
+            >
+              <DollarSign className="h-3.5 w-3.5" />
+              {formatMoney(pipelineValue)} across {open.length} open deal
+              {open.length === 1 ? "" : "s"}
+            </span>
+          </div>
         </div>
-        <span
-          className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-[3px] border px-2.5 py-1 text-[11.5px] font-bold"
-          style={
-            urgentCount > 0
-              ? {
-                  color: "var(--warning)",
-                  background: "color-mix(in oklab, var(--warning) 10%, var(--surface))",
-                  borderColor: "color-mix(in oklab, var(--warning) 30%, transparent)",
-                }
-              : {
-                  color: "var(--success)",
-                  background: "color-mix(in oklab, var(--success) 9%, var(--surface))",
-                  borderColor: "color-mix(in oklab, var(--success) 30%, transparent)",
-                }
-          }
-        >
-          {urgentCount > 0 ? (
-            <>
-              <AlertTriangle className="h-3 w-3" /> {urgentCount} urgent
-            </>
-          ) : (
-            <>
-              <Radio className="h-3 w-3" /> Operating
-            </>
-          )}
-        </span>
       </div>
 
       {/* ── KPI blocks ── */}
@@ -164,7 +206,7 @@ function NovaHomePage() {
             <SectionLabel>Needs your attention</SectionLabel>
             {urgentCount === 0 ? (
               <div
-                className="flex items-center gap-2.5 rounded-[6px] border px-5 py-4 text-[13px]"
+                className="flex items-center gap-2.5 rounded-2xl border px-5 py-4 text-[13px]"
                 style={{
                   borderColor: "var(--border)",
                   background: "var(--surface)",
@@ -201,7 +243,7 @@ function NovaHomePage() {
           <div>
             <SectionLabel>Pipeline</SectionLabel>
             <div
-              className="rounded-[6px] border"
+              className="rounded-2xl border"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               <div
@@ -272,7 +314,7 @@ function NovaHomePage() {
               Next moves <ClosedLoopChip kind="learned" />
             </SectionLabel>
             <div
-              className="rounded-[6px] border"
+              className="rounded-2xl border"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               {graph.recommendations.map((r, i) => (
@@ -312,7 +354,7 @@ function NovaHomePage() {
           <div>
             <SectionLabel>Automation</SectionLabel>
             <div
-              className="rounded-[6px] border px-5 py-4"
+              className="rounded-2xl border px-5 py-4"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               <div className="flex items-center gap-2">
@@ -363,7 +405,7 @@ function NovaHomePage() {
               What Nova remembers <ClosedLoopChip kind="memory" />
             </SectionLabel>
             <div
-              className="rounded-[6px] border px-5 py-4"
+              className="rounded-2xl border px-5 py-4"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               <div className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
@@ -414,7 +456,7 @@ function NovaHomePage() {
           <div>
             <SectionLabel>What changed</SectionLabel>
             <div
-              className="rounded-[6px] border"
+              className="rounded-2xl border"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               {leads.length === 0 ? (
@@ -475,7 +517,7 @@ function KpiBlock({
   return (
     <Link
       to={to}
-      className="rounded-[6px] border px-4 py-3.5 transition-colors hover:bg-surface-2"
+      className="rounded-2xl border px-4 py-3.5 transition-colors hover:bg-surface-2"
       style={{ borderColor: "var(--border)", background: "var(--surface)" }}
     >
       <div className="flex items-center gap-1.5">
@@ -516,7 +558,7 @@ function UrgentRow({
 }) {
   return (
     <div
-      className="rounded-[6px] border px-5 py-4"
+      className="rounded-2xl border px-5 py-4"
       style={{
         background: "color-mix(in oklab, var(--warning) 8%, var(--surface))",
         borderColor: "color-mix(in oklab, var(--warning) 28%, transparent)",
