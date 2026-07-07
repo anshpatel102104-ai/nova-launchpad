@@ -130,42 +130,47 @@
   --shadow-glow: var(--shadow-glow-primary);
 }
 
-/* ─────────────────────────── Dark theme ─────────────────────────── */
-.dark {
-  /* ── Backgrounds ── */
-  --background: #0f172a;
-  --bg-elevated: #1e293b;
-  --bg-panel: #0b1120;
+/* ─────────────────────────── Dark theme — Mission Control ───────────────────────────
+   A premium, near-black command surface with a faint indigo cast. Backgrounds
+   are deep and quiet; surfaces lift with translucent white; the violet accent
+   and its glow do the talking. Inspired by SpaceX consoles, Linear, Notion.
+   Selector is `:root.dark` (specificity 0,2,0) so these win over the `:root, .light`
+   defaults that follow later in source order — a bare `.dark` ties and loses. */
+:root.dark {
+  /* ── Backgrounds — deep space near-black ── */
+  --background: #08090f;
+  --bg-elevated: #14151f;
+  --bg-panel: #050609;
 
-  /* ── Surfaces ── */
-  --surface: #1e293b;
-  --surface-2: #253349;
-  --surface-offset: #172033;
-  --surface-secondary: #1e293b;
-  --surface-tertiary: #2d3f59;
+  /* ── Surfaces — translucent lifts over the void ── */
+  --surface: #101119;
+  --surface-2: #191b26;
+  --surface-offset: #0b0c13;
+  --surface-secondary: #101119;
+  --surface-tertiary: #22242f;
 
   /* ── Text ── */
-  --foreground: #f1f5f9;
-  --text-inverse: #0f172a;
-  --muted-foreground: rgba(241, 245, 249, 0.55);
-  --text-faint: rgba(241, 245, 249, 0.25);
+  --foreground: #f4f5fb;
+  --text-inverse: #08090f;
+  --muted-foreground: rgba(244, 245, 251, 0.58);
+  --text-faint: rgba(244, 245, 251, 0.34);
 
   /* ── Card / Popover ── */
   --card: var(--surface);
   --card-foreground: var(--foreground);
-  --popover: #1e293b;
+  --popover: #14151f;
   --popover-foreground: var(--foreground);
 
   /* ── Primary — Violet ── */
   --primary: #8b5cf6;
   --primary-foreground: #ffffff;
-  --primary-hover: #7c3aed;
+  --primary-hover: #7c4ff5;
   --primary-active: #6d28d9;
-  --primary-soft: #1e1533;
-  --primary-glow: rgba(139, 92, 246, 0.32);
-  --primary-border: #3b2f5e;
+  --primary-soft: rgba(139, 92, 246, 0.14);
+  --primary-glow: rgba(139, 92, 246, 0.4);
+  --primary-border: rgba(139, 92, 246, 0.3);
 
-  /* ── Secondary ── */
+  /* ── Secondary — mission blue ── */
   --secondary: var(--surface-2);
   --secondary-foreground: var(--foreground);
   --secondary-accent: #60a5fa;
@@ -173,40 +178,40 @@
   /* ── Accent — violet ── */
   --accent: #8b5cf6;
   --accent-foreground: #ffffff;
-  --accent-glow: rgba(139, 92, 246, 0.28);
+  --accent-glow: rgba(139, 92, 246, 0.32);
 
-  /* ── Orange alias (amber) ── */
-  --orange: #fbbf24;
-  --orange-foreground: #0f172a;
-  --orange-glow: rgba(251, 191, 36, 0.22);
+  /* ── Orange — stage / ignition accent ── */
+  --orange: #f97316;
+  --orange-foreground: #ffffff;
+  --orange-glow: rgba(249, 115, 22, 0.28);
 
   /* ── Muted ── */
   --muted: var(--surface-2);
 
   /* ── Status ── */
   --success: #34d399;
-  --success-foreground: #0f172a;
+  --success-foreground: #06231a;
   --warning: #fbbf24;
-  --warning-foreground: #0f172a;
+  --warning-foreground: #241a05;
   --destructive: #f87171;
   --destructive-foreground: #ffffff;
   --info: #60a5fa;
-  --info-foreground: #0f172a;
+  --info-foreground: #06152b;
 
-  /* ── Borders ── */
-  --border: #334155;
-  --divider: #1e293b;
-  --border-subtle: #253349;
-  --border-strong: rgba(139, 92, 246, 0.35);
-  --border-neon: rgba(139, 92, 246, 0.55);
-  --input: #334155;
+  /* ── Borders — translucent white structure ── */
+  --border: rgba(255, 255, 255, 0.09);
+  --divider: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(139, 92, 246, 0.4);
+  --border-neon: rgba(139, 92, 246, 0.6);
+  --input: rgba(255, 255, 255, 0.12);
   --ring: #8b5cf6;
   --focus-ring: rgba(139, 92, 246, 0.55);
 
   /* ── Mission accents ── */
   --mentor-accent: #34d399;
   --orbit-accent: #60a5fa;
-  --launch-accent: #fbbf24;
+  --launch-accent: #f97316;
   --cyan: #22d3ee;
 
   /* ── Brand ── */
@@ -217,26 +222,39 @@
   --chart-1: #8b5cf6;
   --chart-2: #60a5fa;
   --chart-3: #34d399;
-  --chart-4: #fbbf24;
+  --chart-4: #f97316;
   --chart-5: #f472b6;
   --chart-6: #22d3ee;
 
   /* ── Gradient tokens ── */
   --gradient-1: linear-gradient(135deg, #8b5cf6 0%, #60a5fa 100%);
-  --gradient-2: linear-gradient(135deg, #1e293b 0%, #253349 100%);
+  --gradient-2: linear-gradient(135deg, #101119 0%, #191b26 100%);
 
-  /* ── Sidebar ── */
-  --sidebar: #0f172a;
-  --sidebar-foreground: #f1f5f9;
+  /* ── Sidebar — darker than the canvas for separation ── */
+  --sidebar: #0a0b12;
+  --sidebar-foreground: #f4f5fb;
   --sidebar-primary: #8b5cf6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(139, 92, 246, 0.1);
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #334155;
+  --sidebar-accent: rgba(139, 92, 246, 0.12);
+  --sidebar-accent-foreground: #f4f5fb;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
   --sidebar-ring: #8b5cf6;
 
   /* ── Modal overlay ── */
-  --modal-overlay: rgba(0, 0, 0, 0.8);
+  --modal-overlay: rgba(3, 4, 8, 0.82);
+
+  /* ── Elevation — deep black lifts with a violet-tinted rim ── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lifted: 0 20px 48px rgba(0, 0, 0, 0.65), 0 8px 16px rgba(0, 0, 0, 0.45);
+  --shadow-glow-primary:
+    0 0 0 1px rgba(139, 92, 246, 0.32), 0 6px 28px rgba(139, 92, 246, 0.22),
+    0 0 60px rgba(139, 92, 246, 0.1);
+  --shadow-glow-secondary: 0 0 0 1px rgba(139, 92, 246, 0.24), 0 6px 28px rgba(139, 92, 246, 0.14);
 }
 
 /* ─────────────────────────── Light theme (default): Clean White ─────────────────────────── */
@@ -437,8 +455,8 @@
   }
 
   html.dark {
-    background-color: #0f172a;
-    color: #f1f5f9;
+    background-color: #08090f;
+    color: #f4f5fb;
     color-scheme: dark;
   }
 
@@ -2104,7 +2122,7 @@ a,
   --module-complete: rgba(52, 211, 153, 0.1);
   --module-mastered: rgba(251, 191, 36, 0.12);
 
-  --intel-rail-bg: #0f172a;
+  --intel-rail-bg: #0a0b12;
   --intel-rail-border: rgba(255, 255, 255, 0.07);
 }
 

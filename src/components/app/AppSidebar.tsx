@@ -54,6 +54,7 @@ import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
 import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import { useBusinessGraph } from "@/hooks/use-business-graph";
+import { useFounderProgress } from "@/hooks/use-founder-progress";
 import {
   deriveLaunchpadProgress,
   LAUNCHPAD_SUPPORT_NAV,
@@ -497,6 +498,8 @@ function SidebarChrome({
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [collapsed, setCollapsed] = useState(false);
+  const founder = useFounderProgress();
+  const levelColor = `var(--level-${founder.level}-color)`;
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const plan = subQ.data?.plan ?? "starter";
@@ -566,11 +569,11 @@ function SidebarChrome({
         style={{ borderBottom: "1px solid var(--sidebar-border)" }}
       >
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
           style={{
-            background: "var(--primary-soft)",
-            color: "var(--primary)",
-            border: "1px solid var(--primary-border)",
+            background: "linear-gradient(140deg, var(--primary), var(--orbit-accent))",
+            color: "#fff",
+            boxShadow: "0 4px 16px color-mix(in oklab, var(--primary) 45%, transparent)",
           }}
         >
           <BrandIcon className="h-4 w-4" />
@@ -624,6 +627,58 @@ function SidebarChrome({
               collapsed={collapsed}
             />
           ))}
+        </div>
+
+        {/* Progression — the game layer, always in view */}
+        <div className={cn("px-2 pb-1.5", collapsed && "px-1.5")}>
+          <Link
+            to="/app/roadmap"
+            title={collapsed ? `Level ${founder.level} · ${founder.levelLabel}` : undefined}
+            className={cn(
+              "block rounded-xl border transition-colors hover:bg-surface-2",
+              collapsed ? "flex justify-center p-1.5" : "p-2.5",
+            )}
+            style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
+          >
+            {collapsed ? (
+              <span
+                className="flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-black text-white"
+                style={{
+                  background: `linear-gradient(150deg, color-mix(in oklab, ${levelColor} 82%, black), ${levelColor})`,
+                }}
+              >
+                {founder.level}
+              </span>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10.5px] font-black text-white"
+                    style={{
+                      background: `linear-gradient(150deg, color-mix(in oklab, ${levelColor} 82%, black), ${levelColor})`,
+                    }}
+                  >
+                    {founder.level}
+                  </span>
+                  <div
+                    className="min-w-0 flex-1 truncate text-[11.5px] font-bold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Level {founder.level} · {founder.levelLabel}
+                  </div>
+                  <span
+                    className="shrink-0 font-mono text-[10px]"
+                    style={{ color: "var(--text-faint)" }}
+                  >
+                    {founder.xpProgressInLevel}%
+                  </span>
+                </div>
+                <div className="context-xp-bar mt-2">
+                  <div className="fill" style={{ width: `${founder.xpProgressInLevel}%` }} />
+                </div>
+              </>
+            )}
+          </Link>
         </div>
 
         {/* User card */}
