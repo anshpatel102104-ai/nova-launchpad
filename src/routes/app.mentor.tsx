@@ -15,6 +15,9 @@ import { invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { useCurriculum } from "@/hooks/use-curriculum";
+import { mentorById } from "@/lib/mentors";
+import { MentorAvatar } from "@/components/app/MentorAvatar";
 
 export const Route = createFileRoute("/app/mentor")({ component: MentorPage });
 
@@ -139,6 +142,9 @@ function renderContent(text: string, onNavigate: (path: string) => void): ReactN
 function MentorPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  // Route the guidance page to whichever mentor owns the active lesson.
+  const { activeLesson } = useCurriculum();
+  const activeMentor = activeLesson ? mentorById(activeLesson.mentor_id) : null;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -208,33 +214,42 @@ function MentorPage() {
       const abort = new AbortController();
       abortRef.current = abort;
 
+      // With an active lesson, the founder talks to that lesson's mentor —
+      // persona, memory, and voice — not a generic assistant.
       const resp = await invokeEdgeStream(
-        "nova-chat",
-        {
-          message: trimmed,
-          conversation_history: updatedHistory
-            .slice(0, -1)
-            .map((m) => ({ role: m.role, content: m.content })),
-          user_context: {
-            ...(profile.full_name ? { name: profile.full_name } : {}),
-            ...(currentIdea ? { idea: currentIdea } : {}),
-            ...(currentChallenge ? { challenge: currentChallenge } : {}),
-            ...(stage ? { stage } : {}),
-            ...(lane ? { lane } : {}),
-            ...(planTier ? { plan: planTier } : {}),
-            ...(currentMission ? { current_mission: currentMission } : {}),
-            ...(toolRunCount > 0 ? { tools_completed: String(toolRunCount) } : {}),
-            ...(recentRuns.length > 0
-              ? {
-                  recent_tools: recentRuns
-                    .map((r) => r.toolKey)
-                    .filter(Boolean)
-                    .join(", "),
-                }
-              : {}),
-          },
-          org_id: (ctxAny.organization_id as string) || undefined,
-        },
+        activeMentor ? "mentor-chat" : "nova-chat",
+        activeMentor
+          ? {
+              agent_id: activeMentor.id,
+              message: trimmed,
+              org_id: (ctxAny.organization_id as string) || undefined,
+              session_key: "guidance",
+            }
+          : {
+              message: trimmed,
+              conversation_history: updatedHistory
+                .slice(0, -1)
+                .map((m) => ({ role: m.role, content: m.content })),
+              user_context: {
+                ...(profile.full_name ? { name: profile.full_name } : {}),
+                ...(currentIdea ? { idea: currentIdea } : {}),
+                ...(currentChallenge ? { challenge: currentChallenge } : {}),
+                ...(stage ? { stage } : {}),
+                ...(lane ? { lane } : {}),
+                ...(planTier ? { plan: planTier } : {}),
+                ...(currentMission ? { current_mission: currentMission } : {}),
+                ...(toolRunCount > 0 ? { tools_completed: String(toolRunCount) } : {}),
+                ...(recentRuns.length > 0
+                  ? {
+                      recent_tools: recentRuns
+                        .map((r) => r.toolKey)
+                        .filter(Boolean)
+                        .join(", "),
+                    }
+                  : {}),
+              },
+              org_id: (ctxAny.organization_id as string) || undefined,
+            },
         { signal: abort.signal, timeoutMs: 45_000 },
       );
 
@@ -255,8 +270,15 @@ function MentorPage() {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              accumulated += parsed.delta.text;
+            // mentor-chat streams {text}; nova-chat streams raw Anthropic deltas.
+            const delta =
+              typeof parsed.text === "string"
+                ? parsed.text
+                : parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta"
+                  ? parsed.delta.text
+                  : "";
+            if (delta) {
+              accumulated += delta;
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsg.id ? { ...m, content: accumulated, pending: false } : m,
@@ -301,36 +323,43 @@ function MentorPage() {
     }
   };
 
-  const quickPrompts = buildQuickPrompts(currentIdea, stage, toolRunCount);
+  const quickPrompts = activeMentor
+    ? activeMentor.prompts
+    : buildQuickPrompts(currentIdea, stage, toolRunCount);
   const lastTool = recentRuns[0]?.toolKey?.replace(/-/g, " ") || null;
 
   return (
     <div className="flex flex-col gap-4" style={{ height: "calc(100vh - 160px)", minHeight: 520 }}>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 shrink-0">
-        <div>
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "32px",
-              fontWeight: 800,
-              color: "var(--foreground)",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.1,
-            }}
-          >
-            Ask Nova
-          </h1>
-          <p
-            className="mt-1"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "15px",
-              color: "var(--muted-foreground)",
-            }}
-          >
-            Your AI chief of staff — full visibility into your workspace, ready with a plan.
-          </p>
+        <div className="flex items-center gap-3.5">
+          {activeMentor && <MentorAvatar mentor={activeMentor} size="lg" />}
+          <div>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "32px",
+                fontWeight: 800,
+                color: "var(--foreground)",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.1,
+              }}
+            >
+              {activeMentor ? activeMentor.name : "Ask Nova"}
+            </h1>
+            <p
+              className="mt-1"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "15px",
+                color: "var(--muted-foreground)",
+              }}
+            >
+              {activeMentor
+                ? `${activeMentor.domain} — your mentor for the current lesson${activeLesson ? `: "${activeLesson.title}"` : ""}.`
+                : "Your AI chief of staff — full visibility into your workspace, ready with a plan."}
+            </p>
+          </div>
         </div>
         {messages.length > 0 && (
           <button

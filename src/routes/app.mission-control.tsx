@@ -1,7 +1,7 @@
 // Launchpad Home — casefile-driven mission control. Unmistakably Launchpad:
 // staged, guided, evidence-based. One screen that answers, top to bottom:
 //   1. Where am I?            → stage bar (Idea → Validate → Offer → Launch → Revenue)
-//   2. What do I do now?      → one big guided step (NextStepHero)
+//   2. What do I do now?      → today's lesson from its mentor (TodaysLessonHero)
 //   3. What comes after?      → locked next steps + one thing to fix
 //   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
 //   5. How am I doing?        → charts and a leads table with next moves
@@ -13,7 +13,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SectionTabs } from "@/components/app/SectionTabs";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
-import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
+import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
@@ -27,7 +27,7 @@ const LAYOUT_KEY = "nova-home-layout";
 const DEFAULT_ORDER = ["money", "leads", "table"];
 
 function HomePage() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const graph = useBusinessGraph();
   const progress = deriveLaunchpadProgress(graph);
 
@@ -147,10 +147,10 @@ function HomePage() {
         </div>
       </div>
 
-      {/* ── 2 · Do this now ── */}
+      {/* ── 2 · Today's lesson — one mentor, one assignment ── */}
       <div>
-        <SectionLabel>Do this now</SectionLabel>
-        {user?.id && <NextStepHero userId={user.id} />}
+        <SectionLabel>Today's lesson</SectionLabel>
+        <TodaysLessonHero />
       </div>
 
       {/* ── 3 · After this step ── */}

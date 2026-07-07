@@ -4,6 +4,6 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/command-center")({
   beforeLoad: () => {
-    throw redirect({ to: "/app/dashboard", replace: true });
+    throw redirect({ to: "/app", replace: true });
   },
 });
