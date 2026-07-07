@@ -1,6 +1,6 @@
 // Launchpad Home — casefile-driven mission control. Unmistakably Launchpad:
 // staged, guided, evidence-based. One screen that answers, top to bottom:
-//   1. Where am I?            → stage bar (Idea → Validate → Offer → Launch → Revenue)
+//   1. Where am I?            → stage bar (Idea → Validate → Offer → Build → Launch → Revenue)
 //   2. What do I do now?      → today's lesson from its mentor (TodaysLessonHero)
 //   3. What comes after?      → locked next steps + one thing to fix
 //   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
@@ -78,7 +78,7 @@ function HomePage() {
       {/* ── Handoff hero — the build is proven, Nova takes over ── */}
       {progress.readyForNova && <NovaHandoffCard graph={graph} />}
 
-      {/* ── Stage bar: Idea → Validate → Offer → Launch → Revenue ── */}
+      {/* ── Stage bar: Idea → Validate → Offer → Build → Launch → Revenue ── */}
       <div
         className="rounded-[6px] border px-6 pb-5 pt-4"
         style={{ borderColor: "var(--border)", background: "var(--surface)" }}
