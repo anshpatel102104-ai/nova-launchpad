@@ -48,7 +48,12 @@ export const MENTOR_DEFS: MentorDef[] = [
     stages: ["Launch", "Operate"],
     ownedFormat: "step-plan",
   },
-  { id: "priya-nair", name: "Priya Nair", stages: ["Launch", "Operate", "Scale"], ownedFormat: null },
+  {
+    id: "priya-nair",
+    name: "Priya Nair",
+    stages: ["Launch", "Operate", "Scale"],
+    ownedFormat: null,
+  },
   {
     id: "mo-latif",
     name: "Mo Latif",
@@ -71,10 +76,7 @@ const FORMAT_BY_TOOL: Array<[OutputFormat, string[]]> = [
       "idea-vs-idea",
     ],
   ],
-  [
-    "contrast",
-    ["generate-offer", "offer", "positioning-engine", "positioning", "persona-builder"],
-  ],
+  ["contrast", ["generate-offer", "offer", "positioning-engine", "positioning", "persona-builder"]],
   [
     "intelligence-report",
     [

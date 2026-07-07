@@ -86,7 +86,10 @@ Deno.serve(async (req) => {
 
   if (!isAcceptableCasefile(run.tool_key as string)) {
     return json(
-      { error: "Only an accepted Investment Assessment can start a curriculum", code: "NOT_ACCEPTABLE" },
+      {
+        error: "Only an accepted Investment Assessment can start a curriculum",
+        code: "NOT_ACCEPTABLE",
+      },
       400,
     );
   }
@@ -98,7 +101,11 @@ Deno.serve(async (req) => {
       .select("identity, goals")
       .eq("organization_id", orgId)
       .maybeSingle(),
-    admin.from("organizations").select("stage, niche, goal, description").eq("id", orgId).maybeSingle(),
+    admin
+      .from("organizations")
+      .select("stage, niche, goal, description")
+      .eq("id", orgId)
+      .maybeSingle(),
   ]);
 
   const identity = (ctx?.identity ?? {}) as Record<string, unknown>;
