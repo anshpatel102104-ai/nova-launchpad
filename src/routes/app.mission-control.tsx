@@ -15,6 +15,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
+import { useFounderStreak } from "@/hooks/use-founder-streak";
 import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
@@ -50,6 +51,7 @@ function HomePage() {
   const { profile } = useAuth();
   const graph = useBusinessGraph();
   const founder = useFounderProgress();
+  const streak = useFounderStreak();
   const progress = deriveLaunchpadProgress(graph);
   const gpa = gradeForScore(founder.founderScore);
 
@@ -285,7 +287,10 @@ function HomePage() {
                   / 100
                 </span>
               </div>
-              <div className="mt-1.5 text-[12px] leading-snug" style={{ color: "var(--muted-foreground)" }}>
+              <div
+                className="mt-1.5 text-[12px] leading-snug"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 {founder.missionProgressPercent > 0
                   ? `Current mission ${founder.missionProgressPercent}% complete`
                   : "Complete your mission to raise your grade"}
@@ -295,7 +300,7 @@ function HomePage() {
         </div>
 
         {/* Concrete numbers — quiet, factual */}
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-3 gap-4">
           <StatTile
             label="Pipeline value"
             value={formatMoney(graph.leads.reduce((s, l) => s + (l.value ?? 0), 0))}
@@ -308,6 +313,13 @@ function HomePage() {
             suffix=" / 10 goal"
             delta={leadDelta(graph.leads).countDelta}
             deltaLabel={(v) => `+${v} this week`}
+          />
+          <StatTile
+            label="Streak"
+            value={String(streak.currentStreak)}
+            suffix={streak.currentStreak === 1 ? " day" : " days"}
+            delta={0}
+            deltaLabel={() => ""}
           />
         </div>
       </section>
@@ -329,10 +341,7 @@ function HomePage() {
               >
                 <t.icon className="h-4 w-4" />
               </span>
-              <span
-                className="text-[12px] font-semibold"
-                style={{ color: "var(--foreground)" }}
-              >
+              <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
                 {t.label}
               </span>
             </Link>
@@ -481,7 +490,13 @@ function MissionHero({
                         }
                 }
               >
-                {s.done ? <Check className="h-3 w-3" /> : s.upcoming ? <Lock className="h-2.5 w-2.5" /> : i + 1}
+                {s.done ? (
+                  <Check className="h-3 w-3" />
+                ) : s.upcoming ? (
+                  <Lock className="h-2.5 w-2.5" />
+                ) : (
+                  i + 1
+                )}
               </div>
               {i < stages.length - 1 && (
                 <div
@@ -533,7 +548,13 @@ function SectionLabel({
   );
 }
 
-function StatusChip({ tone, children }: { tone: "success" | "warning"; children: React.ReactNode }) {
+function StatusChip({
+  tone,
+  children,
+}: {
+  tone: "success" | "warning";
+  children: React.ReactNode;
+}) {
   const color = tone === "warning" ? "var(--warning)" : "var(--success)";
   return (
     <span

@@ -1,13 +1,11 @@
-// Two products, two sidebars — never one shared dashboard.
-//
-//   LaunchpadSidebar — linear, staged, guided. "I am building my business."
-//   NovaSidebar      — modular, operational.   "I am running my business."
-//
-// AppSidebar only chooses which product shell to render (workspaces.mode).
-// The two navs share chrome (header, footer, collapse) but nothing about
-// their information architecture: Launchpad is a mission progression,
-// Nova is a command center. Crossing between them is an intentional
-// handoff at the bottom of each rail, not a tab toggle.
+// One product, one rail. Launchpad Nova is a single mission-driven operating
+// system — the founder never chooses a "mode" to see their own business.
+// Everything is reachable from one flat nav (Mission Control, Roadmap, AI
+// Mentors, CRM, Projects, Marketing, Automations, Finances, Team, Knowledge,
+// Reports, Settings). The three operational items that need a proven build
+// (Marketing, Automations, Reports) show locked until the roadmap says the
+// business is ready — same "unlock" language as the rest of the game layer,
+// just inline instead of hidden behind a separate command-center sidebar.
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -17,33 +15,26 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ArrowUpRight,
-  ArrowRight,
   Zap,
   Shield,
   Brain,
-  Activity,
-  Sparkles,
-  Workflow,
-  Users,
   Megaphone,
-  Plug,
   BarChart3,
   FileText,
   ChevronDown,
   BookOpen,
-  Crosshair,
   ClipboardList,
   MoreHorizontal,
   PlayCircle,
   Search,
-  Inbox,
-  Check,
   Lock,
-  Gauge,
+  Flame,
   Rocket,
   Home,
-  Briefcase,
   Map,
+  Users,
+  Building2,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -52,285 +43,182 @@ import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
 import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
-import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import { useBusinessGraph } from "@/hooks/use-business-graph";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
-import {
-  deriveLaunchpadProgress,
-  LAUNCHPAD_SUPPORT_NAV,
-  NOVA_PRIMARY_NAV,
-  NOVA_SUPPORT_NAV,
-  PRODUCT_HOME,
-} from "@/lib/ecosystem";
+import { useFounderStreak } from "@/hooks/use-founder-streak";
+import { deriveLaunchpadProgress } from "@/lib/ecosystem";
 
 const STORAGE = "nova-sidebar-collapsed";
 
-/* ─── Chooser ──────────────────────────────────────────────── */
+/* ─── The unified nav model ──────────────────────────────────
+ * A flat list, no product split. `gated` items stay reachable in principle
+ * but are visually locked (and non-navigable) until the business has proven
+ * itself — deriveLaunchpadProgress().readyForNova. */
+interface NavItem {
+  id: string;
+  label: string;
+  to: string;
+  search?: Record<string, string>;
+  icon: LucideIcon;
+  match: (p: string, search: string) => boolean;
+  gated?: boolean;
+}
+
+const PRIMARY_NAV: NavItem[] = [
+  {
+    id: "home",
+    label: "Mission Control",
+    to: "/app/mission-control",
+    icon: Home,
+    match: (p) => p === "/app/mission-control" || p === "/app/dashboard",
+  },
+  {
+    id: "roadmap",
+    label: "Roadmap",
+    to: "/app/roadmap",
+    icon: Map,
+    match: (p) => p === "/app/roadmap",
+  },
+  {
+    id: "mentors",
+    label: "AI Mentors",
+    to: "/app/launchpad/mentors",
+    icon: GraduationCap,
+    match: (p) => p === "/app/launchpad/mentors",
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    to: "/app/contacts",
+    icon: Users,
+    match: (p) => p === "/app/contacts" || p === "/app/leads",
+  },
+  {
+    id: "projects",
+    label: "Projects",
+    to: "/app/launchpad/missions",
+    icon: ClipboardList,
+    match: (p) => p === "/app/launchpad/missions",
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    to: "/app/crm/campaigns",
+    icon: Megaphone,
+    match: (p) => p === "/app/crm/campaigns",
+    gated: true,
+  },
+  {
+    id: "automations",
+    label: "Automations",
+    to: "/app/automations",
+    icon: Zap,
+    match: (p) => p === "/app/automations" || p === "/app/builder",
+    gated: true,
+  },
+  {
+    id: "finances",
+    label: "Finances",
+    to: "/app/billing",
+    icon: CreditCard,
+    match: (p) => p === "/app/billing",
+  },
+  {
+    id: "team",
+    label: "Team",
+    to: "/app/settings",
+    search: { tab: "team" },
+    icon: Building2,
+    match: (p, search) => p === "/app/settings" && search.includes("tab=team"),
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    to: "/app/sop-library",
+    icon: BookOpen,
+    match: (p) => p === "/app/sop-library" || p === "/app/templates",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    to: "/app/nova/reports",
+    icon: BarChart3,
+    match: (p) => p === "/app/nova/reports" || p.startsWith("/app/ai-dashboard"),
+    gated: true,
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    to: "/app/settings",
+    icon: Settings,
+    match: (p, search) => p === "/app/settings" && !search.includes("tab=team"),
+  },
+];
+
+/** Deep-cut pages kept reachable without cluttering the primary rail. */
+const MORE_NAV: NavItem[] = [
+  {
+    id: "research",
+    label: "Research",
+    to: "/app/research",
+    icon: Search,
+    match: (p) => p === "/app/research",
+  },
+  {
+    id: "assets",
+    label: "Assets",
+    to: "/app/assets",
+    icon: FileText,
+    match: (p) => p === "/app/assets",
+  },
+  {
+    id: "memory",
+    label: "Memory",
+    to: "/app/memory",
+    icon: Brain,
+    match: (p) => p.startsWith("/app/memory"),
+  },
+];
 
 export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => void }) {
-  const { isOperate } = useWorkspaceMode();
-  return isOperate ? <NovaSidebar /> : <LaunchpadSidebar />;
-}
-
-/* ─── Icon maps (UI concern — the nav model in lib/ecosystem stays pure) ─── */
-
-const LAUNCHPAD_SUPPORT_ICONS: Record<string, LucideIcon> = {
-  missions: Crosshair,
-  roadmap: Map,
-  research: Search,
-  assets: FileText,
-  memory: Brain,
-};
-
-const NOVA_PRIMARY_ICONS: Record<string, LucideIcon> = {
-  home: Home,
-  crm: Users,
-  pipeline: Workflow,
-  automations: Zap,
-  clients: Briefcase,
-  tasks: ClipboardList,
-  reporting: BarChart3,
-};
-
-const NOVA_SUPPORT_ICONS: Record<string, LucideIcon> = {
-  roadmap: Map,
-  inbox: Inbox,
-  workflows: Workflow,
-  campaigns: Megaphone,
-  knowledge: BookOpen,
-  activity: Activity,
-  integrations: Plug,
-};
-
-/* ─── Launchpad — staged mission rail ──────────────────────── */
-
-function LaunchpadSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.searchStr });
   const graph = useBusinessGraph();
   const progress = deriveLaunchpadProgress(graph);
-  const { setMode } = useWorkspaceMode();
-  const navigate = useNavigate();
-
-  const openNova = () => {
-    setMode("operate");
-    navigate({ to: PRODUCT_HOME.nova });
-  };
+  const unlocked = progress.readyForNova;
 
   return (
-    <SidebarChrome brand="Launchpad" tagline="Build your business" brandIcon={Rocket}>
-      {({ collapsed }) => (
-        <>
-          {/* Home */}
-          <div className={cn("px-2", collapsed && "px-1.5")}>
-            <NavRow
-              to="/app/mission-control"
-              label="Home"
-              icon={Home}
-              active={path === "/app/mission-control" || path === "/app/dashboard"}
-              collapsed={collapsed}
-            />
-          </div>
-
-          {/* Stage progression — the spine of Launchpad */}
-          <SectionLabel collapsed={collapsed}>Your build</SectionLabel>
-          <div className={cn("px-2 space-y-px", collapsed && "px-1.5")}>
-            {progress.stages.map((stage, i) => {
-              const active = path === stage.to;
-              return (
-                <Link
-                  key={stage.id}
-                  to={stage.to}
-                  title={collapsed ? stage.label : stage.headline}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
-                    collapsed && "justify-center px-0 w-8 mx-auto",
-                    active ? "font-semibold" : "hover:bg-surface-2",
-                    stage.upcoming && !active && "opacity-55",
-                  )}
-                  style={
-                    active || stage.current
-                      ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                      : { color: "var(--muted-foreground)" }
-                  }
-                >
-                  <span
-                    className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] text-[10px] font-bold"
-                    style={
-                      stage.done
-                        ? { background: "var(--success)", color: "var(--success-foreground)" }
-                        : stage.current
-                          ? { background: "var(--primary)", color: "var(--primary-foreground)" }
-                          : {
-                              border: "1.5px solid var(--border)",
-                              color: "var(--text-faint)",
-                            }
-                    }
-                  >
-                    {stage.done ? (
-                      <Check className="h-3 w-3" />
-                    ) : stage.upcoming ? (
-                      <Lock className="h-2.5 w-2.5" />
-                    ) : (
-                      i + 1
-                    )}
-                  </span>
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-[13px]">{stage.label}</span>
-                      {stage.current && (
-                        <span
-                          className="text-[9px] font-bold uppercase tracking-wider"
-                          style={{ color: "var(--primary)" }}
-                        >
-                          Now
-                        </span>
-                      )}
-                    </>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Casefiles — supporting depth, out of the way */}
-          <SupportGroup
-            label="Casefiles"
-            items={LAUNCHPAD_SUPPORT_NAV.map((n) => ({
-              ...n,
-              icon: LAUNCHPAD_SUPPORT_ICONS[n.id] ?? FileText,
-            }))}
-            path={path}
-            collapsed={collapsed}
-            storageKey="lp-casefiles-open"
-          />
-
-          {/* Handoff — the only door into Nova from here */}
-          <div className={cn("mt-auto px-2 pt-4", collapsed && "px-1.5")}>
-            {progress.readyForNova ? (
-              <button
-                onClick={openNova}
-                title="Open Nova"
-                className={cn(
-                  "w-full rounded-lg border p-2.5 text-left transition-colors hover:opacity-90",
-                  collapsed && "flex justify-center p-2",
-                )}
-                style={{
-                  borderColor: "color-mix(in oklab, var(--cyan) 40%, transparent)",
-                  background: "color-mix(in oklab, var(--cyan) 9%, var(--surface))",
-                }}
-              >
-                {collapsed ? (
-                  <Gauge className="h-4 w-4" style={{ color: "var(--cyan)" }} />
-                ) : (
-                  <>
-                    <div
-                      className="flex items-center gap-1.5 text-[12px] font-bold"
-                      style={{ color: "var(--cyan)" }}
-                    >
-                      <Gauge className="h-3.5 w-3.5" />
-                      Ready to operate
-                      <ArrowRight className="ml-auto h-3.5 w-3.5" />
-                    </div>
-                    <div
-                      className="mt-0.5 text-[11px] leading-snug"
-                      style={{ color: "var(--muted-foreground)" }}
-                    >
-                      Nova built your operating system from your Launchpad decisions.
-                    </div>
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={openNova}
-                title="Nova — runs your business"
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-colors hover:bg-surface-2",
-                  collapsed && "justify-center px-0 w-8 mx-auto",
-                )}
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                <Gauge className="h-4 w-4 shrink-0 opacity-70" />
-                {!collapsed && (
-                  <span className="flex-1">
-                    <span className="block text-[12.5px] font-medium">Nova</span>
-                    <span className="block text-[10.5px]" style={{ color: "var(--text-faint)" }}>
-                      Runs your business — unlocks at Launch
-                    </span>
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-        </>
-      )}
-    </SidebarChrome>
-  );
-}
-
-/* ─── Nova — operational command rail ──────────────────────── */
-
-function NovaSidebar() {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const { setMode } = useWorkspaceMode();
-  const navigate = useNavigate();
-
-  const openLaunchpad = () => {
-    setMode("create");
-    navigate({ to: PRODUCT_HOME.launchpad });
-  };
-
-  return (
-    <SidebarChrome brand="Nova" tagline="Run your business" brandIcon={Gauge}>
+    <SidebarChrome
+      brand="Launchpad Nova"
+      tagline="Your business operating system"
+      brandIcon={Rocket}
+    >
       {({ collapsed }) => (
         <>
           <div className={cn("px-2 space-y-px", collapsed && "px-1.5")}>
-            {NOVA_PRIMARY_NAV.map((item) => (
+            {PRIMARY_NAV.map((item) => (
               <NavRow
                 key={item.id}
                 to={item.to}
+                search={item.search}
                 label={item.label}
-                icon={NOVA_PRIMARY_ICONS[item.id] ?? Sparkles}
-                active={item.match(path)}
+                icon={item.icon}
+                active={item.match(path, search)}
                 collapsed={collapsed}
+                locked={item.gated && !unlocked}
+                lockHint="Unlocks once your build is proven — see your Roadmap"
               />
             ))}
           </div>
 
-          {/* Operations — depth on demand */}
           <SupportGroup
-            label="Operations"
-            items={NOVA_SUPPORT_NAV.map((n) => ({
-              ...n,
-              icon: NOVA_SUPPORT_ICONS[n.id] ?? FileText,
-            }))}
+            label="More"
+            items={MORE_NAV}
             path={path}
+            search={search}
             collapsed={collapsed}
-            storageKey="nova-operations-open"
+            storageKey="lp-more-open"
           />
-
-          {/* Quiet door back to the creation engine */}
-          <div className={cn("mt-auto px-2 pt-4", collapsed && "px-1.5")}>
-            <button
-              onClick={openLaunchpad}
-              title="Launchpad — build the next thing"
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-colors hover:bg-surface-2",
-                collapsed && "justify-center px-0 w-8 mx-auto",
-              )}
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              <Rocket className="h-4 w-4 shrink-0 opacity-70" />
-              {!collapsed && (
-                <span className="flex-1">
-                  <span className="block text-[12.5px] font-medium">Launchpad</span>
-                  <span className="block text-[10.5px]" style={{ color: "var(--text-faint)" }}>
-                    Build or validate the next thing
-                  </span>
-                </span>
-              )}
-            </button>
-          </div>
         </>
       )}
     </SidebarChrome>
@@ -341,20 +229,48 @@ function NovaSidebar() {
 
 function NavRow({
   to,
+  search,
   label,
   icon: Icon,
   active,
   collapsed,
+  locked,
+  lockHint,
 }: {
   to: string;
+  search?: Record<string, string>;
   label: string;
   icon: LucideIcon;
   active: boolean;
   collapsed: boolean;
+  locked?: boolean;
+  lockHint?: string;
 }) {
+  if (locked) {
+    return (
+      <div
+        title={collapsed ? `${label} · ${lockHint ?? "Locked"}` : lockHint}
+        className={cn(
+          "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] opacity-45",
+          collapsed && "justify-center px-0 w-8 mx-auto",
+        )}
+        style={{ color: "var(--muted-foreground)" }}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-[13px]">{label}</span>
+            <Lock className="h-3 w-3 shrink-0" />
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <Link
       to={to}
+      search={search as never}
       title={collapsed ? label : undefined}
       className={cn(
         "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] transition-all duration-100",
@@ -373,38 +289,20 @@ function NavRow({
   );
 }
 
-function SectionLabel({ children, collapsed }: { children: React.ReactNode; collapsed: boolean }) {
-  if (collapsed) return <div className="pt-3" />;
-  return (
-    <div
-      className="px-4.5 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-widest opacity-55"
-      style={{ color: "var(--muted-foreground)", paddingLeft: 18 }}
-    >
-      {children}
-    </div>
-  );
-}
-
-interface SupportItem {
-  id: string;
-  label: string;
-  to: string;
-  match: (p: string) => boolean;
-  icon: LucideIcon;
-}
-
 /** Collapsible support area — progressive disclosure, closed by default,
  *  auto-opens when the active route lives inside it. */
 function SupportGroup({
   label,
   items,
   path,
+  search,
   collapsed,
   storageKey,
 }: {
   label: string;
-  items: SupportItem[];
+  items: NavItem[];
   path: string;
+  search: string;
   collapsed: boolean;
   storageKey: string;
 }) {
@@ -416,7 +314,7 @@ function SupportGroup({
     }
   });
 
-  const hasActive = items.some((i) => i.match(path));
+  const hasActive = items.some((i) => i.match(path, search));
   useEffect(() => {
     if (hasActive) setOpen(true);
   }, [hasActive]);
@@ -470,7 +368,7 @@ function SupportGroup({
               to={item.to}
               label={item.label}
               icon={item.icon}
-              active={item.match(path)}
+              active={item.match(path, search)}
               collapsed={collapsed}
             />
           ))}
@@ -480,7 +378,7 @@ function SupportGroup({
   );
 }
 
-/** Shared chrome: header, footer, collapse. Product navs render inside. */
+/** Shared chrome: header, footer, collapse. */
 function SidebarChrome({
   brand,
   tagline,
@@ -499,6 +397,7 @@ function SidebarChrome({
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [collapsed, setCollapsed] = useState(false);
   const founder = useFounderProgress();
+  const streak = useFounderStreak();
   const levelColor = `var(--level-${founder.level}-color)`;
 
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -540,8 +439,6 @@ function SidebarChrome({
   const footerItems = [
     ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield }] : []),
     { to: "/app/tutorials", label: "Help & Tutorials", icon: PlayCircle },
-    { to: "/app/settings", label: "Settings", icon: Settings },
-    { to: "/app/billing", label: "Billing", icon: CreditCard },
   ];
 
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -560,7 +457,7 @@ function SidebarChrome({
         borderRight: "1px solid var(--sidebar-border)",
       }}
     >
-      {/* ── Product header ── */}
+      {/* ── Brand header ── */}
       <div
         className={cn(
           "flex h-[52px] shrink-0 items-center gap-2.5 px-3",
@@ -596,7 +493,7 @@ function SidebarChrome({
         )}
       </div>
 
-      {/* ── Product nav ── */}
+      {/* ── Nav ── */}
       <nav className="flex flex-1 flex-col overflow-y-auto py-2">{children({ collapsed })}</nav>
 
       {/* ── Footer ── */}
@@ -633,7 +530,11 @@ function SidebarChrome({
         <div className={cn("px-2 pb-1.5", collapsed && "px-1.5")}>
           <Link
             to="/app/roadmap"
-            title={collapsed ? `Level ${founder.level} · ${founder.levelLabel}` : undefined}
+            title={
+              collapsed
+                ? `Level ${founder.level} · ${founder.levelLabel} · ${streak.currentStreak}-day streak`
+                : undefined
+            }
             className={cn(
               "block rounded-xl border transition-colors hover:bg-surface-2",
               collapsed ? "flex justify-center p-1.5" : "p-2.5",
@@ -676,6 +577,15 @@ function SidebarChrome({
                 <div className="context-xp-bar mt-2">
                   <div className="fill" style={{ width: `${founder.xpProgressInLevel}%` }} />
                 </div>
+                {streak.currentStreak > 0 && (
+                  <div
+                    className="mt-1.5 flex items-center gap-1 text-[10.5px] font-bold"
+                    style={{ color: "var(--warning)" }}
+                  >
+                    <Flame className="h-3 w-3" />
+                    {streak.currentStreak}-day streak
+                  </div>
+                )}
               </>
             )}
           </Link>
