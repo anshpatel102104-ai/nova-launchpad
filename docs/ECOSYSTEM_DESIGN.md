@@ -34,7 +34,7 @@ navigation, home screens, shell, or mental model.
 
 ```
 src/lib/ecosystem.ts                 ← single source of truth for the split
-├─ LAUNCHPAD_STAGES                  Idea → Validate → Offer → Launch → Revenue
+├─ LAUNCHPAD_STAGES                  Idea → Validate → Offer → Build → Launch → Revenue
 ├─ deriveLaunchpadProgress(graph)    stage states, proof, needs-proof, readiness
 ├─ NOVA_PRIMARY_NAV / NOVA_SUPPORT_NAV
 ├─ LAUNCHPAD_SUPPORT_NAV             Missions · Research · Assets · Memory
@@ -53,7 +53,7 @@ src/hooks/use-workspace-mode.ts      ← create ↔ operate (workspaces.mode)
   4. Your numbers.
 - **Stages** — each stage links to where the work happens:
   Idea → idea-validator · Validate → kill-my-idea · Offer → offer ·
-  Launch → outcomes/launch · Revenue → first-customers.
+  Build → gtm-strategy · Launch → outcomes/launch · Revenue → first-customers.
 - **Casefiles** (support, collapsed): Missions, Research, Assets, Memory.
 
 ### Nova IA
@@ -75,11 +75,12 @@ src/hooks/use-workspace-mode.ts      ← create ↔ operate (workspaces.mode)
 | Idea     | any successful tool run, or idea scored                    |
 | Validate | idea validated + stress-tested (kill-my-idea / competitor) |
 | Offer    | offer generated with pricing                               |
-| Launch   | customer plan written **and** first leads saved            |
+| Build    | customer plan / go-to-market system written                |
+| Launch   | first leads saved                                          |
 | Revenue  | first deal won                                             |
 
-`readyForNova` = Launch done → the handoff hero appears and the sidebar door
-upgrades from a quiet link to "Ready to operate".
+`readyForNova` = Build done **and** Launch done → the handoff hero appears and
+the sidebar door upgrades from a quiet link to "Ready to operate".
 
 ## Product identity tokens
 

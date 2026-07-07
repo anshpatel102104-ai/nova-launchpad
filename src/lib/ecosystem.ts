@@ -13,12 +13,12 @@ import type { BusinessGraph } from "@/hooks/use-business-graph";
 export type ProductId = "launchpad" | "nova";
 
 /* ─── Launchpad stage model ─────────────────────────────────────────────
- * Five stages, strictly linear: Idea → Validate → Offer → Launch → Revenue.
+ * Six stages, strictly linear: Idea → Validate → Offer → Build → Launch → Revenue.
  * A stage is "done" when the business has produced the proof it exists for —
  * derived from real signals (tool runs, leads, deals), never self-reported.
  */
 
-export type LaunchpadStageId = "idea" | "validate" | "offer" | "launch" | "revenue";
+export type LaunchpadStageId = "idea" | "validate" | "offer" | "build" | "launch" | "revenue";
 
 export interface LaunchpadStageDef {
   id: LaunchpadStageId;
@@ -54,11 +54,18 @@ export const LAUNCHPAD_STAGES: LaunchpadStageDef[] = [
     proof: "Offer defined with a price",
   },
   {
+    id: "build",
+    label: "Build",
+    to: "/app/launchpad/gtm-strategy",
+    headline: "Set up the assets and systems that make the offer ready to sell.",
+    proof: "Customer plan and systems set up",
+  },
+  {
     id: "launch",
     label: "Launch",
     to: "/app/outcomes/launch",
-    headline: "Get your plan and first leads live",
-    proof: "Customer plan written, first leads saved",
+    headline: "Go live and bring in your first leads",
+    proof: "First leads saved",
   },
   {
     id: "revenue",
@@ -88,7 +95,7 @@ export interface LaunchpadProgress {
   needsProof: Array<{ label: string; to: string }>;
 }
 
-function wonLeadCount(graph: BusinessGraph): number {
+export function wonLeadCount(graph: BusinessGraph): number {
   return graph.leads.filter((l) => {
     const s = (l.stage ?? "").toLowerCase();
     return s.includes("won") || s.includes("closed");
@@ -108,7 +115,8 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
     idea: s.hasValidatedIdea || s.toolRunCount > 0,
     validate: s.hasValidatedIdea && stressTested,
     offer: s.hasOffer,
-    launch: s.hasGtm && s.leadCount > 0,
+    build: s.hasGtm,
+    launch: s.leadCount > 0,
     revenue: won > 0,
   };
 
@@ -125,7 +133,7 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
   const proven: string[] = [];
   if (doneById.validate) proven.push("Idea checked against real demand");
   if (doneById.offer) proven.push("Offer defined with a price");
-  if (s.hasGtm) proven.push("Customer plan written");
+  if (doneById.build) proven.push("Customer plan written");
   if (s.leadCount > 0) proven.push(`${s.leadCount} lead${s.leadCount === 1 ? "" : "s"} saved`);
   if (won > 0) proven.push(`${won} deal${won === 1 ? "" : "s"} won`);
 
@@ -134,7 +142,7 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
     needsProof.push({ label: "Proof that people want this", to: "/app/launchpad/idea-validator" });
   if (!doneById.offer)
     needsProof.push({ label: "An offer with a price on it", to: "/app/launchpad/offer" });
-  if (!s.hasGtm)
+  if (!doneById.build)
     needsProof.push({ label: "A written customer plan", to: "/app/launchpad/gtm-strategy" });
   if (s.leadCount === 0)
     needsProof.push({ label: "Real people to talk to", to: "/app/launchpad/first-10-customers" });
@@ -144,7 +152,7 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
     stages,
     currentIndex,
     current: stages[currentIndex],
-    readyForNova: doneById.launch,
+    readyForNova: doneById.build && doneById.launch,
     proven,
     needsProof: needsProof.slice(0, 3),
   };
@@ -169,6 +177,7 @@ export const LAUNCHPAD_SUPPORT_NAV: EcosystemNavItem[] = [
     to: "/app/launchpad/missions",
     match: (p) => p === "/app/launchpad/missions" || p === "/app/launchpad-path",
   },
+  { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   { id: "research", label: "Research", to: "/app/research", match: (p) => p === "/app/research" },
   { id: "assets", label: "Assets", to: "/app/assets", match: (p) => p === "/app/assets" },
   { id: "memory", label: "Memory", to: "/app/memory", match: (p) => p.startsWith("/app/memory") },
@@ -218,6 +227,7 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
 
 /** Nova support areas — operational depth, collapsed by default. */
 export const NOVA_SUPPORT_NAV: EcosystemNavItem[] = [
+  { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   {
     id: "inbox",
     label: "Inbox",

@@ -1,8 +1,10 @@
-// Launchpad Home — casefile-driven mission control. Unmistakably Launchpad:
-// staged, guided, evidence-based. One screen that answers, top to bottom:
-//   1. Where am I?            → stage bar (Idea → Validate → Offer → Launch → Revenue)
-//   2. What do I do now?      → today's lesson from its mentor (TodaysLessonHero)
-//   3. What comes after?      → locked next steps + one thing to fix
+// Launchpad Home — "Campus": a casefile-driven mission control styled as a
+// course dashboard. Unmistakably Launchpad: staged, guided, evidence-based.
+// One screen that answers, top to bottom:
+//   1. Where am I?            → stage bar (Idea → Validate → Offer → Build → Launch → Revenue)
+//   2. What do I do now?      → current course: today's lesson (TodaysLessonHero),
+//                                Business GPA, and the AI Mentor card
+//   3. What comes after?      → daily assignment: locked next steps + one thing to fix
 //   4. What's proven?         → casefile: Nova's take, proof, needs-proof, memory
 //   5. How am I doing?        → charts and a leads table with next moves
 // When the build is proven, the Nova handoff hero takes over the top:
@@ -13,10 +15,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SectionTabs } from "@/components/app/SectionTabs";
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
+import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
+import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
+import { gradeForScore } from "@/lib/business-grade";
 import { ArrowRight, AlertTriangle, Check, Clock, GripVertical, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
@@ -29,7 +34,9 @@ const DEFAULT_ORDER = ["money", "leads", "table"];
 function HomePage() {
   const { profile } = useAuth();
   const graph = useBusinessGraph();
+  const founder = useFounderProgress();
   const progress = deriveLaunchpadProgress(graph);
+  const gpa = gradeForScore(founder.founderScore);
 
   const name = profile?.full_name?.split(" ")[0] || "Founder";
   const blocker = graph.blockers[0];
@@ -46,7 +53,7 @@ function HomePage() {
             className="text-[22px] font-bold leading-tight"
             style={{ color: "var(--foreground)", letterSpacing: "-0.025em" }}
           >
-            {greeting()}, {name}
+            Welcome back, {name}
           </h1>
           <p className="mt-0.5 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
             {graph.businessName} &nbsp;·&nbsp;{" "}
@@ -78,7 +85,7 @@ function HomePage() {
       {/* ── Handoff hero — the build is proven, Nova takes over ── */}
       {progress.readyForNova && <NovaHandoffCard graph={graph} />}
 
-      {/* ── Stage bar: Idea → Validate → Offer → Launch → Revenue ── */}
+      {/* ── Stage bar: Idea → Validate → Offer → Build → Launch → Revenue ── */}
       <div
         className="rounded-[6px] border px-6 pb-5 pt-4"
         style={{ borderColor: "var(--border)", background: "var(--surface)" }}
@@ -147,15 +154,50 @@ function HomePage() {
         </div>
       </div>
 
-      {/* ── 2 · Today's lesson — one mentor, one assignment ── */}
+      {/* ── 2 · Current course — one mentor, one assignment ── */}
       <div>
-        <SectionLabel>Today's lesson</SectionLabel>
-        <TodaysLessonHero />
+        <SectionLabel>Current course</SectionLabel>
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-[1.62fr_1fr]">
+          <TodaysLessonHero />
+          <div className="space-y-3.5">
+            <div
+              className="rounded-[6px] border px-5 py-4"
+              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+            >
+              <div
+                className="text-[11px] font-bold uppercase tracking-[0.07em]"
+                style={{ color: "var(--text-faint)" }}
+              >
+                Your Business GPA
+              </div>
+              <div className="mt-1.5 flex items-baseline gap-2">
+                <span
+                  className="text-[26px] font-extrabold"
+                  style={{ color: "var(--foreground)", letterSpacing: "-0.02em" }}
+                >
+                  {gpa.letter}
+                </span>
+                <span className="text-[13px] font-semibold" style={{ color: "var(--text-faint)" }}>
+                  {gpa.gpa.toFixed(1)}
+                </span>
+              </div>
+              <Link
+                to="/app/roadmap"
+                className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-bold"
+                style={{ color: "var(--primary)" }}
+              >
+                View report card
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <MentorChatCard />
+          </div>
+        </div>
       </div>
 
-      {/* ── 3 · After this step ── */}
+      {/* ── 3 · Daily assignment ── */}
       <div>
-        <SectionLabel>After this step</SectionLabel>
+        <SectionLabel>Daily assignment</SectionLabel>
         <div className="grid grid-cols-1 gap-3.5 md:grid-cols-[1.4fr_1fr]">
           <div
             className="rounded-[6px] border px-5 py-4"
@@ -656,11 +698,4 @@ function bucketLeadsByWeek(leads: LeadRow[], weeks: number) {
 function formatMoney(v: number): string {
   if (v >= 1000) return `$${(v / 1000).toFixed(1)}k`;
   return `$${Math.round(v)}`;
-}
-
-function greeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
 }
