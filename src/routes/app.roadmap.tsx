@@ -92,8 +92,13 @@ function RoadmapPage() {
       <div>
         <SectionLabel>Adaptive roadmap</SectionLabel>
         <div
-          className="rounded-[6px] border px-6 py-5"
-          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          className="rounded-[20px] border px-6 py-5"
+          style={{
+            borderColor: "var(--primary-border)",
+            background:
+              "radial-gradient(120% 140% at 0% 0%, color-mix(in oklab, var(--primary) 9%, var(--surface)) 0%, var(--surface) 55%)",
+            boxShadow: "var(--shadow-glow-primary)",
+          }}
         >
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <div>
@@ -152,7 +157,7 @@ function RoadmapPage() {
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-[1.5fr_1fr]">
             <StageChecklist stage={roadmap.current} />
             <div
-              className="rounded-[6px] border p-4"
+              className="rounded-2xl border p-4"
               style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
             >
               <div
@@ -184,7 +189,7 @@ function RoadmapPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Level */}
           <div
-            className="flex items-center gap-5 rounded-[6px] border px-5 py-4"
+            className="flex items-center gap-5 rounded-2xl border px-5 py-4"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
           >
             <HexLevelBadge level={founder.level} levelLabel={founder.levelLabel} />
@@ -217,7 +222,7 @@ function RoadmapPage() {
 
           {/* Health score */}
           <div
-            className="flex items-center gap-5 rounded-[6px] border px-5 py-4"
+            className="flex items-center gap-5 rounded-2xl border px-5 py-4"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
           >
             <ProgressRing percent={health.overall} size={80} color="var(--success)" />
@@ -250,7 +255,7 @@ function RoadmapPage() {
           {milestones.map((m) => (
             <div
               key={m.id}
-              className="rounded-[6px] border px-4 py-3.5"
+              className="rounded-2xl border px-4 py-3.5"
               style={{ borderColor: "var(--border)", background: "var(--surface)" }}
             >
               <Trophy
@@ -283,7 +288,7 @@ function RoadmapPage() {
         {/* Recent wins + Next milestone */}
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1.4fr_1fr]">
           <div
-            className="rounded-[6px] border px-5 py-4"
+            className="rounded-2xl border px-5 py-4"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
           >
             <div
@@ -313,7 +318,7 @@ function RoadmapPage() {
           </div>
 
           <div
-            className="rounded-[6px] border px-5 py-4"
+            className="rounded-2xl border px-5 py-4"
             style={{
               borderColor: "var(--primary-border)",
               background: "color-mix(in oklab, var(--primary) 5%, var(--surface))",
@@ -356,7 +361,7 @@ function RoadmapPage() {
 function StageChecklist({ stage }: { stage: RoadmapStageState }) {
   return (
     <div
-      className="rounded-[6px] border p-4"
+      className="rounded-2xl border p-4"
       style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
     >
       <div className="mb-2 flex items-center justify-between">
