@@ -12,13 +12,17 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
+  Hourglass,
   type LucideIcon,
 } from "lucide-react";
+import { useIsAdmin } from "@/lib/admin";
 
 interface SectionTab {
   to: string;
   label: string;
   icon: LucideIcon;
+  /** Only shown to platform admins (user_roles.role = 'admin'). */
+  adminOnly?: boolean;
 }
 
 export interface SectionConfig {
@@ -34,6 +38,7 @@ export const SECTIONS = {
       { to: "/app/contacts", label: "People", icon: Users },
       { to: "/app/nova/crm", label: "Pipeline", icon: Workflow },
       { to: "/app/launchpad/first-customers", label: "First Customers", icon: Crosshair },
+      { to: "/app/crm/waitlist", label: "Waitlist", icon: Hourglass, adminOnly: true },
     ],
   },
   path: {
@@ -56,7 +61,9 @@ export const SECTIONS = {
 
 export function SectionTabs({ section }: { section: keyof typeof SECTIONS }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { tabs, accent } = SECTIONS[section];
+  const { isAdmin } = useIsAdmin();
+  const { tabs: allTabs, accent } = SECTIONS[section];
+  const tabs = allTabs.filter((t: SectionTab) => !t.adminOnly || isAdmin);
 
   return (
     <div

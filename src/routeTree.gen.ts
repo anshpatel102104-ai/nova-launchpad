@@ -78,6 +78,7 @@ import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
+import { Route as AppCrmWaitlistRouteImport } from './routes/app.crm.waitlist'
 import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
 import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
 import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
@@ -435,6 +436,11 @@ const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
   path: '/launchpad/$tool',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCrmWaitlistRoute = AppCrmWaitlistRouteImport.update({
+  id: '/crm/waitlist',
+  path: '/crm/waitlist',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmTasksRoute = AppCrmTasksRouteImport.update({
   id: '/crm/tasks',
   path: '/crm/tasks',
@@ -545,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -625,6 +632,7 @@ export interface FileRoutesByTo {
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -707,6 +715,7 @@ export interface FileRoutesById {
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
@@ -790,6 +799,7 @@ export interface FileRouteTypes {
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -870,6 +880,7 @@ export interface FileRouteTypes {
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -951,6 +962,7 @@ export interface FileRouteTypes {
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
@@ -1476,6 +1488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadToolRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/crm/waitlist': {
+      id: '/app/crm/waitlist'
+      path: '/crm/waitlist'
+      fullPath: '/app/crm/waitlist'
+      preLoaderRoute: typeof AppCrmWaitlistRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm/tasks': {
       id: '/app/crm/tasks'
       path: '/crm/tasks'
@@ -1648,6 +1667,7 @@ interface AppRouteChildren {
   AppCrmConversationsRoute: typeof AppCrmConversationsRoute
   AppCrmFormsRoute: typeof AppCrmFormsRoute
   AppCrmTasksRoute: typeof AppCrmTasksRoute
+  AppCrmWaitlistRoute: typeof AppCrmWaitlistRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
@@ -1708,6 +1728,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCrmConversationsRoute: AppCrmConversationsRoute,
   AppCrmFormsRoute: AppCrmFormsRoute,
   AppCrmTasksRoute: AppCrmTasksRoute,
+  AppCrmWaitlistRoute: AppCrmWaitlistRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
