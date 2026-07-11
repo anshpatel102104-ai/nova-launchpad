@@ -45,7 +45,10 @@ import {
   getProfilePrefills,
   mergeBusinessContextIntoProfile,
   type WorkspaceProfile,
+  type LearnedFact,
 } from "@/lib/workspaceProfile";
+import { advanceMissionAfterRun, type RunMomentum } from "@/lib/mission-loop";
+import { PostRunMomentum } from "@/components/app/PostRunMomentum";
 
 /* ─── Per-tool field config ──────────────────────────────────────────────── */
 type FieldType = "text" | "textarea" | "select" | "number";
@@ -1242,7 +1245,13 @@ function buildPayload(fields: Record<string, string>, title: string): Record<str
   return payload;
 }
 
-type Search = { context?: string; title?: string; fromRun?: string; lesson?: string };
+type Search = {
+  context?: string;
+  title?: string;
+  fromRun?: string;
+  lesson?: string;
+  step?: string;
+};
 
 export const Route = createFileRoute("/app/launchpad/$tool")({
   validateSearch: (s: Record<string, unknown>): Search => ({
@@ -1250,6 +1259,7 @@ export const Route = createFileRoute("/app/launchpad/$tool")({
     title: typeof s.title === "string" ? s.title : undefined,
     fromRun: typeof s.fromRun === "string" ? s.fromRun : undefined,
     lesson: typeof s.lesson === "string" ? s.lesson : undefined,
+    step: typeof s.step === "string" ? s.step : undefined,
   }),
   loader: ({ params }) => {
     const tool = launchpadCatalog.find((t) => t.key === params.tool);
@@ -1280,6 +1290,8 @@ function ToolPage() {
   const [output, setOutput] = useState<Record<string, unknown> | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const [momentum, setMomentum] = useState<RunMomentum | null>(null);
+  const [learnedFacts, setLearnedFacts] = useState<LearnedFact[]>([]);
   const [title, setTitle] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [draftRestored, setDraftRestored] = useState(false);
@@ -1351,6 +1363,8 @@ function ToolPage() {
     setOutput(null);
     setRunId(null);
     setFeedback(null);
+    setMomentum(null);
+    setLearnedFacts([]);
     setDraftRestored(false);
 
     // Load the latest profile
@@ -1468,6 +1482,8 @@ function ToolPage() {
     setOutput(null);
     setRunId(null);
     setFeedback(null);
+    setMomentum(null);
+    setLearnedFacts([]);
     try {
       const payload = buildPayload(fields, title);
       const result = await runTool(
@@ -1483,9 +1499,26 @@ function ToolPage() {
       if (lesson && lesson.status === "active") {
         completeLesson.mutate({ lesson, toolRunId: result.run_id });
       }
-      // Save relevant fields to workspace profile for future pre-fills
-      extractAndSaveProfileFromFields(fields);
+      // Save relevant fields to workspace profile for future pre-fills, and
+      // surface what Nova just learned in the post-run receipt.
+      setLearnedFacts(extractAndSaveProfileFromFields(fields));
       setWorkspaceProfile(loadWorkspaceProfile());
+      // Close the loop: a successful run completes the mission step that
+      // pointed here (?step= from a step CTA, or matched by tool key), so the
+      // checklist advances without a manual tick. Fire-and-forget — the
+      // output must never wait on mission bookkeeping.
+      if (user?.id) {
+        const userId = user.id;
+        void advanceMissionAfterRun({
+          userId,
+          stepId: search.step,
+          toolKeys: [tool.key, effectiveToolKey],
+        }).then((m) => {
+          if (!m) return;
+          setMomentum(m);
+          qc.invalidateQueries({ queryKey: ["current-mission", userId] });
+        });
+      }
       toast.success("Output ready");
       if (currentOrgId) {
         qc.invalidateQueries({ queryKey: ["tool_runs", currentOrgId] });
@@ -2172,6 +2205,9 @@ function ToolPage() {
                         const out = (r.output ?? null) as Record<string, unknown> | null;
                         setOutput(out);
                         setRunId(r.id);
+                        // Viewing a past run — its momentum receipt is history, not news.
+                        setMomentum(null);
+                        setLearnedFacts([]);
                         const fb = (r as Record<string, unknown>).feedback as string | undefined;
                         setFeedback(fb === "up" ? "up" : fb === "down" ? "down" : null);
                       }}
@@ -2288,6 +2324,7 @@ function ToolPage() {
                       </div>
                     </div>
                   )}
+                  <PostRunMomentum momentum={momentum} facts={learnedFacts} />
                   {nextActions.length > 0 && (
                     <div className="mt-4">
                       <div

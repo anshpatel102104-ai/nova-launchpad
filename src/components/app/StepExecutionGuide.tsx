@@ -13,9 +13,14 @@ interface Props {
   isCompleted?: boolean;
   /** Hide why/done-when boxes for tight checklist rows. */
   compact?: boolean;
+  /**
+   * mission_steps.id — carried into the tool page (?step=) so a successful
+   * run auto-completes this exact step instead of waiting for a manual tick.
+   */
+  stepId?: string;
 }
 
-export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact }: Props) {
+export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact, stepId }: Props) {
   if (isCompleted) {
     return (
       <div className="text-[12.5px] font-semibold" style={{ color: "var(--success)" }}>
@@ -113,6 +118,7 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact 
         {guidance.toolRoute ? (
           <Link
             to={guidance.toolRoute}
+            search={stepId ? ({ step: stepId } as never) : undefined}
             className="inline-flex items-center gap-2 rounded-[4px] px-4 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90"
             style={{
               background: "var(--primary)",

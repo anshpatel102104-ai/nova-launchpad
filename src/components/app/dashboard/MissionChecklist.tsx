@@ -178,6 +178,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                   <StepExecutionGuide
                     guidance={guidance}
                     compact
+                    stepId={step.id}
                     onMarkDone={() => handleCompleteStep(step.id)}
                   />
                   {guidance.toolRoute && (

@@ -36,14 +36,30 @@ export function saveWorkspaceProfile(profile: WorkspaceProfile): void {
   }
 }
 
+/** A profile fact Nova picked up from a tool run, for the post-run receipt. */
+export interface LearnedFact {
+  label: string;
+  value: string;
+}
+
+const FACT_LABELS: Record<keyof WorkspaceProfile, string> = {
+  business_name: "Business name",
+  description: "What you're building",
+  target_market: "Target market",
+  revenue_model: "Revenue model",
+  stage: "Stage",
+};
+
 /**
  * Given a record of form fields, extract any profile-worthy values and
  * merge them into the persisted profile.
  *
  * Call this after a successful tool run so the profile self-populates
- * without the user having to explicitly fill anything out.
+ * without the user having to explicitly fill anything out. Returns the
+ * facts that are new or changed by this run, so the UI can show the user
+ * what Nova just learned.
  */
-export function extractAndSaveProfileFromFields(fields: Record<string, string>): void {
+export function extractAndSaveProfileFromFields(fields: Record<string, string>): LearnedFact[] {
   const existing = loadWorkspaceProfile();
   const updated: WorkspaceProfile = { ...existing };
 
@@ -84,6 +100,13 @@ export function extractAndSaveProfileFromFields(fields: Record<string, string>):
   if (fields.stage && fields.stage.trim()) updated.stage = fields.stage.trim();
 
   saveWorkspaceProfile(updated);
+
+  const facts: LearnedFact[] = [];
+  for (const key of Object.keys(FACT_LABELS) as (keyof WorkspaceProfile)[]) {
+    const value = updated[key];
+    if (value && value !== existing[key]) facts.push({ label: FACT_LABELS[key], value });
+  }
+  return facts;
 }
 
 /**
