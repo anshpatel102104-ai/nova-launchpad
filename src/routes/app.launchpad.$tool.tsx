@@ -42,6 +42,7 @@ import {
   loadWorkspaceProfile,
   saveWorkspaceProfile,
   extractAndSaveProfileFromFields,
+  factsToPartialProfile,
   getProfilePrefills,
   mergeBusinessContextIntoProfile,
   type WorkspaceProfile,
@@ -49,6 +50,7 @@ import {
 } from "@/lib/workspaceProfile";
 import { advanceMissionAfterRun, type RunMomentum } from "@/lib/mission-loop";
 import { PostRunMomentum } from "@/components/app/PostRunMomentum";
+import { syncProfileToBusinessContext } from "@/lib/profile-sync";
 
 /* ─── Per-tool field config ──────────────────────────────────────────────── */
 type FieldType = "text" | "textarea" | "select" | "number";
@@ -1501,8 +1503,19 @@ function ToolPage() {
       }
       // Save relevant fields to workspace profile for future pre-fills, and
       // surface what Nova just learned in the post-run receipt.
-      setLearnedFacts(extractAndSaveProfileFromFields(fields));
+      const facts = extractAndSaveProfileFromFields(fields);
+      setLearnedFacts(facts);
       setWorkspaceProfile(loadWorkspaceProfile());
+      // Durable learning: push the changed facts into the org's Business
+      // Context Graph so they survive this browser and feed every AI call.
+      if (facts.length > 0 && currentOrgId) {
+        const orgIdForSync = currentOrgId;
+        void syncProfileToBusinessContext(orgIdForSync, factsToPartialProfile(facts)).then(
+          (synced) => {
+            if (synced) qc.invalidateQueries({ queryKey: ["business_context", orgIdForSync] });
+          },
+        );
+      }
       // Close the loop: a successful run completes the mission step that
       // pointed here (?step= from a step CTA, or matched by tool key), so the
       // checklist advances without a manual tick. Fire-and-forget — the

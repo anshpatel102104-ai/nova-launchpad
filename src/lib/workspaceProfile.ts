@@ -109,6 +109,19 @@ export function extractAndSaveProfileFromFields(fields: Record<string, string>):
   return facts;
 }
 
+/** Map learned facts back to profile keys, for syncing to the server. */
+export function factsToPartialProfile(facts: LearnedFact[]): Partial<WorkspaceProfile> {
+  const byLabel = new Map(
+    (Object.keys(FACT_LABELS) as (keyof WorkspaceProfile)[]).map((k) => [FACT_LABELS[k], k]),
+  );
+  const partial: Partial<WorkspaceProfile> = {};
+  for (const f of facts) {
+    const key = byLabel.get(f.label);
+    if (key) partial[key] = f.value;
+  }
+  return partial;
+}
+
 /**
  * Returns pre-fill values for the given tool's field keys based on
  * the persisted workspace profile.

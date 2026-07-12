@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { resolveStepForRun, buildRunMomentum, type MissionLoopStep } from "@/lib/mission-loop";
-import { extractAndSaveProfileFromFields } from "@/lib/workspaceProfile";
+import { extractAndSaveProfileFromFields, factsToPartialProfile } from "@/lib/workspaceProfile";
 
 const steps: MissionLoopStep[] = [
   {
@@ -113,5 +113,27 @@ describe("extractAndSaveProfileFromFields — learned facts", () => {
     expect(again).toEqual([]);
     const changed = extractAndSaveProfileFromFields({ startupName: "Acme Corp" });
     expect(changed).toEqual([{ label: "Business name", value: "Acme Corp" }]);
+  });
+});
+
+describe("factsToPartialProfile", () => {
+  it("maps fact labels back to profile keys for the server sync", () => {
+    expect(
+      factsToPartialProfile([
+        { label: "Business name", value: "Acme" },
+        { label: "Target market", value: "dentists" },
+        { label: "Revenue model", value: "subscriptions" },
+      ]),
+    ).toEqual({ business_name: "Acme", target_market: "dentists", revenue_model: "subscriptions" });
+  });
+
+  it("drops unknown labels instead of guessing", () => {
+    expect(factsToPartialProfile([{ label: "Favorite color", value: "purple" }])).toEqual({});
+  });
+
+  it("round-trips what extractAndSaveProfileFromFields learned", () => {
+    localStorage.clear();
+    const facts = extractAndSaveProfileFromFields({ targetCustomer: "SaaS founders" });
+    expect(factsToPartialProfile(facts)).toEqual({ target_market: "SaaS founders" });
   });
 });
