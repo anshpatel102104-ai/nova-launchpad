@@ -13,10 +13,13 @@ import {
   activateAutomation,
   deactivateAutomation,
   canAutoFire,
+  templateSchedule,
   AUDIENCE_META,
   type AutomationTemplate,
   type AudienceScope,
+  type ActiveAutomation,
 } from "@/lib/automation-templates";
+import { describeSchedule, formatUntil } from "@/lib/automation-schedule";
 import { AUTOMATION_RECIPES } from "@/lib/automation-recipes";
 import { nudgeAutomationDispatch } from "@/lib/automation-run";
 import {
@@ -38,7 +41,25 @@ import {
   FolderOpen,
   Power,
   PowerOff,
+  Clock,
 } from "lucide-react";
+
+/**
+ * Honest schedule status for a template card. Live schedules show when they
+ * run and when the next fire is due; "Custom" schedules state plainly that
+ * they can't auto-run yet instead of pretending to be live.
+ */
+function scheduleNoteFor(t: AutomationTemplate, activeRow?: ActiveAutomation): string | null {
+  const raw = templateSchedule(t);
+  if (!raw) return null;
+  const described = describeSchedule(raw);
+  if (!described)
+    return "Custom schedules can't run automatically yet — pick a preset in the Builder.";
+  if (!activeRow) return `Runs ${described} once activated.`;
+  return activeRow.next_run_at
+    ? `Runs ${described} · next ${formatUntil(new Date(activeRow.next_run_at))}`
+    : `Runs ${described} · arming…`;
+}
 
 export const Route = createFileRoute("/app/workflow-templates")({
   component: WorkflowTemplatesPage,
@@ -71,6 +92,8 @@ function TemplateCard({
   active,
   autoFire,
   busy,
+  scheduleNote,
+  onSchedule,
 }: {
   template: AutomationTemplate;
   owned: boolean;
@@ -81,6 +104,10 @@ function TemplateCard({
   active: boolean;
   autoFire: boolean;
   busy: boolean;
+  /** Human line about when this runs (schedule templates only). */
+  scheduleNote?: string | null;
+  /** True when the template has a schedule the dispatcher can actually run. */
+  onSchedule?: boolean;
 }) {
   const steps = Array.isArray(template.blocks) ? template.blocks.length : 0;
   return (
@@ -157,7 +184,13 @@ function TemplateCard({
         >
           <span className="flex items-center gap-1.5">
             {active ? <Power className="h-3.5 w-3.5" /> : <PowerOff className="h-3.5 w-3.5" />}
-            {active ? "Active — firing on trigger" : autoFire ? "Activate (auto-fire)" : "Activate"}
+            {active
+              ? onSchedule
+                ? "Active — on schedule"
+                : "Active — firing on trigger"
+              : autoFire
+                ? "Activate (auto-fire)"
+                : "Activate"}
           </span>
           <span
             className={cn(
@@ -173,6 +206,18 @@ function TemplateCard({
             />
           </span>
         </button>
+      )}
+
+      {owned && scheduleNote && (
+        <div
+          className={cn(
+            "flex items-start gap-1.5 text-[11px] leading-relaxed",
+            onSchedule ? "text-muted-foreground" : "text-amber-600 dark:text-amber-400",
+          )}
+        >
+          <Clock className="mt-0.5 h-3 w-3 shrink-0" />
+          {scheduleNote}
+        </div>
       )}
 
       <div className="flex items-center gap-2 pt-1">
@@ -286,12 +331,21 @@ function WorkflowTemplatesPage() {
         toast.success(`"${t.name}" turned off`);
       } else {
         await activateAutomation(t, orgId, user.id);
-        nudgeAutomationDispatch(); // drain any events that queued while it was off
-        toast.success(
-          canAutoFire(t)
-            ? `"${t.name}" is live — it'll fire automatically on its trigger`
-            : `"${t.name}" activated`,
-        );
+        nudgeAutomationDispatch(); // drain queued events + arm schedules right away
+        const schedule = describeSchedule(templateSchedule(t));
+        if (schedule) {
+          toast.success(`"${t.name}" is live — runs ${schedule}`);
+        } else if (templateSchedule(t)) {
+          toast.warning(
+            `"${t.name}" activated, but custom schedules can't run automatically yet — pick a preset in the Builder`,
+          );
+        } else {
+          toast.success(
+            canAutoFire(t)
+              ? `"${t.name}" is live — it'll fire automatically on its trigger`
+              : `"${t.name}" activated`,
+          );
+        }
       }
       await qc.invalidateQueries({ queryKey: ["active_automations", orgId] });
     } catch (e) {
@@ -437,6 +491,8 @@ function WorkflowTemplatesPage() {
                 active={activeByTemplate.has(t.id)}
                 autoFire={canAutoFire(t)}
                 busy={busyId === t.id}
+                scheduleNote={scheduleNoteFor(t, activeByTemplate.get(t.id))}
+                onSchedule={describeSchedule(templateSchedule(t)) !== null}
                 onEdit={() => openInBuilder(t.id)}
                 onInstall={() => (owned ? openInBuilder(t.id) : handleInstall(t))}
                 onArchive={() => handleArchive(t)}
