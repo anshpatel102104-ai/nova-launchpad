@@ -277,6 +277,7 @@ export function CurrentMissionCard({ userId }: Props) {
       {/* Checklist */}
       <MissionChecklist
         missionId={mission.id as string}
+        missionTitle={mission.title as string}
         workspaceId={workspace.id as string}
         steps={steps as Parameters<typeof MissionChecklist>[0]["steps"]}
         onStepComplete={refresh}
