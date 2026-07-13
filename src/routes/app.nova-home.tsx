@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
+import { DailyBriefingCard } from "@/components/nova/DailyBriefingCard";
 
 export const Route = createFileRoute("/app/nova-home")({
   component: NovaHomePage,
@@ -201,6 +202,9 @@ function NovaHomePage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr]">
         <div className="space-y-6 min-w-0">
+          {/* ── Daily briefing — Nova's overnight check ── */}
+          <DailyBriefingCard />
+
           {/* ── Urgent attention tray ── */}
           <div>
             <SectionLabel>Needs your attention</SectionLabel>

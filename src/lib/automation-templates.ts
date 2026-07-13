@@ -6,6 +6,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { WorkflowBlock } from "./automation-blocks";
+import { parseSchedule } from "./automation-schedule";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -185,7 +186,7 @@ export async function archiveTemplate(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/* ─── Active automations (autonomous event-triggered execution) ─── */
+/* ─── Active automations (autonomous event- and schedule-triggered execution) ─── */
 export interface ActiveAutomation {
   id: string;
   organization_id: string;
@@ -194,6 +195,8 @@ export interface ActiveAutomation {
   is_active: boolean;
   run_count: number;
   last_fired_at: string | null;
+  /** Next due time for trigger_schedule automations; null = dispatch hasn't armed it yet. */
+  next_run_at: string | null;
 }
 
 /** Map of template_id → active automation row, for the org. */
@@ -209,8 +212,8 @@ export function activeAutomationsQuery(orgId: string) {
 
 /**
  * Turn a published template into a live automation that fires automatically on
- * its entry trigger. Only contact-driven triggers can auto-fire today; others
- * activate but run manually until their event source is wired.
+ * its entry trigger. Contact-driven triggers fire on their CRM event; schedule
+ * triggers are armed by automation-dispatch and fire on their preset times.
  */
 export async function activateAutomation(
   template: AutomationTemplate,
@@ -226,6 +229,9 @@ export async function activateAutomation(
       created_by: userId,
       trigger_type: triggerType,
       is_active: true,
+      // Re-arm schedules from scratch: dispatch computes the next occurrence,
+      // so toggling off/on never fires a stale "due while off" time.
+      next_run_at: null,
     },
     { onConflict: "organization_id,template_id" },
   );
@@ -245,10 +251,20 @@ const AUTO_FIRE_TRIGGERS = new Set([
   "trigger_new_lead",
   "trigger_contact_created",
   "trigger_tag_added",
+  "trigger_schedule",
 ]);
 
 /** Whether a template's entry trigger can currently fire autonomously. */
 export function canAutoFire(template: AutomationTemplate): boolean {
   const t = (template.blocks ?? []).find((b) => b.type?.startsWith("trigger_"))?.type;
+  // Schedules auto-fire only when the preset is one the dispatcher can parse —
+  // "Custom" activates but can't run on its own, and the UI says so.
+  if (t === "trigger_schedule") return parseSchedule(templateSchedule(template)) !== null;
   return !!t && AUTO_FIRE_TRIGGERS.has(t);
+}
+
+/** The raw schedule string of a template's trigger_schedule block, if any. */
+export function templateSchedule(template: AutomationTemplate): string | null {
+  const block = (template.blocks ?? []).find((b) => b.type === "trigger_schedule");
+  return block?.config?.schedule ?? null;
 }

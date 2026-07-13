@@ -40,6 +40,19 @@ async function sbInsert(table: string, body: Record<string, unknown>, env: Env):
   });
 }
 
+async function sbUpsert(
+  table: string,
+  onConflict: string,
+  body: Record<string, unknown>,
+  env: Env,
+): Promise<void> {
+  await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
+    method: "POST",
+    headers: { ...sbH(env), Prefer: "return=minimal,resolution=merge-duplicates" },
+    body: JSON.stringify(body),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Severity rank for sorting (critical = 4 > high = 3 > medium = 2 > low = 1)
 // ---------------------------------------------------------------------------
@@ -134,6 +147,24 @@ async function runPulse(env: Env): Promise<void> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: lines.filter((l) => l !== undefined).join("\n") }),
     }).catch(() => {});
+
+    // Persist the briefing so the app can show it (org_briefings, one per day).
+    await sbUpsert(
+      "org_briefings",
+      "org_id,briefing_date",
+      {
+        org_id: orgId,
+        briefing_date: date,
+        alert_count: alertCount,
+        critical_loop_count: criticalLoops.length,
+        overdue_outcome_count: overdueCount,
+        top_alert: topAlert
+          ? { severity: topAlert.severity, title: topAlert.title, diagnosis: topAlert.diagnosis }
+          : null,
+        recommended_action: recommendedAction,
+      },
+      env,
+    ).catch(() => {});
 
     alertsSent++;
   }

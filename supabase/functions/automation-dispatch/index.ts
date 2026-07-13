@@ -7,8 +7,13 @@
 // For each pending event it finds the org's active_automations whose entry
 // trigger matches the event, then invokes run-workflow (internal/service path)
 // to execute each one live. No execution logic is duplicated here.
+//
+// The same per-minute pass also runs trigger_schedule automations: un-armed
+// rows (next_run_at null) get armed without firing, due rows are claimed
+// optimistically and fired once. See the scheduled_automations migration.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { parseSchedule, nextRunAfter } from "../_shared/schedule.ts";
 
 // event name → builder trigger block types that it fires
 const TRIGGERS_FOR_EVENT: Record<string, string[]> = {
@@ -46,6 +51,105 @@ interface ActiveRow {
   created_by: string | null;
 }
 
+interface ScheduledRow {
+  id: string;
+  organization_id: string;
+  template_id: string;
+  created_by: string | null;
+  next_run_at: string | null;
+  automation_templates: {
+    blocks: Array<{ type?: string; config?: Record<string, string> }> | null;
+  } | null;
+}
+
+/**
+ * Arm and fire schedule-triggered automations. Un-armed rows (next_run_at
+ * null) are set to their next occurrence without firing; due rows are claimed
+ * with an update guarded on the previous next_run_at value, so concurrent
+ * drains fire each occurrence exactly once. Custom/unparseable schedules stay
+ * un-armed — the app tells the user they can't auto-run yet.
+ */
+async function processScheduledAutomations(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  orgFilter: string[] | null,
+  supabaseUrl: string,
+  serviceRoleKey: string,
+): Promise<number> {
+  let query = admin
+    .from("active_automations")
+    .select(
+      "id, organization_id, template_id, created_by, next_run_at, automation_templates(blocks)",
+    )
+    .eq("trigger_type", "trigger_schedule")
+    .eq("is_active", true);
+  if (orgFilter) query = query.in("organization_id", orgFilter);
+  const { data } = await query;
+  const rows = (data ?? []) as ScheduledRow[];
+  if (rows.length === 0) return 0;
+
+  const now = new Date();
+  let fired = 0;
+
+  for (const row of rows) {
+    try {
+      const blocks = row.automation_templates?.blocks ?? [];
+      const raw = blocks.find((b) => b.type === "trigger_schedule")?.config?.schedule;
+      const kind = parseSchedule(raw);
+      if (!kind) continue;
+      const next = nextRunAfter(kind, now).toISOString();
+
+      if (!row.next_run_at) {
+        // First pass after activation — arm without firing.
+        await admin
+          .from("active_automations")
+          .update({ next_run_at: next })
+          .eq("id", row.id)
+          .is("next_run_at", null);
+        continue;
+      }
+      if (new Date(row.next_run_at).getTime() > now.getTime()) continue;
+      if (!row.created_by) continue; // need an owner to run as
+
+      // Due — claim by advancing next_run_at only if nobody else already has.
+      const { data: claimed } = await admin
+        .from("active_automations")
+        .update({ next_run_at: next })
+        .eq("id", row.id)
+        .eq("next_run_at", row.next_run_at)
+        .select("id");
+      if (!claimed || claimed.length === 0) continue;
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/run-workflow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({
+          internal: true,
+          user_id: row.created_by,
+          org_id: row.organization_id,
+          template_id: row.template_id,
+          contact_id: null,
+          mode: "live",
+        }),
+      });
+      if (res.ok) {
+        fired++;
+        await admin.rpc("bump_active_automation", { _id: row.id }).then(
+          () => {},
+          () => {},
+        );
+      }
+    } catch {
+      // One bad row must not stall the rest of the schedule pass.
+    }
+  }
+
+  return fired;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
 
@@ -76,6 +180,20 @@ Deno.serve(async (req: Request) => {
     if (orgFilter.length === 0) return json({ processed: 0, fired: 0 });
   }
 
+  // Scheduled automations run on every pass — independent of the event queue,
+  // and guarded so a schedule failure never blocks the drain below.
+  let scheduledFired = 0;
+  try {
+    scheduledFired = await processScheduledAutomations(
+      admin,
+      orgFilter,
+      SUPABASE_URL,
+      SERVICE_ROLE_KEY,
+    );
+  } catch {
+    /* non-fatal */
+  }
+
   // Claim a batch of pending events.
   let pendingQuery = admin
     .from("automation_events")
@@ -87,7 +205,7 @@ Deno.serve(async (req: Request) => {
   const { data: pending } = await pendingQuery;
 
   const events = (pending ?? []) as EventRow[];
-  if (events.length === 0) return json({ processed: 0, fired: 0 });
+  if (events.length === 0) return json({ processed: 0, fired: 0, scheduled_fired: scheduledFired });
 
   await admin
     .from("automation_events")
@@ -184,5 +302,5 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  return json({ processed: events.length, fired });
+  return json({ processed: events.length, fired, scheduled_fired: scheduledFired });
 });

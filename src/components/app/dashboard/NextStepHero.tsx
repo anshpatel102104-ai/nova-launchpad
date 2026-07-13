@@ -205,7 +205,7 @@ export function NextStepHero({ userId }: Props) {
         </p>
 
         <div className="mt-4">
-          <StepExecutionGuide guidance={guidance} />
+          <StepExecutionGuide guidance={guidance} stepId={current.id} />
         </div>
       </div>
     </div>
