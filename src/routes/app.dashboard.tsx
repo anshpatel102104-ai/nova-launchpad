@@ -22,6 +22,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
 import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
@@ -629,6 +630,7 @@ function StageMapNode({ name, idx, stageIdx }: { name: string; idx: number; stag
 function Dashboard() {
   const { user, profile, currentOrgId } = useAuth();
   useWorkspace();
+  const spine = useProgressSpine();
 
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -872,7 +874,10 @@ function Dashboard() {
                 lineHeight: 1.4,
               }}
             >
-              Stage {stageIdx + 1} of 5 — {stage}
+              {/* Canonical stage from the progress spine — must always match
+                  mission-control's stage bar (same computation, same value). */}
+              Stage {spine.stage.currentIndex + 1} of {spine.stage.stages.length} ·{" "}
+              {spine.stage.current.label}
             </p>
           </div>
         </div>

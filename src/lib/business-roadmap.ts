@@ -1,8 +1,13 @@
-// Business Roadmap — a six-stage business-maturity model shown on
-// /app/roadmap, separate from Launchpad's own Idea→Revenue stage bar
-// (src/lib/ecosystem.ts). Where that bar stops at first revenue, this
-// roadmap runs Foundation → Build → Launch → Grow → Scale → Exit, spanning
-// both Launchpad (create) and Nova (operate).
+// Business Roadmap — the zoomed-out Foundation → Build → Launch → Grow →
+// Scale → Exit view shown on /app/roadmap, spanning both Launchpad (create)
+// and Nova (operate).
+//
+// Stage position is NOT computed here. The canonical stage is
+// deriveLaunchpadProgress (src/lib/ecosystem.ts) — the same computation the
+// mission-control stage bar and sidebar render — and this roadmap re-labels
+// it into its own vocabulary via LAUNCHPAD_TO_ROADMAP. The per-stage
+// checklists below are display detail on top of that position, not a second
+// stage derivation.
 //
 // Every checklist item is backed by a real signal — either a succeeded run
 // of a real Launchpad tool (src/lib/mock.ts's launchpadCatalog — the actual
@@ -14,7 +19,7 @@
 import type { BusinessGraph } from "@/hooks/use-business-graph";
 import { launchpadCatalog } from "@/lib/mock";
 import { AUTOMATION_SYSTEMS } from "@/lib/catalog";
-import { wonLeadCount } from "@/lib/ecosystem";
+import { deriveLaunchpadProgress, wonLeadCount, type LaunchpadStageId } from "@/lib/ecosystem";
 
 export type RoadmapStageId = "foundation" | "build" | "launch" | "grow" | "scale" | "exit";
 
@@ -285,17 +290,36 @@ export interface RoadmapProgress {
   current: RoadmapStageState;
 }
 
-/** Derive roadmap progress from live business signals — proof, not opinion. */
+/** Display mapping from the canonical Launchpad stage (deriveLaunchpadProgress)
+ *  to this roadmap's zoomed-out vocabulary. Scale is reached once every
+ *  Launchpad stage through Revenue is proven; Exit has no automatic
+ *  advancement yet (it's Nova-side, beyond first revenue). */
+const LAUNCHPAD_TO_ROADMAP: Record<LaunchpadStageId, RoadmapStageId> = {
+  idea: "foundation",
+  validate: "foundation",
+  offer: "foundation",
+  build: "build",
+  launch: "launch",
+  revenue: "grow",
+};
+
+/** Roadmap view state. Stage position comes from the one canonical stage
+ *  computation (deriveLaunchpadProgress) re-labeled via LAUNCHPAD_TO_ROADMAP —
+ *  never derived independently from this file's checklist items. The
+ *  checklists only drive per-stage percentComplete and item statuses. */
 export function deriveRoadmapProgress(
   graph: BusinessGraph,
   extra: RoadmapExtraSignals,
 ): RoadmapProgress {
-  const stageDone = ROADMAP_STAGES.map((stage) =>
-    stage.items.every((item) => item.done(graph, extra)),
+  const launchpad = deriveLaunchpadProgress(graph);
+  const mappedId: RoadmapStageId =
+    launchpad.current.id === "revenue" && launchpad.current.done
+      ? "scale"
+      : LAUNCHPAD_TO_ROADMAP[launchpad.current.id];
+  const currentIndex = Math.max(
+    0,
+    ROADMAP_STAGES.findIndex((s) => s.id === mappedId),
   );
-
-  let currentIndex = stageDone.findIndex((done) => !done);
-  if (currentIndex === -1) currentIndex = ROADMAP_STAGES.length - 1;
 
   const stages: RoadmapStageState[] = ROADMAP_STAGES.map((stage, i) => {
     const itemsDone = stage.items.map((item) => item.done(graph, extra));
@@ -307,7 +331,7 @@ export function deriveRoadmapProgress(
       if (itemsDone[j]) status = "completed";
       else if (i > currentIndex) status = "locked";
       else if (i < currentIndex)
-        status = "completed"; // shouldn't happen (stageDone would be true)
+        status = "available"; // leftover in a passed stage — still actionable
       else status = j === firstOpenIdx ? "available" : "locked";
       return { ...item, status };
     });
@@ -316,7 +340,7 @@ export function deriveRoadmapProgress(
       ...stage,
       items,
       percentComplete: Math.round((doneCount / stage.items.length) * 100),
-      done: stageDone[i],
+      done: i < currentIndex,
       current: i === currentIndex,
       upcoming: i > currentIndex,
     };
