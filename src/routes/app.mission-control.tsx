@@ -13,14 +13,15 @@
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
+import { type LeadRow } from "@/hooks/use-business-graph";
+import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { useFounderStreak } from "@/hooks/use-founder-streak";
 import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
-import { deriveLaunchpadProgress } from "@/lib/ecosystem";
+import { type LaunchpadProgress } from "@/lib/ecosystem";
 import { gradeForScore } from "@/lib/business-grade";
 import { HexLevelBadge } from "@/components/app/gamification/HexLevelBadge";
 import { XPProgressBar } from "@/components/app/gamification/XPProgressBar";
@@ -49,10 +50,11 @@ export const Route = createFileRoute("/app/mission-control")({
 
 function HomePage() {
   const { profile } = useAuth();
-  const graph = useBusinessGraph();
+  const spine = useProgressSpine();
+  const graph = spine.graph;
   const founder = useFounderProgress();
   const streak = useFounderStreak();
-  const progress = deriveLaunchpadProgress(graph);
+  const progress = spine.stage;
   const gpa = gradeForScore(founder.founderScore);
 
   const name = profile?.full_name?.split(" ")[0] || "Founder";
@@ -127,7 +129,7 @@ function HomePage() {
         stageNumber={stageNumber}
         stageCount={stageCount}
         stages={progress.stages}
-        missionPercent={founder.missionProgressPercent}
+        missionPercent={spine.percent}
       />
 
       {/* ══ 2 · TASKS — the queue behind the mission ══ */}
@@ -291,8 +293,8 @@ function HomePage() {
                 className="mt-1.5 text-[12px] leading-snug"
                 style={{ color: "var(--muted-foreground)" }}
               >
-                {founder.missionProgressPercent > 0
-                  ? `Current mission ${founder.missionProgressPercent}% complete`
+                {spine.percent > 0
+                  ? `Current mission ${spine.percent}% complete`
                   : "Complete your mission to raise your grade"}
               </div>
             </div>
@@ -382,7 +384,7 @@ function MissionHero({
   stageLabel: string;
   stageNumber: number;
   stageCount: number;
-  stages: ReturnType<typeof deriveLaunchpadProgress>["stages"];
+  stages: LaunchpadProgress["stages"];
   missionPercent: number;
 }) {
   const fix = hero.tone === "fix";
