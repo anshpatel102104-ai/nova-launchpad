@@ -57,6 +57,46 @@ describe("resolveStepForRun", () => {
     ];
     expect(resolveStepForRun(s, { toolKeys: ["followup"] })?.id).toBe("c");
   });
+
+  it("matches steps through the lesson-vocabulary aliases", () => {
+    const s: MissionLoopStep[] = [
+      {
+        id: "f10",
+        title: "First 10",
+        tool_key: "first-10-customers",
+        status: "pending",
+        sort_order: 0,
+      },
+      { id: "fu", title: "Follow-up", tool_key: "followup", status: "pending", sort_order: 1 },
+      { id: "gtm", title: "GTM", tool_key: "gtm-strategy", status: "pending", sort_order: 2 },
+    ];
+    // A run of the curriculum-named tool completes the step-named step.
+    expect(resolveStepForRun(s, { toolKeys: ["first-10-customers-finder"] })?.id).toBe("f10");
+    expect(resolveStepForRun(s, { toolKeys: ["email-sequence"] })?.id).toBe("fu");
+    expect(resolveStepForRun(s, { toolKeys: ["gtm-strategy-builder"] })?.id).toBe("gtm");
+  });
+
+  it("alias matching still refuses closed steps", () => {
+    const s: MissionLoopStep[] = [
+      {
+        id: "f10",
+        title: "First 10",
+        tool_key: "first-10-customers",
+        status: "completed",
+        sort_order: 0,
+      },
+    ];
+    expect(resolveStepForRun(s, { toolKeys: ["first-10-customers-finder"] })).toBeNull();
+  });
+
+  it("already-aligned keys (offer, kpi-dashboard) match without an alias", () => {
+    const s: MissionLoopStep[] = [
+      { id: "o", title: "Offer", tool_key: "offer", status: "pending", sort_order: 0 },
+      { id: "k", title: "KPIs", tool_key: "kpi-dashboard", status: "pending", sort_order: 1 },
+    ];
+    expect(resolveStepForRun(s, { toolKeys: ["offer"] })?.id).toBe("o");
+    expect(resolveStepForRun(s, { toolKeys: ["kpi-dashboard"] })?.id).toBe("k");
+  });
 });
 
 describe("buildRunMomentum", () => {

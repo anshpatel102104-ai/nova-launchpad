@@ -20,9 +20,6 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
-import { mentorById } from "@/lib/mentors";
-import { useCurriculum, useCompleteLesson } from "@/hooks/use-curriculum";
-import { MentorAvatar } from "@/components/app/MentorAvatar";
 import {
   toolRunsQuery,
   subscriptionQuery,
@@ -1251,7 +1248,6 @@ type Search = {
   context?: string;
   title?: string;
   fromRun?: string;
-  lesson?: string;
   step?: string;
 };
 
@@ -1260,7 +1256,6 @@ export const Route = createFileRoute("/app/launchpad/$tool")({
     context: typeof s.context === "string" ? s.context : undefined,
     title: typeof s.title === "string" ? s.title : undefined,
     fromRun: typeof s.fromRun === "string" ? s.fromRun : undefined,
-    lesson: typeof s.lesson === "string" ? s.lesson : undefined,
     step: typeof s.step === "string" ? s.step : undefined,
   }),
   loader: ({ params }) => {
@@ -1302,16 +1297,6 @@ function ToolPage() {
   const [workspaceProfile, setWorkspaceProfile] = useState<WorkspaceProfile>(() =>
     loadWorkspaceProfile(),
   );
-
-  // Curriculum framing — when this work belongs to a lesson, the page speaks
-  // as that lesson's mentor and completing the run advances the program.
-  const { lessons } = useCurriculum();
-  const completeLesson = useCompleteLesson();
-  const lesson =
-    lessons.find((l) => l.id === search.lesson) ??
-    lessons.find((l) => l.status === "active" && l.tool_key === tool.key) ??
-    null;
-  const lessonMentor = lesson ? mentorById(lesson.mentor_id) : null;
 
   const isOwner = useOwnerMode();
   const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -1497,10 +1482,6 @@ function ToolPage() {
       setStreamText("");
       setOutput(result.output);
       if (result.run_id) setRunId(result.run_id);
-      // Lesson work: mark it complete and unlock the next one in the program.
-      if (lesson && lesson.status === "active") {
-        completeLesson.mutate({ lesson, toolRunId: result.run_id });
-      }
       // Save relevant fields to workspace profile for future pre-fills, and
       // surface what Nova just learned in the post-run receipt.
       const facts = extractAndSaveProfileFromFields(fields);
@@ -1622,48 +1603,23 @@ function ToolPage() {
             <ArrowLeft className="h-3 w-3" /> Your program
           </Link>
           <span style={{ opacity: 0.4 }}>/</span>
-          <span style={{ color: "var(--foreground)" }}>{lesson ? lesson.title : tool.name}</span>
+          <span style={{ color: "var(--foreground)" }}>{tool.name}</span>
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            {lesson && lessonMentor ? (
-              <div className="flex items-start gap-3.5">
-                <MentorAvatar mentor={lessonMentor} size="lg" />
-                <div className="min-w-0">
-                  <div className="text-[12px] font-semibold" style={{ color: lessonMentor.hue }}>
-                    {lessonMentor.name} · {lessonMentor.domain}
-                  </div>
-                  <h1
-                    className="font-display text-[1.6rem] font-semibold leading-tight tracking-tight"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {lesson.title}
-                  </h1>
-                  <p
-                    className="mt-1 max-w-2xl text-[13.5px] leading-relaxed"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {lesson.summary ?? tool.desc}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <h1
-                  className="font-display text-[1.75rem] font-semibold tracking-tight"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {tool.name}
-                </h1>
-                <p
-                  className="mt-1 max-w-2xl text-[13.5px] leading-relaxed"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {tool.desc}
-                </p>
-              </>
-            )}
+            <h1
+              className="font-display text-[1.75rem] font-semibold tracking-tight"
+              style={{ color: "var(--foreground)" }}
+            >
+              {tool.name}
+            </h1>
+            <p
+              className="mt-1 max-w-2xl text-[13.5px] leading-relaxed"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              {tool.desc}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {isToolLocked ? (

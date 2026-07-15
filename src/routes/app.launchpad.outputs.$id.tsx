@@ -25,11 +25,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { formatLabel, verdictCategory, pickScore, type VerdictCategory } from "@/lib/casefile";
-import { isAcceptableCasefile, mentorById } from "@/lib/mentors";
-import { useAcceptCasefile, useCurriculum } from "@/hooks/use-curriculum";
-import { MentorAvatar } from "@/components/app/MentorAvatar";
-import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
 
 // Offer/GTM analyses are the ones worth turning into a pipeline deal (Connection 2).
 const DEAL_TOOLS = new Set([
@@ -242,9 +237,6 @@ function CasefilePage() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr]">
           <div className="space-y-4">
-            {/* Accept → build the curriculum (Investment Assessments only) */}
-            <AcceptCasefileBanner runId={run.id} toolKey={run.tool_key} />
-
             {/* Verdict card */}
             {(verdict || recommendation) && (
               <div
@@ -494,86 +486,6 @@ function Drawer({
         />
       </button>
       {open && <div className="border-t border-[--border] px-5 py-4">{children}</div>}
-    </div>
-  );
-}
-
-/**
- * The commitment moment: accepting an Investment Assessment is what builds
- * the founder's personal curriculum. Dhruv (score-and-verdict owner) presents
- * it; once a playbook exists this quietly points at the program instead.
- */
-function AcceptCasefileBanner({ runId, toolKey }: { runId: string; toolKey: string }) {
-  const navigate = useNavigate();
-  const { playbook } = useCurriculum();
-  const accept = useAcceptCasefile();
-  const dhruv = mentorById("dhruv-patel");
-
-  if (!isAcceptableCasefile(toolKey) || !dhruv) return null;
-
-  if (playbook) {
-    return (
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-[--border] bg-[--bg-surface] px-5 py-3.5 shadow-sm">
-        <div className="flex items-center gap-3">
-          <MentorAvatar mentor={dhruv} size="sm" />
-          <p className="text-sm text-[--text-secondary]">
-            Your program is already built around your accepted assessment.
-          </p>
-        </div>
-        <Link
-          to="/app/playbook"
-          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[--accent] hover:underline"
-        >
-          Open my program <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="rounded-2xl border p-5 shadow-sm"
-      style={{
-        borderColor: "color-mix(in oklab, var(--primary) 40%, var(--border))",
-        background: "color-mix(in oklab, var(--primary) 6%, var(--surface))",
-      }}
-    >
-      <div className="flex items-start gap-3.5">
-        <MentorAvatar mentor={dhruv} size="lg" />
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[--text-muted]">
-            {dhruv.name} · Decision point
-          </p>
-          <p className="mt-1 text-[15px] font-semibold text-[--text-primary]">
-            Ready to move forward with this idea?
-          </p>
-          <p className="mt-1 text-sm leading-relaxed text-[--text-secondary]">
-            Accept my assessment and I'll bring in the other five mentors. We'll build your program
-            around this exact business — your model, your goal, your timeline — and walk you through
-            it lesson by lesson.
-          </p>
-          <button
-            onClick={() =>
-              accept.mutate(runId, {
-                onSuccess: (res) => {
-                  toast.success(
-                    `Your program is ready — ${res.lesson_count} lessons across six mentors.`,
-                  );
-                  navigate({ to: "/app/playbook" });
-                },
-                onError: (e) =>
-                  toast.error(e instanceof Error ? e.message : "Could not build your program"),
-              })
-            }
-            disabled={accept.isPending}
-            className="mt-3 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-            style={{ background: "var(--primary)" }}
-          >
-            {accept.isPending ? "Building your program…" : "Accept — build my program"}
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
