@@ -40,6 +40,7 @@ interface BusinessContext {
   hasResearch: boolean;
   hasAppliedTemplate: boolean;
   hasBuilderWorkflow: boolean;
+  /** Canonical spine stage index (useProgressSpine().stage.currentIndex, 0–5). */
   stageIdx: number;
 }
 
@@ -137,7 +138,9 @@ const ALL_ACTIONS: GuidanceAction[] = [
     color: "text-emerald-600",
     bg: "bg-emerald-50 dark:bg-emerald-950/40",
     priority: 3,
-    condition: (ctx) => ctx.stageIdx >= 3 && ctx.activeAutomationCount >= 2,
+    // stageIdx >= 4 = canonical launch/revenue — the post-launch equivalent of
+    // the old org.stage Operate+ threshold this condition was written against.
+    condition: (ctx) => ctx.stageIdx >= 4 && ctx.activeAutomationCount >= 2,
   },
   {
     id: "mentor_session",

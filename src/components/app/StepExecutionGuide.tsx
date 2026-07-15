@@ -31,6 +31,18 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact,
 
   return (
     <div className="flex flex-col gap-3">
+      {!compact && guidance.mentor && (
+        <div
+          className="text-[13px] italic leading-relaxed"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          &ldquo;{guidance.mentor.line}&rdquo;{" "}
+          <span className="not-italic font-semibold" style={{ color: "var(--primary)" }}>
+            — {guidance.mentor.name}
+          </span>
+        </div>
+      )}
+
       {!compact && (
         <div
           className="rounded-[4px] border px-3.5 py-2.5 text-[13px] leading-relaxed"
@@ -43,6 +55,20 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact,
         >
           <b style={{ color: "var(--foreground)", fontWeight: 700 }}>Why this matters: </b>
           {guidance.why}
+        </div>
+      )}
+
+      {!compact && guidance.prerequisite && (
+        <div
+          className="rounded-[4px] border px-3.5 py-2.5 text-[13px] leading-relaxed"
+          style={{
+            background: "var(--surface-2)",
+            borderColor: "var(--border-subtle)",
+            color: "var(--muted-foreground)",
+          }}
+        >
+          <b style={{ color: "var(--foreground)", fontWeight: 700 }}>Before you start: </b>
+          {guidance.prerequisite}
         </div>
       )}
 

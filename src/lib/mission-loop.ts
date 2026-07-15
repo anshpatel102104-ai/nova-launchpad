@@ -31,6 +31,19 @@ const isOpen = (s: MissionLoopStep) =>
   s.status !== "completed" && s.status !== "skipped" && s.status !== "done";
 
 /**
+ * Lesson/catalog vocabulary → mission_step.tool_key vocabulary.
+ * The retired mentor curriculum (and its catalog twins) named these tools
+ * differently from the mission-step seeds; a successful run of the left-hand
+ * tool must complete the right-hand step. `offer` and `kpi-dashboard` already
+ * use the same key in both vocabularies, so they need no entry.
+ */
+export const STEP_TOOL_ALIASES: Record<string, string> = {
+  "first-10-customers-finder": "first-10-customers",
+  "email-sequence": "followup",
+  "gtm-strategy-builder": "gtm-strategy",
+};
+
+/**
  * Pick the step a successful tool run should complete. An explicit stepId
  * (from the step CTA's ?step= param) wins but only while that step is still
  * open — a re-run must not complete a second step. Without one, the first
@@ -47,6 +60,10 @@ export function resolveStepForRun(
     return byId && isOpen(byId) ? byId : null;
   }
   const keys = new Set(match.toolKeys.filter(Boolean));
+  for (const k of [...keys]) {
+    const alias = STEP_TOOL_ALIASES[k];
+    if (alias) keys.add(alias);
+  }
   return sorted.find((s) => isOpen(s) && s.tool_key !== null && keys.has(s.tool_key)) ?? null;
 }
 

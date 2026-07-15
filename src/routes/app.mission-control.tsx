@@ -3,7 +3,8 @@
 //   1. CURRENT MISSION   → the dominant element. Where you are, and the single
 //                          next move, with a big CTA. Nothing competes with it.
 //   2. TASKS             → the queue behind the mission — what's next, ranked.
-//   3. MENTOR            → your AI mentor's lesson and a way to talk to them.
+//   3. NEXT STEP         → the current mission step with its mentor's teaching,
+//                          and a way to talk to the mentor.
 //   4. PROGRESS          → level, XP, health, next milestone — the game layer.
 //   5. SUPPORTING TOOLS  → everything else, deliberately quiet.
 //
@@ -17,7 +18,7 @@ import { type LeadRow } from "@/hooks/use-business-graph";
 import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { useFounderStreak } from "@/hooks/use-founder-streak";
-import { TodaysLessonHero } from "@/components/app/dashboard/TodaysLessonHero";
+import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/app/mission-control")({
 });
 
 function HomePage() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const spine = useProgressSpine();
   const graph = spine.graph;
   const founder = useFounderProgress();
@@ -192,11 +193,13 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ══ 3 · MENTOR — your AI mentor's lesson ══ */}
+      {/* ══ 3 · NEXT STEP — the current mission step, with its mentor's
+             teaching folded into the step guidance (lessons merged into the
+             execution spine — one "do this now", not two) ══ */}
       <section>
-        <SectionLabel icon={Bot}>Your mentor</SectionLabel>
+        <SectionLabel icon={Bot}>Your next step</SectionLabel>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.62fr_1fr]">
-          <TodaysLessonHero />
+          {user?.id && <NextStepHero userId={user.id} />}
           <MentorChatCard />
         </div>
       </section>
