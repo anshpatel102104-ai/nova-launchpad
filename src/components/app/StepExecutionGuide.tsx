@@ -13,9 +13,14 @@ interface Props {
   isCompleted?: boolean;
   /** Hide why/done-when boxes for tight checklist rows. */
   compact?: boolean;
+  /**
+   * mission_steps.id — carried into the tool page (?step=) so a successful
+   * run auto-completes this exact step instead of waiting for a manual tick.
+   */
+  stepId?: string;
 }
 
-export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact }: Props) {
+export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact, stepId }: Props) {
   if (isCompleted) {
     return (
       <div className="text-[12.5px] font-semibold" style={{ color: "var(--success)" }}>
@@ -26,6 +31,18 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact 
 
   return (
     <div className="flex flex-col gap-3">
+      {!compact && guidance.mentor && (
+        <div
+          className="text-[13px] italic leading-relaxed"
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          &ldquo;{guidance.mentor.line}&rdquo;{" "}
+          <span className="not-italic font-semibold" style={{ color: "var(--primary)" }}>
+            — {guidance.mentor.name}
+          </span>
+        </div>
+      )}
+
       {!compact && (
         <div
           className="rounded-[4px] border px-3.5 py-2.5 text-[13px] leading-relaxed"
@@ -38,6 +55,20 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact 
         >
           <b style={{ color: "var(--foreground)", fontWeight: 700 }}>Why this matters: </b>
           {guidance.why}
+        </div>
+      )}
+
+      {!compact && guidance.prerequisite && (
+        <div
+          className="rounded-[4px] border px-3.5 py-2.5 text-[13px] leading-relaxed"
+          style={{
+            background: "var(--surface-2)",
+            borderColor: "var(--border-subtle)",
+            color: "var(--muted-foreground)",
+          }}
+        >
+          <b style={{ color: "var(--foreground)", fontWeight: 700 }}>Before you start: </b>
+          {guidance.prerequisite}
         </div>
       )}
 
@@ -113,6 +144,7 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact 
         {guidance.toolRoute ? (
           <Link
             to={guidance.toolRoute}
+            search={stepId ? ({ step: stepId } as never) : undefined}
             className="inline-flex items-center gap-2 rounded-[4px] px-4 py-2.5 text-[13px] font-bold text-white transition hover:opacity-90"
             style={{
               background: "var(--primary)",

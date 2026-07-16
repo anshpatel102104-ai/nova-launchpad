@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Sentry } from "@/lib/observability";
 import appCss from "../styles.css?url";
 
-const themeBootScript = `(function(){try{var t=localStorage.getItem('nova-theme');var r=document.documentElement;r.classList.remove('light','dark');if(t==='light'){r.classList.add('light');r.style.colorScheme='light';}else{r.style.colorScheme='dark';}}catch(e){}})();`;
+const themeBootScript = `(function(){try{var t=localStorage.getItem('nova-theme');var r=document.documentElement;r.classList.remove('light','dark');if(t==='light'){r.classList.add('light');r.style.colorScheme='light';}else{r.classList.add('dark');r.style.colorScheme='dark';}}catch(e){}})();`;
 
 interface RouterContext {
   queryClient: QueryClient;

@@ -27,6 +27,14 @@ export interface StepGuidance {
   toolRoute: string | null;
   /** Label for the purple button. */
   buttonLabel: string;
+  /**
+   * The mentor who teaches this step, speaking in first person — copy
+   * migrated from the retired curriculum's lesson summaries so the teaching
+   * voice lives on the step itself instead of a parallel lesson record.
+   */
+  mentor?: { name: string; line: string };
+  /** "Before you start" note — teaching folded in from a prerequisite lesson. */
+  prerequisite?: string;
 }
 
 export const TOOL_ROUTES: Record<string, string> = {
@@ -140,6 +148,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 10,
     toolRoute: TOOL_ROUTES["gtm-strategy"],
     buttonLabel: "Start: open the Plan Builder",
+    mentor: {
+      name: "Alex Chen",
+      line: "We build your customer map this week: which channel, what message, what we test first. One move, then the plan.",
+    },
   },
 
   offer: {
@@ -165,6 +177,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 12,
     toolRoute: TOOL_ROUTES["offer"],
     buttonLabel: "Start: open the Offer Builder",
+    mentor: {
+      name: "Maya Okafor",
+      line: "Before anything else, we lock the sentence: who it's for, what they get, what it costs. Two framings, we pick the sharper one.",
+    },
   },
 
   "first-10-customers": {
@@ -190,6 +206,13 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 15,
     toolRoute: TOOL_ROUTES["first-10-customers"],
     buttonLabel: "Start: open the planner",
+    mentor: {
+      name: "Mo Latif",
+      line: "Ten real people, names in the pipeline, a reason to talk to each. We start conversations, not campaigns.",
+    },
+    // Folded in from the retired persona-builder lesson (Maya Okafor).
+    prerequisite:
+      "Name your exact customer first — their exact problem, and the words they use for it. Specificity wins: a list of ten right people beats a hundred maybes.",
   },
 
   followup: {
@@ -212,6 +235,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 15,
     toolRoute: TOOL_ROUTES["followup"],
     buttonLabel: "Start: open the Follow-Up Writer",
+    mentor: {
+      name: "Mo Latif",
+      line: "Most deals close on touch five to eight. We write the follow-up cadence once, so no one slips.",
+    },
   },
 
   "generate-ops-plan": {
@@ -260,6 +287,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 10,
     toolRoute: TOOL_ROUTES["kpi-dashboard"],
     buttonLabel: "Start: open the KPI Builder",
+    mentor: {
+      name: "Dhruv Patel",
+      line: "Three numbers that tell you the truth about the business, refreshed weekly. We decide from data, not vibes.",
+    },
   },
 
   "seo-audit": {
@@ -326,6 +357,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     minutes: 8,
     toolRoute: TOOL_ROUTES["email-sequence"],
     buttonLabel: "Start: write my emails",
+    mentor: {
+      name: "Mo Latif",
+      line: "Most deals close on touch five to eight. We write the follow-up cadence once, so no one slips.",
+    },
   },
 
   "ad-copy": {
@@ -359,6 +394,7 @@ const KEY_ALIASES: Record<string, string> = {
   "generate-followup-sequence": "followup",
   "gtm-strategy-builder": "gtm-strategy",
   "generate-gtm-strategy": "gtm-strategy",
+  "first-10-customers-finder": "first-10-customers",
 };
 
 export function getStepGuidance(toolKey: string | null): StepGuidance | null {

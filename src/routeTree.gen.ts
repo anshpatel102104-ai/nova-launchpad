@@ -17,6 +17,8 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as FFormIdRouteImport } from './routes/f.$formId'
+import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
@@ -28,9 +30,12 @@ import { Route as AppTemplatesRouteImport } from './routes/app.templates'
 import { Route as AppSopLibraryRouteImport } from './routes/app.sop-library'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScaleRouteImport } from './routes/app.scale'
+import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
 import { Route as AppResearchRouteImport } from './routes/app.research'
+import { Route as AppReputationRouteImport } from './routes/app.reputation'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
 import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
+import { Route as AppNovaHomeRouteImport } from './routes/app.nova-home'
 import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
 import { Route as AppMonitoringRouteImport } from './routes/app.monitoring'
 import { Route as AppMissionControlRouteImport } from './routes/app.mission-control'
@@ -49,14 +54,12 @@ import { Route as AppBuilderRouteImport } from './routes/app.builder'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
 import { Route as AppAssetsRouteImport } from './routes/app.assets'
-import { Route as AppApprovalsRouteImport } from './routes/app.approvals'
 import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppAcademyRouteImport } from './routes/app.academy'
 import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
 import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
-import { Route as AppBlogIndexRouteImport } from './routes/app.blog.index'
 import { Route as AppScaleTeamRouteImport } from './routes/app.scale.team'
 import { Route as AppScaleReportsRouteImport } from './routes/app.scale.reports'
 import { Route as AppScalePipelineRouteImport } from './routes/app.scale.pipeline'
@@ -69,12 +72,23 @@ import { Route as AppNovaLeadsRouteImport } from './routes/app.nova.leads'
 import { Route as AppNovaCrmRouteImport } from './routes/app.nova.crm'
 import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
 import { Route as AppNovaOsSlugRouteImport } from './routes/app.nova-os.$slug'
+import { Route as AppLaunchpadNovaRouteImport } from './routes/app.launchpad.nova'
+import { Route as AppLaunchpadMissionsRouteImport } from './routes/app.launchpad.missions'
+import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.mentors'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
-import { Route as AppBlogIdRouteImport } from './routes/app.blog.$id'
+import { Route as AppCrmWaitlistRouteImport } from './routes/app.crm.waitlist'
+import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
+import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
+import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
+import { Route as AppCrmCompaniesRouteImport } from './routes/app.crm.companies'
+import { Route as AppCrmCampaignsRouteImport } from './routes/app.crm.campaigns'
+import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
+import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
+import { Route as AppLaunchpadOutputsIdRouteImport } from './routes/app.launchpad.outputs.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -115,6 +129,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const FFormIdRoute = FFormIdRouteImport.update({
+  id: '/f/$formId',
+  path: '/f/$formId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookSlugRoute = BookSlugRouteImport.update({
+  id: '/book/$slug',
+  path: '/book/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/auth/sign-up',
@@ -171,9 +195,19 @@ const AppScaleRoute = AppScaleRouteImport.update({
   path: '/scale',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRoadmapRoute = AppRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppResearchRoute = AppResearchRouteImport.update({
   id: '/research',
   path: '/research',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReputationRoute = AppReputationRouteImport.update({
+  id: '/reputation',
+  path: '/reputation',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlaybookRoute = AppPlaybookRouteImport.update({
@@ -184,6 +218,11 @@ const AppPlaybookRoute = AppPlaybookRouteImport.update({
 const AppNovaOsRoute = AppNovaOsRouteImport.update({
   id: '/nova-os',
   path: '/nova-os',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNovaHomeRoute = AppNovaHomeRouteImport.update({
+  id: '/nova-home',
+  path: '/nova-home',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNovaFullRoute = AppNovaFullRouteImport.update({
@@ -276,11 +315,6 @@ const AppAssetsRoute = AppAssetsRouteImport.update({
   path: '/assets',
   getParentRoute: () => AppRoute,
 } as any)
-const AppApprovalsRoute = AppApprovalsRouteImport.update({
-  id: '/approvals',
-  path: '/approvals',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAiDashboardRoute = AppAiDashboardRouteImport.update({
   id: '/ai-dashboard',
   path: '/ai-dashboard',
@@ -309,11 +343,6 @@ const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
 const AppLaunchpadIndexRoute = AppLaunchpadIndexRouteImport.update({
   id: '/launchpad/',
   path: '/launchpad/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBlogIndexRoute = AppBlogIndexRouteImport.update({
-  id: '/blog/',
-  path: '/blog/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScaleTeamRoute = AppScaleTeamRouteImport.update({
@@ -376,6 +405,21 @@ const AppNovaOsSlugRoute = AppNovaOsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AppNovaOsRoute,
 } as any)
+const AppLaunchpadNovaRoute = AppLaunchpadNovaRouteImport.update({
+  id: '/launchpad/nova',
+  path: '/launchpad/nova',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadMissionsRoute = AppLaunchpadMissionsRouteImport.update({
+  id: '/launchpad/missions',
+  path: '/launchpad/missions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadMentorsRoute = AppLaunchpadMentorsRouteImport.update({
+  id: '/launchpad/mentors',
+  path: '/launchpad/mentors',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLaunchpadHistoryRoute = AppLaunchpadHistoryRouteImport.update({
   id: '/launchpad/history',
   path: '/launchpad/history',
@@ -392,9 +436,44 @@ const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
   path: '/launchpad/$tool',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBlogIdRoute = AppBlogIdRouteImport.update({
-  id: '/blog/$id',
-  path: '/blog/$id',
+const AppCrmWaitlistRoute = AppCrmWaitlistRouteImport.update({
+  id: '/crm/waitlist',
+  path: '/crm/waitlist',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmTasksRoute = AppCrmTasksRouteImport.update({
+  id: '/crm/tasks',
+  path: '/crm/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmFormsRoute = AppCrmFormsRouteImport.update({
+  id: '/crm/forms',
+  path: '/crm/forms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmConversationsRoute = AppCrmConversationsRouteImport.update({
+  id: '/crm/conversations',
+  path: '/crm/conversations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmCompaniesRoute = AppCrmCompaniesRouteImport.update({
+  id: '/crm/companies',
+  path: '/crm/companies',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmCampaignsRoute = AppCrmCampaignsRouteImport.update({
+  id: '/crm/campaigns',
+  path: '/crm/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmCalendarRoute = AppCrmCalendarRouteImport.update({
+  id: '/crm/calendar',
+  path: '/crm/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmAutomationsRoute = AppCrmAutomationsRouteImport.update({
+  id: '/crm/automations',
+  path: '/crm/automations',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
@@ -406,6 +485,11 @@ const AppAcademyModuleRoute = AppAcademyModuleRouteImport.update({
   id: '/$module',
   path: '/$module',
   getParentRoute: () => AppAcademyRoute,
+} as any)
+const AppLaunchpadOutputsIdRoute = AppLaunchpadOutputsIdRouteImport.update({
+  id: '/launchpad/outputs/$id',
+  path: '/launchpad/outputs/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -420,7 +504,6 @@ export interface FileRoutesByFullPath {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -439,9 +522,12 @@ export interface FileRoutesByFullPath {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -453,13 +539,25 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
+  '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
+  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
   '/app/nova/crm': typeof AppNovaCrmRoute
@@ -472,9 +570,9 @@ export interface FileRoutesByFullPath {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -487,7 +585,6 @@ export interface FileRoutesByTo {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -506,9 +603,12 @@ export interface FileRoutesByTo {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -520,13 +620,25 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
+  '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
+  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
   '/app/nova/crm': typeof AppNovaCrmRoute
@@ -539,9 +651,9 @@ export interface FileRoutesByTo {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog': typeof AppBlogIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
   '/app/nova': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -556,7 +668,6 @@ export interface FileRoutesById {
   '/app/activity': typeof AppActivityRoute
   '/app/admin': typeof AppAdminRoute
   '/app/ai-dashboard': typeof AppAiDashboardRoute
-  '/app/approvals': typeof AppApprovalsRoute
   '/app/assets': typeof AppAssetsRoute
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
@@ -575,9 +686,12 @@ export interface FileRoutesById {
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
   '/app/nova-full': typeof AppNovaFullRoute
+  '/app/nova-home': typeof AppNovaHomeRoute
   '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
+  '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scale': typeof AppScaleRouteWithChildren
   '/app/settings': typeof AppSettingsRoute
   '/app/sop-library': typeof AppSopLibraryRoute
@@ -589,13 +703,25 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/book/$slug': typeof BookSlugRoute
+  '/f/$formId': typeof FFormIdRoute
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
-  '/app/blog/$id': typeof AppBlogIdRoute
+  '/app/crm/automations': typeof AppCrmAutomationsRoute
+  '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/campaigns': typeof AppCrmCampaignsRoute
+  '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/forms': typeof AppCrmFormsRoute
+  '/app/crm/tasks': typeof AppCrmTasksRoute
+  '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
+  '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
+  '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
+  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
   '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
   '/app/nova/clients': typeof AppNovaClientsRoute
   '/app/nova/crm': typeof AppNovaCrmRoute
@@ -608,9 +734,9 @@ export interface FileRoutesById {
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
-  '/app/blog/': typeof AppBlogIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
   '/app/nova/': typeof AppNovaIndexRoute
+  '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -626,7 +752,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -645,9 +770,12 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -659,13 +787,25 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
+    | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
+    | '/app/crm/companies'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
+    | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
+    | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
     | '/app/nova/crm'
@@ -678,9 +818,9 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/launchpad/outputs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -693,7 +833,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -712,9 +851,12 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -726,13 +868,25 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
+    | '/f/$formId'
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
+    | '/app/crm/companies'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
+    | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
+    | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
     | '/app/nova/crm'
@@ -745,9 +899,9 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog'
     | '/app/launchpad'
     | '/app/nova'
+    | '/app/launchpad/outputs/$id'
   id:
     | '__root__'
     | '/'
@@ -761,7 +915,6 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/admin'
     | '/app/ai-dashboard'
-    | '/app/approvals'
     | '/app/assets'
     | '/app/automations'
     | '/app/billing'
@@ -780,9 +933,12 @@ export interface FileRouteTypes {
     | '/app/mission-control'
     | '/app/monitoring'
     | '/app/nova-full'
+    | '/app/nova-home'
     | '/app/nova-os'
     | '/app/playbook'
+    | '/app/reputation'
     | '/app/research'
+    | '/app/roadmap'
     | '/app/scale'
     | '/app/settings'
     | '/app/sop-library'
@@ -794,13 +950,25 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/book/$slug'
+    | '/f/$formId'
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
-    | '/app/blog/$id'
+    | '/app/crm/automations'
+    | '/app/crm/calendar'
+    | '/app/crm/campaigns'
+    | '/app/crm/companies'
+    | '/app/crm/conversations'
+    | '/app/crm/forms'
+    | '/app/crm/tasks'
+    | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
+    | '/app/launchpad/mentors'
+    | '/app/launchpad/missions'
+    | '/app/launchpad/nova'
     | '/app/nova-os/$slug'
     | '/app/nova/clients'
     | '/app/nova/crm'
@@ -813,9 +981,9 @@ export interface FileRouteTypes {
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
-    | '/app/blog/'
     | '/app/launchpad/'
     | '/app/nova/'
+    | '/app/launchpad/outputs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -831,6 +999,8 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  BookSlugRoute: typeof BookSlugRoute
+  FFormIdRoute: typeof FFormIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -890,6 +1060,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/f/$formId': {
+      id: '/f/$formId'
+      path: '/f/$formId'
+      fullPath: '/f/$formId'
+      preLoaderRoute: typeof FFormIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$slug': {
+      id: '/book/$slug'
+      path: '/book/$slug'
+      fullPath: '/book/$slug'
+      preLoaderRoute: typeof BookSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/sign-up': {
       id: '/auth/sign-up'
@@ -968,11 +1152,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScaleRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/roadmap': {
+      id: '/app/roadmap'
+      path: '/roadmap'
+      fullPath: '/app/roadmap'
+      preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/research': {
       id: '/app/research'
       path: '/research'
       fullPath: '/app/research'
       preLoaderRoute: typeof AppResearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reputation': {
+      id: '/app/reputation'
+      path: '/reputation'
+      fullPath: '/app/reputation'
+      preLoaderRoute: typeof AppReputationRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/playbook': {
@@ -987,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/nova-os'
       fullPath: '/app/nova-os'
       preLoaderRoute: typeof AppNovaOsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/nova-home': {
+      id: '/app/nova-home'
+      path: '/nova-home'
+      fullPath: '/app/nova-home'
+      preLoaderRoute: typeof AppNovaHomeRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/nova-full': {
@@ -1115,13 +1320,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssetsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/approvals': {
-      id: '/app/approvals'
-      path: '/approvals'
-      fullPath: '/app/approvals'
-      preLoaderRoute: typeof AppApprovalsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/ai-dashboard': {
       id: '/app/ai-dashboard'
       path: '/ai-dashboard'
@@ -1162,13 +1360,6 @@ declare module '@tanstack/react-router' {
       path: '/launchpad'
       fullPath: '/app/launchpad/'
       preLoaderRoute: typeof AppLaunchpadIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/blog/': {
-      id: '/app/blog/'
-      path: '/blog'
-      fullPath: '/app/blog/'
-      preLoaderRoute: typeof AppBlogIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/scale/team': {
@@ -1255,6 +1446,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNovaOsSlugRouteImport
       parentRoute: typeof AppNovaOsRoute
     }
+    '/app/launchpad/nova': {
+      id: '/app/launchpad/nova'
+      path: '/launchpad/nova'
+      fullPath: '/app/launchpad/nova'
+      preLoaderRoute: typeof AppLaunchpadNovaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/missions': {
+      id: '/app/launchpad/missions'
+      path: '/launchpad/missions'
+      fullPath: '/app/launchpad/missions'
+      preLoaderRoute: typeof AppLaunchpadMissionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/mentors': {
+      id: '/app/launchpad/mentors'
+      path: '/launchpad/mentors'
+      fullPath: '/app/launchpad/mentors'
+      preLoaderRoute: typeof AppLaunchpadMentorsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/launchpad/history': {
       id: '/app/launchpad/history'
       path: '/launchpad/history'
@@ -1276,11 +1488,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadToolRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/blog/$id': {
-      id: '/app/blog/$id'
-      path: '/blog/$id'
-      fullPath: '/app/blog/$id'
-      preLoaderRoute: typeof AppBlogIdRouteImport
+    '/app/crm/waitlist': {
+      id: '/app/crm/waitlist'
+      path: '/crm/waitlist'
+      fullPath: '/app/crm/waitlist'
+      preLoaderRoute: typeof AppCrmWaitlistRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/tasks': {
+      id: '/app/crm/tasks'
+      path: '/crm/tasks'
+      fullPath: '/app/crm/tasks'
+      preLoaderRoute: typeof AppCrmTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/forms': {
+      id: '/app/crm/forms'
+      path: '/crm/forms'
+      fullPath: '/app/crm/forms'
+      preLoaderRoute: typeof AppCrmFormsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/conversations': {
+      id: '/app/crm/conversations'
+      path: '/crm/conversations'
+      fullPath: '/app/crm/conversations'
+      preLoaderRoute: typeof AppCrmConversationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/companies': {
+      id: '/app/crm/companies'
+      path: '/crm/companies'
+      fullPath: '/app/crm/companies'
+      preLoaderRoute: typeof AppCrmCompaniesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/campaigns': {
+      id: '/app/crm/campaigns'
+      path: '/crm/campaigns'
+      fullPath: '/app/crm/campaigns'
+      preLoaderRoute: typeof AppCrmCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/calendar': {
+      id: '/app/crm/calendar'
+      path: '/crm/calendar'
+      fullPath: '/app/crm/calendar'
+      preLoaderRoute: typeof AppCrmCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/automations': {
+      id: '/app/crm/automations'
+      path: '/crm/automations'
+      fullPath: '/app/crm/automations'
+      preLoaderRoute: typeof AppCrmAutomationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/billing/return': {
@@ -1296,6 +1557,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/academy/$module'
       preLoaderRoute: typeof AppAcademyModuleRouteImport
       parentRoute: typeof AppAcademyRoute
+    }
+    '/app/launchpad/outputs/$id': {
+      id: '/app/launchpad/outputs/$id'
+      path: '/launchpad/outputs/$id'
+      fullPath: '/app/launchpad/outputs/$id'
+      preLoaderRoute: typeof AppLaunchpadOutputsIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
@@ -1361,7 +1629,6 @@ interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppAdminRoute: typeof AppAdminRoute
   AppAiDashboardRoute: typeof AppAiDashboardRoute
-  AppApprovalsRoute: typeof AppApprovalsRoute
   AppAssetsRoute: typeof AppAssetsRoute
   AppAutomationsRoute: typeof AppAutomationsRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
@@ -1380,9 +1647,12 @@ interface AppRouteChildren {
   AppMissionControlRoute: typeof AppMissionControlRoute
   AppMonitoringRoute: typeof AppMonitoringRoute
   AppNovaFullRoute: typeof AppNovaFullRoute
+  AppNovaHomeRoute: typeof AppNovaHomeRoute
   AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
   AppPlaybookRoute: typeof AppPlaybookRoute
+  AppReputationRoute: typeof AppReputationRoute
   AppResearchRoute: typeof AppResearchRoute
+  AppRoadmapRoute: typeof AppRoadmapRoute
   AppScaleRoute: typeof AppScaleRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
   AppSopLibraryRoute: typeof AppSopLibraryRoute
@@ -1390,19 +1660,29 @@ interface AppRouteChildren {
   AppTutorialsRoute: typeof AppTutorialsRoute
   AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppBlogIdRoute: typeof AppBlogIdRoute
+  AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
+  AppCrmCalendarRoute: typeof AppCrmCalendarRoute
+  AppCrmCampaignsRoute: typeof AppCrmCampaignsRoute
+  AppCrmCompaniesRoute: typeof AppCrmCompaniesRoute
+  AppCrmConversationsRoute: typeof AppCrmConversationsRoute
+  AppCrmFormsRoute: typeof AppCrmFormsRoute
+  AppCrmTasksRoute: typeof AppCrmTasksRoute
+  AppCrmWaitlistRoute: typeof AppCrmWaitlistRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
+  AppLaunchpadMentorsRoute: typeof AppLaunchpadMentorsRoute
+  AppLaunchpadMissionsRoute: typeof AppLaunchpadMissionsRoute
+  AppLaunchpadNovaRoute: typeof AppLaunchpadNovaRoute
   AppNovaClientsRoute: typeof AppNovaClientsRoute
   AppNovaCrmRoute: typeof AppNovaCrmRoute
   AppNovaLeadsRoute: typeof AppNovaLeadsRoute
   AppNovaReportsRoute: typeof AppNovaReportsRoute
   AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
   AppOutcomesCategoryRoute: typeof AppOutcomesCategoryRoute
-  AppBlogIndexRoute: typeof AppBlogIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
   AppNovaIndexRoute: typeof AppNovaIndexRoute
+  AppLaunchpadOutputsIdRoute: typeof AppLaunchpadOutputsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1410,7 +1690,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppAdminRoute: AppAdminRoute,
   AppAiDashboardRoute: AppAiDashboardRoute,
-  AppApprovalsRoute: AppApprovalsRoute,
   AppAssetsRoute: AppAssetsRoute,
   AppAutomationsRoute: AppAutomationsRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
@@ -1429,9 +1708,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppMissionControlRoute: AppMissionControlRoute,
   AppMonitoringRoute: AppMonitoringRoute,
   AppNovaFullRoute: AppNovaFullRoute,
+  AppNovaHomeRoute: AppNovaHomeRoute,
   AppNovaOsRoute: AppNovaOsRouteWithChildren,
   AppPlaybookRoute: AppPlaybookRoute,
+  AppReputationRoute: AppReputationRoute,
   AppResearchRoute: AppResearchRoute,
+  AppRoadmapRoute: AppRoadmapRoute,
   AppScaleRoute: AppScaleRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
   AppSopLibraryRoute: AppSopLibraryRoute,
@@ -1439,19 +1721,29 @@ const AppRouteChildren: AppRouteChildren = {
   AppTutorialsRoute: AppTutorialsRoute,
   AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
-  AppBlogIdRoute: AppBlogIdRoute,
+  AppCrmAutomationsRoute: AppCrmAutomationsRoute,
+  AppCrmCalendarRoute: AppCrmCalendarRoute,
+  AppCrmCampaignsRoute: AppCrmCampaignsRoute,
+  AppCrmCompaniesRoute: AppCrmCompaniesRoute,
+  AppCrmConversationsRoute: AppCrmConversationsRoute,
+  AppCrmFormsRoute: AppCrmFormsRoute,
+  AppCrmTasksRoute: AppCrmTasksRoute,
+  AppCrmWaitlistRoute: AppCrmWaitlistRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
+  AppLaunchpadMentorsRoute: AppLaunchpadMentorsRoute,
+  AppLaunchpadMissionsRoute: AppLaunchpadMissionsRoute,
+  AppLaunchpadNovaRoute: AppLaunchpadNovaRoute,
   AppNovaClientsRoute: AppNovaClientsRoute,
   AppNovaCrmRoute: AppNovaCrmRoute,
   AppNovaLeadsRoute: AppNovaLeadsRoute,
   AppNovaReportsRoute: AppNovaReportsRoute,
   AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
   AppOutcomesCategoryRoute: AppOutcomesCategoryRoute,
-  AppBlogIndexRoute: AppBlogIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
   AppNovaIndexRoute: AppNovaIndexRoute,
+  AppLaunchpadOutputsIdRoute: AppLaunchpadOutputsIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -1469,6 +1761,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  BookSlugRoute: BookSlugRoute,
+  FFormIdRoute: FFormIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

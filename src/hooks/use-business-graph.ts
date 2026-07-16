@@ -60,6 +60,7 @@ export interface LeadRow {
   stage: string | null;
   value: number | null;
   created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface BusinessGraph {

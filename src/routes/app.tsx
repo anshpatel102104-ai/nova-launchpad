@@ -11,6 +11,7 @@ import { guestStore, isDemoEmail } from "@/lib/guest";
 import { useImpersonation, impersonationStore } from "@/lib/impersonation";
 import { saveLastAppPath } from "@/lib/session-restore";
 import { workspaceStatusQuery, currentMissionQuery } from "@/lib/queries";
+import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import type { QueryClient } from "@tanstack/react-query";
 
 const onboardedUsers = new Set<string>();
@@ -82,6 +83,10 @@ function ImpersonationBanner() {
 
 function AppLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  // Product identity: the shell is either Launchpad (create, violet) or
+  // Nova (operate, cyan). data-product remaps the semantic accent tokens
+  // (styles.css) so the whole shell re-skins with the active product.
+  const { isOperate } = useWorkspaceMode();
 
   const [railOpen, setRailOpen] = useState(() => {
     try {
@@ -111,7 +116,10 @@ function AppLayout() {
   const isGalaxy = path === "/app/galaxy";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div
+      data-product={isOperate ? "nova" : "launchpad"}
+      className="flex h-screen overflow-hidden bg-background text-foreground"
+    >
       <AppSidebar onOpenRail={() => setRailOpen(true)} />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">

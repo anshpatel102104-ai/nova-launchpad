@@ -201,8 +201,17 @@ function SecondaryBtn({
   );
 }
 
+// Contact caps by plan (master build: 0 / 500 / 2000 / unlimited for
+// starter / launch / operate / scale). null = unlimited.
+const CONTACT_LIMITS: Record<string, number | null> = {
+  starter: 0,
+  launch: 500,
+  operate: 2000,
+  scale: null,
+};
+
 function ContactsPage() {
-  const { user } = useAuth();
+  const { user, currentOrgId } = useAuth();
   const qc = useQueryClient();
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -222,6 +231,22 @@ function ContactsPage() {
   });
 
   const allContacts = contactsQ.data ?? [];
+
+  // Plan-based contact cap (non-blocking warning per master build).
+  const planQ = useQuery({
+    queryKey: ["org-plan-contacts", currentOrgId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("organization_id", currentOrgId!)
+        .maybeSingle();
+      return (data?.plan as string) ?? "starter";
+    },
+    enabled: !!currentOrgId,
+  });
+  const contactLimit = CONTACT_LIMITS[planQ.data ?? "starter"] ?? null;
+  const atContactLimit = contactLimit !== null && allContacts.length >= contactLimit;
 
   const filtered = useMemo(() => {
     let arr = allContacts;
@@ -414,6 +439,21 @@ function ContactsPage() {
 
   return (
     <div className="space-y-5">
+      {atContactLimit && (
+        <div className="flex flex-col items-start gap-2 rounded-2xl border border-[--border] bg-[--warning-light] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-[--text-primary]">
+            {contactLimit === 0
+              ? "Your plan doesn't include CRM contacts. Upgrade to start capturing and managing leads."
+              : `You've reached your plan's contact limit (${allContacts.length.toLocaleString()}/${contactLimit?.toLocaleString()}). Upgrade to add more.`}
+          </p>
+          <a
+            href="/app/billing"
+            className="shrink-0 rounded-xl bg-[--warning] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Upgrade
+          </a>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-2.5">

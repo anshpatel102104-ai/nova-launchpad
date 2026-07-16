@@ -2,11 +2,12 @@
 // Shows the current mission's next open step with full hand-holding:
 // what it is, why it matters, 3 numbered moves, "you are done when",
 // and one purple button. Nova holds your hand; you never guess.
+// All progress data comes from useProgressSpine — no local derivation.
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Clock, Loader2, Target, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { StepExecutionGuide } from "@/components/app/StepExecutionGuide";
 import { getStepGuidance, makeFallbackGuidance } from "@/lib/step-execution-guidance";
 
@@ -14,51 +15,9 @@ interface Props {
   userId: string;
 }
 
-interface StepRow {
-  id: string;
-  title: string;
-  description: string | null;
-  tool_key: string | null;
-  status: string;
-  sort_order: number;
-}
-
-async function fetchCurrentMission(userId: string) {
-  const { data: ws } = await supabase
-    .from("workspaces")
-    .select("id, name, lane, stage, current_mission_id")
-    .eq("owner_id", userId)
-    .maybeSingle();
-  if (!ws) return null;
-
-  const { data: mission } = await supabase
-    .from("missions")
-    .select("id, title, description, lane, status")
-    .eq("workspace_id", ws.id)
-    .eq("status", "active")
-    .order("sort_order")
-    .limit(1)
-    .maybeSingle();
-  if (!mission) return null;
-
-  const { data: steps } = await supabase
-    .from("mission_steps")
-    .select("id, title, description, tool_key, status, sort_order")
-    .eq("mission_id", mission.id)
-    .order("sort_order");
-
-  return { workspace: ws, mission, steps: (steps ?? []) as StepRow[] };
-}
-
 export function NextStepHero({ userId }: Props) {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["current-mission", userId],
-    queryFn: () => fetchCurrentMission(userId),
-    staleTime: 30_000,
-    retry: 4,
-    retryDelay: 5_000,
-  });
+  const { isLoading, mission, steps, nextStep, completedCount } = useProgressSpine();
 
   if (isLoading) {
     return (
@@ -74,7 +33,7 @@ export function NextStepHero({ userId }: Props) {
     );
   }
 
-  if (!data) {
+  if (!mission) {
     return (
       <div
         className="rounded-[6px] border p-6 text-center"
@@ -116,12 +75,8 @@ export function NextStepHero({ userId }: Props) {
     );
   }
 
-  const { mission, steps } = data;
-  const done = steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
-  const current = steps.find((s) => s.status !== "completed" && s.status !== "skipped");
-
   // Whole mission finished — celebrate plainly, point at the next one.
-  if (!current) {
+  if (!nextStep) {
     return (
       <div
         className="rounded-[6px] border p-6"
@@ -132,7 +87,7 @@ export function NextStepHero({ userId }: Props) {
         }}
       >
         <div className="text-[16px] font-extrabold" style={{ color: "var(--foreground)" }}>
-          You finished "{mission.title as string}". Great work!
+          You finished "{mission.title}". Great work!
         </div>
         <div className="mt-1 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
           Every step is done. Nova has your next goal ready.
@@ -150,8 +105,8 @@ export function NextStepHero({ userId }: Props) {
   }
 
   const guidance =
-    getStepGuidance(current.tool_key) ??
-    makeFallbackGuidance(current.title, current.description, current.tool_key);
+    getStepGuidance(nextStep.tool_key) ??
+    makeFallbackGuidance(nextStep.title, nextStep.description, nextStep.tool_key);
 
   return (
     <div
@@ -176,7 +131,7 @@ export function NextStepHero({ userId }: Props) {
           className="text-[11.5px] font-extrabold uppercase tracking-[0.08em]"
           style={{ color: "var(--primary)" }}
         >
-          Your next step · {done + 1} of {steps.length}
+          Your next step · {completedCount + 1} of {steps.length}
         </span>
         <span
           className="inline-flex items-center gap-1.5 text-[12px] font-semibold"
@@ -189,7 +144,7 @@ export function NextStepHero({ userId }: Props) {
 
       <div className="px-6 py-5">
         <div className="text-[11.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
-          Goal: {mission.title as string}
+          Goal: {mission.title}
         </div>
         <h2
           className="mt-0.5 text-[22px] font-extrabold leading-tight"
@@ -205,7 +160,7 @@ export function NextStepHero({ userId }: Props) {
         </p>
 
         <div className="mt-4">
-          <StepExecutionGuide guidance={guidance} />
+          <StepExecutionGuide guidance={guidance} stepId={nextStep.id} />
         </div>
       </div>
     </div>

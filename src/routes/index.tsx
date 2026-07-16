@@ -9,7 +9,8 @@ function LandingPage() {
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!cancelled && session) navigate({ to: "/app/dashboard" });
+      // /app resolves the mode-aware product home (Launchpad vs Nova).
+      if (!cancelled && session) navigate({ to: "/app" });
     });
     return () => {
       cancelled = true;

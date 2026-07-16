@@ -2,12 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useWorkspace } from "@/hooks/use-workspace";
-import {
-  organizationQuery,
-  toolRunsQuery,
-  leadsQuery,
-  automationSettingsQuery,
-} from "@/lib/queries";
+import { toolRunsQuery, leadsQuery, automationSettingsQuery } from "@/lib/queries";
 import {
   ArrowRight,
   Zap,
@@ -22,6 +17,8 @@ import {
   BookOpen,
 } from "lucide-react";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { useProgressSpine } from "@/hooks/use-progress-spine";
+import type { LaunchpadStageId } from "@/lib/ecosystem";
 import { AdaptiveGuidance } from "@/components/app/AdaptiveGuidance";
 import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
 import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
@@ -30,8 +27,35 @@ import { CurrentMissionCard } from "@/components/app/dashboard/CurrentMissionCar
 
 export const Route = createFileRoute("/app/dashboard")({ component: Dashboard });
 
-const STAGES = ["Idea", "Validate", "Launch", "Operate", "Scale"] as const;
-type Stage = (typeof STAGES)[number];
+// Playbook content is still authored against the legacy 5-value org.stage
+// vocabulary. Stage position itself comes from useProgressSpine().stage — the
+// canonical derivation — and CANONICAL_TO_PLAYBOOK below re-keys that position
+// into this content vocabulary (same pattern as LAUNCHPAD_TO_ROADMAP in
+// business-roadmap.ts). Nothing here may read org.stage.
+const PLAYBOOK_KEYS = ["Idea", "Validate", "Launch", "Operate", "Scale"] as const;
+type Stage = (typeof PLAYBOOK_KEYS)[number];
+
+const CANONICAL_TO_PLAYBOOK: Record<LaunchpadStageId, Stage> = {
+  idea: "Idea",
+  // Stress-test modules (kill-my-idea, competitor-scanner) live in the Idea
+  // playbook's phase 1 — exactly the proof the canonical validate stage needs.
+  validate: "Idea",
+  // Validate playbook phase 1 is "Sharpen Your Offer" (personas, GTM, plan).
+  offer: "Validate",
+  // Validate playbook phase 3 is "Build Infrastructure" (automations, KPI).
+  build: "Validate",
+  launch: "Launch",
+  // Launch playbook phase 1 is "Activate Revenue" — first paying customers.
+  revenue: "Launch",
+};
+
+/** Once every canonical stage through Revenue is proven, show the post-revenue
+ *  operations content. (The "Scale" playbook is unreachable from the canonical
+ *  spine — flagged for Phase 3 content cleanup.) */
+function playbookKeyFor(stage: { current: { id: LaunchpadStageId; done: boolean } }): Stage {
+  if (stage.current.id === "revenue" && stage.current.done) return "Operate";
+  return CANONICAL_TO_PLAYBOOK[stage.current.id];
+}
 
 function greeting() {
   const h = new Date().getHours();
@@ -560,9 +584,15 @@ function HealthRing({ score, color }: { score: number; color: string }) {
   );
 }
 
-function StageMapNode({ name, idx, stageIdx }: { name: string; idx: number; stageIdx: number }) {
-  const isCurrent = idx === stageIdx;
-  const isDone = idx < stageIdx;
+function StageMapNode({
+  name,
+  isCurrent,
+  isDone,
+}: {
+  name: string;
+  isCurrent: boolean;
+  isDone: boolean;
+}) {
   return (
     <div className="flex flex-col items-center gap-1.5" style={{ minWidth: 60 }}>
       <div className="relative flex items-center justify-center">
@@ -629,8 +659,8 @@ function StageMapNode({ name, idx, stageIdx }: { name: string; idx: number; stag
 function Dashboard() {
   const { user, profile, currentOrgId } = useAuth();
   useWorkspace();
+  const spine = useProgressSpine();
 
-  const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const leadsQ = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const autoQ = useQuery({
@@ -639,9 +669,10 @@ function Dashboard() {
   });
 
   const name = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const org = orgQ.data;
-  const stage = (org?.stage as Stage) ?? "Idea";
-  const stageIdx = STAGES.indexOf(stage);
+  // Canonical stage — spine only. org.stage (the self-reported 5-value enum)
+  // must not drive anything on this page.
+  const spineStages = spine.stage.stages;
+  const stageIdx = spine.stage.currentIndex;
   const runCount = runsQ.data?.length ?? 0;
   const leadCount = leadsQ.data?.length ?? 0;
   const activeAuto =
@@ -656,7 +687,7 @@ function Dashboard() {
     (runsQ.data ?? []).map((r: Record<string, unknown>) => r.tool_key as string),
   );
 
-  const phases = PLAYBOOK_DATA[stage];
+  const phases = PLAYBOOK_DATA[playbookKeyFor(spine.stage)];
   const activePhaseIdx = Math.max(
     0,
     Math.min(
@@ -665,7 +696,7 @@ function Dashboard() {
     ),
   );
   const activePhase = phases[activePhaseIdx];
-  const nextStageName = STAGES[Math.min(stageIdx + 1, STAGES.length - 1)];
+  const nextStageName = spineStages[Math.min(stageIdx + 1, spineStages.length - 1)].label;
   const tasksLeft = activePhase.modules.filter((m) => !runKeys.has(m.id)).length;
 
   // Quick action chips (contextual)
@@ -723,7 +754,7 @@ function Dashboard() {
   const mood: "active" | "thinking" | "alert" =
     score >= 70 ? "active" : score >= 40 ? "thinking" : "alert";
 
-  const briefText = `Your business is ${scoreText.toLowerCase()} at ${stage} stage. ${runCount} tool${runCount !== 1 ? "s" : ""} complete. Top priority: ${improvements[0]?.text.replace("I need you to ", "").split(".")[0]}.`;
+  const briefText = `Your business is ${scoreText.toLowerCase()} at ${spine.stage.current.label} stage. ${runCount} tool${runCount !== 1 ? "s" : ""} complete. Top priority: ${improvements[0]?.text.replace("I need you to ", "").split(".")[0]}.`;
 
   return (
     <div className="space-y-5">
@@ -872,7 +903,10 @@ function Dashboard() {
                 lineHeight: 1.4,
               }}
             >
-              Stage {stageIdx + 1} of 5 — {stage}
+              {/* Canonical stage from the progress spine — must always match
+                  mission-control's stage bar (same computation, same value). */}
+              Stage {spine.stage.currentIndex + 1} of {spine.stage.stages.length} ·{" "}
+              {spine.stage.current.label}
             </p>
           </div>
         </div>
@@ -1034,7 +1068,7 @@ function Dashboard() {
               style={{
                 top: "12px",
                 left: "calc(12px + 2%)",
-                width: `${(stageIdx / (STAGES.length - 1)) * 96}%`,
+                width: `${(stageIdx / (spineStages.length - 1)) * 96}%`,
                 height: "2px",
                 background: "var(--primary)",
                 zIndex: 1,
@@ -1042,14 +1076,14 @@ function Dashboard() {
               }}
             />
           )}
-          {STAGES.map((s, i) => (
-            <div key={s} style={{ zIndex: 2, position: "relative" }}>
-              <StageMapNode name={s} idx={i} stageIdx={stageIdx} />
+          {spineStages.map((s) => (
+            <div key={s.id} style={{ zIndex: 2, position: "relative" }}>
+              <StageMapNode name={s.label} isCurrent={s.current} isDone={s.done && !s.current} />
             </div>
           ))}
         </div>
 
-        {stageIdx < STAGES.length - 1 && (
+        {stageIdx < spineStages.length - 1 && (
           <p
             className="mt-4"
             style={{

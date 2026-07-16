@@ -12,12 +12,12 @@ import {
   Check,
   Search,
   Zap,
-  Bell,
   HelpCircle,
   Plus,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { NotificationBell } from "@/components/app/NotificationBell";
 import { useGuest } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
@@ -31,6 +31,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/launchpad": "Workbench",
   "/app/playbook": "Playbook",
   "/app/mission-control": "Home",
+  "/app/nova-home": "Home",
   "/app/mission-briefing": "Mission Briefing",
   "/app/research": "Research",
   "/app/memory": "Memory",
@@ -50,7 +51,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/admin": "Admin",
   "/app/nova/crm": "Pipeline",
   "/app/monitoring": "System Health",
-  "/app/approvals": "Approvals",
   "/app/templates": "Templates",
   "/app/sop-library": "SOP Library",
   "/app/scale/campaigns": "Campaigns",
@@ -60,6 +60,7 @@ const SECTION_LABELS: Record<string, string> = {
   "/app/launchpad-path": "Execute",
   "/app/playbook": "Execute",
   "/app/mission-control": "Execute",
+  "/app/nova-home": "Operate",
   "/app/mission-briefing": "Execute",
   "/app/launchpad": "Workbench",
   "/app/research": "Workbench",
@@ -69,7 +70,6 @@ const SECTION_LABELS: Record<string, string> = {
   "/app/automations": "Automate",
   "/app/builder": "Automate",
   "/app/integrations": "Automate",
-  "/app/approvals": "Automate",
   "/app/ai-dashboard": "Intelligence",
   "/app/nova/reports": "Intelligence",
   "/app/mentor": "Intelligence",
@@ -229,9 +229,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           </button>
 
           {/* Bell */}
-          <IconBtn title="Notifications">
-            <Bell className="h-4 w-4" />
-          </IconBtn>
+          <NotificationBell />
 
           {/* Help */}
           <IconBtn title="Help & support">

@@ -45,7 +45,7 @@ function BillingReturn() {
         <Link to="/app/billing">
           <Button variant="outline">Back to billing</Button>
         </Link>
-        <Link to="/app/dashboard">
+        <Link to="/app">
           <Button>Go to dashboard</Button>
         </Link>
       </div>

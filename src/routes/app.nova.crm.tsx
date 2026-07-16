@@ -218,6 +218,30 @@ function CRMPage() {
   const q = useQuery({ ...leadsQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
   const rawDeals = (q.data ?? []) as Deal[];
 
+  // Live pipeline: refresh when any lead for this org changes (drag by a
+  // teammate, a won-deal automation, etc.). leads is in the realtime publication.
+  useEffect(() => {
+    if (!currentOrgId) return;
+    const channel = supabase
+      .channel(`leads-rt:${currentOrgId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "leads",
+          filter: `organization_id=eq.${currentOrgId}`,
+        },
+        () => {
+          void qc.invalidateQueries({ queryKey: ["leads", currentOrgId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [currentOrgId, qc]);
+
   const [view, setView] = useState<CRMView>("kanban");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<Stage | "All">("All");

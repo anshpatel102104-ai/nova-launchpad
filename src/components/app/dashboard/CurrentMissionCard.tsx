@@ -1,10 +1,10 @@
 // TASK-063 · Current Mission Dashboard Module
 // Shows the active mission, lane badge, and step checklist.
-// Fetches live data and refreshes after step completion.
+// All progress data comes from useProgressSpine — no local derivation.
 
 import React from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { MissionChecklist } from "./MissionChecklist";
 import { Loader2, Target, ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -15,48 +15,9 @@ interface Props {
   userId: string;
 }
 
-async function fetchCurrentMission(userId: string) {
-  // Get workspace
-  const { data: ws } = await supabase
-    .from("workspaces")
-    .select("id, name, lane, stage, current_mission_id")
-    .eq("owner_id", userId)
-    .maybeSingle();
-
-  if (!ws) return null;
-
-  // Get active mission
-  const { data: mission } = await supabase
-    .from("missions")
-    .select("id, title, description, lane, status")
-    .eq("workspace_id", ws.id)
-    .eq("status", "active")
-    .order("sort_order")
-    .limit(1)
-    .maybeSingle();
-
-  if (!mission) return null;
-
-  // Get steps
-  const { data: steps } = await supabase
-    .from("mission_steps")
-    .select("id, title, description, tool_key, status, sort_order")
-    .eq("mission_id", mission.id)
-    .order("sort_order");
-
-  return { workspace: ws, mission, steps: steps ?? [] };
-}
-
 export function CurrentMissionCard({ userId }: Props) {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ["current-mission", userId],
-    queryFn: () => fetchCurrentMission(userId),
-    staleTime: 30_000,
-    // Retry for up to 20 seconds after onboarding — workspace provisioning may still be in flight.
-    retry: 4,
-    retryDelay: 5_000,
-  });
+  const { isLoading, workspace, mission, steps, percent } = useProgressSpine();
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["current-mission", userId] });
 
@@ -86,7 +47,7 @@ export function CurrentMissionCard({ userId }: Props) {
     );
   }
 
-  if (!data) {
+  if (!workspace || !mission) {
     // Retries are exhausted by now — resolve to a real empty state, never an
     // eternal spinner. Broken provisioning is handled by the Home repair
     // banner; this covers "no mission assigned" (e.g. all missions done).
@@ -153,13 +114,9 @@ export function CurrentMissionCard({ userId }: Props) {
     );
   }
 
-  const { workspace, mission, steps } = data;
   const lane = (workspace.lane ?? "Idea") as Lane;
   const laneMeta = LANE_META[lane];
-  const completedCount = steps.filter(
-    (s: { status: string }) => s.status === "completed" || s.status === "skipped",
-  ).length;
-  const allDone = completedCount === steps.length && steps.length > 0;
+  const allDone = percent === 100 && steps.length > 0;
 
   return (
     <div
@@ -233,7 +190,7 @@ export function CurrentMissionCard({ userId }: Props) {
               letterSpacing: "-0.02em",
             }}
           >
-            {mission.title as string}
+            {mission.title}
           </h3>
           {mission.description && (
             <p
@@ -244,7 +201,7 @@ export function CurrentMissionCard({ userId }: Props) {
                 lineHeight: 1.5,
               }}
             >
-              {mission.description as string}
+              {mission.description}
             </p>
           )}
         </div>
@@ -276,8 +233,9 @@ export function CurrentMissionCard({ userId }: Props) {
 
       {/* Checklist */}
       <MissionChecklist
-        missionId={mission.id as string}
-        workspaceId={workspace.id as string}
+        missionId={mission.id}
+        missionTitle={mission.title}
+        workspaceId={workspace.id}
         steps={steps as Parameters<typeof MissionChecklist>[0]["steps"]}
         onStepComplete={refresh}
       />

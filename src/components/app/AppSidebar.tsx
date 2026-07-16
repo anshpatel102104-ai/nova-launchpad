@@ -1,36 +1,41 @@
-import { useEffect, useMemo, useState } from "react";
+// One product, one rail. Launchpad Nova is a single mission-driven operating
+// system — the founder never chooses a "mode" to see their own business.
+// Everything is reachable from one flat nav (Mission Control, Roadmap, AI
+// Mentors, CRM, Projects, Marketing, Automations, Finances, Team, Knowledge,
+// Reports, Settings). The three operational items that need a proven build
+// (Marketing, Automations, Reports) show locked until the roadmap says the
+// business is ready — same "unlock" language as the rest of the game layer,
+// just inline instead of hidden behind a separate command-center sidebar.
+
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  Rocket,
   Settings,
   CreditCard,
   ChevronsLeft,
   ChevronsRight,
   ArrowUpRight,
-  TrendingUp,
   Zap,
   Shield,
   Brain,
-  Activity,
-  Sparkles,
-  Map,
-  Workflow,
-  Users,
   Megaphone,
-  Plug,
   BarChart3,
-  MessageSquare,
   FileText,
   ChevronDown,
   BookOpen,
-  Crosshair,
-  LayoutTemplate,
   ClipboardList,
   MoreHorizontal,
   PlayCircle,
-  Blocks,
   Search,
+  Lock,
+  Flame,
+  Rocket,
+  Home,
+  Map,
+  Users,
+  Building2,
+  GraduationCap,
+  type LucideIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -38,370 +43,287 @@ import { useAuth } from "@/lib/auth";
 import { useGuest } from "@/lib/guest";
 import { subscriptionQuery } from "@/lib/queries";
 import { useIsAdmin } from "@/lib/admin";
-import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
-import { ViewSwitcher } from "./ViewSwitcher";
-
-/* ── Types ── */
-interface SubItem {
-  label: string;
-  to: string;
-  icon: React.ComponentType<{ className?: string }>;
-  match: (p: string) => boolean;
-}
-
-interface NavGroup {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  to: string;
-  match: (p: string) => boolean;
-  children?: SubItem[];
-  badge?: string;
-}
-
-/* ── Navigation Definition — Nova OS model ──
- * Outcome-first primary nav (NOVA_OS_REDESIGN.md):
- *   Mission Control → Build → Launch → Grow → Ask Nova
- * Everything else lives in the Toolbox (progressive disclosure, collapsed
- * by default) so every legacy route stays reachable without nav overload.
- */
-const PRIMARY_NAV: NavGroup[] = [
-  {
-    id: "mission-control",
-    label: "Home",
-    icon: Crosshair,
-    to: "/app/mission-control",
-    match: (p) =>
-      p === "/app/mission-control" ||
-      p === "/app/dashboard" ||
-      p === "/app/mission-briefing" ||
-      p === "/app/launchpad-path" ||
-      p === "/app/galaxy",
-  },
-  {
-    id: "build",
-    label: "Build",
-    icon: Rocket,
-    to: "/app/outcomes/build",
-    match: (p) => p === "/app/outcomes/build",
-  },
-  {
-    id: "launch",
-    label: "Launch",
-    icon: Megaphone,
-    to: "/app/outcomes/launch",
-    match: (p) => p === "/app/outcomes/launch",
-  },
-  {
-    id: "grow",
-    label: "Grow",
-    icon: TrendingUp,
-    to: "/app/outcomes/grow",
-    match: (p) => p === "/app/outcomes/grow",
-  },
-  {
-    id: "nova",
-    label: "Ask Nova",
-    icon: Sparkles,
-    to: "/app/mentor",
-    match: (p) => p === "/app/mentor",
-  },
-];
-
-/* Operator-mode swaps Build/Launch/Grow for Automate/Optimize/Scale */
-const PRIMARY_NAV_OPERATE: NavGroup[] = [
-  PRIMARY_NAV[0],
-  {
-    id: "automate-outcomes",
-    label: "Automate",
-    icon: Zap,
-    to: "/app/outcomes/automate",
-    match: (p) => p === "/app/outcomes/automate",
-  },
-  {
-    id: "optimize",
-    label: "Optimize",
-    icon: TrendingUp,
-    to: "/app/outcomes/optimize",
-    match: (p) => p === "/app/outcomes/optimize",
-  },
-  {
-    id: "scale-outcomes",
-    label: "Scale",
-    icon: Rocket,
-    to: "/app/outcomes/scale",
-    match: (p) => p === "/app/outcomes/scale",
-  },
-  PRIMARY_NAV[4],
-];
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    id: "path",
-    label: "Journey",
-    icon: Map,
-    to: "/app/launchpad-path",
-    match: (p) => p === "/app/launchpad-path" || p === "/app/playbook",
-    children: [
-      {
-        label: "Journey",
-        to: "/app/launchpad-path",
-        icon: Map,
-        match: (p) => p === "/app/launchpad-path" || p === "/app/galaxy",
-      },
-      {
-        label: "Playbook",
-        to: "/app/playbook",
-        icon: BookOpen,
-        match: (p) => p === "/app/playbook",
-      },
-    ],
-  },
-  {
-    id: "workbench",
-    label: "Workbench",
-    icon: Rocket,
-    to: "/app/launchpad",
-    match: (p) =>
-      (p.startsWith("/app/launchpad") &&
-        p !== "/app/launchpad-path" &&
-        p !== "/app/launchpad/first-customers") ||
-      p === "/app/research",
-    children: [
-      {
-        label: "Tools",
-        to: "/app/launchpad",
-        icon: Sparkles,
-        match: (p) =>
-          p.startsWith("/app/launchpad") &&
-          p !== "/app/launchpad-path" &&
-          p !== "/app/launchpad/history" &&
-          p !== "/app/launchpad/first-customers",
-      },
-      {
-        label: "Research",
-        to: "/app/research",
-        icon: Search,
-        match: (p) => p === "/app/research",
-      },
-      {
-        label: "History",
-        to: "/app/launchpad/history",
-        icon: Activity,
-        match: (p) => p === "/app/launchpad/history",
-      },
-    ],
-  },
-  {
-    id: "customers",
-    label: "Customers",
-    icon: Users,
-    to: "/app/contacts",
-    match: (p) =>
-      p === "/app/contacts" ||
-      p === "/app/leads" ||
-      p === "/app/nova" ||
-      p === "/app/nova/crm" ||
-      p === "/app/nova/leads" ||
-      p === "/app/launchpad/first-customers" ||
-      p.startsWith("/app/scale"),
-    children: [
-      {
-        label: "Contacts",
-        to: "/app/contacts",
-        icon: Users,
-        match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/nova/leads",
-      },
-      {
-        label: "Pipeline",
-        to: "/app/nova/crm",
-        icon: Workflow,
-        match: (p) => p === "/app/nova/crm" || p === "/app/nova",
-      },
-      {
-        label: "First Customers",
-        to: "/app/launchpad/first-customers",
-        icon: Crosshair,
-        match: (p) => p === "/app/launchpad/first-customers",
-      },
-      {
-        label: "Campaigns",
-        to: "/app/scale/campaigns",
-        icon: Megaphone,
-        match: (p) => p.startsWith("/app/scale/campaigns"),
-      },
-    ],
-  },
-  {
-    id: "automate",
-    label: "Automate",
-    icon: Zap,
-    to: "/app/automations",
-    match: (p) =>
-      p === "/app/automations" ||
-      p === "/app/integrations" ||
-      p === "/app/builder" ||
-      p === "/app/workflow-templates" ||
-      p === "/app/approvals",
-    children: [
-      {
-        label: "Automations",
-        to: "/app/automations",
-        icon: Workflow,
-        match: (p) => p === "/app/automations",
-      },
-      {
-        label: "Builder",
-        to: "/app/builder",
-        icon: Blocks,
-        match: (p) => p === "/app/builder",
-      },
-      {
-        label: "Workflow Templates",
-        to: "/app/workflow-templates",
-        icon: LayoutTemplate,
-        match: (p) => p === "/app/workflow-templates",
-      },
-      {
-        label: "Integrations",
-        to: "/app/integrations",
-        icon: Plug,
-        match: (p) => p === "/app/integrations",
-      },
-      {
-        label: "Approvals",
-        to: "/app/approvals",
-        icon: ClipboardList,
-        match: (p) => p === "/app/approvals",
-      },
-    ],
-  },
-  {
-    id: "insights",
-    label: "Insights",
-    icon: BarChart3,
-    to: "/app/ai-dashboard",
-    match: (p) =>
-      p.startsWith("/app/ai-dashboard") ||
-      p === "/app/mentor" ||
-      p === "/app/monitoring" ||
-      p === "/app/activity",
-    children: [
-      {
-        label: "AI Dashboard",
-        to: "/app/ai-dashboard",
-        icon: BarChart3,
-        match: (p) => p.startsWith("/app/ai-dashboard"),
-      },
-      {
-        label: "Reports",
-        to: "/app/nova/reports",
-        icon: TrendingUp,
-        match: (p) => p === "/app/nova/reports" || p === "/app/activity",
-      },
-      {
-        label: "Mentor",
-        to: "/app/mentor",
-        icon: MessageSquare,
-        match: (p) => p === "/app/mentor",
-      },
-      {
-        label: "System Health",
-        to: "/app/monitoring",
-        icon: Activity,
-        match: (p) => p === "/app/monitoring",
-      },
-    ],
-  },
-  {
-    id: "library",
-    label: "Library",
-    icon: FileText,
-    to: "/app/assets",
-    match: (p) =>
-      p === "/app/assets" ||
-      p === "/app/templates" ||
-      p === "/app/sop-library" ||
-      p.startsWith("/app/memory"),
-    children: [
-      {
-        label: "Assets",
-        to: "/app/assets",
-        icon: FileText,
-        match: (p) => p === "/app/assets",
-      },
-      {
-        label: "Templates",
-        to: "/app/templates",
-        icon: LayoutTemplate,
-        match: (p) => p === "/app/templates",
-      },
-      {
-        label: "SOP Library",
-        to: "/app/sop-library",
-        icon: BookOpen,
-        match: (p) => p === "/app/sop-library",
-      },
-      {
-        label: "Memory",
-        to: "/app/memory",
-        icon: Brain,
-        match: (p) => p.startsWith("/app/memory"),
-      },
-    ],
-  },
-];
-
-/* Each view shows only the Toolbox groups that fit it, so the layout stays
- * focused instead of dumping every feature on everyone:
- *   Launchpad (create) → Journey, Workbench, Customers, Library
- *   NOVA (operate)     → Customers, Automate, Insights, Library
- */
-const LAUNCHPAD_GROUP_IDS = new Set(["path", "workbench", "customers", "library"]);
-const NOVA_GROUP_IDS = new Set(["customers", "automate", "insights", "library"]);
+import { useBusinessGraph } from "@/hooks/use-business-graph";
+import { useFounderProgress } from "@/hooks/use-founder-progress";
+import { useFounderStreak } from "@/hooks/use-founder-streak";
+import { deriveLaunchpadProgress } from "@/lib/ecosystem";
 
 const STORAGE = "nova-sidebar-collapsed";
-const TOOLBOX_STORAGE = "nova-toolbox-open";
 
-interface AppSidebarProps {
-  onOpenRail?: () => void;
+/* ─── The unified nav model ──────────────────────────────────
+ * A flat list, no product split. `gated` items stay reachable in principle
+ * but are visually locked (and non-navigable) until the business has proven
+ * itself — deriveLaunchpadProgress().readyForNova. */
+interface NavItem {
+  id: string;
+  label: string;
+  to: string;
+  search?: Record<string, string>;
+  icon: LucideIcon;
+  match: (p: string, search: string) => boolean;
+  gated?: boolean;
 }
 
-export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
+const PRIMARY_NAV: NavItem[] = [
+  {
+    id: "home",
+    label: "Mission Control",
+    to: "/app/mission-control",
+    icon: Home,
+    match: (p) => p === "/app/mission-control" || p === "/app/dashboard",
+  },
+  {
+    id: "roadmap",
+    label: "Roadmap",
+    to: "/app/roadmap",
+    icon: Map,
+    match: (p) => p === "/app/roadmap",
+  },
+  {
+    id: "mentors",
+    label: "AI Mentors",
+    to: "/app/launchpad/mentors",
+    icon: GraduationCap,
+    match: (p) => p === "/app/launchpad/mentors",
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    to: "/app/contacts",
+    icon: Users,
+    match: (p) => p === "/app/contacts" || p === "/app/leads",
+  },
+  {
+    id: "projects",
+    label: "Projects",
+    to: "/app/launchpad/missions",
+    icon: ClipboardList,
+    match: (p) => p === "/app/launchpad/missions",
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    to: "/app/crm/campaigns",
+    icon: Megaphone,
+    match: (p) => p === "/app/crm/campaigns",
+    gated: true,
+  },
+  {
+    id: "automations",
+    label: "Automations",
+    to: "/app/automations",
+    icon: Zap,
+    match: (p) => p === "/app/automations" || p === "/app/builder",
+    gated: true,
+  },
+  {
+    id: "finances",
+    label: "Finances",
+    to: "/app/billing",
+    icon: CreditCard,
+    match: (p) => p === "/app/billing",
+  },
+  {
+    id: "team",
+    label: "Team",
+    to: "/app/settings",
+    search: { tab: "team" },
+    icon: Building2,
+    match: (p, search) => p === "/app/settings" && search.includes("tab=team"),
+  },
+  {
+    id: "knowledge",
+    label: "Knowledge",
+    to: "/app/sop-library",
+    icon: BookOpen,
+    match: (p) => p === "/app/sop-library" || p === "/app/templates",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    to: "/app/nova/reports",
+    icon: BarChart3,
+    match: (p) => p === "/app/nova/reports" || p.startsWith("/app/ai-dashboard"),
+    gated: true,
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    to: "/app/settings",
+    icon: Settings,
+    match: (p, search) => p === "/app/settings" && !search.includes("tab=team"),
+  },
+];
+
+/** Deep-cut pages kept reachable without cluttering the primary rail. */
+const MORE_NAV: NavItem[] = [
+  {
+    id: "research",
+    label: "Research",
+    to: "/app/research",
+    icon: Search,
+    match: (p) => p === "/app/research",
+  },
+  {
+    id: "assets",
+    label: "Assets",
+    to: "/app/assets",
+    icon: FileText,
+    match: (p) => p === "/app/assets",
+  },
+  {
+    id: "memory",
+    label: "Memory",
+    to: "/app/memory",
+    icon: Brain,
+    match: (p) => p.startsWith("/app/memory"),
+  },
+];
+
+export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => void }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { currentOrg, currentOrgId, profile, user } = useAuth();
-  const { isGuest, disable } = useGuest();
-  const { isAdmin } = useIsAdmin();
-  const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const search = useRouterState({ select: (s) => s.location.searchStr });
+  const graph = useBusinessGraph();
+  const progress = deriveLaunchpadProgress(graph);
+  const unlocked = progress.readyForNova;
 
-  const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
-  const plan = subQ.data?.plan ?? "starter";
+  return (
+    <SidebarChrome
+      brand="Launchpad Nova"
+      tagline="Your business operating system"
+      brandIcon={Rocket}
+    >
+      {({ collapsed }) => (
+        <>
+          <div className={cn("px-2 space-y-px", collapsed && "px-1.5")}>
+            {PRIMARY_NAV.map((item) => (
+              <NavRow
+                key={item.id}
+                to={item.to}
+                search={item.search}
+                label={item.label}
+                icon={item.icon}
+                active={item.match(path, search)}
+                collapsed={collapsed}
+                locked={item.gated && !unlocked}
+                lockHint="Unlocks once your build is proven — see your Roadmap"
+              />
+            ))}
+          </div>
 
-  // Active view (Launchpad ↔ NOVA), backed by workspaces.mode.
-  // Founders/Launchpad see Build/Launch/Grow; operators/NOVA see
-  // Automate/Optimize/Scale — and the Toolbox is curated to match.
-  const { isOperate } = useWorkspaceMode();
-  const primaryNav = isOperate ? PRIMARY_NAV_OPERATE : PRIMARY_NAV;
-  const navGroups = useMemo(
-    () => NAV_GROUPS.filter((g) => (isOperate ? NOVA_GROUP_IDS : LAUNCHPAD_GROUP_IDS).has(g.id)),
-    [isOperate],
+          <SupportGroup
+            label="More"
+            items={MORE_NAV}
+            path={path}
+            search={search}
+            collapsed={collapsed}
+            storageKey="lp-more-open"
+          />
+        </>
+      )}
+    </SidebarChrome>
   );
+}
 
-  // Toolbox (legacy full nav) — progressive disclosure, closed by default.
-  const [toolboxOpen, setToolboxOpen] = useState(() => {
+/* ─── Shared pieces ────────────────────────────────────────── */
+
+function NavRow({
+  to,
+  search,
+  label,
+  icon: Icon,
+  active,
+  collapsed,
+  locked,
+  lockHint,
+}: {
+  to: string;
+  search?: Record<string, string>;
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  collapsed: boolean;
+  locked?: boolean;
+  lockHint?: string;
+}) {
+  if (locked) {
+    return (
+      <div
+        title={collapsed ? `${label} · ${lockHint ?? "Locked"}` : lockHint}
+        className={cn(
+          "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] opacity-45",
+          collapsed && "justify-center px-0 w-8 mx-auto",
+        )}
+        style={{ color: "var(--muted-foreground)" }}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-[13px]">{label}</span>
+            <Lock className="h-3 w-3 shrink-0" />
+          </>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to={to}
+      search={search as never}
+      title={collapsed ? label : undefined}
+      className={cn(
+        "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] transition-all duration-100",
+        collapsed && "justify-center px-0 w-8 mx-auto",
+        active ? "font-semibold" : "hover:bg-surface-2",
+      )}
+      style={
+        active
+          ? { background: "var(--primary-soft)", color: "var(--primary)" }
+          : { color: "var(--muted-foreground)" }
+      }
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      {!collapsed && <span className="flex-1 text-[13px]">{label}</span>}
+    </Link>
+  );
+}
+
+/** Collapsible support area — progressive disclosure, closed by default,
+ *  auto-opens when the active route lives inside it. */
+function SupportGroup({
+  label,
+  items,
+  path,
+  search,
+  collapsed,
+  storageKey,
+}: {
+  label: string;
+  items: NavItem[];
+  path: string;
+  search: string;
+  collapsed: boolean;
+  storageKey: string;
+}) {
+  const [open, setOpen] = useState(() => {
     try {
-      return localStorage.getItem(TOOLBOX_STORAGE) === "1";
+      return localStorage.getItem(storageKey) === "1";
     } catch {
       return false;
     }
   });
-  const toggleToolbox = () => {
-    setToolboxOpen((o) => {
+
+  const hasActive = items.some((i) => i.match(path, search));
+  useEffect(() => {
+    if (hasActive) setOpen(true);
+  }, [hasActive]);
+
+  const toggle = () => {
+    setOpen((o) => {
       const next = !o;
       try {
-        localStorage.setItem(TOOLBOX_STORAGE, next ? "1" : "0");
+        localStorage.setItem(storageKey, next ? "1" : "0");
       } catch {
         /* */
       }
@@ -409,36 +331,85 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
     });
   };
 
-  const initials = (profile?.full_name || user?.email || "U")
-    .split(/[\s@]/)
-    .filter(Boolean)
-    .map((n: string) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  return (
+    <div>
+      <div className="px-2 pt-4">
+        <button
+          onClick={toggle}
+          title={collapsed ? label : undefined}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-left transition-colors hover:bg-surface-2",
+            collapsed && "justify-center px-0",
+          )}
+          style={{ color: "var(--muted-foreground)" }}
+        >
+          {!collapsed ? (
+            <>
+              <span className="text-[10px] font-semibold uppercase tracking-widest opacity-55">
+                {label}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 opacity-40 transition-transform duration-150",
+                  open && "rotate-180",
+                )}
+              />
+            </>
+          ) : (
+            <MoreHorizontal className="h-3.5 w-3.5 opacity-50" />
+          )}
+        </button>
+      </div>
+      {(open || collapsed) && (
+        <div className={cn("px-2 space-y-px pt-0.5", collapsed && "px-1.5")}>
+          {items.map((item) => (
+            <NavRow
+              key={item.id}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+              active={item.match(path, search)}
+              collapsed={collapsed}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Shared chrome: header, footer, collapse. */
+function SidebarChrome({
+  brand,
+  tagline,
+  brandIcon: BrandIcon,
+  children,
+}: {
+  brand: string;
+  tagline: string;
+  brandIcon: LucideIcon;
+  children: (ctx: { collapsed: boolean }) => React.ReactNode;
+}) {
+  const { currentOrg, currentOrgId, profile, user } = useAuth();
+  const { isGuest, disable } = useGuest();
+  const { isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const [collapsed, setCollapsed] = useState(false);
+  const founder = useFounderProgress();
+  const streak = useFounderStreak();
+  const levelColor = `var(--level-${founder.level}-color)`;
+
+  const subQ = useQuery({ ...subscriptionQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
+  const plan = subQ.data?.plan ?? "starter";
 
   useEffect(() => {
     try {
-      const v = localStorage.getItem(STORAGE);
-      if (v === "1") setCollapsed(true);
+      if (localStorage.getItem(STORAGE) === "1") setCollapsed(true);
     } catch {
       /* */
     }
   }, []);
-
-  useEffect(() => {
-    const active = navGroups.filter((g) => g.children && g.match(path)).map((g) => g.id);
-    if (active.length > 0) {
-      setExpandedGroups((prev) => {
-        const next = new Set(prev);
-        active.forEach((id) => next.add(id));
-        return next;
-      });
-      // Reveal the Toolbox when the user is on a page that lives inside it,
-      // so the active state is never hidden.
-      setToolboxOpen(true);
-    }
-  }, [path, navGroups]);
 
   const toggle = () => {
     setCollapsed((c) => {
@@ -452,25 +423,22 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
     });
   };
 
-  const toggleGroup = (id: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const exitDemo = () => {
     disable();
     navigate({ to: "/signup", search: { plan: undefined } });
   };
 
+  const initials = (profile?.full_name || user?.email || "U")
+    .split(/[\s@]/)
+    .filter(Boolean)
+    .map((n: string) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   const footerItems = [
     ...(isAdmin ? [{ to: "/app/admin", label: "Admin", icon: Shield }] : []),
     { to: "/app/tutorials", label: "Help & Tutorials", icon: PlayCircle },
-    { to: "/app/settings", label: "Settings", icon: Settings },
-    { to: "/app/billing", label: "Billing", icon: CreditCard },
   ];
 
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -489,7 +457,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         borderRight: "1px solid var(--sidebar-border)",
       }}
     >
-      {/* ── Workspace / brand header ── */}
+      {/* ── Brand header ── */}
       <div
         className={cn(
           "flex h-[52px] shrink-0 items-center gap-2.5 px-3",
@@ -498,215 +466,38 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
         style={{ borderBottom: "1px solid var(--sidebar-border)" }}
       >
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-bold tracking-tight"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
           style={{
-            background: "linear-gradient(135deg, var(--primary) 0%, var(--orbit-accent) 100%)",
+            background: "linear-gradient(140deg, var(--primary), var(--orbit-accent))",
+            color: "#fff",
+            boxShadow: "0 4px 16px color-mix(in oklab, var(--primary) 45%, transparent)",
           }}
         >
-          LN
+          <BrandIcon className="h-4 w-4" />
         </div>
         {!collapsed && (
-          <>
-            <div className="min-w-0 flex-1">
-              <div
-                className="font-display text-[13px] font-bold leading-tight truncate"
-                style={{ color: "var(--foreground)" }}
-              >
-                LaunchpadNova
-              </div>
-              <div
-                className="text-[11px] leading-tight truncate mt-px"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                {orgName}
-              </div>
+          <div className="min-w-0 flex-1">
+            <div
+              className="font-display text-[13px] font-bold leading-tight truncate"
+              style={{ color: "var(--foreground)" }}
+            >
+              {brand}
             </div>
-            <ChevronDown
-              className="h-3.5 w-3.5 shrink-0 opacity-50"
+            <div
+              className="text-[11px] leading-tight truncate mt-px"
               style={{ color: "var(--muted-foreground)" }}
-            />
-          </>
+            >
+              {tagline} · {orgName}
+            </div>
+          </div>
         )}
       </div>
 
-      {/* ── View switcher: Launchpad (create) ↔ NOVA (operate) ── */}
-      <div
-        className={cn("px-2 pt-2 pb-1", collapsed && "px-1.5")}
-        style={{ borderBottom: "1px solid var(--sidebar-border)" }}
-      >
-        <ViewSwitcher collapsed={collapsed} />
-      </div>
-
-      {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto py-2 space-y-px">
-        {/* Primary nav — the OS layer: outcome-driven, 5 items */}
-        {primaryNav.map((item) => {
-          const isActive = item.match(path);
-          const isNova = item.id === "nova";
-          return (
-            <div key={item.id} className={cn("px-2", collapsed && "px-1.5")}>
-              <Link
-                to={item.to}
-                title={collapsed ? item.label : undefined}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md px-2.5 py-[8px] transition-all duration-100",
-                  collapsed && "justify-center px-0 w-8 mx-auto",
-                  isActive ? "font-semibold" : "hover:bg-surface-2",
-                )}
-                style={
-                  isActive
-                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                    : isNova
-                      ? { color: "var(--orbit-accent)" }
-                      : { color: "var(--muted-foreground)" }
-                }
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!collapsed && <span className="flex-1 text-[13px]">{item.label}</span>}
-              </Link>
-            </div>
-          );
-        })}
-
-        {/* Toolbox — progressive disclosure of the full feature set */}
-        <div className="px-2 pt-4">
-          <button
-            onClick={toggleToolbox}
-            title={collapsed ? "Toolbox" : undefined}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-left transition-colors hover:bg-surface-2",
-              collapsed && "justify-center px-0",
-            )}
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            {!collapsed ? (
-              <>
-                <span className="text-[10px] font-semibold uppercase tracking-widest opacity-55">
-                  Toolbox
-                </span>
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 opacity-40 transition-transform duration-150",
-                    toolboxOpen && "rotate-180",
-                  )}
-                />
-              </>
-            ) : (
-              <MoreHorizontal className="h-3.5 w-3.5 opacity-50" />
-            )}
-          </button>
-        </div>
-
-        {(toolboxOpen || collapsed) &&
-          navGroups.map((group) => {
-            const isActive = group.match(path);
-            const isExpanded = expandedGroups.has(group.id);
-            const hasChildren = !!group.children?.length;
-
-            return (
-              <div key={group.id}>
-                {/* Parent nav item */}
-                <div className={cn("px-2", collapsed && "px-1.5")}>
-                  {hasChildren ? (
-                    <button
-                      onClick={() => toggleGroup(group.id)}
-                      title={collapsed ? group.label : undefined}
-                      className={cn(
-                        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left transition-all duration-100",
-                        collapsed && "justify-center px-0 w-8 mx-auto",
-                        isActive ? "font-semibold" : "hover:bg-surface-2",
-                      )}
-                      style={
-                        isActive
-                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                          : { color: "var(--muted-foreground)" }
-                      }
-                    >
-                      <group.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 text-[13px]">{group.label}</span>
-                          <ChevronDown
-                            className={cn(
-                              "h-3.5 w-3.5 shrink-0 transition-transform duration-150 opacity-50",
-                              isExpanded && "rotate-180",
-                            )}
-                          />
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <Link
-                      to={group.to}
-                      title={collapsed ? group.label : undefined}
-                      className={cn(
-                        "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
-                        collapsed && "justify-center px-0 w-8 mx-auto",
-                        isActive ? "font-semibold" : "hover:bg-surface-2",
-                      )}
-                      style={
-                        isActive
-                          ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                          : { color: "var(--muted-foreground)" }
-                      }
-                    >
-                      <group.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 text-[13px]">{group.label}</span>
-                          {group.badge && (
-                            <span
-                              className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
-                              style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-                            >
-                              {group.badge}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </Link>
-                  )}
-                </div>
-
-                {/* Sub-items */}
-                {!collapsed && hasChildren && isExpanded && (
-                  <div className="px-2 mt-0.5 mb-1">
-                    <div
-                      className="ml-[18px] pl-3 space-y-px"
-                      style={{ borderLeft: "1.5px solid var(--border)" }}
-                    >
-                      {group.children!.map((child) => {
-                        const childActive = child.match(path);
-                        return (
-                          <Link
-                            key={child.to}
-                            to={child.to}
-                            className={cn(
-                              "flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-all duration-100",
-                              childActive ? "font-medium" : "hover:bg-surface-2",
-                            )}
-                            style={
-                              childActive
-                                ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                                : { color: "var(--muted-foreground)" }
-                            }
-                          >
-                            <child.icon className="h-3.5 w-3.5 shrink-0" />
-                            <span className="text-[12.5px]">{child.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-      </nav>
+      {/* ── Nav ── */}
+      <nav className="flex flex-1 flex-col overflow-y-auto py-2">{children({ collapsed })}</nav>
 
       {/* ── Footer ── */}
       <div className="shrink-0" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
-        {/* Footer nav links */}
         <div className={cn("p-2 space-y-px", collapsed && "px-1.5")}>
           {isGuest && (
             <button
@@ -716,39 +507,88 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
                 "flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[12.5px] font-medium transition-colors",
                 collapsed && "justify-center px-0 w-8 mx-auto",
               )}
-              style={{
-                background: "var(--primary-soft)",
-                color: "var(--primary)",
-              }}
+              style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
             >
               <ArrowUpRight className="h-4 w-4 shrink-0" />
               {!collapsed && <span>Exit demo</span>}
             </button>
           )}
 
-          {footerItems.map((item) => {
-            const active = path === item.to || path.startsWith(item.to + "/");
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                title={collapsed ? item.label : undefined}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-all duration-100",
-                  collapsed && "justify-center px-0 w-8 mx-auto",
-                  !active && "hover:bg-surface-2",
-                )}
-                style={
-                  active
-                    ? { background: "var(--primary-soft)", color: "var(--primary)" }
-                    : { color: "var(--muted-foreground)" }
-                }
+          {footerItems.map((item) => (
+            <NavRow
+              key={item.to}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+              active={path === item.to || path.startsWith(item.to + "/")}
+              collapsed={collapsed}
+            />
+          ))}
+        </div>
+
+        {/* Progression — the game layer, always in view */}
+        <div className={cn("px-2 pb-1.5", collapsed && "px-1.5")}>
+          <Link
+            to="/app/roadmap"
+            title={
+              collapsed
+                ? `Level ${founder.level} · ${founder.levelLabel} · ${streak.currentStreak}-day streak`
+                : undefined
+            }
+            className={cn(
+              "block rounded-xl border transition-colors hover:bg-surface-2",
+              collapsed ? "flex justify-center p-1.5" : "p-2.5",
+            )}
+            style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
+          >
+            {collapsed ? (
+              <span
+                className="flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-black text-white"
+                style={{
+                  background: `linear-gradient(150deg, color-mix(in oklab, ${levelColor} 82%, black), ${levelColor})`,
+                }}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {!collapsed && <span className="text-[13px]">{item.label}</span>}
-              </Link>
-            );
-          })}
+                {founder.level}
+              </span>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10.5px] font-black text-white"
+                    style={{
+                      background: `linear-gradient(150deg, color-mix(in oklab, ${levelColor} 82%, black), ${levelColor})`,
+                    }}
+                  >
+                    {founder.level}
+                  </span>
+                  <div
+                    className="min-w-0 flex-1 truncate text-[11.5px] font-bold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    Level {founder.level} · {founder.levelLabel}
+                  </div>
+                  <span
+                    className="shrink-0 font-mono text-[10px]"
+                    style={{ color: "var(--text-faint)" }}
+                  >
+                    {founder.xpProgressInLevel}%
+                  </span>
+                </div>
+                <div className="context-xp-bar mt-2">
+                  <div className="fill" style={{ width: `${founder.xpProgressInLevel}%` }} />
+                </div>
+                {streak.currentStreak > 0 && (
+                  <div
+                    className="mt-1.5 flex items-center gap-1 text-[10.5px] font-bold"
+                    style={{ color: "var(--warning)" }}
+                  >
+                    <Flame className="h-3 w-3" />
+                    {streak.currentStreak}-day streak
+                  </div>
+                )}
+              </>
+            )}
+          </Link>
         </div>
 
         {/* User card */}
@@ -793,7 +633,6 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: AppSidebarProps) {
             )}
           </button>
 
-          {/* Collapse toggle */}
           <button
             onClick={toggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

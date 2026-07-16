@@ -1,5 +1,7 @@
 // Mission step checklist — each open step shows plain hand-holding guidance
-// (via StepExecutionGuide) and a clear way to mark it done.
+// (via StepExecutionGuide) and a clear way to mark it done. Completing a step
+// shows the same momentum receipt as a tool run (progress + next unlocked),
+// so manual steps close the loop too instead of just ticking a box.
 
 import React from "react";
 import { CheckSquare, Square, Loader2 } from "lucide-react";
@@ -7,6 +9,8 @@ import { invokeEdge } from "@/lib/invokeEdge";
 import { toast } from "sonner";
 import { StepExecutionGuide } from "@/components/app/StepExecutionGuide";
 import { getStepGuidance, makeFallbackGuidance } from "@/lib/step-execution-guidance";
+import { PostRunMomentum } from "@/components/app/PostRunMomentum";
+import { buildRunMomentum, type RunMomentum } from "@/lib/mission-loop";
 
 export interface MissionStep {
   id: string;
@@ -19,13 +23,21 @@ export interface MissionStep {
 
 interface Props {
   missionId: string;
+  missionTitle?: string;
   workspaceId: string;
   steps: MissionStep[];
   onStepComplete?: () => void;
 }
 
-export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete }: Props) {
+export function MissionChecklist({
+  missionId,
+  missionTitle,
+  workspaceId,
+  steps,
+  onStepComplete,
+}: Props) {
   const [loadingStep, setLoadingStep] = React.useState<string | null>(null);
+  const [momentum, setMomentum] = React.useState<RunMomentum | null>(null);
 
   const handleCompleteStep = async (stepId: string) => {
     setLoadingStep(stepId);
@@ -40,6 +52,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
         },
         { timeoutMs: 20_000 },
       );
+      setMomentum(buildRunMomentum(missionTitle ?? "", steps, stepId));
       toast.success("Step done. Nice work!");
       onStepComplete?.();
     } catch (e) {
@@ -87,6 +100,13 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
           />
         </div>
       </div>
+
+      {/* Momentum receipt — what changed and what's next, after a manual tick */}
+      {momentum && (
+        <div style={{ marginBottom: 14 }}>
+          <PostRunMomentum momentum={momentum} facts={[]} />
+        </div>
+      )}
 
       {/* Steps */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -178,6 +198,7 @@ export function MissionChecklist({ missionId, workspaceId, steps, onStepComplete
                   <StepExecutionGuide
                     guidance={guidance}
                     compact
+                    stepId={step.id}
                     onMarkDone={() => handleCompleteStep(step.id)}
                   />
                   {guidance.toolRoute && (
