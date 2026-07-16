@@ -59,7 +59,7 @@ export const Route = createFileRoute("/app/admin")({
       .eq("user_id", session.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!data) throw redirect({ to: "/app/dashboard" });
+    if (!data) throw redirect({ to: "/app" });
   },
   component: AdminHub,
 });
@@ -289,7 +289,7 @@ function AdminHub() {
   const openAccount = (userId: string, label: string) => {
     const org = orgByOwner.get(userId);
     impersonationStore.start(userId, org?.id ?? null, org?.name ?? label);
-    window.location.assign("/app/dashboard");
+    window.location.assign("/app/");
   };
 
   const totalUsers = profiles.length;
@@ -1532,8 +1532,8 @@ function AdminHub() {
       </section>
 
       <div className="text-center text-[11px] text-muted-foreground">
-        <Link to="/app/dashboard" className="hover:text-orange-500 transition-colors">
-          ← Back to dashboard
+        <Link to="/app" className="hover:text-orange-500 transition-colors">
+          ← Back to app
         </Link>
       </div>
     </div>

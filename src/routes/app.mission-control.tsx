@@ -20,6 +20,8 @@ import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { useFounderStreak } from "@/hooks/use-founder-streak";
 import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
+import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
+import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { type LaunchpadProgress } from "@/lib/ecosystem";
@@ -102,6 +104,11 @@ function HomePage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-7">
+      {/* ── Provisioning repair / operator cockpit strip ── */}
+      <ModuleBoundary name="workspace status">
+        <WorkspaceStatusBanner />
+      </ModuleBoundary>
+
       {/* ── Greeting ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

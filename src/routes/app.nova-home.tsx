@@ -25,6 +25,9 @@ import { useAuth } from "@/lib/auth";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
 import { DailyBriefingCard } from "@/components/nova/DailyBriefingCard";
+import { AiBriefingCard } from "@/components/app/dashboard/AiBriefingCard";
+import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
+import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 
 export const Route = createFileRoute("/app/nova-home")({
   component: NovaHomePage,
@@ -101,6 +104,11 @@ function NovaHomePage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      {/* ── Provisioning repair / operator cockpit strip ── */}
+      <ModuleBoundary name="workspace status">
+        <WorkspaceStatusBanner />
+      </ModuleBoundary>
+
       {/* ── Command hero: is the business okay? ── */}
       <div
         className="relative overflow-hidden rounded-[20px] border p-6 md:p-7"
@@ -204,6 +212,11 @@ function NovaHomePage() {
         <div className="space-y-6 min-w-0">
           {/* ── Daily briefing — Nova's overnight check ── */}
           <DailyBriefingCard />
+
+          {/* ── AI briefing — situation report, north star, quick wins ── */}
+          <ModuleBoundary name="AI briefing">
+            <AiBriefingCard />
+          </ModuleBoundary>
 
           {/* ── Urgent attention tray ── */}
           <div>

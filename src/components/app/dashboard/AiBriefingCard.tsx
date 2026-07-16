@@ -1,15 +1,24 @@
 /**
- * AiBriefingCard — the Home focus module.
- * Surfaces the AI-generated business briefing (ai_dashboards payload) that was
- * previously exiled to /app/ai-dashboard: headline, north-star metric, and the
- * top quick wins as concrete next actions. Owns its own loading / empty /
- * error / generating states so a failed generation never renders a blank hole.
+ * AiBriefingCard — the Nova Home focus module.
+ * Surfaces the AI-generated business briefing (ai_dashboards payload):
+ * headline, north-star metric, and the top quick wins as concrete next
+ * actions, with the rest of the briefing expandable in place. Owns its own
+ * loading / empty / error / generating states so a failed generation never
+ * renders a blank hole.
  */
 
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Target, ArrowRight, RefreshCw, Loader2, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Target,
+  RefreshCw,
+  Loader2,
+  Zap,
+  ChevronDown,
+  AlertTriangle,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { aiDashboardQuery, generateAiDashboard } from "@/lib/queries";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -29,6 +38,7 @@ type BriefingPayload = {
   headline?: string;
   summary?: string;
   north_star_metric?: string;
+  top_risks?: string[];
   quick_wins?: QuickWin[];
   tool_recommendations?: ToolRec[];
 };
@@ -43,6 +53,7 @@ export function AiBriefingCard() {
   const { currentOrgId } = useAuth();
   const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const q = useQuery({
     ...aiDashboardQuery(currentOrgId ?? ""),
@@ -142,8 +153,14 @@ export function AiBriefingCard() {
     );
   }
 
-  const wins = (payload.quick_wins ?? []).slice(0, 3);
-  const topTool = payload.tool_recommendations?.[0];
+  const allWins = payload.quick_wins ?? [];
+  const wins = allWins.slice(0, 3);
+  const moreWins = allWins.slice(3);
+  const risks = payload.top_risks ?? [];
+  const tools = payload.tool_recommendations ?? [];
+  const topTool = tools[0];
+  const moreTools = tools.slice(1);
+  const hasMore = moreWins.length > 0 || risks.length > 0 || moreTools.length > 0;
 
   return (
     <div
@@ -260,14 +277,102 @@ export function AiBriefingCard() {
               <Zap className="h-3.5 w-3.5" /> {topTool.tool || "Run recommended tool"}
             </Link>
           )}
-          <Link
-            to="/app/ai-dashboard"
-            className="inline-flex items-center gap-1 text-[12px] font-medium transition hover:opacity-80"
-            style={{ color: "var(--primary)" }}
-          >
-            Open full briefing <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          {hasMore && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="inline-flex items-center gap-1 text-[12px] font-medium transition hover:opacity-80"
+              style={{ color: "var(--primary)" }}
+            >
+              {expanded ? "Show less" : "Full briefing"}
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+              />
+            </button>
+          )}
         </div>
+
+        {expanded && hasMore && (
+          <div
+            className="mt-4 space-y-4 border-t pt-4"
+            style={{ borderColor: "var(--border-subtle)" }}
+          >
+            {risks.length > 0 && (
+              <div>
+                <div
+                  className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: "var(--destructive)" }}
+                >
+                  Top risks
+                </div>
+                <ul className="mt-2 space-y-1.5">
+                  {risks.map((r, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-[12.5px]"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      <AlertTriangle
+                        className="mt-0.5 h-3 w-3 shrink-0"
+                        style={{ color: "var(--destructive)" }}
+                      />
+                      {r}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {moreWins.length > 0 && (
+              <div>
+                <div
+                  className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  More quick wins
+                </div>
+                <ul className="mt-2 space-y-2">
+                  {moreWins.map((w, i) => (
+                    <li key={i} className="text-[12.5px]">
+                      <span className="font-semibold">{w.title}</span>
+                      {w.impact && (
+                        <span style={{ color: "var(--muted-foreground)" }}> — {w.impact}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {moreTools.length > 0 && (
+              <div>
+                <div
+                  className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  Recommended tools
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {moreTools.map(
+                    (t, i) =>
+                      t.slug && (
+                        <Link
+                          key={i}
+                          to="/app/launchpad/$tool"
+                          params={{ tool: t.slug }}
+                          title={t.reason}
+                          className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11.5px] font-medium transition hover:opacity-80"
+                          style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                        >
+                          <Zap className="h-3 w-3" style={{ color: "var(--primary)" }} />
+                          {t.tool}
+                        </Link>
+                      ),
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

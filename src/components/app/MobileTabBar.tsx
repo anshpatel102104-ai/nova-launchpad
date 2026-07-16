@@ -29,16 +29,13 @@ const LAUNCHPAD_TABS: Tab[] = [
     to: "/app/mission-control",
     label: "Home",
     icon: Home,
-    match: (p) => p === "/app/mission-control" || p === "/app/dashboard" || p === "/app/",
+    match: (p) => p === "/app/mission-control" || p === "/app/",
   },
   {
     to: "/app/launchpad/missions",
     label: "Missions",
     icon: Crosshair,
-    match: (p) =>
-      p === "/app/launchpad/missions" ||
-      p === "/app/launchpad-path" ||
-      p.startsWith("/app/outcomes"),
+    match: (p) => p === "/app/launchpad/missions" || p.startsWith("/app/outcomes"),
   },
   {
     to: "/app/research",

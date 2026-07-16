@@ -24,15 +24,12 @@ import { CommandPalette } from "./CommandPalette";
 import { ThemePaletteButton } from "./ThemePaletteButton";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/app/dashboard": "Home",
-  "/app/launchpad-path": "Journey",
   "/app/launchpad/history": "Run History",
   "/app/launchpad/first-customers": "First Customers",
   "/app/launchpad": "Workbench",
   "/app/playbook": "Playbook",
   "/app/mission-control": "Home",
   "/app/nova-home": "Home",
-  "/app/mission-briefing": "Mission Briefing",
   "/app/research": "Research",
   "/app/memory": "Memory",
   "/app/automations": "Automations",
@@ -41,10 +38,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/integrations": "Integrations",
   "/app/settings": "Settings",
   "/app/billing": "Billing",
-  "/app/ai-dashboard": "AI Dashboard",
   "/app/nova/reports": "Reports",
   "/app/assets": "Assets",
-  "/app/galaxy": "Galaxy Map",
   "/app/academy": "Academy",
   "/app/tutorials": "Tutorials",
   "/app/mentor": "Ask Nova",
@@ -57,11 +52,9 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 const SECTION_LABELS: Record<string, string> = {
-  "/app/launchpad-path": "Execute",
   "/app/playbook": "Execute",
   "/app/mission-control": "Execute",
   "/app/nova-home": "Operate",
-  "/app/mission-briefing": "Execute",
   "/app/launchpad": "Workbench",
   "/app/research": "Workbench",
   "/app/nova/crm": "Operate",
@@ -70,7 +63,6 @@ const SECTION_LABELS: Record<string, string> = {
   "/app/automations": "Automate",
   "/app/builder": "Automate",
   "/app/integrations": "Automate",
-  "/app/ai-dashboard": "Intelligence",
   "/app/nova/reports": "Intelligence",
   "/app/mentor": "Intelligence",
   "/app/monitoring": "Intelligence",
