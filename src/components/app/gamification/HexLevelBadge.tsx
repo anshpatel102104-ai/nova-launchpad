@@ -1,5 +1,5 @@
-// Hex-shaped Business Level badge for the Roadmap and Campus pages — same
-// level color tokens and XP data as FounderLevelBadge, different shape.
+// Hex-shaped Business Level badge for the Roadmap and Campus pages — reads the
+// level color tokens and founder level from use-founder-progress.
 
 import { cn } from "@/lib/utils";
 import type { FounderLevel } from "@/hooks/use-founder-progress";

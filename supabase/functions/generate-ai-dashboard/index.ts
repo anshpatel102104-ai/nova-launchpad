@@ -13,13 +13,9 @@ const DASHBOARD_SCHEMA = {
     required: [
       "headline",
       "summary",
-      "stage",
       "north_star_metric",
       "top_risks",
-      "guides",
-      "kpis",
       "quick_wins",
-      "roadmap",
       "tool_recommendations",
     ],
     properties: {
@@ -32,10 +28,6 @@ const DASHBOARD_SCHEMA = {
         description:
           "2-3 sentences: where they are, what the biggest lever is, and what the AI operator will help with.",
       },
-      stage: {
-        type: "string",
-        enum: ["Idea", "Validate", "Launch", "Operate", "Scale"],
-      },
       north_star_metric: {
         type: "string",
         description:
@@ -47,79 +39,6 @@ const DASHBOARD_SCHEMA = {
         minItems: 2,
         maxItems: 3,
         items: { type: "string" },
-      },
-      guides: {
-        type: "array",
-        description: "3-5 step-by-step actionable guides, specific to this business.",
-        minItems: 3,
-        maxItems: 5,
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["title", "icon", "priority", "summary", "steps"],
-          properties: {
-            title: { type: "string" },
-            icon: {
-              type: "string",
-              enum: [
-                "target",
-                "rocket",
-                "users",
-                "bar-chart",
-                "zap",
-                "trending-up",
-                "dollar-sign",
-                "lightbulb",
-                "book",
-                "map",
-                "mail",
-                "megaphone",
-              ],
-            },
-            priority: { type: "string", enum: ["critical", "high", "medium"] },
-            summary: { type: "string" },
-            steps: {
-              type: "array",
-              minItems: 3,
-              maxItems: 6,
-              items: {
-                type: "object",
-                additionalProperties: false,
-                required: ["title", "description", "time_estimate", "action"],
-                properties: {
-                  title: { type: "string" },
-                  description: {
-                    type: "string",
-                    description: "Specific — mention their niche/customer/offer where possible.",
-                  },
-                  time_estimate: { type: "string" },
-                  action: {
-                    type: "string",
-                    description: "The exact thing to do or click. Imperative.",
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      kpis: {
-        type: "array",
-        description: "4-6 KPI cards with realistic targets for their stage.",
-        minItems: 4,
-        maxItems: 6,
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["metric", "current", "target", "timeframe", "how"],
-          properties: {
-            metric: { type: "string" },
-            current: { type: "string" },
-            target: { type: "string" },
-            timeframe: { type: "string" },
-            how: { type: "string", description: "One sentence: how to move this metric." },
-          },
-        },
       },
       quick_wins: {
         type: "array",
@@ -135,28 +54,6 @@ const DASHBOARD_SCHEMA = {
             impact: { type: "string" },
             effort: { type: "string", enum: ["low", "medium", "high"] },
             description: { type: "string" },
-          },
-        },
-      },
-      roadmap: {
-        type: "array",
-        description: "3-4 sequential phases covering the next 6-12 months.",
-        minItems: 3,
-        maxItems: 4,
-        items: {
-          type: "object",
-          additionalProperties: false,
-          required: ["phase", "duration", "goal", "milestones"],
-          properties: {
-            phase: { type: "string" },
-            duration: { type: "string" },
-            goal: { type: "string" },
-            milestones: {
-              type: "array",
-              minItems: 3,
-              maxItems: 5,
-              items: { type: "string" },
-            },
           },
         },
       },
@@ -206,10 +103,10 @@ const SYSTEM_PROMPT = `You are Nova — the AI operator running inside a startup
 Your role: take a founder's business context and generate a personalized intelligence dashboard that acts as their strategic command center inside the platform.
 
 Rules:
-- Every guide, KPI, risk, and quick win must be specific to their actual business, niche, stage, and goal. Generic output is a failure.
+- Every risk and quick win must be specific to their actual business, niche, stage, and goal. Generic output is a failure.
 - Reference their niche, customer type, offer, and revenue situation directly.
-- Steps must be actionable this week, not aspirational.
-- KPI current values must be inferred from their stage/revenue (e.g. pre-revenue → $0 MRR).
+- Quick wins must be completable this week, not aspirational.
+- The north-star metric must be the single most important number for their situation right now.
 - Tool recommendations must link to tools that make direct sense for their next 30 days.
 - Tone: direct, operator-level. No fluff. Think operator, not coach.`;
 
@@ -333,7 +230,7 @@ Build the dashboard as if you are the AI operator who knows their business. Ever
       biggest_blocker: context.biggest_blocker,
       payload,
       model: CLAUDE_MODEL,
-      prompt_version: "v1",
+      prompt_version: "v2",
     })
     .select("id, created_at")
     .single();

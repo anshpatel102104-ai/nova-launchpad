@@ -43,7 +43,6 @@ export interface SpineWorkspace {
   id: string;
   name: string;
   lane: string | null;
-  stage: string | null;
   current_mission_id: string | null;
 }
 

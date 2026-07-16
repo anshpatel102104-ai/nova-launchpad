@@ -128,8 +128,11 @@ export function useBusinessGraph(): BusinessGraph {
     goal?: string;
   } | null;
 
-  const ws = wsQ.data as { mode?: string; stage?: string } | null;
-  const stage = (ws?.stage as BusinessStage) || (org?.stage as BusinessStage) || "Idea";
+  const ws = wsQ.data as { mode?: string } | null;
+  // Stage is read from organizations.stage — the canonical, user-updatable value
+  // (Settings writes it; onboarding keeps it current). workspaces.stage was frozen
+  // at the onboarding value and is no longer read.
+  const stage = (org?.stage as BusinessStage) || "Idea";
   const mode: BusinessMode = ws?.mode === "operate" ? "operate" : "create";
 
   /* ── Signals: what has the user actually done? ── */
