@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { businessContextQuery } from "@/lib/queries";
+import { loadWorkspaceProfile, mergeBusinessContextIntoProfile } from "@/lib/workspaceProfile";
+import { PreBriefedToolLauncher } from "@/components/launchpad/PreBriefedToolLauncher";
 import {
   Search,
   Sparkles,
@@ -406,14 +409,32 @@ function ResearchPage() {
   const orgId = currentOrgId ?? "";
   const userId = user?.id ?? "";
 
-  const [form, setForm] = useState<ResearchForm>({
-    idea: "",
-    niche: "",
-    targetCustomer: "",
-    problem: "",
-    competitors: "",
-    stage: "idea",
+  // Pre-brief from the workspace profile so the idea field never renders
+  // as an empty required textbox when Nova already knows the business.
+  const [form, setForm] = useState<ResearchForm>(() => {
+    const profile = loadWorkspaceProfile();
+    return {
+      idea: profile.description ?? "",
+      niche: "",
+      targetCustomer: profile.target_market ?? "",
+      problem: "",
+      competitors: "",
+      stage: "idea",
+    };
   });
+
+  // Hydrate from the server-side Business Context Graph (same source
+  // run-tool's context assembly reads) — fills fields still empty locally.
+  const bpCtxQ = useQuery({ ...businessContextQuery(orgId), enabled: !!orgId });
+  useEffect(() => {
+    if (!bpCtxQ.data) return;
+    const merged = mergeBusinessContextIntoProfile(bpCtxQ.data);
+    setForm((f) => ({
+      ...f,
+      idea: f.idea || (merged.description ?? ""),
+      targetCustomer: f.targetCustomer || (merged.target_market ?? ""),
+    }));
+  }, [bpCtxQ.data]);
 
   const [result, setResult] = useState<StrategyOutput | null>(null);
   const [rawInput, setRawInput] = useState<ResearchForm | null>(null);
@@ -547,72 +568,53 @@ function ResearchPage() {
               <Sparkles className="h-4.5 w-4.5 text-primary" /> Tell us about your idea
             </div>
 
-            {/* Business idea */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
-                Business idea <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                rows={3}
-                className="w-full rounded-xl border border-border bg-surface-1/40 px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none transition-all"
-                placeholder="Describe your idea clearly. What does it do? Who is it for? What problem does it solve?"
-                value={form.idea}
-                onChange={(e) => setForm((f) => ({ ...f, idea: e.target.value }))}
-                required
-              />
-            </div>
-
-            {/* Niche + target */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
-                  Niche or industry
-                </label>
-                <input
-                  className="w-full rounded-xl border border-border bg-surface-1/40 px-4 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                  placeholder="e.g. Home improvement, SaaS, Local services"
-                  value={form.niche}
-                  onChange={(e) => setForm((f) => ({ ...f, niche: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
-                  Target customer
-                </label>
-                <input
-                  className="w-full rounded-xl border border-border bg-surface-1/40 px-4 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                  placeholder="e.g. Small business owners, Homeowners in the US"
-                  value={form.targetCustomer}
-                  onChange={(e) => setForm((f) => ({ ...f, targetCustomer: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {/* Problem */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
-                Problem being solved
-              </label>
-              <input
-                className="w-full rounded-xl border border-border bg-surface-1/40 px-4 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                placeholder="What's broken today? What frustrates your target customer?"
-                value={form.problem}
-                onChange={(e) => setForm((f) => ({ ...f, problem: e.target.value }))}
-              />
-            </div>
-
-            {/* Competitors */}
-            <div>
-              <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide block mb-1.5">
-                Known competitors (optional)
-              </label>
-              <input
-                className="w-full rounded-xl border border-border bg-surface-1/40 px-4 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                placeholder="e.g. Competitor A, Competitor B, or 'not sure yet'"
-                value={form.competitors}
-                onChange={(e) => setForm((f) => ({ ...f, competitors: e.target.value }))}
-              />
-            </div>
+            {/* Pre-briefed fields — known values render read-only in the
+                "Nova knows" panel; only unknown fields render as inputs. */}
+            <PreBriefedToolLauncher
+              fieldDefs={[
+                {
+                  key: "idea",
+                  label: "Business idea",
+                  type: "textarea",
+                  required: true,
+                  placeholder:
+                    "Describe your idea clearly. What does it do? Who is it for? What problem does it solve?",
+                },
+                {
+                  key: "niche",
+                  label: "Niche or industry",
+                  type: "text",
+                  placeholder: "e.g. Home improvement, SaaS, Local services",
+                },
+                {
+                  key: "targetCustomer",
+                  label: "Target customer",
+                  type: "text",
+                  placeholder: "e.g. Small business owners, Homeowners in the US",
+                },
+                {
+                  key: "problem",
+                  label: "Problem being solved",
+                  type: "text",
+                  placeholder: "What's broken today? What frustrates your target customer?",
+                },
+                {
+                  key: "competitors",
+                  label: "Known competitors",
+                  type: "text",
+                  placeholder: "e.g. Competitor A, Competitor B, or 'not sure yet'",
+                },
+              ]}
+              fields={{
+                idea: form.idea,
+                niche: form.niche,
+                targetCustomer: form.targetCustomer,
+                problem: form.problem,
+                competitors: form.competitors,
+              }}
+              setField={(key, value) => setForm((f) => ({ ...f, [key]: value }))}
+              revision={typeof bpCtxQ.data?.version === "number" ? bpCtxQ.data.version : null}
+            />
 
             {/* Stage */}
             <div>
