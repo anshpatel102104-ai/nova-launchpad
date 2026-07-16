@@ -175,7 +175,7 @@ export const LAUNCHPAD_SUPPORT_NAV: EcosystemNavItem[] = [
     id: "missions",
     label: "Missions",
     to: "/app/launchpad/missions",
-    match: (p) => p === "/app/launchpad/missions" || p === "/app/launchpad-path",
+    match: (p) => p === "/app/launchpad/missions",
   },
   { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   { id: "research", label: "Research", to: "/app/research", match: (p) => p === "/app/research" },
@@ -221,7 +221,7 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
     id: "reporting",
     label: "Reporting",
     to: "/app/nova/reports",
-    match: (p) => p === "/app/nova/reports" || p.startsWith("/app/ai-dashboard"),
+    match: (p) => p === "/app/nova/reports",
   },
 ];
 

@@ -702,7 +702,7 @@ export function NovaChatModal({ open, onClose, initialQuery }: Props) {
             {[
               { label: "Tool Suite", path: "/app/launchpad" },
               { label: "Mentors", path: "/app/mentor" },
-              { label: "Dashboard", path: "/app/dashboard" },
+              { label: "Home", path: "/app" },
             ].map(({ label, path }) => (
               <Link
                 key={path}

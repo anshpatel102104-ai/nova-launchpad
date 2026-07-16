@@ -7,15 +7,13 @@ type Item = { id: string; label: string; path: string; tag: "page" | "tool" | "a
 
 const NAV_ITEMS: Item[] = [
   { id: "home", label: "Home", path: "/app/mission-control", tag: "page" },
-  { id: "path", label: "Journey / Path", path: "/app/launchpad-path", tag: "page" },
-  { id: "dashboard", label: "Dashboard (classic)", path: "/app/dashboard", tag: "page" },
+  { id: "nova-home", label: "Nova Home (Operate)", path: "/app/nova-home", tag: "page" },
   { id: "workbench", label: "Workbench (Tools)", path: "/app/launchpad/", tag: "page" },
   { id: "contacts", label: "Customers · Contacts", path: "/app/contacts", tag: "page" },
   { id: "pipeline", label: "Customers · Pipeline", path: "/app/nova/crm", tag: "page" },
   { id: "automations", label: "Automations", path: "/app/automations", tag: "page" },
   { id: "builder", label: "Automation Builder", path: "/app/builder", tag: "page" },
   { id: "integrations", label: "Integrations", path: "/app/integrations", tag: "page" },
-  { id: "ai-dashboard", label: "Insights · AI Dashboard", path: "/app/ai-dashboard", tag: "page" },
   { id: "reports", label: "Insights · Reports", path: "/app/nova/reports", tag: "page" },
   { id: "assets", label: "Library · Assets", path: "/app/assets", tag: "page" },
   { id: "memory", label: "Library · Memory", path: "/app/memory", tag: "page" },
@@ -24,7 +22,7 @@ const NAV_ITEMS: Item[] = [
 ];
 
 const ACTION_ITEMS: Item[] = [
-  { id: "act-briefing", label: "Generate AI briefing", path: "/app/dashboard", tag: "action" },
+  { id: "act-briefing", label: "Generate AI briefing", path: "/app/nova-home", tag: "action" },
   {
     id: "act-context",
     label: "Update business context",

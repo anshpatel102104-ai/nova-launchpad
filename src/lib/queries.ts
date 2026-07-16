@@ -717,7 +717,7 @@ export const workspaceStatusQuery = (userId: string) =>
     staleTime: 60_000,
   });
 
-/** Current active mission for the user's workspace — shared query key with CurrentMissionCard. */
+/** Current active mission for the user's workspace. */
 export const currentMissionQuery = (userId: string) =>
   queryOptions({
     queryKey: ["current-mission", userId],
@@ -824,112 +824,10 @@ export const mentorKPIsQuery = (orgId: string) =>
     },
   });
 
-// ── Setup Checklist (domain / email / legal / banking / tools) ────────────────
-
-export type ChecklistCategory = "domain" | "email" | "legal" | "banking" | "tools";
-export type ChecklistItemStatus = "pending" | "done" | "skipped";
-
-export type SetupChecklistItem = {
-  id: string;
-  organization_id: string;
-  category: ChecklistCategory;
-  label: string;
-  status: ChecklistItemStatus;
-  sort_order: number;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export const CHECKLIST_CATEGORY_META: Record<ChecklistCategory, { label: string }> = {
-  domain: { label: "Domain" },
-  email: { label: "Email" },
-  legal: { label: "Legal" },
-  banking: { label: "Banking" },
-  tools: { label: "Tools" },
-};
-
-/** Static seed template — curated business-setup tasks, one-time-inserted per org. */
-const SETUP_CHECKLIST_TEMPLATE: { category: ChecklistCategory; label: string }[] = [
-  { category: "domain", label: "Register your business domain name" },
-  { category: "domain", label: "Point DNS at your hosting or landing page" },
-  { category: "domain", label: "Turn on WHOIS privacy protection" },
-  { category: "email", label: "Set up a professional address (you@yourdomain.com)" },
-  { category: "email", label: "Connect a transactional email provider (e.g. Postmark, Resend)" },
-  { category: "email", label: "Set up an email marketing tool (e.g. Mailchimp, ConvertKit)" },
-  { category: "legal", label: "Register your business entity (LLC / Corp)" },
-  { category: "legal", label: "Get an EIN / tax ID number" },
-  { category: "legal", label: "Draft Terms of Service and a Privacy Policy" },
-  { category: "banking", label: "Open a business bank account" },
-  { category: "banking", label: "Get a business debit or credit card" },
-  { category: "banking", label: "Connect a payment processor (e.g. Stripe)" },
-  { category: "tools", label: "Set up web analytics (e.g. Google Analytics, Plausible)" },
-  { category: "tools", label: "Connect a CRM or pipeline tracker" },
-  { category: "tools", label: "Set up a help-desk or support inbox" },
-];
-
-const GUEST_SETUP_CHECKLIST: SetupChecklistItem[] = SETUP_CHECKLIST_TEMPLATE.map((t, i) => ({
-  id: `guest-checklist-${i}`,
-  organization_id: "guest",
-  category: t.category,
-  label: t.label,
-  status: i < 3 ? "done" : "pending",
-  sort_order: i,
-  completed_at: i < 3 ? new Date().toISOString() : null,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-}));
-
-/**
- * Org-scoped setup checklist. Self-seeds from the static template on first read
- * (idempotent — only inserts when the org has zero rows) so no separate
- * provisioning step or edge function is needed.
- */
-export const setupChecklistQuery = (orgId: string) =>
-  queryOptions({
-    queryKey: ["setup_checklist_items", orgId],
-    queryFn: async (): Promise<SetupChecklistItem[]> => {
-      if (isGuest() || !orgId) return GUEST_SETUP_CHECKLIST;
-
-      const { data, error } = await db
-        .from("setup_checklist_items")
-        .select("*")
-        .eq("organization_id", orgId)
-        .order("sort_order");
-      if (error) throw error;
-      if (data && data.length > 0) return data as SetupChecklistItem[];
-
-      const seedRows = SETUP_CHECKLIST_TEMPLATE.map((t, i) => ({
-        organization_id: orgId,
-        category: t.category,
-        label: t.label,
-        sort_order: i,
-      }));
-      const { data: seeded, error: seedError } = await db
-        .from("setup_checklist_items")
-        .insert(seedRows)
-        .select("*");
-      if (seedError) throw seedError;
-      return (seeded ?? []) as SetupChecklistItem[];
-    },
-    staleTime: 30_000,
-  });
-
-export async function setChecklistItemStatus(
-  id: string,
-  status: ChecklistItemStatus,
-): Promise<void> {
-  const { error } = await db
-    .from("setup_checklist_items")
-    .update({ status, completed_at: status === "done" ? new Date().toISOString() : null })
-    .eq("id", id);
-  if (error) throw error;
-}
-
 // ── Launch Control Center ──────────────────────────────────────────────────────
-// The control center composes setupChecklistQuery + mentorKPIsQuery directly (both
-// already exist) alongside this query, which owns just the two genuinely-new
-// aggregations: the analytics-install checklist and the feedback capture feed.
+// The control center composes mentorKPIsQuery directly (it already exists)
+// alongside this query, which owns just the two genuinely-new aggregations:
+// the analytics-install checklist and the feedback capture feed.
 
 const ANALYTICS_CHECKLIST_KEYS: { key: string; label: string }[] = [
   { key: "googleanalytics", label: "Web analytics (Google Analytics)" },

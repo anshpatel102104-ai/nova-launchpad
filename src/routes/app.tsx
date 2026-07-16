@@ -55,9 +55,6 @@ export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
 
-// Pages that opt out of the intelligence rail (need full canvas)
-const FULL_CANVAS_PATHS = ["/app/galaxy", "/app/mission-briefing"];
-
 // Sticky warning bar shown while an admin is acting inside another account.
 function ImpersonationBanner() {
   const imp = useImpersonation();
@@ -112,9 +109,6 @@ function AppLayout() {
     });
   };
 
-  const hideRail = FULL_CANVAS_PATHS.some((p) => path.startsWith(p));
-  const isGalaxy = path === "/app/galaxy";
-
   return (
     <div
       data-product={isOperate ? "nova" : "launchpad"}
@@ -124,28 +118,22 @@ function AppLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <ImpersonationBanner />
-        <AppTopbar onToggleRail={toggleRail} railOpen={railOpen && !hideRail} />
+        <AppTopbar onToggleRail={toggleRail} railOpen={railOpen} />
         <NovaBar />
 
         <div className="flex flex-1 overflow-hidden">
           <main
             className="flex-1 overflow-x-hidden overflow-y-auto"
-            style={{ paddingBottom: railOpen && !hideRail ? 360 : 0 }}
+            style={{ paddingBottom: railOpen ? 360 : 0 }}
           >
-            {isGalaxy ? (
-              <div key={path} className="page-in h-full w-full">
-                <Outlet />
-              </div>
-            ) : (
-              <div key={path} className="page-in w-full px-5 py-5 pb-20 md:px-7 md:py-6">
-                <Outlet />
-              </div>
-            )}
+            <div key={path} className="page-in w-full px-5 py-5 pb-20 md:px-7 md:py-6">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
 
-      {!hideRail && <IntelligenceRail open={railOpen} onClose={() => setRailOpen(false)} />}
+      <IntelligenceRail open={railOpen} onClose={() => setRailOpen(false)} />
 
       <MobileTabBar />
       <GuestGateModal />

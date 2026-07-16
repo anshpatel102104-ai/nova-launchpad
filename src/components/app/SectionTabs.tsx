@@ -1,5 +1,5 @@
 // SectionTabs — one section, several views. The same pill strip on every page
-// of a section (Customers, Path, Insights) so they read as tabs of a single
+// of a section (Customers, Insights) so they read as tabs of a single
 // destination instead of unrelated pages. Accent follows the domain token.
 
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -7,9 +7,6 @@ import {
   Users,
   Workflow,
   Crosshair,
-  Map,
-  BookOpen,
-  BarChart3,
   TrendingUp,
   Activity,
   Hourglass,
@@ -41,18 +38,9 @@ export const SECTIONS = {
       { to: "/app/crm/waitlist", label: "Waitlist", icon: Hourglass, adminOnly: true },
     ],
   },
-  path: {
-    accent: "var(--domain-build)",
-    tabs: [
-      { to: "/app/launchpad-path", label: "Journey", icon: Map },
-      { to: "/app/mission-control", label: "Missions", icon: Crosshair },
-      { to: "/app/playbook", label: "Playbook", icon: BookOpen },
-    ],
-  },
   insights: {
     accent: "var(--domain-insights)",
     tabs: [
-      { to: "/app/ai-dashboard", label: "AI Dashboard", icon: BarChart3 },
       { to: "/app/nova/reports", label: "Reports", icon: TrendingUp },
       { to: "/app/monitoring", label: "System Health", icon: Activity },
     ],

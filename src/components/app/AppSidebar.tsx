@@ -1,11 +1,12 @@
 // One product, one rail. Launchpad Nova is a single mission-driven operating
-// system — the founder never chooses a "mode" to see their own business.
-// Everything is reachable from one flat nav (Mission Control, Roadmap, AI
-// Mentors, CRM, Projects, Marketing, Automations, Finances, Team, Knowledge,
-// Reports, Settings). The three operational items that need a proven build
-// (Marketing, Automations, Reports) show locked until the roadmap says the
-// business is ready — same "unlock" language as the rest of the game layer,
-// just inline instead of hidden behind a separate command-center sidebar.
+// system with one flat nav (Home, Roadmap, AI Mentors, CRM, Projects,
+// Marketing, Automations, Finances, Team, Knowledge, Reports, Settings).
+// Exactly one "home" item leads the rail, following the workspace mode:
+// Mission Control (create) or Nova Home (operate). The three operational
+// items that need a proven build (Marketing, Automations, Reports) show
+// locked until the roadmap says the business is ready — same "unlock"
+// language as the rest of the game layer, just inline instead of hidden
+// behind a separate command-center sidebar.
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -46,6 +47,7 @@ import { useIsAdmin } from "@/lib/admin";
 import { useBusinessGraph } from "@/hooks/use-business-graph";
 import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { useFounderStreak } from "@/hooks/use-founder-streak";
+import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
 
 const STORAGE = "nova-sidebar-collapsed";
@@ -64,14 +66,25 @@ interface NavItem {
   gated?: boolean;
 }
 
+/* Exactly one home per mode: builders live in Mission Control, operators in
+ * Nova Home. The rest of the rail is shared. */
+const HOME_CREATE: NavItem = {
+  id: "home",
+  label: "Mission Control",
+  to: "/app/mission-control",
+  icon: Home,
+  match: (p) => p === "/app/mission-control",
+};
+
+const HOME_OPERATE: NavItem = {
+  id: "home",
+  label: "Nova Home",
+  to: "/app/nova-home",
+  icon: Home,
+  match: (p) => p === "/app/nova-home",
+};
+
 const PRIMARY_NAV: NavItem[] = [
-  {
-    id: "home",
-    label: "Mission Control",
-    to: "/app/mission-control",
-    icon: Home,
-    match: (p) => p === "/app/mission-control" || p === "/app/dashboard",
-  },
   {
     id: "roadmap",
     label: "Roadmap",
@@ -143,7 +156,7 @@ const PRIMARY_NAV: NavItem[] = [
     label: "Reports",
     to: "/app/nova/reports",
     icon: BarChart3,
-    match: (p) => p === "/app/nova/reports" || p.startsWith("/app/ai-dashboard"),
+    match: (p) => p === "/app/nova/reports",
     gated: true,
   },
   {
@@ -186,6 +199,8 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
   const graph = useBusinessGraph();
   const progress = deriveLaunchpadProgress(graph);
   const unlocked = progress.readyForNova;
+  const { isOperate } = useWorkspaceMode();
+  const nav = [isOperate ? HOME_OPERATE : HOME_CREATE, ...PRIMARY_NAV];
 
   return (
     <SidebarChrome
@@ -196,7 +211,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
       {({ collapsed }) => (
         <>
           <div className={cn("px-2 space-y-px", collapsed && "px-1.5")}>
-            {PRIMARY_NAV.map((item) => (
+            {nav.map((item) => (
               <NavRow
                 key={item.id}
                 to={item.to}
