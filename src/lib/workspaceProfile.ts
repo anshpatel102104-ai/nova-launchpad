@@ -108,6 +108,7 @@ export function getProfilePrefills(
       case "product":
       case "business_description":
       case "description":
+      case "context": // generic fallback field on tools without a field config
         if (profile.description) fills[key] = profile.description;
         break;
       case "targetMarket":

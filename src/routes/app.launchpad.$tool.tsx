@@ -1,7 +1,6 @@
 import { createFileRoute, Link, notFound, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { launchpadCatalog } from "@/lib/mock";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Loader2,
@@ -35,6 +34,10 @@ import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/d
 import { PaywallModal } from "@/components/app/PaywallModal";
 import { runTool } from "@/lib/runTool";
 import { useOwnerMode } from "@/lib/ownerMode";
+import {
+  PreBriefedToolLauncher,
+  briefedButtonLabel,
+} from "@/components/launchpad/PreBriefedToolLauncher";
 import {
   loadWorkspaceProfile,
   saveWorkspaceProfile,
@@ -1301,11 +1304,8 @@ function ToolPage() {
     const merged = mergeBusinessContextIntoProfile(businessCtxQ.data);
     setWorkspaceProfile(merged);
     // Backfill any still-empty form fields from the freshly hydrated profile.
-    if (toolFieldDefs) {
-      const fills = getProfilePrefills(
-        toolFieldDefs.map((f) => f.key),
-        merged,
-      );
+    {
+      const fills = getProfilePrefills(toolFieldDefs?.map((f) => f.key) ?? ["context"], merged);
       setFields((prev) => {
         const next = { ...prev };
         for (const [k, v] of Object.entries(fills)) if (!next[k]) next[k] = v;
@@ -1342,12 +1342,10 @@ function ToolPage() {
     // Load the latest profile
     const profile = loadWorkspaceProfile();
     setWorkspaceProfile(profile);
-    const profileFills = toolFieldDefs
-      ? getProfilePrefills(
-          toolFieldDefs.map((f) => f.key),
-          profile,
-        )
-      : {};
+    const profileFills = getProfilePrefills(
+      toolFieldDefs?.map((f) => f.key) ?? ["context"],
+      profile,
+    );
 
     if (search?.context || search?.title) {
       setTitle(search.title ?? "");
@@ -1880,105 +1878,31 @@ function ToolPage() {
                 />
               </Section>
 
-              {/* Per-tool fields */}
-              {toolFieldDefs ? (
-                toolFieldDefs.map((f) => (
-                  <Section
-                    key={f.key}
-                    label={f.label + (f.required ? "" : " (optional)")}
-                    hint={f.hint}
-                  >
-                    {f.type === "textarea" ? (
-                      <>
-                        <Textarea
-                          rows={f.key === "ideaA" || f.key === "ideaB" ? 5 : 7}
-                          placeholder={f.placeholder}
-                          value={fields[f.key] ?? ""}
-                          onChange={(e) => setField(f.key, e.target.value)}
-                          className="resize-none rounded-xl"
-                          style={{
-                            background: "var(--surface-2)",
-                            border: "1px solid var(--border)",
-                          }}
-                        />
-                        <div
-                          className="mt-1 text-right text-[10.5px]"
-                          style={{ color: "var(--muted-foreground)" }}
-                        >
-                          {(fields[f.key] ?? "").length} chars
-                        </div>
-                      </>
-                    ) : f.type === "select" ? (
-                      <select
-                        value={fields[f.key] ?? ""}
-                        onChange={(e) => setField(f.key, e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-[13.5px] outline-none transition"
-                        style={{
-                          background: "var(--surface-2)",
-                          border: "1px solid var(--border)",
-                          color: fields[f.key] ? "var(--foreground)" : "var(--muted-foreground)",
-                        }}
-                      >
-                        <option value="">Select {f.label.toLowerCase()}…</option>
-                        {f.options?.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : f.type === "number" ? (
-                      <Input
-                        type="number"
-                        placeholder={f.placeholder}
-                        value={fields[f.key] ?? ""}
-                        onChange={(e) => setField(f.key, e.target.value)}
-                        min={1}
-                        max={100}
-                        className="rounded-xl"
-                        style={{
-                          background: "var(--surface-2)",
-                          border: "1px solid var(--border)",
-                        }}
-                      />
-                    ) : (
-                      <Input
-                        placeholder={f.placeholder}
-                        value={fields[f.key] ?? ""}
-                        onChange={(e) => setField(f.key, e.target.value)}
-                        className="rounded-xl"
-                        style={{
-                          background: "var(--surface-2)",
-                          border: "1px solid var(--border)",
-                        }}
-                      />
-                    )}
-                  </Section>
-                ))
-              ) : (
-                /* Fallback generic context field for any tool without a config */
-                <Section
-                  label="Context"
-                  hint="Be specific about your idea, audience, and the outcome you want."
-                >
-                  <Textarea
-                    rows={9}
-                    placeholder="Describe your business, audience, and goal. The more specific, the better the output."
-                    value={fields.context ?? ""}
-                    onChange={(e) => setField("context", e.target.value)}
-                    className="resize-none rounded-xl"
-                    style={{
-                      background: "var(--surface-2)",
-                      border: "1px solid var(--border)",
-                    }}
-                  />
-                  <div
-                    className="mt-1.5 flex items-center justify-between text-[11px]"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    <span>{(fields.context ?? "").length} characters</span>
-                  </div>
-                </Section>
-              )}
+              {/* Per-tool fields — pre-briefed from the Business Context Graph.
+                  Fields Nova already knows render read-only in the "Nova knows"
+                  panel (inline-editable on click); only genuinely unknown
+                  fields render as inputs. Tools without a field config get a
+                  synthesized generic context field, prefilled the same way. */}
+              <PreBriefedToolLauncher
+                fieldDefs={
+                  toolFieldDefs ?? [
+                    {
+                      key: "context",
+                      label: "Context",
+                      hint: "Be specific about your idea, audience, and the outcome you want.",
+                      placeholder:
+                        "Describe your business, audience, and goal. The more specific, the better the output.",
+                      type: "textarea",
+                      required: true,
+                    },
+                  ]
+                }
+                fields={fields}
+                setField={setField}
+                revision={
+                  typeof businessCtxQ.data?.version === "number" ? businessCtxQ.data.version : null
+                }
+              />
 
               {/* Clear + char count row */}
               {primaryFieldValue && (
@@ -2024,7 +1948,14 @@ function ToolPage() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" /> Generate with AI
+                    <Sparkles className="h-4 w-4" /> Generate —{" "}
+                    {briefedButtonLabel(
+                      toolFieldDefs ?? [{ key: "context", label: "Context", type: "textarea", required: true }],
+                      fields,
+                      typeof businessCtxQ.data?.version === "number"
+                        ? businessCtxQ.data.version
+                        : null,
+                    )}
                   </>
                 )}
               </button>

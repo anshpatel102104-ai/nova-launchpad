@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Seal } from "./Seal";
 
 // ─── SCORE PILL ────────────────────────────────────────────────────────────
 // Width animation: start at w-0 then transition to the value-derived class.
@@ -13,12 +14,12 @@ function ScorePill({ label, value, color }) {
 
   const twColor =
     color === "#16a34a" || color === "green"
-      ? "bg-green-500"
+      ? "bg-blueprint-seal"
       : color === "#d97706" || color === "amber"
-        ? "bg-amber-500"
+        ? "bg-blueprint-warn"
         : color === "#dc2626" || color === "red"
           ? "bg-red-500"
-          : "bg-violet-500";
+          : "bg-blueprint-signal";
 
   // Map value to nearest Tailwind width class (steps of ~10)
   const widthClass = animated
@@ -34,14 +35,14 @@ function ScorePill({ label, value, color }) {
     : "w-0";
 
   return (
-    <div className="flex flex-col items-center gap-1 hover:ring-2 hover:ring-violet-200 rounded-lg px-3 py-2 transition-all duration-200 cursor-default">
-      <div className="text-[18px] font-extrabold text-gray-900 leading-none">{value}</div>
-      <div className="h-[3px] w-12 bg-gray-100 rounded-full overflow-hidden">
+    <div className="flex flex-col items-center gap-1 hover:ring-2 hover:ring-blueprint-signal/25 rounded-none px-3 py-2 transition-all duration-200 cursor-default">
+      <div className="text-[18px] font-extrabold text-ink leading-none">{value}</div>
+      <div className="h-[3px] w-12 bg-line/60 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${twColor} ${widthClass}`}
         />
       </div>
-      <div className="text-[9px] font-semibold uppercase tracking-[0.8px] text-gray-400">{label}</div>
+      <div className="text-[9px] font-semibold uppercase tracking-[0.8px] text-ink-faint">{label}</div>
     </div>
   );
 }
@@ -54,23 +55,23 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
   // Map legacy hex/string tag colors to Tailwind semantic classes
   const tagClasses =
     tagColor?.includes("16a34a") || tagColor === "green"
-      ? "bg-green-50 text-green-700 border-green-200"
+      ? "bg-blueprint-seal/10 text-blueprint-seal border-blueprint-seal/30"
       : tagColor?.includes("d97706") || tagColor === "amber"
-        ? "bg-amber-50 text-amber-700 border-amber-200"
+        ? "bg-blueprint-brass-soft text-blueprint-warn border-blueprint-warn/30"
         : tagColor?.includes("dc2626") || tagColor === "red"
           ? "bg-red-50 text-red-700 border-red-200"
-          : "bg-violet-50 text-violet-700 border-violet-200";
+          : "bg-blueprint-signal-soft text-blueprint-signal border-blueprint-signal/30";
 
   return (
-    <div className="border border-gray-100 rounded-xl overflow-hidden mb-2">
+    <div className="border border-line rounded-none overflow-hidden mb-2">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls={id}
-        className={`w-full flex items-center gap-2.5 px-4 py-3.5 border-none cursor-pointer text-left transition-colors duration-150 ${open ? "bg-violet-50/60" : "bg-gray-50/80 hover:bg-gray-100/60"}`}
+        className={`w-full flex items-center gap-2.5 px-4 py-3.5 border-none cursor-pointer text-left transition-colors duration-150 ${open ? "bg-blueprint-signal-soft" : "bg-paper hover:bg-blueprint-signal-soft"}`}
       >
         <span className="text-[13px]" aria-hidden="true">{icon}</span>
-        <span className={`text-[12px] font-semibold flex-1 transition-colors ${open ? "text-gray-900" : "text-gray-500"}`}>
+        <span className={`text-[12px] font-semibold flex-1 transition-colors ${open ? "text-ink" : "text-ink-dim"}`}>
           {title}
         </span>
         {tag && (
@@ -80,7 +81,7 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
         )}
         <span
           aria-hidden="true"
-          className={`text-sm text-gray-300 ml-1.5 inline-block transition-transform duration-200 ${open ? "rotate-90" : "rotate-0"}`}
+          className={`text-sm text-ink-faint ml-1.5 inline-block transition-transform duration-200 ${open ? "rotate-90" : "rotate-0"}`}
         >
           ›
         </span>
@@ -90,7 +91,7 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
         id={id}
         className={`overflow-hidden transition-all duration-200 ease-in-out ${open ? "max-h-[600px]" : "max-h-0"}`}
       >
-        <div className="px-4 pt-1 pb-4 bg-gray-50/80">
+        <div className="px-4 pt-1 pb-4 bg-paper">
           {children}
         </div>
       </div>
@@ -102,13 +103,13 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
 function ProofItem({ num, title, desc, action }) {
   return (
     <div className="flex gap-2.5 mb-3.5">
-      <div className="text-[9px] font-bold text-gray-400 w-5 h-5 rounded-[5px] bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 mt-0.5 font-mono">
+      <div className="text-[9px] font-bold text-ink-faint w-5 h-5 rounded-none bg-line/60 border border-line flex items-center justify-center shrink-0 mt-0.5 font-bp-mono">
         {num}
       </div>
       <div>
-        <div className="text-[12px] font-semibold text-gray-900 mb-0.5">{title}</div>
-        <div className="text-[11px] text-gray-500 leading-relaxed mb-1.5">{desc}</div>
-        <button className="text-[10px] font-bold text-violet-600 hover:text-violet-700 transition-colors cursor-pointer bg-none border-none p-0">
+        <div className="text-[12px] font-semibold text-ink mb-0.5">{title}</div>
+        <div className="text-[11px] text-ink-dim leading-relaxed mb-1.5">{desc}</div>
+        <button className="text-[10px] font-bold text-blueprint-signal hover:text-blueprint-blue transition-colors cursor-pointer bg-none border-none p-0">
           → {action}
         </button>
       </div>
@@ -125,22 +126,24 @@ function RiskRow({ level, title, pct }) {
     return () => clearTimeout(t);
   }, []);
 
+  // High keeps Tailwind red — the blueprint palette has no danger hue and
+  // risk severity must stay visually distinct from the warn amber.
   const cfg = {
     High: {
       badge: "text-red-600 bg-red-50 border-red-200",
       bar: "bg-gradient-to-r from-red-500 to-red-400",
     },
     Medium: {
-      badge: "text-amber-600 bg-amber-50 border-amber-200",
-      bar: "bg-gradient-to-r from-amber-500 to-amber-400",
+      badge: "text-blueprint-warn bg-blueprint-brass-soft border-blueprint-warn/30",
+      bar: "bg-blueprint-warn",
     },
     Low: {
-      badge: "text-green-600 bg-green-50 border-green-200",
-      bar: "bg-gradient-to-r from-green-500 to-green-400",
+      badge: "text-blueprint-seal bg-blueprint-seal/10 border-blueprint-seal/30",
+      bar: "bg-blueprint-seal",
     },
   }[level] ?? {
-    badge: "text-gray-600 bg-gray-50 border-gray-200",
-    bar: "bg-gray-400",
+    badge: "text-ink-dim bg-paper border-line",
+    bar: "bg-ink-faint",
   };
 
   const widthClass = animated
@@ -160,8 +163,8 @@ function RiskRow({ level, title, pct }) {
       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${cfg.badge}`}>
         {level}
       </span>
-      <div className="text-[11px] text-gray-500 flex-1">{title}</div>
-      <div className="w-20 h-[3px] bg-gray-100 rounded-full overflow-hidden shrink-0">
+      <div className="text-[11px] text-ink-dim flex-1">{title}</div>
+      <div className="w-20 h-[3px] bg-line/60 rounded-full overflow-hidden shrink-0">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar} ${widthClass}`}
         />
@@ -176,18 +179,18 @@ function StrengthRow({ title, desc }) {
   const id = `strength-${title.replace(/\s+/g, "-").toLowerCase()}`;
 
   return (
-    <div className="border-b border-gray-50 pb-2.5 mb-2.5 last:border-0 last:mb-0">
+    <div className="border-b border-line/50 pb-2.5 mb-2.5 last:border-0 last:mb-0">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls={id}
         className="flex items-center gap-2 w-full bg-transparent border-none cursor-pointer text-left p-0"
       >
-        <span className="text-[10px] text-green-600" aria-hidden="true">✦</span>
-        <span className="text-[12px] font-semibold text-gray-900 flex-1">{title}</span>
+        <span className="text-[10px] text-blueprint-seal" aria-hidden="true">✦</span>
+        <span className="text-[12px] font-semibold text-ink flex-1">{title}</span>
         <span
           aria-hidden="true"
-          className={`text-[11px] text-gray-300 inline-block transition-transform duration-150 ${open ? "rotate-90" : "rotate-0"}`}
+          className={`text-[11px] text-ink-faint inline-block transition-transform duration-150 ${open ? "rotate-90" : "rotate-0"}`}
         >
           ›
         </span>
@@ -196,7 +199,7 @@ function StrengthRow({ title, desc }) {
         id={id}
         className={`overflow-hidden transition-all duration-200 ease-in-out ${open ? "max-h-[200px]" : "max-h-0"}`}
       >
-        <div className="text-[11px] text-gray-500 leading-relaxed mt-2 pl-[18px]">
+        <div className="text-[11px] text-ink-dim leading-relaxed mt-2 pl-[18px]">
           {desc}
         </div>
       </div>
@@ -208,28 +211,28 @@ function StrengthRow({ title, desc }) {
 function MissionCard({ emoji, label, title, desc, locked }) {
   return (
     <div
-      className={`bg-white rounded-[10px] p-3 mb-2 flex items-center gap-3 transition-all duration-150 ${
+      className={`bg-panel rounded-none p-3 mb-2 flex items-center gap-3 transition-all duration-150 ${
         locked
-          ? "border border-gray-50 opacity-40 cursor-default"
-          : "border-l-4 border-l-violet-500 border border-gray-100 cursor-pointer shadow-sm hover:shadow-md hover:border-violet-200"
+          ? "border border-line/50 opacity-40 cursor-default"
+          : "border-l-4 border-l-blueprint-signal border border-line cursor-pointer shadow-sm hover:shadow-md hover:border-blueprint-signal/40"
       }`}
     >
       <div
-        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 border ${
+        className={`w-8 h-8 rounded-none flex items-center justify-center text-sm shrink-0 border ${
           locked
-            ? "bg-gray-50 border-gray-100"
-            : "bg-gradient-to-br from-violet-100 to-blue-100 border-violet-200/30"
+            ? "bg-paper border-line"
+            : "bg-gradient-to-br from-blueprint-signal-soft to-blueprint-brass-soft border-line"
         }`}
         aria-hidden="true"
       >
         {emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[9px] font-bold uppercase tracking-[0.8px] text-gray-300 mb-0.5">{label}</div>
-        <div className={`text-[12px] font-semibold truncate ${locked ? "text-gray-300" : "text-gray-900"}`}>{title}</div>
-        {!locked && <div className="text-[10px] text-gray-400 mt-0.5">{desc}</div>}
+        <div className="text-[9px] font-bold uppercase tracking-[0.8px] text-ink-faint mb-0.5">{label}</div>
+        <div className={`text-[12px] font-semibold truncate ${locked ? "text-ink-faint" : "text-ink"}`}>{title}</div>
+        {!locked && <div className="text-[10px] text-ink-faint mt-0.5">{desc}</div>}
       </div>
-      <span aria-hidden="true" className={`text-base ${locked ? "text-gray-200" : "text-gray-300"}`}>›</span>
+      <span aria-hidden="true" className={`text-base ${locked ? "text-ink-faint" : "text-ink-faint"}`}>›</span>
     </div>
   );
 }
@@ -237,13 +240,13 @@ function MissionCard({ emoji, label, title, desc, locked }) {
 // ─── PLAYBOOK STEP ─────────────────────────────────────────────────────────
 function PbStep({ status, label }) {
   const cfg = {
-    done:   { dot: "bg-green-500", text: "text-gray-300", extra: "line-through" },
-    active: { dot: "bg-violet-600 animate-pulse", text: "text-violet-600 font-semibold", extra: "" },
-    idle:   { dot: "bg-gray-200", text: "text-gray-300", extra: "" },
-  }[status] ?? { dot: "bg-gray-200", text: "text-gray-300", extra: "" };
+    done:   { dot: "bg-blueprint-seal", text: "text-ink-faint", extra: "line-through" },
+    active: { dot: "bg-blueprint-signal animate-pulse", text: "text-blueprint-signal font-semibold", extra: "" },
+    idle:   { dot: "bg-line", text: "text-ink-faint", extra: "" },
+  }[status] ?? { dot: "bg-line", text: "text-ink-faint", extra: "" };
 
   return (
-    <div className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
+    <div className="flex items-center gap-2 py-1.5 border-b border-line/50 last:border-0">
       <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} aria-hidden="true" />
       <span className={`text-[10px] ${cfg.text} ${cfg.extra}`}>{label}</span>
     </div>
@@ -253,7 +256,7 @@ function PbStep({ status, label }) {
 // ─── SIDEBAR LABEL ─────────────────────────────────────────────────────────
 function SideLabel({ children }) {
   return (
-    <div className="text-[9px] font-bold uppercase tracking-[1.2px] text-gray-300 mb-2.5 pb-2 border-b border-gray-50">
+    <div className="font-bp-mono text-[9px] font-bold uppercase tracking-[1.2px] text-ink-faint mb-2.5 pb-2 border-b border-line/50">
       {children}
     </div>
   );
@@ -316,7 +319,7 @@ export default function FounderCasefile() {
 
   return (
     <div
-      className={`min-h-screen bg-gray-50 px-4 py-6 transition-opacity duration-500 ease-out ${visible ? "opacity-100" : "opacity-0"}`}
+      className={`min-h-screen bg-blueprint-grid px-4 py-6 transition-opacity duration-500 ease-out ${visible ? "opacity-100" : "opacity-0"}`}
     >
       <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5">
 
@@ -324,42 +327,38 @@ export default function FounderCasefile() {
         <div className="space-y-4">
 
           {/* Hero card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-5">
+          <div className="bg-panel rounded-none border border-line shadow-md p-5">
             {/* Case header */}
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-[1.2px] text-gray-400 mb-1">
+                <div className="font-bp-mono text-[10px] font-bold uppercase tracking-[1.2px] text-ink-faint mb-1">
                   Founder Casefile · Idea Validation
                 </div>
-                <h1 className="text-[20px] font-extrabold text-gray-900 leading-tight tracking-tight">
+                <h1 className="font-tech text-[20px] font-extrabold text-ink leading-tight tracking-tight">
                   AI-Powered Meal Planning for Busy Parents
                 </h1>
-                <p className="text-[12px] text-gray-400 mt-1">
+                <p className="text-[12px] text-ink-faint mt-1">
                   Submitted 2 minutes ago &nbsp;·&nbsp; Nova Score{" "}
-                  <span className="font-bold text-violet-600">74 / 100</span>
+                  <span className="font-bold text-blueprint-signal">74 / 100</span>
                 </p>
               </div>
-              {/* Verdict pill */}
-              <div className="shrink-0 text-center">
-                <div className="w-14 h-14 rounded-full border-4 border-green-500 flex items-center justify-center">
-                  <span className="text-[13px] font-extrabold text-green-600">GO</span>
-                </div>
-              </div>
+              {/* Verdict — engineer's seal, stamps in on render */}
+              <Seal verdict="GO" arcTop="Idea Validation" arcBottom="Score 74/100" size={88} />
             </div>
 
             {/* Score pills */}
-            <div className="flex flex-wrap gap-4 mb-4 pt-3 border-t border-gray-50">
+            <div className="flex flex-wrap gap-4 mb-4 pt-3 border-t border-line/50">
               {scores.map((s) => (
                 <ScorePill key={s.label} {...s} />
               ))}
             </div>
 
-            {/* Verdict block */}
-            <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 p-4">
-              <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-amber-600 mb-1.5">
+            {/* Verdict block — brass drafting annotation */}
+            <div className="bg-blueprint-brass-soft border-l-4 border-blueprint-brass p-4">
+              <div className="font-bp-mono text-[10px] font-bold uppercase tracking-[0.8px] text-blueprint-brass mb-1.5">
                 Nova's Verdict
               </div>
-              <p className="text-[13px] text-gray-700 leading-relaxed font-medium">
+              <p className="text-[13px] text-ink leading-relaxed font-medium">
                 This idea has strong market timing and high founder-fit. The biggest risk is customer
                 acquisition cost in a crowded wellness market. Validate willingness to pay before
                 building — a landing page test will tell you within 2 weeks.
@@ -368,39 +367,39 @@ export default function FounderCasefile() {
           </div>
 
           {/* Nova's Take */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 relative overflow-hidden">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-5 relative overflow-hidden">
             {/* Violet left-edge accent */}
-            <div className="absolute left-0 top-0 w-1 h-full bg-violet-500 rounded-l-xl" aria-hidden="true" />
+            <div className="absolute left-0 top-0 w-1 h-full bg-blueprint-signal rounded-l-xl" aria-hidden="true" />
             <div className="pl-3">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.8px] text-violet-600">
+                <span className="text-[11px] font-bold uppercase tracking-[0.8px] text-blueprint-signal">
                   Nova's Take
                 </span>
-                <span className="text-[10px] text-gray-300">· AI Analysis</span>
+                <span className="text-[10px] text-ink-faint">· AI Analysis</span>
               </div>
-              <p className="text-[13px] text-gray-600 leading-relaxed">
+              <p className="text-[13px] text-ink-dim leading-relaxed">
                 You're entering a real market with a real problem. Parents already spend money on meal
                 delivery — your challenge is proving they'll pay for planning instead of execution.
                 The fastest path to validation is a 48-hour paid test, not a full build.
               </p>
             </div>
 
-            <hr className="border-t border-gray-100 my-4" />
+            <hr className="border-t border-line my-4" />
 
             {/* Recommended Move */}
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-gray-400 mb-2">
+              <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-ink-faint mb-2">
                 Recommended Move
               </div>
-              <div className="flex items-start gap-3 bg-violet-50/60 rounded-lg p-3">
-                <div className="w-6 h-6 rounded-md bg-violet-600 flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
+              <div className="flex items-start gap-3 bg-blueprint-signal-soft rounded-none p-3">
+                <div className="w-6 h-6 rounded-none bg-blueprint-signal flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
                   <span className="text-white text-[10px] font-bold">1</span>
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold text-gray-900 mb-0.5">
+                  <div className="text-[12px] font-semibold text-ink mb-0.5">
                     Run a 48-hour landing page test
                   </div>
-                  <div className="text-[11px] text-gray-500 leading-relaxed">
+                  <div className="text-[11px] text-ink-dim leading-relaxed">
                     Build a simple page, drive 100 visitors with $50 in ads, and measure email
                     sign-up rate. Above 15% = strong signal.
                   </div>
@@ -412,11 +411,11 @@ export default function FounderCasefile() {
           {/* Case Details — collapsible drawers */}
           <div>
             <div className="flex items-center gap-1.5 mb-3">
-              <div className="text-[11px] font-bold uppercase tracking-[1px] text-gray-400">
+              <div className="font-bp-mono text-[11px] font-bold uppercase tracking-[1px] text-ink-faint">
                 Case Details
               </div>
               <span
-                className="text-[12px] text-gray-300 cursor-help"
+                className="text-[12px] text-ink-faint cursor-help"
                 title="Expand each section to see full analysis"
               >
                 ⓘ
@@ -474,8 +473,8 @@ export default function FounderCasefile() {
           </div>
 
           {/* 30-Day Proof Plan — timeline */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <div className="text-[11px] font-bold uppercase tracking-[1px] text-gray-400 mb-3">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-5">
+            <div className="font-bp-mono text-[11px] font-bold uppercase tracking-[1px] text-ink-faint mb-3">
               30-Day Proof Plan
             </div>
             {/* Day chips — scrollable on mobile */}
@@ -487,8 +486,8 @@ export default function FounderCasefile() {
                     onClick={() => setActiveDay(i)}
                     className={`shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all duration-150 cursor-pointer ${
                       activeDay === i
-                        ? "bg-violet-600 text-white border-violet-600 ring-1 ring-violet-400 ring-offset-1"
-                        : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
+                        ? "bg-blueprint-signal text-white border-blueprint-signal ring-1 ring-blueprint-signal ring-offset-1"
+                        : "bg-panel text-ink-dim border-line hover:border-line"
                     }`}
                   >
                     {d.label}
@@ -499,8 +498,8 @@ export default function FounderCasefile() {
             {/* Tasks for active day */}
             <ul className="space-y-2">
               {days[activeDay].tasks.map((task) => (
-                <li key={task} className="flex items-start gap-2.5 text-[12px] text-gray-600">
-                  <span className="mt-0.5 text-violet-400 shrink-0" aria-hidden="true">▸</span>
+                <li key={task} className="flex items-start gap-2.5 text-[12px] text-ink-dim">
+                  <span className="mt-0.5 text-blueprint-signal shrink-0" aria-hidden="true">▸</span>
                   {task}
                 </li>
               ))}
@@ -508,22 +507,22 @@ export default function FounderCasefile() {
           </div>
 
           {/* CTA */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <div className="text-[13px] font-semibold text-gray-900 mb-1">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-5">
+            <div className="text-[13px] font-semibold text-ink mb-1">
               Ready to move forward?
             </div>
-            <p className="text-[12px] text-gray-400 mb-4">
+            <p className="text-[12px] text-ink-faint mb-4">
               Accepting this move starts your first validation mission. Nova will guide you step by step.
             </p>
             <button
               onClick={handleAccept}
               aria-live="polite"
-              className={`group flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold tracking-wide transition-all duration-300 ${
+              className={`group flex items-center gap-2 px-5 py-2.5 rounded-none text-[13px] font-bold tracking-wide transition-all duration-300 ${
                 acceptPulse ? "scale-105" : "scale-100"
               } ${
                 accepted
-                  ? "bg-green-500 text-white border border-green-500"
-                  : "bg-violet-600 hover:bg-violet-700 text-white border border-violet-600"
+                  ? "bg-blueprint-seal text-white border border-blueprint-seal"
+                  : "bg-blueprint-signal hover:bg-blueprint-blue text-white border border-blueprint-signal"
               }`}
             >
               {accepted ? (
@@ -550,7 +549,7 @@ export default function FounderCasefile() {
         <div className="lg:sticky lg:top-[49px] self-start space-y-4">
 
           {/* Next Missions */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-4">
             <SideLabel>Next Missions</SideLabel>
             <MissionCard
               emoji="🎯"
@@ -576,7 +575,7 @@ export default function FounderCasefile() {
           </div>
 
           {/* Proof Playbook */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-4">
             <SideLabel>Proof Playbook</SideLabel>
             <PbStep status="done" label="Submit idea to Nova" />
             <PbStep status="done" label="Review casefile analysis" />
@@ -587,7 +586,7 @@ export default function FounderCasefile() {
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div className="bg-panel rounded-none border border-line shadow-sm p-4">
             <SideLabel>At a Glance</SideLabel>
             <div className="space-y-2.5">
               {[
@@ -597,8 +596,8 @@ export default function FounderCasefile() {
                 { label: "Risk Level", value: "Medium" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-[11px] text-gray-400">{label}</span>
-                  <span className="text-[11px] font-semibold text-gray-700">{value}</span>
+                  <span className="text-[11px] text-ink-faint">{label}</span>
+                  <span className="text-[11px] font-semibold text-ink">{value}</span>
                 </div>
               ))}
             </div>

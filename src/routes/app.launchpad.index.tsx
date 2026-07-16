@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { useOwnerMode } from "@/lib/ownerMode";
 import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { TitleBlock } from "@/components/launchpad/TitleBlock";
+import { BusinessSchematic } from "@/components/launchpad/BusinessSchematic";
+import { businessContextQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/app/launchpad/")({ component: LaunchpadOverview });
 
@@ -78,7 +81,12 @@ const NOVA_PROMPTS_BY_STAGE: Record<string, string[]> = {
 };
 
 function LaunchpadOverview() {
-  const { currentOrgId, user } = useAuth();
+  const { currentOrgId, user, profile } = useAuth();
+  // Atelier Blueprint header data — business_context drives Project/Revision
+  const bpCtxQ = useQuery({
+    ...businessContextQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
   const isOwner = useOwnerMode();
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 100), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -176,33 +184,34 @@ function LaunchpadOverview() {
     <div className="flex gap-5 items-start">
       {/* ── Main content ── */}
       <div className="flex-1 min-w-0 space-y-5">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "32px",
-                fontWeight: 800,
-                color: "var(--foreground)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.1,
-              }}
-            >
-              Workbench
-            </h1>
-            <p
-              className="mt-1"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "15px",
-                color: "var(--muted-foreground)",
-              }}
-            >
-              Outcome engines, playbooks, and asset generators — sequenced for your business, not
-              browsed.
-            </p>
-          </div>
+        {/* Header — Atelier Blueprint drafting title block (live data) */}
+        <TitleBlock
+          projectName={
+            (typeof (bpCtxQ.data?.identity as Record<string, unknown> | null)?.name === "string"
+              ? ((bpCtxQ.data?.identity as Record<string, unknown>).name as string)
+              : null) ??
+            orgQ.data?.name ??
+            "Untitled Venture"
+          }
+          drawingNo={`LP-${(currentOrgId ?? "draft000").slice(0, 8).toUpperCase()}`}
+          stage={wsQ.data?.stage ?? stage}
+          revision={typeof bpCtxQ.data?.version === "number" ? bpCtxQ.data.version : 1}
+          founderName={(profile?.full_name ?? user?.email ?? "Founder").split(" ")[0].split("@")[0]}
+        />
+
+        {/* Business Schematic — the business drawn as a live technical sheet */}
+        <BusinessSchematic
+          orgId={currentOrgId ?? "guest"}
+          toolRuns={(runsQ.data ?? []).map((r) => ({
+            id: String(r.id),
+            tool_key: String(r.tool_key),
+            status: String(r.status),
+          }))}
+          leadsCount={leadCount}
+          nextMove={recommendations[0] ?? null}
+        />
+
+        <div className="flex items-start justify-end gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <Link
               to="/app/launchpad/history"

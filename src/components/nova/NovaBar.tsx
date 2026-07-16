@@ -68,35 +68,21 @@ export function NovaBar() {
     ? "Analysing your business data..."
     : novaDirective(path, stage, score, runs, leads);
 
+  // Atelier Blueprint restyle: ink comms strip with a mono NOVA:// tag and
+  // brass CTA. Same data, same placement — presentation only.
   return (
-    <div
-      className="nova-bar flex items-center gap-3 shrink-0"
-      style={{
-        height: "48px",
-        paddingLeft: "24px",
-        paddingRight: "24px",
-      }}
-    >
+    <div className="flex h-12 shrink-0 items-center gap-3 bg-ink px-4 sm:px-6">
       <NovaAvatar size="sm" mood={mood} />
-      <p
-        className="flex-1 truncate font-medium caret"
-        style={{
-          fontFamily: "var(--font-body)",
-          fontSize: "14px",
-          color: "var(--foreground)",
-          letterSpacing: "-0.01em",
-        }}
+      <span
+        aria-hidden="true"
+        className="hidden shrink-0 font-bp-mono text-[11px] font-semibold tracking-[0.12em] text-ink-faint sm:inline"
       >
-        {directive}
-      </p>
+        NOVA://
+      </span>
+      <p className="caret flex-1 truncate font-bp-mono text-[12.5px] text-paper">{directive}</p>
       <Link
         to="/app/mentor"
-        className="nova-bar-cta shrink-0 rounded-lg font-medium transition-colors"
-        style={{
-          fontFamily: "var(--font-body)",
-          fontSize: "12px",
-          padding: "4px 12px",
-        }}
+        className="shrink-0 border border-blueprint-brass bg-blueprint-brass/15 px-3 py-1 font-tech text-[11px] font-semibold uppercase tracking-[0.08em] text-blueprint-brass-soft transition-colors hover:bg-blueprint-brass hover:text-ink"
       >
         Talk to Nova
       </Link>
