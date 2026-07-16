@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery, organizationQuery } from "@/lib/queries";
 import { ACADEMY_MODULES, getModuleState, type ModuleState } from "@/lib/academy-modules";
-import { useFounderProgress } from "@/hooks/use-founder-progress";
 import { CheckCircle2, Lock, ArrowRight, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +31,6 @@ function AcademyLayout() {
   const isIndex = routerState === "/app/academy" || routerState === "/app/academy/";
 
   const { currentOrgId } = useAuth();
-  const progress = useFounderProgress();
 
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 500), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -143,7 +141,7 @@ function AcademyLayout() {
 
       {/* RIGHT: Module content or index */}
       <div className="flex-1 min-w-0">
-        {isIndex ? <AcademyIndex moduleStates={moduleStates} progress={progress} /> : <Outlet />}
+        {isIndex ? <AcademyIndex moduleStates={moduleStates} /> : <Outlet />}
       </div>
     </div>
   );
@@ -151,10 +149,8 @@ function AcademyLayout() {
 
 function AcademyIndex({
   moduleStates,
-  progress,
 }: {
   moduleStates: { module: (typeof ACADEMY_MODULES)[number]; state: ModuleState }[];
-  progress: ReturnType<typeof useFounderProgress>;
 }) {
   const nextModule = moduleStates.find((ms) => ms.state === "available" || ms.state === "active");
 

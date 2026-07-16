@@ -330,21 +330,6 @@ export const usageQuery = (orgId: string) =>
     },
   });
 
-export const automationSettingsQuery = (orgId: string) =>
-  queryOptions({
-    queryKey: ["automation_settings", orgId],
-    queryFn: async () => {
-      if (isGuest()) return [];
-      const { data, error } = await supabase
-        .from("automation_settings")
-        .select("*")
-        .eq("organization_id", orgId)
-        .order("key");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
 export const websiteAnalysesQuery = (orgId: string) =>
   queryOptions({
     queryKey: ["website_analyses", orgId],
@@ -566,11 +551,6 @@ export async function generateAiDashboard(input: GenerateDashboardInput) {
   return data;
 }
 
-export async function deleteAiDashboard(orgId: string) {
-  const { error } = await supabase.from("ai_dashboards").delete().eq("organization_id", orgId);
-  if (error) throw error;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Mentor Agent Queries
 // ─────────────────────────────────────────────────────────────────────────────
@@ -709,7 +689,7 @@ export const workspaceStatusQuery = (userId: string) =>
       if (!userId || isGuest()) return null;
       const { data } = await supabase
         .from("workspaces")
-        .select("id, mode, provisioning_status, lane, stage")
+        .select("id, mode, provisioning_status, lane")
         .eq("owner_id", userId)
         .maybeSingle();
       return data ?? null;
@@ -725,7 +705,7 @@ export const currentMissionQuery = (userId: string) =>
       if (!userId || isGuest()) return null;
       const { data: ws } = await supabase
         .from("workspaces")
-        .select("id, name, lane, stage, current_mission_id")
+        .select("id, name, lane, current_mission_id")
         .eq("owner_id", userId)
         .maybeSingle();
       if (!ws) return null;

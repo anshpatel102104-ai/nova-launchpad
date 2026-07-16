@@ -21,12 +21,12 @@ export async function buildAgentContext(
       opts.workspaceId
         ? supabase
             .from("workspaces")
-            .select("id, name, lane, stage, current_mission_id, organization_id")
+            .select("id, name, lane, current_mission_id, organization_id")
             .eq("id", opts.workspaceId)
             .maybeSingle()
         : supabase
             .from("workspaces")
-            .select("id, name, lane, stage, current_mission_id, organization_id")
+            .select("id, name, lane, current_mission_id, organization_id")
             .eq("owner_id", userId)
             .limit(1)
             .maybeSingle(),
@@ -94,12 +94,24 @@ export async function buildAgentContext(
   const orgId =
     opts.organizationId ?? (workspace as { organization_id?: string } | null)?.organization_id;
 
+  // Stage comes from organizations.stage (canonical, user-updatable) — not the
+  // frozen workspaces.stage, which was stuck at its onboarding value.
+  let stage = "Idea";
+  if (orgId) {
+    const orgRes = await supabase
+      .from("organizations")
+      .select("stage")
+      .eq("id", orgId)
+      .maybeSingle();
+    stage = (orgRes.data?.stage as string | undefined) ?? "Idea";
+  }
+
   return {
     user_id: userId,
     workspace_id: workspace?.id,
     organization_id: orgId,
     lane: (workspace?.lane ?? intake?.lane ?? "Idea") as OperatorContext["lane"],
-    stage: workspace?.stage ?? "Idea",
+    stage,
     current_mission: mission
       ? {
           id: mission.id as string,
