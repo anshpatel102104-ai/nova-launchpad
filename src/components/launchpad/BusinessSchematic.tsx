@@ -71,14 +71,23 @@ const AREA_DEFS: Array<{
   { id: "idea", label: "IDEA", category: "validate", unlockNote: "run Idea Validation" },
   { id: "offer", label: "OFFER", category: "plan", unlockNote: "run a positioning tool" },
   { id: "launch", label: "LAUNCH ASSETS", category: "launch", unlockNote: "build a launch asset" },
-  { id: "customers", label: "CUSTOMERS", category: "customers", unlockNote: "run First 10 Customers" },
+  {
+    id: "customers",
+    label: "CUSTOMERS",
+    category: "customers",
+    unlockNote: "run First 10 Customers",
+  },
   { id: "pipeline", label: "PIPELINE", category: null, unlockNote: "log your first lead" },
   { id: "revenue", label: "REVENUE", category: "funding", unlockNote: "sealed by funding tools" },
   // TODO(data): no live revenue/KPI source exists per-org yet — the Revenue
   // block currently seals from funding-category runs only.
 ];
 
-export function deriveAreaStatuses({ toolRuns, leadsCount, nextMove }: SchematicInput): AreaStatus[] {
+export function deriveAreaStatuses({
+  toolRuns,
+  leadsCount,
+  nextMove,
+}: SchematicInput): AreaStatus[] {
   const catByKey = buildCategoryByToolKey();
   const nextMoveCategory = nextMove
     ? (LAUNCHPAD_TOOLS.find((t) => t.slug === nextMove.slug)?.category ?? null)
@@ -97,7 +106,12 @@ export function deriveAreaStatuses({ toolRuns, leadsCount, nextMove }: Schematic
     // Pipeline is CRM-driven, not tool-driven
     if (def.id === "pipeline") {
       if (leadsCount > 0)
-        return { id: def.id, label: def.label, state: "sealed" as const, sealRef: `${leadsCount} LEADS` };
+        return {
+          id: def.id,
+          label: def.label,
+          state: "sealed" as const,
+          sealRef: `${leadsCount} LEADS`,
+        };
       if (succeededByCat.has("customers"))
         return { id: def.id, label: def.label, state: "drafting" as const };
       return { id: def.id, label: def.label, state: "ghost" as const, unlockNote: def.unlockNote };
@@ -156,7 +170,12 @@ interface BusinessSchematicProps extends SchematicInput {
   orgId: string;
 }
 
-export function BusinessSchematic({ orgId, toolRuns, leadsCount, nextMove }: BusinessSchematicProps) {
+export function BusinessSchematic({
+  orgId,
+  toolRuns,
+  leadsCount,
+  nextMove,
+}: BusinessSchematicProps) {
   const areas = useMemo(
     () => deriveAreaStatuses({ toolRuns, leadsCount, nextMove }),
     [toolRuns, leadsCount, nextMove],
@@ -343,9 +362,7 @@ export function BusinessSchematic({ orgId, toolRuns, leadsCount, nextMove }: Bus
                 NOVA — NEXT ON THE BOARD
               </text>
               <text x={28} y={386} className="font-bp-mono" fontSize={9.5} fill="var(--color-ink)">
-                {nextMove.reason.length > 62
-                  ? `${nextMove.reason.slice(0, 62)}…`
-                  : nextMove.reason}
+                {nextMove.reason.length > 62 ? `${nextMove.reason.slice(0, 62)}…` : nextMove.reason}
               </text>
             </g>
           )}

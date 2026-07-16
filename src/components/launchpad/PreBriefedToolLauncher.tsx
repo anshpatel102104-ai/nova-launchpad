@@ -43,7 +43,8 @@ export function briefedButtonLabel(
   revision: number | null,
 ): string {
   const missing = fieldDefs.filter((f) => f.required && !(fields[f.key] ?? "").trim()).length;
-  const fill = missing === 0 ? "0 fields to fill" : `${missing} field${missing === 1 ? "" : "s"} to fill`;
+  const fill =
+    missing === 0 ? "0 fields to fill" : `${missing} field${missing === 1 ? "" : "s"} to fill`;
   return revision ? `${fill} — briefed from Revision ${revision}` : fill;
 }
 
@@ -194,7 +195,11 @@ export function PreBriefedToolLauncher({
             </span>
             {def.hint && <span className="text-[10.5px] text-ink-dim">{def.hint}</span>}
           </div>
-          <FieldInput def={def} value={fields[def.key] ?? ""} onChange={(v) => setField(def.key, v)} />
+          <FieldInput
+            def={def}
+            value={fields[def.key] ?? ""}
+            onChange={(v) => setField(def.key, v)}
+          />
         </div>
       ))}
     </div>

@@ -7,10 +7,7 @@ import { blockIfGuest } from "@/lib/guest";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { businessContextQuery } from "@/lib/queries";
-import {
-  loadWorkspaceProfile,
-  mergeBusinessContextIntoProfile,
-} from "@/lib/workspaceProfile";
+import { loadWorkspaceProfile, mergeBusinessContextIntoProfile } from "@/lib/workspaceProfile";
 import { PreBriefedToolLauncher } from "@/components/launchpad/PreBriefedToolLauncher";
 import {
   Search,

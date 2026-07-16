@@ -1998,7 +1998,9 @@ function ToolPage() {
                   <>
                     <Sparkles className="h-4 w-4" /> Generate —{" "}
                     {briefedButtonLabel(
-                      toolFieldDefs ?? [{ key: "context", label: "Context", type: "textarea", required: true }],
+                      toolFieldDefs ?? [
+                        { key: "context", label: "Context", type: "textarea", required: true },
+                      ],
                       fields,
                       typeof businessCtxQ.data?.version === "number"
                         ? businessCtxQ.data.version
