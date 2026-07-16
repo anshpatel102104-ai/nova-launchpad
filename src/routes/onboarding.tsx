@@ -1,15 +1,28 @@
 // Two-track onboarding: CREATE A BUSINESS (founders) vs OPERATE A BUSINESS
-// (operators). Every answer persists to onboarding_sessions (resume on return);
-// completion is a single server-side saga (complete-onboarding edge function)
-// — the profile is only flagged complete after the workspace actually exists.
+// (operators). Track (mode) is now detected from 3 quick signal questions, not
+// user-selected — see resolveMode() in onboarding-questions.ts. This satisfies
+// the ICP resolution that track is invisible stage infrastructure, not a
+// persona choice a user picks. Every answer persists to onboarding_sessions
+// (resume on return); completion is a single server-side saga
+// (complete-onboarding edge function) — the profile is only flagged complete
+// after the workspace actually exists.
 
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
 import { NovaIntakeChat, type IntakeAnswers } from "@/components/app/NovaIntakeChat";
-import { FOUNDER_QUESTIONS, OPERATOR_QUESTIONS } from "@/constants/onboarding-questions";
+import {
+  DETECT_QUESTIONS,
+  FOUNDER_QUESTIONS,
+  OPERATOR_QUESTIONS,
+  resolveMode,
+} from "@/constants/onboarding-questions";
 import { invokeEdge, EdgeError } from "@/lib/invokeEdge";
+
+// Accent used during the pre-track detection step (mode isn't known yet).
+const DETECT_ACCENT = "#8b5cf6";
+const DETECT_ACCENT_DARK = "#6d28d9";
 
 type Mode = "create" | "operate";
 
@@ -52,7 +65,7 @@ const ANIM_CSS = `
   }
 `;
 
-type Phase = "loading" | "fork" | "chat" | "provisioning" | "done";
+type Phase = "loading" | "detect" | "chat" | "provisioning" | "done";
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -85,10 +98,10 @@ function Onboarding() {
           });
           setPhase("chat");
         } else {
-          setPhase("fork");
+          setPhase("detect");
         }
       } catch {
-        if (!cancelled) setPhase("fork");
+        if (!cancelled) setPhase("detect");
       }
     })();
     return () => {
@@ -111,11 +124,19 @@ function Onboarding() {
     })();
   };
 
-  const chooseMode = (m: Mode) => {
+  // Seed answers carry the detection responses forward into the track intake so
+  // has_revenue/team_size_detect/has_clients survive into complete-onboarding.
+  const chooseMode = (m: Mode, seed: IntakeAnswers = {}) => {
     setMode(m);
-    setResume(null);
-    saveSession(m, 0, {});
+    setResume({ step: 0, answers: seed });
+    saveSession(m, 0, seed);
     setPhase("chat");
+  };
+
+  // Detection complete → compute the track (never user-selected) and begin it,
+  // carrying the detection answers through as seed context.
+  const finishDetect = (detectAnswers: IntakeAnswers) => {
+    chooseMode(resolveMode(detectAnswers), detectAnswers);
   };
 
   const complete = async (answers: IntakeAnswers) => {
@@ -161,7 +182,7 @@ function Onboarding() {
           width: 700,
           height: 500,
           borderRadius: "50%",
-          background: `radial-gradient(ellipse, color-mix(in oklab, ${phase === "fork" ? "#8b5cf6" : accent} 7%, transparent) 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse, color-mix(in oklab, ${phase === "detect" ? DETECT_ACCENT : accent} 7%, transparent) 0%, transparent 70%)`,
           animation: "ambientPulse 4s ease-in-out infinite",
           pointerEvents: "none",
         }}
@@ -188,8 +209,8 @@ function Onboarding() {
               height: 32,
               borderRadius: "50%",
               background:
-                phase === "fork"
-                  ? "linear-gradient(135deg, #8b5cf6, #6d28d9)"
+                phase === "detect"
+                  ? `linear-gradient(135deg, ${DETECT_ACCENT}, ${DETECT_ACCENT_DARK})`
                   : `linear-gradient(135deg, ${accent}, ${accentDark})`,
               display: "flex",
               alignItems: "center",
@@ -219,7 +240,15 @@ function Onboarding() {
           </div>
         )}
 
-        {phase === "fork" && <ForkScreen onChoose={chooseMode} />}
+        {phase === "detect" && (
+          <NovaIntakeChat
+            key="detect"
+            questions={DETECT_QUESTIONS}
+            accent={DETECT_ACCENT}
+            accentDark={DETECT_ACCENT_DARK}
+            onComplete={finishDetect}
+          />
+        )}
 
         {phase === "chat" && (
           <NovaIntakeChat
@@ -246,170 +275,6 @@ function Onboarding() {
             onRetry={() => pendingAnswers && complete(pendingAnswers)}
           />
         )}
-      </div>
-    </div>
-  );
-}
-
-// ── Step 0 — the fork ─────────────────────────────────────────────────────────
-
-function ForkScreen({ onChoose }: { onChoose: (m: Mode) => void }) {
-  const cards: Array<{
-    mode: Mode;
-    title: string;
-    desc: string;
-    bullets: string[];
-    accent: string;
-    accentDark: string;
-    emoji: string;
-  }> = [
-    {
-      mode: "create",
-      title: "Create a business",
-      desc: "I have an idea — take me from concept to paying customers.",
-      bullets: ["Validate the idea", "Build the offer", "Land the first customers"],
-      accent: "#f97316",
-      accentDark: "#ea580c",
-      emoji: "🚀",
-    },
-    {
-      mode: "operate",
-      title: "Operate a business",
-      desc: "I'm running one — give me systems, automation, and visibility.",
-      bullets: ["KPI cockpit", "Automation opportunities", "Scale playbooks"],
-      accent: "#06b6d4",
-      accentDark: "#0e7490",
-      emoji: "⚙️",
-    },
-  ];
-
-  return (
-    <div style={{ width: "100%", maxWidth: 720, animation: "fadeUp 0.5s ease both" }}>
-      <h1
-        style={{
-          textAlign: "center",
-          fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
-          fontWeight: 800,
-          letterSpacing: "-0.03em",
-          color: "#f7f0e8",
-          margin: "0 0 8px",
-        }}
-      >
-        What brings you to Nova?
-      </h1>
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: 14,
-          color: "rgba(247,240,232,0.45)",
-          margin: "0 0 28px",
-        }}
-      >
-        Two different operating systems. Pick the one that matches where you are.
-      </p>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 14,
-        }}
-      >
-        {cards.map((c, i) => (
-          <button
-            key={c.mode}
-            onClick={() => onChoose(c.mode)}
-            style={{
-              textAlign: "left",
-              padding: "22px 20px",
-              borderRadius: 18,
-              cursor: "pointer",
-              background: "rgba(255,255,255,0.035)",
-              border: `1px solid color-mix(in oklab, ${c.accent} 28%, transparent)`,
-              transition: "transform 0.15s, border-color 0.15s, background 0.15s",
-              animation: `fadeUp 0.5s ease ${0.1 + i * 0.08}s both`,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = "translateY(-3px)";
-              el.style.borderColor = c.accent;
-              el.style.background = `color-mix(in oklab, ${c.accent} 7%, transparent)`;
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = "none";
-              el.style.borderColor = `color-mix(in oklab, ${c.accent} 28%, transparent)`;
-              el.style.background = "rgba(255,255,255,0.035)";
-            }}
-          >
-            <div
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 12,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 20,
-                background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
-                boxShadow: `0 4px 18px color-mix(in oklab, ${c.accent} 35%, transparent)`,
-                marginBottom: 14,
-              }}
-            >
-              {c.emoji}
-            </div>
-            <div
-              style={{ fontSize: 17, fontWeight: 800, color: "#f7f0e8", letterSpacing: "-0.01em" }}
-            >
-              {c.title}
-            </div>
-            <p
-              style={{
-                fontSize: 13,
-                color: "rgba(247,240,232,0.5)",
-                margin: "6px 0 14px",
-                lineHeight: 1.55,
-              }}
-            >
-              {c.desc}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {c.bullets.map((b) => (
-                <div
-                  key={b}
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(247,240,232,0.65)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: "50%",
-                      background: c.accent,
-                      flexShrink: 0,
-                    }}
-                  />
-                  {b}
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                marginTop: 16,
-                fontSize: 12.5,
-                fontWeight: 700,
-                color: c.accent,
-              }}
-            >
-              Start here →
-            </div>
-          </button>
-        ))}
       </div>
     </div>
   );
