@@ -3,7 +3,7 @@
 // tool with the same input more than once within 15 minutes (a signal that the
 // output was unsatisfactory), then asks Claude to suggest a prompt improvement
 // and saves it to prompt_feedback.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { corsHeaders, jsonResponse } from "../_shared/helpers.ts";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 

@@ -2,7 +2,7 @@
 // logging, task creation, contact creation). The caller's org membership is
 // verified, then writes happen with the service-role client so they succeed
 // across CRM tables. Self-contained single file.
-import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

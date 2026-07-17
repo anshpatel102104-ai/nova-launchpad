@@ -14,7 +14,7 @@
 // Any failure before step 6 returns an error WITHOUT flagging the profile, so
 // the user is never stranded "onboarded" with a half-provisioned workspace.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import {
   buildMissionSeed,
   buildOperatorBaseline,

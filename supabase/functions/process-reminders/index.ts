@@ -1,7 +1,7 @@
 // process-reminders — cron worker. Finds upcoming appointments (next 24h) that
 // haven't had a reminder sent, delivers an email + SMS reminder to the contact
 // via send-email / send-sms, and marks reminder_sent. Internal/service only.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json" } });

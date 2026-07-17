@@ -7,7 +7,7 @@
 // and logs the workspace_created + first_mission_assigned activation events.
 // Now accepts `idea` to personalize step descriptions for the user's business.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -8,7 +8,7 @@
 // Membership inserts use the service role (the organization_members RLS only
 // allows self-insert), but the org + role authorization is enforced here.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

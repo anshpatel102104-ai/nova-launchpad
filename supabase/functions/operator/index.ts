@@ -1,7 +1,7 @@
 // Single entry point for all AI operator and mentor-agent requests from the client.
 // No AI provider calls happen client-side — everything flows through here.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 import { callPAL, buildUsageRows } from "../_shared/pal/index.ts";
 

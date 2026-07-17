@@ -2,7 +2,7 @@
 // booking page, finds-or-creates the contact, and writes a calendar_events row
 // via the service-role client (calendar_events has no public-insert RLS by
 // design). verify_jwt = false: this is intentionally unauthenticated.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

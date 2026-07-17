@@ -1,7 +1,7 @@
 // nova-chat — Nova AI streaming chat function
 // Routes through Cloudflare AI Gateway when CLOUDFLARE_AI_GATEWAY_URL is set,
 // falls back to direct Anthropic API otherwise.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { assembleContext } from "../_shared/context.ts";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 import { NOVA_ACTION_TOOL, type NovaActionType } from "../_shared/novaActions.ts";

@@ -2,7 +2,7 @@
 // Given a conversation row, it pulls the recent thread for that contact,
 // asks Claude for an on-brand reply, saves it to conversations.ai_draft, and
 // returns the draft. Non-streaming, self-contained single file.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

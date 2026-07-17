@@ -1,7 +1,7 @@
 // Edge function: memory-query
 // Fetches the org's indexed memory artifacts, builds context, and answers
 // the user's question using Claude claude-sonnet-4-5.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { corsHeaders, jsonResponse } from "../_shared/helpers.ts";
 
 const MEMORY_QUERY_MODEL = "claude-sonnet-4-5";

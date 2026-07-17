@@ -14,7 +14,7 @@
 // goes fully live the instant provider secrets are added. In `mode: "test"` all
 // external sends and contact mutations are simulated regardless of credentials.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 // Mirrors ../_shared/config.ts (inlined to keep this function single-file deployable).
 const CLAUDE_MODEL = "claude-sonnet-4-6";

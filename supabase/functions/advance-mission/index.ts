@@ -6,7 +6,7 @@
 //   - Complete the whole mission and assign next one
 //   - Log 'mission_step_completed' and 'first_mission_completed' events
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

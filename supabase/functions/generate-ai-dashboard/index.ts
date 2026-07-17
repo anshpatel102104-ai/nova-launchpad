@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { corsHeaders, jsonResponse, callClaude } from "../_shared/helpers.ts";
 import { CLAUDE_MODEL } from "../_shared/config.ts";
 

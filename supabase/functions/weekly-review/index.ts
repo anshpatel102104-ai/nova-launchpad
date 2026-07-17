@@ -8,7 +8,7 @@
 // The review is grounded in the Business Context Graph + the week's actual
 // activity (tool runs, mission steps, leads) — never generic advice.
 
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 import { assembleContext } from "../_shared/context.ts";
 import { callClaude } from "../_shared/helpers.ts";
 

@@ -12,7 +12,7 @@
 // rows (next_run_at null) get armed without firing, due rows are claimed
 // optimistically and fired once. See the scheduled_automations migration.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { parseSchedule, nextRunAfter } from "../_shared/schedule.ts";
 
 // event name → builder trigger block types that it fires
