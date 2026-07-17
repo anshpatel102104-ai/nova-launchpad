@@ -360,6 +360,28 @@ export const leadsQuery = (orgId: string) =>
     },
   });
 
+export const recentMomentumQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["recent-momentum", orgId],
+    queryFn: async () => {
+      if (!orgId || isGuest()) return { windowDays: 7, counts: {} as Record<string, number> };
+
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data, error } = await supabase
+        .from("nova_events")
+        .select("event_type")
+        .eq("organization_id", orgId)
+        .gte("created_at", sevenDaysAgo);
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      for (const row of data ?? []) {
+        counts[row.event_type] = (counts[row.event_type] ?? 0) + 1;
+      }
+      return { windowDays: 7, counts };
+    },
+  });
+
 export type MaskedIntegration = {
   id: string;
   user_id: string;

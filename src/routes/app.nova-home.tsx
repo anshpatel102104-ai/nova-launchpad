@@ -10,6 +10,7 @@
 
 import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   AlertTriangle,
@@ -22,6 +23,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { recentMomentumQuery } from "@/lib/queries";
 import { useBusinessGraph, type LeadRow } from "@/hooks/use-business-graph";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
 import { DailyBriefingCard } from "@/components/nova/DailyBriefingCard";
@@ -72,8 +74,13 @@ function staleLeads(leads: LeadRow[]): LeadRow[] {
 }
 
 function NovaHomePage() {
-  const { profile } = useAuth();
+  const { profile, currentOrgId } = useAuth();
   const graph = useBusinessGraph();
+  const momentum = useQuery({
+    ...recentMomentumQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
+  const momentumCounts = momentum.data?.counts ?? {};
 
   const name = profile?.full_name?.split(" ")[0] || "there";
   const leads = graph.leads;
@@ -364,6 +371,37 @@ function NovaHomePage() {
               ))}
             </div>
           </div>
+
+          {/* ── This week's momentum — event ledger, closed loop ── */}
+          {Object.keys(momentumCounts).length > 0 && (
+            <div>
+              <SectionLabel>
+                This week&apos;s momentum <ClosedLoopChip kind="updated" />
+              </SectionLabel>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(momentumCounts).map(([eventType, count]) => (
+                  <div
+                    key={eventType}
+                    className="inline-flex items-center gap-2 rounded-xl border px-3 py-2"
+                    style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                  >
+                    <span
+                      className="text-[15px] font-bold tabular-nums"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {count}
+                    </span>
+                    <span
+                      className="text-[12px] font-semibold"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      {formatEventType(eventType)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Right rail: automation status + memory + activity ── */}
@@ -612,6 +650,13 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   );
+}
+
+// "step.completed" → "Step completed" — human-readable without a per-type map,
+// so new event types render sensibly with no code change.
+function formatEventType(eventType: string): string {
+  const words = eventType.replace(/[._]/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function formatMoney(v: number): string {
