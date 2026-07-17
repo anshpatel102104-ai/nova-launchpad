@@ -282,15 +282,20 @@ Deno.serve(async (req) => {
       // Dual-write to nova_events (best-effort, non-blocking — a failure here
       // must not affect the step_completed response).
       if (ws?.organization_id) {
-        await admin.from("nova_events").insert({
-          organization_id: ws.organization_id,
-          source: "mission",
-          event_type: "step.completed",
-          subject_type: "mission_step",
-          subject_id: step_id,
-          payload: { mission_id, workspace_id },
-        }).then(() => {}, () => {}); // swallow — mirrors this file's existing
-                                     // best-effort activation_events calls
+        await admin
+          .from("nova_events")
+          .insert({
+            organization_id: ws.organization_id,
+            source: "mission",
+            event_type: "step.completed",
+            subject_type: "mission_step",
+            subject_id: step_id,
+            payload: { mission_id, workspace_id },
+          })
+          .then(
+            () => {},
+            () => {},
+          ); // swallow — mirrors this file's best-effort activation_events calls
       }
     }
 
@@ -318,15 +323,20 @@ Deno.serve(async (req) => {
 
           // Dual-write to nova_events (best-effort, non-blocking).
           if (ws?.organization_id) {
-            await admin.from("nova_events").insert({
-              organization_id: ws.organization_id,
-              source: "mission",
-              event_type: "mission.completed",
-              subject_type: "mission",
-              subject_id: mission_id,
-              payload: { workspace_id, auto_completed: true },
-            }).then(() => {}, () => {}); // swallow — mirrors this file's existing
-                                         // best-effort activation_events calls
+            await admin
+              .from("nova_events")
+              .insert({
+                organization_id: ws.organization_id,
+                source: "mission",
+                event_type: "mission.completed",
+                subject_type: "mission",
+                subject_id: mission_id,
+                payload: { workspace_id, auto_completed: true },
+              })
+              .then(
+                () => {},
+                () => {},
+              ); // swallow — mirrors this file's best-effort activation_events calls
           }
         }
 
