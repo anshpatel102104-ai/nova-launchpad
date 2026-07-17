@@ -258,6 +258,18 @@ Deno.serve(async (req) => {
       .eq("id", step_id);
     if (error) return json({ error: error.message }, 500);
 
+    // Resolve organization_id once per request (nova_events dual-write only).
+    // Only when workspace_id is present — not part of the top-level auth flow.
+    let ws: { organization_id: string | null } | null = null;
+    if (workspace_id) {
+      const { data } = await admin
+        .from("workspaces")
+        .select("organization_id")
+        .eq("id", workspace_id)
+        .maybeSingle();
+      ws = data;
+    }
+
     // Log activation event
     if (workspace_id) {
       await admin.from("activation_events").insert({
@@ -266,6 +278,20 @@ Deno.serve(async (req) => {
         event_name: "mission_step_completed",
         properties: { step_id, mission_id },
       });
+
+      // Dual-write to nova_events (best-effort, non-blocking — a failure here
+      // must not affect the step_completed response).
+      if (ws?.organization_id) {
+        await admin.from("nova_events").insert({
+          organization_id: ws.organization_id,
+          source: "mission",
+          event_type: "step.completed",
+          subject_type: "mission_step",
+          subject_id: step_id,
+          payload: { mission_id, workspace_id },
+        }).then(() => {}, () => {}); // swallow — mirrors this file's existing
+                                     // best-effort activation_events calls
+      }
     }
 
     // Check if all steps are done → auto-complete the mission
@@ -289,6 +315,19 @@ Deno.serve(async (req) => {
             event_name: "first_mission_completed",
             properties: { mission_id },
           });
+
+          // Dual-write to nova_events (best-effort, non-blocking).
+          if (ws?.organization_id) {
+            await admin.from("nova_events").insert({
+              organization_id: ws.organization_id,
+              source: "mission",
+              event_type: "mission.completed",
+              subject_type: "mission",
+              subject_id: mission_id,
+              payload: { workspace_id, auto_completed: true },
+            }).then(() => {}, () => {}); // swallow — mirrors this file's existing
+                                         // best-effort activation_events calls
+          }
         }
 
         return json({ ok: true, step_completed: true, mission_auto_completed: true });
