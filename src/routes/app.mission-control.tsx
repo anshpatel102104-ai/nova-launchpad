@@ -24,6 +24,13 @@ import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatu
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
+import { TitleBlock } from "@/components/launchpad/TitleBlock";
+import {
+  BusinessSchematic,
+  schematicInputFromGraph,
+} from "@/components/launchpad/BusinessSchematic";
+import { useQuery } from "@tanstack/react-query";
+import { businessContextQuery } from "@/lib/queries";
 import { type LaunchpadProgress } from "@/lib/ecosystem";
 import { gradeForScore } from "@/lib/business-grade";
 import { HexLevelBadge } from "@/components/app/gamification/HexLevelBadge";
@@ -52,7 +59,12 @@ export const Route = createFileRoute("/app/mission-control")({
 });
 
 function HomePage() {
-  const { user, profile } = useAuth();
+  const { user, profile, currentOrgId } = useAuth();
+  // Revision for the blueprint title block — business_context.version
+  const bpCtxQ = useQuery({
+    ...businessContextQuery(currentOrgId ?? ""),
+    enabled: !!currentOrgId,
+  });
   const spine = useProgressSpine();
   const graph = spine.graph;
   const founder = useFounderProgress();
@@ -334,6 +346,29 @@ function HomePage() {
             deltaLabel={() => ""}
           />
         </div>
+      </section>
+
+      {/* ══ Business blueprint — the business as a live technical drawing.
+          Sits in the quiet zone: it's a truthful readout of graph state
+          (sealed / drafting / not built), never competing with the mission
+          hero above. Same data the rest of this page already loads. ══ */}
+      <section>
+        <SectionLabel icon={Map}>Business blueprint</SectionLabel>
+        <ModuleBoundary name="Business blueprint">
+          <div className="space-y-3">
+            <TitleBlock
+              projectName={graph.businessName}
+              drawingNo={`LP-${(currentOrgId ?? "draft000").slice(0, 8).toUpperCase()}`}
+              stage={progress.current.label}
+              revision={typeof bpCtxQ.data?.version === "number" ? bpCtxQ.data.version : 1}
+              founderName={name}
+            />
+            <BusinessSchematic
+              orgId={currentOrgId ?? "guest"}
+              {...schematicInputFromGraph(graph)}
+            />
+          </div>
+        </ModuleBoundary>
       </section>
 
       {/* ══ 5 · SUPPORTING TOOLS — deliberately quiet ══ */}
