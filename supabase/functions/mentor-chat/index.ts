@@ -1,7 +1,7 @@
 // mentor-chat — AI mentor conversations with business-context injection.
 // Streaming SSE, persona-driven by agent_id, persisted to mentor_agent_sessions.
 // Self-contained (no ../_shared imports) so it deploys as a single file.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

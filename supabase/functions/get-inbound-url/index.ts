@@ -1,7 +1,7 @@
 // get-inbound-url — returns the caller's org-scoped inbound message webhook
 // URL (the same HMAC key receive-message verifies), so Settings → Integrations
 // can display it for the founder to paste into their email/SMS provider.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -3,7 +3,7 @@
 // nova-action executes it after the founder approves, using one admin (service-role)
 // client so every executor can write across tables regardless of caller RLS.
 
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 
 export type NovaActionType =
   | "update_lead_stage"

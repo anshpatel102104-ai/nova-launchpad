@@ -3,7 +3,7 @@
 // this function is the only thing allowed to flip its status, using one
 // service-role client so the executor can write across tables regardless of
 // the caller's RLS.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { corsHeaders, jsonResponse } from "../_shared/helpers.ts";
 import { executeNovaAction, type NovaActionType } from "../_shared/novaActions.ts";
 

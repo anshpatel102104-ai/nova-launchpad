@@ -9,7 +9,7 @@
 // HMAC-SHA256(INBOUND_WEBHOOK_SECRET, org_id), so it's deterministic and
 // verifiable without a lookup table — get-inbound-url computes the same value
 // for display in Settings. verify_jwt = false.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const enc = new TextEncoder();

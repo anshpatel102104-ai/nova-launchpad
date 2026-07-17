@@ -6,7 +6,7 @@
 // budgeted prompt block plus the list of facts used, so outputs can carry a
 // verifiable "context receipt".
 
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 
 export interface AssembledContext {
   /** Prompt-ready block. Empty string when nothing is known. */

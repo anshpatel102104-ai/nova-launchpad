@@ -9,7 +9,7 @@
 // webhooks); "test" (default) walks the steps and records a trace without
 // sending messages or firing webhooks. Each run is recorded in
 // automation_workflow_runs. Self-contained single file.
-import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

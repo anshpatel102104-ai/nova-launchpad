@@ -4,7 +4,7 @@
 //   GET ?c=<campaign>&e=<contact>&t=unsubscribe      → opt the contact out
 // Writes via service role; unique (campaign,contact,type) index keeps counts
 // distinct. verify_jwt = false (email clients can't send a JWT).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 // 1x1 transparent GIF.
 const PIXEL = Uint8Array.from(

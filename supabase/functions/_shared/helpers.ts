@@ -1,5 +1,5 @@
 // Shared helpers for AI edge functions
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
 import { CLAUDE_MODEL } from "./config.ts";
 import { callPAL, buildUsageRows } from "./pal/index.ts";
 import type { PALResult } from "./pal/types.ts";
