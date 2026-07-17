@@ -28,6 +28,57 @@ export type IntakeQuestion =
       max?: number;
     };
 
+// ── Track detection — 3 quick signal questions ─────────────────────────────────
+// These are asked BEFORE either track begins. The user never picks a track;
+// resolveMode() computes it from these signals. Their answers are then merged
+// into the session answers so they flow through to complete-onboarding.
+
+export const DETECT_QUESTIONS: IntakeQuestion[] = [
+  {
+    key: "has_revenue",
+    type: "chips",
+    novaText: "Before we dive in — where's the business today?",
+    options: [
+      { id: "none", label: "Not making money yet", desc: "Pre-revenue", emoji: "🌱" },
+      { id: "some", label: "Some revenue", desc: "A little coming in", emoji: "🟡" },
+      { id: "consistent", label: "Consistent revenue", desc: "Repeatable income", emoji: "🟢" },
+    ],
+  },
+  {
+    key: "team_size_detect",
+    type: "chips",
+    novaText: "How big is the team right now?",
+    options: [
+      { id: "solo", label: "Just me", desc: "Solo", emoji: "🧍" },
+      { id: "team", label: "2 or more people", desc: "There's a team", emoji: "👥" },
+    ],
+  },
+  {
+    key: "has_clients",
+    type: "chips",
+    novaText: "Do you have active paying clients or customers today?",
+    options: [
+      { id: "no", label: "Not yet", desc: "No active clients", emoji: "⬜" },
+      {
+        id: "yes",
+        label: "Yes, active clients",
+        desc: "Real relationships to manage",
+        emoji: "✅",
+      },
+    ],
+  },
+];
+
+// Compute the track from detection signals. A user is on the CREATE track only
+// when they're pre-revenue, solo, AND without active clients — otherwise there's
+// a running business to operate.
+export function resolveMode(a: Record<string, string | string[]>): "create" | "operate" {
+  const noRevenue = a.has_revenue === "none";
+  const solo = a.team_size_detect === "solo";
+  const noClients = a.has_clients === "no";
+  return noRevenue && solo && noClients ? "create" : "operate";
+}
+
 // ── Track A — CREATE A BUSINESS ────────────────────────────────────────────────
 
 export const FOUNDER_QUESTIONS: IntakeQuestion[] = [

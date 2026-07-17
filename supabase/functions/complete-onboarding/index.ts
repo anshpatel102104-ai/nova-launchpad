@@ -97,7 +97,10 @@ Deno.serve(async (req) => {
       : "Idea";
   const targetCustomer = str(a.target_customer);
   const goal = str(a.goal) || str(a.scale_goal);
-  const revenue = str(a.revenue) || str(a.revenue_band);
+  // Detection answers (has_revenue / team_size_detect) arrive merged into
+  // `answers` and act as fallbacks so BOTH tracks populate stage signals.
+  const revenue = str(a.revenue) || str(a.revenue_band) || str(a.has_revenue);
+  const teamSize = str(a.team_size) || str(a.team_size_detect);
   const challenge = str(a.challenge) || strArr(a.bottlenecks)[0] || "";
   const industry = str(a.industry);
   const niche = str(a.niche) || targetCustomer;
@@ -201,7 +204,7 @@ Deno.serve(async (req) => {
         stage,
         lane,
         revenue_band: revenue || null,
-        team_size: str(a.team_size) || null,
+        team_size: teamSize || null,
       },
       model: {
         monetization: monetization || null,
