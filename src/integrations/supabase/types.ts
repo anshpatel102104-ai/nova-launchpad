@@ -2890,6 +2890,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      nova_events: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          organization_id: string;
+          payload: Json;
+          source: string;
+          subject_id: string | null;
+          subject_type: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          organization_id: string;
+          payload?: Json;
+          source: string;
+          subject_id?: string | null;
+          subject_type?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          organization_id?: string;
+          payload?: Json;
+          source?: string;
+          subject_id?: string | null;
+          subject_type?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "nova_events_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       observed_metrics: {
         Row: {
           expected_outcome_id: string | null;
