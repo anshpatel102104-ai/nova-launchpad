@@ -132,6 +132,29 @@ export function deriveAreaStatuses({
   });
 }
 
+/**
+ * Adapter: build schematic input straight from the Business Graph — the
+ * read model Mission Control already loads. No extra queries; the sealed
+ * annotation references the sealing tool key (per-run ids aren't in the
+ * graph's signals).
+ */
+export function schematicInputFromGraph(graph: {
+  signals: { succeededToolKeys: string[]; leadCount: number };
+  recommendations: Array<{ title: string; to: string }>;
+}): SchematicInput {
+  const rec = graph.recommendations[0];
+  const slugMatch = rec?.to.match(/^\/app\/launchpad\/([^/?]+)/);
+  return {
+    toolRuns: graph.signals.succeededToolKeys.map((k) => ({
+      id: k,
+      tool_key: k,
+      status: "succeeded",
+    })),
+    leadsCount: graph.signals.leadCount,
+    nextMove: rec && slugMatch ? { slug: slugMatch[1], reason: rec.title } : null,
+  };
+}
+
 /* ─── Geometry ───────────────────────────────────────────────── */
 
 const BLOCKS: Record<string, { x: number; y: number; w: number; h: number }> = {
