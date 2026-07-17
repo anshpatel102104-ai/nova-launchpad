@@ -87,6 +87,10 @@ export interface BusinessGraph {
     missionProgress: number; // 0–1
     /** tool_keys with at least one succeeded run */
     succeededToolKeys: string[];
+    /** A "track.graduated" nova_event fired in the last 14 days */
+    recentlyGraduated: boolean;
+    /** Days since the most recent "step.completed" nova_event, or null if none yet */
+    daysSinceLastStepCompleted: number | null;
   };
 }
 
@@ -117,6 +121,24 @@ export function useBusinessGraph(): BusinessGraph {
       return (data ?? []) as Array<{ id: string; enabled: boolean }>;
     },
     enabled: !!userId,
+    staleTime: 60_000,
+  });
+
+  // Recent nova_events (last 14 days), scoped to just what the graduation and
+  // resume-momentum signals need — event_type + created_at, newest first.
+  const eventsQ = useQuery({
+    queryKey: ["business-graph-nova-events", orgId],
+    queryFn: async () => {
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString();
+      const { data } = await db
+        .from("nova_events")
+        .select("event_type, created_at")
+        .eq("organization_id", orgId)
+        .gte("created_at", fourteenDaysAgo)
+        .order("created_at", { ascending: false });
+      return (data ?? []) as Array<{ event_type: string; created_at: string }>;
+    },
+    enabled: !!orgId,
     staleTime: 60_000,
   });
 
@@ -156,6 +178,16 @@ export function useBusinessGraph(): BusinessGraph {
     (s) => s.status === "completed" || s.status === "skipped",
   ).length;
 
+  // nova_events-derived signals (events are ordered newest-first from the query).
+  const novaEvents = eventsQ.data ?? [];
+  const recentlyGraduated = novaEvents.some((e) => e.event_type === "track.graduated");
+  const lastStepCompleted = novaEvents.find((e) => e.event_type === "step.completed");
+  // null (not 0) when a step has never been completed — a brand-new org is not
+  // "stalled", so it shouldn't get a re-engagement nudge.
+  const daysSinceLastStepCompleted = lastStepCompleted
+    ? Math.floor((Date.now() - new Date(lastStepCompleted.created_at).getTime()) / 86400000)
+    : null;
+
   const signals = {
     toolRunCount: runs.filter((r) => r.status === "succeeded").length,
     leadCount: leads.length,
@@ -167,6 +199,8 @@ export function useBusinessGraph(): BusinessGraph {
     missionActive: !!mission?.mission,
     missionProgress: missionSteps.length > 0 ? missionDone / missionSteps.length : 0,
     succeededToolKeys: [...succeededKeys].filter(Boolean),
+    recentlyGraduated,
+    daysSinceLastStepCompleted,
   };
 
   /* ── Key metrics: only the 3 numbers that matter for this mode ── */
@@ -308,6 +342,15 @@ export function useBusinessGraph(): BusinessGraph {
   /* ── Recommendations: the next best moves, ranked ── */
   const recommendations: Recommendation[] = [];
 
+  if (signals.recentlyGraduated) {
+    recommendations.push({
+      id: "explore-operator-tools",
+      title: "Your business has grown — explore Operator tools",
+      impact: "Nova unlocked pipeline and team tools now that you have real clients",
+      estimatedMinutes: 5,
+      to: "/app/nova/crm",
+    });
+  }
   if (signals.missionActive && signals.missionProgress < 1) {
     recommendations.push({
       id: "continue-mission",
@@ -342,6 +385,19 @@ export function useBusinessGraph(): BusinessGraph {
       impact: "Stop doing by hand what Nova can run for you",
       estimatedMinutes: 15,
       to: "/app/automations",
+    });
+  }
+  if (
+    signals.missionActive &&
+    signals.daysSinceLastStepCompleted !== null &&
+    signals.daysSinceLastStepCompleted >= 3
+  ) {
+    recommendations.push({
+      id: "resume-momentum",
+      title: `Pick up where you left off: ${mission?.mission?.title ?? "your mission"}`,
+      impact: "You're partway there — finishing beats starting something new",
+      estimatedMinutes: 15,
+      to: "/app/mission-control",
     });
   }
   if (recommendations.length === 0) {
