@@ -697,6 +697,60 @@ export default {
       );
     }
 
+    // ===================================================================
+    // PHASE 4 — Events
+    // ===================================================================
+
+    // GET /events/recent?limit=20&source=mission&type=step.completed
+    if (path === "/events/recent" && method === "GET") {
+      const auth = await validateJWT(request, env);
+      if (!auth) return json({ error: "Unauthorized" }, 401, origin);
+
+      const orgRow = await sbGet<{ organization_id: string }[]>(
+        `${env.SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${auth.userId}&select=organization_id&limit=1`,
+        env,
+      );
+      const orgId = orgRow?.[0]?.organization_id;
+      if (!orgId) return json({ error: "No organization found for user" }, 404, origin);
+
+      const limit = Math.min(Number(searchParams.get("limit")) || 20, 100);
+      const source = searchParams.get("source");
+      const eventType = searchParams.get("type");
+
+      let qs = `organization_id=eq.${orgId}&order=created_at.desc&limit=${limit}`;
+      if (source) qs += `&source=eq.${source}`;
+      if (eventType) qs += `&event_type=eq.${eventType}`;
+
+      const data = await sbGet<unknown[]>(`${env.SUPABASE_URL}/rest/v1/nova_events?${qs}`, env);
+      return json(data ?? [], 200, origin);
+    }
+
+    // GET /events/summary — counts per event_type in the last 7 days
+    if (path === "/events/summary" && method === "GET") {
+      const auth = await validateJWT(request, env);
+      if (!auth) return json({ error: "Unauthorized" }, 401, origin);
+
+      const orgRow = await sbGet<{ organization_id: string }[]>(
+        `${env.SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${auth.userId}&select=organization_id&limit=1`,
+        env,
+      );
+      const orgId = orgRow?.[0]?.organization_id;
+      if (!orgId) return json({ error: "No organization found for user" }, 404, origin);
+
+      const sevenDays = new Date(Date.now() - 7 * 86400000).toISOString();
+      const data = await sbGet<{ event_type: string }[]>(
+        `${env.SUPABASE_URL}/rest/v1/nova_events?organization_id=eq.${orgId}&created_at=gte.${sevenDays}&select=event_type`,
+        env,
+      );
+
+      const counts: Record<string, number> = {};
+      for (const row of data ?? []) {
+        counts[row.event_type] = (counts[row.event_type] ?? 0) + 1;
+      }
+
+      return json({ window_days: 7, counts }, 200, origin);
+    }
+
     return json({ error: "Not found" }, 404, origin);
   },
 };
