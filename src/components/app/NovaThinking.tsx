@@ -62,44 +62,51 @@ export function NovaThinking({ streamText, toolName }: Props) {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="font-mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-            {charCount} chars
+            {charCount > 0 ? `${charCount} chars` : `${Math.floor(elapsed)}s`}
           </span>
           <ThinkingDots />
         </div>
       </div>
 
-      {/* Stream display */}
-      <div
-        ref={textRef}
-        className="relative overflow-hidden rounded-xl"
-        style={{
-          maxHeight: "280px",
-          overflowY: "auto",
-          background: "var(--surface-2)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <div className="px-4 py-3">
-          <div
-            className="font-mono text-[10.5px] leading-relaxed break-all whitespace-pre-wrap"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            {streamText || ""}
-            <span
-              className="inline-block w-1.5 h-3 ml-0.5 align-middle"
-              style={{
-                background: "var(--primary)",
-                animation: "caret-blink 0.7s steps(2) infinite",
-              }}
-            />
+      {/* Stream display — only when the run actually streams text.
+          Non-streaming runs (most tools) show the staged status line alone,
+          never an empty panel with a blinking caret. */}
+      {streamText.length > 0 && (
+        <div
+          ref={textRef}
+          className="relative overflow-hidden rounded-xl"
+          style={{
+            maxHeight: "280px",
+            overflowY: "auto",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+          }}
+        >
+          <div className="px-4 py-3">
+            <div
+              className="font-mono text-[10.5px] leading-relaxed break-all whitespace-pre-wrap"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              {streamText}
+              <span
+                className="inline-block w-1.5 h-3 ml-0.5 align-middle"
+                style={{
+                  background: "var(--primary)",
+                  animation: "caret-blink 0.7s steps(2) infinite",
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         @keyframes caret-blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [style*="caret-blink"] { animation: none !important; }
         }
       `}</style>
     </div>
@@ -124,6 +131,9 @@ function ThinkingDots() {
         @keyframes dotBounce {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
           40% { transform: scale(1.2); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [style*="dotBounce"] { animation: none !important; }
         }
       `}</style>
     </span>

@@ -130,6 +130,10 @@ async function fetchWithRetry(
 /**
  * Call a JSON edge function. Resolves with the parsed body; throws EdgeError
  * on HTTP errors, timeouts, network failures, or `{ error }` payloads.
+ *
+ * The body read is bounded too: fetchWithRetry's timer only guards
+ * time-to-headers, so without this a function that sends headers and then
+ * stalls would hang the caller forever (the "Generating with AI…" freeze).
  */
 export async function invokeEdge<T = Record<string, unknown>>(
   fn: string,
@@ -137,7 +141,19 @@ export async function invokeEdge<T = Record<string, unknown>>(
   opts: InvokeEdgeOptions = {},
 ): Promise<T> {
   const resp = await fetchWithRetry(fn, body, opts);
-  const data = (await resp.json().catch(() => null)) as (T & { error?: string }) | null;
+  const bodyTimeoutMs = opts.timeoutMs ?? 60_000;
+  const data = (await Promise.race([
+    resp.json().catch(() => null),
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new EdgeError("The server stopped responding. Please try again.", 0, "BODY_TIMEOUT"),
+          ),
+        bodyTimeoutMs,
+      ),
+    ),
+  ])) as (T & { error?: string }) | null;
   if (data && typeof data === "object" && "error" in data && data.error) {
     throw new EdgeError(String(data.error), resp.status, (data as { code?: string }).code);
   }
