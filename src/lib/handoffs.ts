@@ -48,7 +48,11 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
   ],
   offer: [
     { to: "/app/launchpad/pricing", toolKey: "pricing", label: "Price the offer" },
-    { to: "/app/launchpad/icp", toolKey: "icp", label: "Define your ICP" },
+    {
+      to: "/app/launchpad/persona-builder",
+      toolKey: "persona-builder",
+      label: "Define your ICP",
+    },
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
     { to: "/app/launchpad/pitch-generator", toolKey: "pitch-generator", label: "Generate pitch" },
   ],
@@ -96,9 +100,8 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
     { to: "/app/launchpad/blog", toolKey: "blog", label: "Write full blog post" },
     { to: "/app/launchpad/ad-creative", toolKey: "ad-creative", label: "Create ad creative" },
   ],
-  "email-sequence": [
-    { to: "/app/launchpad/sales-script", toolKey: "sales-script", label: "Generate sales script" },
-  ],
+  // email-sequence's only chain target (sales-script) has no server
+  // implementation yet — no chain is better than a chain into a wall.
   "sales-script": [
     {
       to: "/app/launchpad/email-sequence",

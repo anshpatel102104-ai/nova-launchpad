@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRenderer";
 import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HANDOFFS } from "@/lib/handoffs";
 import { NextToolPrompt } from "@/components/launchpad/NextToolPrompt";
@@ -1287,6 +1288,7 @@ function ToolPage() {
   const qc = useQueryClient();
 
   const [generating, setGenerating] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
   const [streamText, setStreamText] = useState("");
   const [output, setOutput] = useState<Record<string, unknown> | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
@@ -1351,6 +1353,7 @@ function ToolPage() {
   useEffect(() => {
     setOutput(null);
     setRunId(null);
+    setRunError(null);
     setFeedback(null);
     setMomentum(null);
     setNextPromptDismissed(false);
@@ -1457,6 +1460,9 @@ function ToolPage() {
   const setField = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
 
   const handleGenerate = async () => {
+    // Double-submit guard — the button is disabled while generating, but a
+    // second entry point (retry, keyboard) must never start a parallel run.
+    if (generating) return;
     if (blockIfGuest("Sign up to run AI tools and unlock real outputs.")) return;
     if (!effectiveWired) {
       toast.error("This tool is launching soon.");
@@ -1475,6 +1481,7 @@ function ToolPage() {
       return;
     }
     setGenerating(true);
+    setRunError(null);
     setStreamText("");
     setOutput(null);
     setRunId(null);
@@ -1482,8 +1489,14 @@ function ToolPage() {
     setMomentum(null);
     setNextPromptDismissed(false);
     setLearnedFacts([]);
+    // Run name default — matches the zero-retype philosophy: never a silent
+    // requirement, always a sensible derived value the user can rename later.
+    const effectiveTitle =
+      title.trim() ||
+      `${tool.name} — ${workspaceProfile.business_name || new Date().toLocaleDateString()}`;
+    if (!title.trim()) setTitle(effectiveTitle);
     try {
-      const payload = buildPayload(fields, title);
+      const payload = buildPayload(fields, effectiveTitle);
       const result = await runTool(
         effectiveToolKey,
         payload,
@@ -1531,7 +1544,9 @@ function ToolPage() {
         qc.invalidateQueries({ queryKey: ["usage", currentOrgId] });
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Generation failed");
+      const msg = e instanceof Error ? e.message : "Generation failed";
+      setRunError(msg);
+      toast.error(msg);
     } finally {
       setGenerating(false);
     }
@@ -1738,11 +1753,6 @@ function ToolPage() {
                   >
                     Set up profile →
                   </button>
-                )}
-                {savedLabel && (
-                  <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>
-                    {savedLabel}
-                  </span>
                 )}
               </div>
             </div>
@@ -2024,10 +2034,6 @@ function ToolPage() {
                 )}
               </button>
 
-              {savedLabel && !generating && !output && (
-                <p className="text-center text-xs text-muted-foreground">{savedLabel}</p>
-              )}
-
               {isFreeStarter && isIdeaValidator && (
                 <p
                   className="text-center text-[11.5px]"
@@ -2121,6 +2127,7 @@ function ToolPage() {
                         const out = (r.output ?? null) as Record<string, unknown> | null;
                         setOutput(out);
                         setRunId(r.id);
+                        setRunError(null);
                         // Viewing a past run — its momentum receipt is history, not news.
                         setMomentum(null);
                         setNextPromptDismissed(false);
@@ -2189,7 +2196,24 @@ function ToolPage() {
             </div>
 
             <div className="px-5 pb-5 pt-4">
-              {!output && !generating && (
+              {/* Failed run: a real inline error with retry — not just a toast
+                  that disappears while the panel sits empty. */}
+              {!output && !generating && runError && (
+                <ErrorState
+                  variant={
+                    /timed out|stopped responding|connection/i.test(runError)
+                      ? "network"
+                      : "generic"
+                  }
+                  title="This run didn't finish"
+                  description={runError}
+                  onRetry={handleGenerate}
+                  retryLabel="Run again"
+                  compact
+                />
+              )}
+
+              {!output && !generating && !runError && (
                 <EmptyState
                   variant="inline"
                   icon={FileText}

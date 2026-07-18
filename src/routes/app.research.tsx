@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { blockIfGuest } from "@/lib/guest";
 import { toast } from "sonner";
@@ -445,8 +446,12 @@ function ResearchPage() {
   const researchMutation = useMutation({
     mutationFn: async (f: ResearchForm) => {
       const prompt = buildResearchPrompt(f);
-      const { data, error } = await supabase.functions.invoke("nova-chat", {
-        body: {
+      // invokeEdge (not raw functions.invoke): bounded timeout + typed errors,
+      // same lifecycle guarantees as every Launchpad tool run — the raw
+      // invoke had no timeout, so a stalled call spun "Researching…" forever.
+      const data = await invokeEdge<{ content?: string; message?: string }>(
+        "nova-chat",
+        {
           messages: [{ role: "user", content: prompt }],
           system:
             "You are a senior business strategist. Return only valid JSON, no commentary, no code blocks.",
@@ -454,8 +459,8 @@ function ResearchPage() {
           model: "claude-sonnet-4-6",
           maxTokens: 3000,
         },
-      });
-      if (error) throw error;
+        { timeoutMs: 120_000 },
+      );
       const raw: string = data?.content ?? data?.message ?? "";
       const cleaned = raw
         .replace(/```json\n?/g, "")
