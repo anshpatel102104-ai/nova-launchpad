@@ -2034,7 +2034,6 @@ function ToolPage() {
                 )}
               </button>
 
-
               {isFreeStarter && isIdeaValidator && (
                 <p
                   className="text-center text-[11.5px]"
