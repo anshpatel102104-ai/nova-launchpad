@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Zap } from "lucide-react";
 
-const THINKING_PHRASES = [
-  "Nova is analyzing your context…",
-  "Building your strategy…",
-  "Synthesizing market intelligence…",
-  "Crafting your output…",
-  "Running competitive analysis…",
-  "Structuring insights…",
-  "Consulting the knowledge base…",
-  "Generating your asset…",
+// Staged, literal status copy — advances with elapsed time instead of
+// cycling. Boring on purpose: it should read like a status line, not sales
+// copy. The last stage holds until the run finishes.
+const RUN_STAGES: Array<{ afterSeconds: number; label: string }> = [
+  { afterSeconds: 0, label: "Reading your business context…" },
+  { afterSeconds: 3, label: "Working through your inputs…" },
+  { afterSeconds: 8, label: "Writing the result…" },
+  { afterSeconds: 20, label: "Still working — long runs can take up to a minute…" },
 ];
 
 type Props = {
@@ -18,16 +17,19 @@ type Props = {
 };
 
 export function NovaThinking({ streamText, toolName }: Props) {
-  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const textRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const started = Date.now();
     const interval = setInterval(() => {
-      setPhraseIdx((i) => (i + 1) % THINKING_PHRASES.length);
-    }, 2800);
+      setElapsed((Date.now() - started) / 1000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const stage = [...RUN_STAGES].reverse().find((s) => elapsed >= s.afterSeconds) ?? RUN_STAGES[0];
 
   useEffect(() => {
     setCharCount(streamText.length);
@@ -53,9 +55,9 @@ export function NovaThinking({ streamText, toolName }: Props) {
           <div
             className="text-[11.5px] transition-all duration-500"
             style={{ color: "var(--muted-foreground)" }}
-            key={phraseIdx}
+            key={stage.label}
           >
-            {THINKING_PHRASES[phraseIdx]}
+            {stage.label}
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">

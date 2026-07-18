@@ -1,11 +1,30 @@
-// Cross-tool handoff config — purely client-side query-string prefill.
-// No backend behavior changes; downstream tool reads ?context= / ?title= from URL.
+// Cross-tool handoff config — the tool relationship map.
+//
+// EDITING GUIDE (non-engineers welcome):
+//   • Keys are the tool's URL slug (the part after /app/launchpad/).
+//   • THE FIRST ENTRY in each list is the PRIMARY "Next:" suggestion shown
+//     after a run finishes (NextToolPrompt). Order the list by how often
+//     founders genuinely need that next step — most common first.
+//   • Leave a tool out entirely rather than guessing a chain for it.
+//
+// Purely client-side query-string prefill — no backend behavior changes; the
+// downstream tool reads ?context= / ?title= / ?fromRun= from the URL, and
+// ?fromRun= makes the server inject the prior run's output into the AI call.
 
 export const HANDOFFS: Record<string, { to: string; toolKey: string; label: string }[]> = {
   "idea-validator": [
+    { to: "/app/launchpad/offer", toolKey: "offer", label: "Build your offer" },
     { to: "/app/launchpad/pitch-generator", toolKey: "pitch-generator", label: "Generate pitch" },
     { to: "/app/launchpad/gtm-strategy", toolKey: "gtm-strategy", label: "Build GTM" },
     { to: "/app/launchpad/funding-score", toolKey: "funding-score", label: "Score funding" },
+  ],
+  pricing: [
+    {
+      to: "/app/launchpad/first-10-customers",
+      toolKey: "first-10-customers",
+      label: "Land first customers",
+    },
+    { to: "/app/launchpad/gtm-strategy", toolKey: "gtm-strategy", label: "Build GTM" },
   ],
   "pitch-generator": [
     {
@@ -28,6 +47,8 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
   ],
   offer: [
+    { to: "/app/launchpad/pricing", toolKey: "pricing", label: "Price the offer" },
+    { to: "/app/launchpad/icp", toolKey: "icp", label: "Define your ICP" },
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
     { to: "/app/launchpad/pitch-generator", toolKey: "pitch-generator", label: "Generate pitch" },
   ],
