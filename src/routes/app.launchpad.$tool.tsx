@@ -2124,7 +2124,6 @@ function ToolPage() {
                         // Viewing a past run — its momentum receipt is history, not news.
                         setMomentum(null);
                         setNextPromptDismissed(false);
-    setNextPromptDismissed(false);
                         setLearnedFacts([]);
                         const fb = (r as Record<string, unknown>).feedback as string | undefined;
                         setFeedback(fb === "up" ? "up" : fb === "down" ? "down" : null);
