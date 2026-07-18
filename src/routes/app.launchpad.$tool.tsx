@@ -30,6 +30,7 @@ import { OutputBody, OutputHeader, copyText } from "@/components/app/OutputRende
 import { EmptyState } from "@/components/app/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HANDOFFS } from "@/lib/handoffs";
+import { NextToolPrompt } from "@/components/launchpad/NextToolPrompt";
 import { loadDraft, clearDraft, useDraftAutosave, formatSavedAgo } from "@/lib/draftStore";
 import { PaywallModal } from "@/components/app/PaywallModal";
 import { runTool } from "@/lib/runTool";
@@ -1291,6 +1292,7 @@ function ToolPage() {
   const [runId, setRunId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [momentum, setMomentum] = useState<RunMomentum | null>(null);
+  const [nextPromptDismissed, setNextPromptDismissed] = useState(false);
   const [learnedFacts, setLearnedFacts] = useState<LearnedFact[]>([]);
   const [title, setTitle] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
@@ -1351,6 +1353,7 @@ function ToolPage() {
     setRunId(null);
     setFeedback(null);
     setMomentum(null);
+    setNextPromptDismissed(false);
     setLearnedFacts([]);
     setDraftRestored(false);
 
@@ -1407,7 +1410,7 @@ function ToolPage() {
   const contextUsed: string[] = Array.isArray(output?.context_used)
     ? (output!.context_used as unknown[]).filter((x): x is string => typeof x === "string")
     : [];
-  const nextActions: NextAction[] = Array.isArray(output?.recommended_next_actions)
+  const allNextActions: NextAction[] = Array.isArray(output?.recommended_next_actions)
     ? (output!.recommended_next_actions as NextAction[]).filter(
         (a) => a && typeof a.label === "string" && typeof a.reason === "string",
       )
@@ -1424,6 +1427,15 @@ function ToolPage() {
     for (const t of launchpadCatalog) map.set(t.toolKey, t.key);
     return map;
   }, []);
+
+  // The primary chained suggestion (NextToolPrompt) owns the top spot — drop
+  // any dynamic action that duplicates it so there's one clear next move.
+  const primaryNextToolKey = handoffs[0]?.toolKey;
+  const nextActions = allNextActions.filter((a) => {
+    if (!a.target || !primaryNextToolKey) return true;
+    const slug = slugByToolKey.get(a.target) ?? a.target;
+    return slug !== primaryNextToolKey;
+  });
 
   const ideaValidatorRuns = useMemo(
     () =>
@@ -1468,6 +1480,7 @@ function ToolPage() {
     setRunId(null);
     setFeedback(null);
     setMomentum(null);
+    setNextPromptDismissed(false);
     setLearnedFacts([]);
     try {
       const payload = buildPayload(fields, title);
@@ -1950,6 +1963,7 @@ function ToolPage() {
                 revision={
                   typeof businessCtxQ.data?.version === "number" ? businessCtxQ.data.version : null
                 }
+                carryNote={search.fromRun ? "output from your last run" : undefined}
               />
 
               {/* Clear + char count row */}
@@ -2109,6 +2123,7 @@ function ToolPage() {
                         setRunId(r.id);
                         // Viewing a past run — its momentum receipt is history, not news.
                         setMomentum(null);
+                        setNextPromptDismissed(false);
                         setLearnedFacts([]);
                         const fb = (r as Record<string, unknown>).feedback as string | undefined;
                         setFeedback(fb === "up" ? "up" : fb === "down" ? "down" : null);
@@ -2293,60 +2308,16 @@ function ToolPage() {
               )}
             </div>
 
-            {output && handoffs.length > 0 && (
-              <div
-                className="px-5 py-4"
-                style={{
-                  borderTop: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
-                }}
-              >
-                <div
-                  className="text-[10.5px] font-semibold uppercase tracking-[0.12em]"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  Continue with
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {handoffs.map((h) => (
-                    <Link
-                      key={h.to}
-                      to={h.to}
-                      search={
-                        h.to.startsWith("/app/launchpad/")
-                          ? ({
-                              context: primaryFieldValue,
-                              title,
-                              fromRun: runId ?? undefined,
-                            } as never)
-                          : undefined
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-medium transition"
-                      style={{
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        opacity: 0.85,
-                      }}
-                      onMouseEnter={(e: React.MouseEvent) => {
-                        (e.currentTarget as HTMLElement).style.borderColor =
-                          "color-mix(in oklab, var(--primary) 40%, transparent)";
-                        (e.currentTarget as HTMLElement).style.background =
-                          "color-mix(in oklab, var(--primary) 8%, var(--surface-2))";
-                        (e.currentTarget as HTMLElement).style.color = "var(--primary)";
-                        (e.currentTarget as HTMLElement).style.opacity = "1";
-                      }}
-                      onMouseLeave={(e: React.MouseEvent) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                        (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                        (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
-                        (e.currentTarget as HTMLElement).style.opacity = "0.85";
-                      }}
-                    >
-                      {h.label} <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  ))}
-                </div>
-              </div>
+            {output && !nextPromptDismissed && (
+              <NextToolPrompt
+                toolKey={tool.key}
+                runId={runId}
+                runTitle={title}
+                contextValue={primaryFieldValue}
+                nextActions={allNextActions}
+                slugByToolKey={slugByToolKey}
+                onDismiss={() => setNextPromptDismissed(true)}
+              />
             )}
           </div>
         </div>

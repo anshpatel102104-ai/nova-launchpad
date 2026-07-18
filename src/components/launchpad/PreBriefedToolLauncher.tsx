@@ -35,6 +35,13 @@ interface PreBriefedToolLauncherProps {
   setField: (key: string, value: string) => void;
   /** business_context.version — null when no context row exists yet */
   revision: number | null;
+  /**
+   * Optional extra brief line shown in the panel header — e.g. when the
+   * launch was chained from a finished run ("+ output from your Idea
+   * Validation run"). Purely informational; the server-side chaining is
+   * driven by ?fromRun=, not this label.
+   */
+  carryNote?: string;
 }
 
 export function briefedButtonLabel(
@@ -103,6 +110,7 @@ export function PreBriefedToolLauncher({
   fields,
   setField,
   revision,
+  carryNote,
 }: PreBriefedToolLauncherProps) {
   const [editing, setEditing] = useState<Set<string>>(new Set());
 
@@ -131,6 +139,11 @@ export function PreBriefedToolLauncher({
               {briefed.length === 1 ? "" : "s"} briefed
             </span>
           </div>
+          {carryNote && (
+            <div className="border-b border-dashed border-blueprint-signal/50 px-4 py-1.5 font-bp-mono text-[9.5px] uppercase tracking-[0.1em] text-blueprint-signal">
+              + {carryNote}
+            </div>
+          )}
           <ul className="divide-y divide-line/60">
             {briefed.map((def) => {
               const isEditing = editing.has(def.key);
