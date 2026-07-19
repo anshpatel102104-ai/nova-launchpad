@@ -97,3 +97,10 @@ export function mergeRecords(
     loser_id: loserId,
   });
 }
+
+/** Refresh Mo Latif's stalled-deal + time-in-stage signals for the org. */
+export function refreshPipelineInsights(orgId: string) {
+  return invokeEdge<{ ok: boolean; insights_written: number }>("crm-insights", {
+    org_id: orgId,
+  });
+}
