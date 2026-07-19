@@ -1,8 +1,12 @@
 // crm-action — executes Nova AI CRM commands directly (stage updates, note
-// logging, task creation, contact creation). The caller's org membership is
-// verified, then writes happen with the service-role client so they succeed
-// across CRM tables. Self-contained single file.
+// logging, task creation, and create-or-match of contacts, companies and leads).
+// create_lead wires the deal to a deduped contact + company and logs a 'created'
+// activity, so the CRM graph stays coherent from a single entry point. The
+// caller's org membership is verified, then writes happen with the service-role
+// client so they succeed across CRM tables. Object resolution lives in the
+// shared _shared/crmObjects.ts helper. Self-contained otherwise.
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
+import { resolveCompany, resolveContact, logLeadActivity } from "../_shared/crmObjects.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,14 +48,17 @@ async function updateStage(
     .select("id, name, stage")
     .maybeSingle();
   if (error || !lead) return { ok: false, error: error?.message ?? "Lead not found" };
-  await admin.from("crm_activities").insert({
-    organization_id: orgId,
-    deal_id: leadId,
-    user_id: userId,
-    type: "stage_change",
-    content: `Nova moved this lead to ${stage}`,
-    metadata: { source: "crm_action" },
-  });
+  await logLeadActivity(
+    admin,
+    orgId,
+    userId,
+    leadId,
+    "stage_change",
+    `Nova moved this lead to ${stage}`,
+    {
+      source: "crm_action",
+    },
+  );
   return { ok: true, result: lead };
 }
 
@@ -134,24 +141,142 @@ async function createContact(
   if (!firstName && !lastName && !email) {
     return { ok: false, error: "Provide at least a name or email" };
   }
-  // contacts uses org_id (not organization_id) and carries user_id.
-  const { data, error } = await admin
-    .from("contacts")
-    .insert({
-      org_id: orgId,
-      user_id: userId,
-      first_name: firstName || null,
-      last_name: lastName || null,
+  try {
+    // Match-or-create the company first so the contact can be linked to it.
+    let companyId: string | null = null;
+    if (p.company || p.domain || p.website) {
+      const company = await resolveCompany(admin, orgId, {
+        name: p.company,
+        domain: p.domain,
+        website: p.website,
+      });
+      companyId = company?.id ?? null;
+    }
+    // Dedupe by email/name, backfilling the company link on an existing record.
+    const contact = await resolveContact(admin, orgId, userId, {
+      first_name: firstName,
+      last_name: lastName,
       email,
-      phone: p.phone ? String(p.phone) : null,
-      company: p.company ? String(p.company) : null,
-      source: p.source ? String(p.source) : "nova",
-      tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
-    })
-    .select("id, first_name, last_name, email")
-    .single();
-  if (error) return { ok: false, error: error.message };
-  return { ok: true, result: data };
+      phone: p.phone,
+      company: p.company,
+      source: p.source ?? "nova",
+      tags: p.tags,
+      company_id: companyId,
+    });
+    if (!contact) return { ok: false, error: "Provide at least a name or email" };
+    return {
+      ok: true,
+      result: { id: contact.id, created: contact.created, company_id: companyId },
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to create contact" };
+  }
+}
+
+async function createCompany(
+  admin: SupabaseClient,
+  orgId: string,
+  p: Record<string, unknown>,
+): Promise<Result> {
+  const name = String(p.name ?? "").trim();
+  const domain = p.domain ?? p.website;
+  if (!name && !domain) {
+    return { ok: false, error: "Provide a company name or domain" };
+  }
+  try {
+    const company = await resolveCompany(admin, orgId, {
+      name,
+      domain: p.domain,
+      website: p.website,
+      industry: p.industry,
+      size: p.size,
+      location: p.location,
+    });
+    if (!company) return { ok: false, error: "Provide a company name or domain" };
+    return { ok: true, result: { id: company.id, name: company.name, created: company.created } };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to create company" };
+  }
+}
+
+async function createLead(
+  admin: SupabaseClient,
+  orgId: string,
+  userId: string,
+  p: Record<string, unknown>,
+): Promise<Result> {
+  const name = String(p.name ?? "").trim();
+  if (!name) return { ok: false, error: "Missing lead name" };
+  const stage = VALID_STAGES.has(String(p.stage)) ? String(p.stage) : "New";
+  try {
+    // 1. Match-or-create the company from any account signal on the payload.
+    let companyId: string | null = null;
+    if (p.company || p.domain || p.website) {
+      const company = await resolveCompany(admin, orgId, {
+        name: p.company,
+        domain: p.domain,
+        website: p.website,
+      });
+      companyId = company?.id ?? null;
+    }
+
+    // 2. Match-or-create the contact (person) behind this lead and link company.
+    let contactId: string | null = null;
+    const hasPerson = p.contact_first_name || p.contact_last_name || p.email;
+    if (hasPerson) {
+      const contact = await resolveContact(admin, orgId, userId, {
+        first_name: p.contact_first_name,
+        last_name: p.contact_last_name,
+        email: p.email,
+        phone: p.phone,
+        company: p.company,
+        source: p.source ?? "crm",
+        company_id: companyId,
+      });
+      contactId = contact?.id ?? null;
+    }
+
+    // 3. Insert the lead wired to both objects.
+    const { data: lead, error } = await admin
+      .from("leads")
+      .insert({
+        organization_id: orgId,
+        user_id: userId,
+        name,
+        email: p.email ? String(p.email) : null,
+        phone: p.phone ? String(p.phone) : null,
+        company: p.company ? String(p.company) : null,
+        stage,
+        source: p.source ? String(p.source) : "crm",
+        notes: p.notes ? String(p.notes).slice(0, 2000) : null,
+        value: typeof p.value === "number" ? p.value : null,
+        contact_id: contactId,
+        company_id: companyId,
+        last_activity_at: new Date().toISOString(),
+      })
+      .select("id, name, stage, contact_id, company_id")
+      .single();
+    if (error || !lead) return { ok: false, error: error?.message ?? "Failed to create lead" };
+
+    // 4. Log the create event on the CRM timeline.
+    await logLeadActivity(
+      admin,
+      orgId,
+      userId,
+      lead.id as string,
+      "created",
+      `Deal created: ${name}`,
+      {
+        source: "crm_action",
+        contact_id: contactId,
+        company_id: companyId,
+      },
+    );
+
+    return { ok: true, result: lead };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to create lead" };
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -219,6 +344,12 @@ Deno.serve(async (req: Request) => {
       break;
     case "create_contact":
       res = await createContact(admin, orgId, user.id, payload);
+      break;
+    case "create_company":
+      res = await createCompany(admin, orgId, payload);
+      break;
+    case "create_lead":
+      res = await createLead(admin, orgId, user.id, payload);
       break;
     default:
       return json({ error: `Unknown action: ${action}` }, 400);

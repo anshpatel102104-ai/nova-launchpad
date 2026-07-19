@@ -4,12 +4,14 @@
 // client so every executor can write across tables regardless of caller RLS.
 
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.45.0";
+import { resolveCompany, resolveContact } from "./crmObjects.ts";
 
 export type NovaActionType =
   | "update_lead_stage"
   | "log_crm_note"
   | "create_task"
   | "create_contact"
+  | "create_company"
   | "log_memory"
   | "trigger_n8n_workflow";
 
@@ -34,6 +36,7 @@ export const NOVA_ACTION_TOOL = {
           "log_crm_note",
           "create_task",
           "create_contact",
+          "create_company",
           "log_memory",
           "trigger_n8n_workflow",
         ],
@@ -41,7 +44,7 @@ export const NOVA_ACTION_TOOL = {
       payload: {
         type: "object",
         description:
-          "update_lead_stage: {lead_id, stage}. log_crm_note: {lead_id, note}. create_task: {title, description?, due_date?, priority?(low|medium|high), task_type?(task|call|email|follow_up|meeting), lead_id?, contact_id?}. create_contact: {first_name?, last_name?, email?, phone?, company?, source?, tags?}. log_memory: {category, content}. trigger_n8n_workflow: {integration_key, data}.",
+          "update_lead_stage: {lead_id, stage}. log_crm_note: {lead_id, note}. create_task: {title, description?, due_date?, priority?(low|medium|high), task_type?(task|call|email|follow_up|meeting), lead_id?, contact_id?}. create_contact: {first_name?, last_name?, email?, phone?, company?, domain?, source?, tags?}. create_company: {name?, domain?, website?, industry?, size?, location?}. log_memory: {category, content}. trigger_n8n_workflow: {integration_key, data}.",
       },
       plain_english: {
         type: "string",
@@ -179,26 +182,62 @@ async function executeCreateContact(
   if (!firstName && !lastName && !email) {
     return { ok: false, error: "Provide at least a name or email" };
   }
-  // contacts uses org_id (not organization_id) and user_id is NOT NULL — the
-  // founder who approved the action owns the contact.
-  const { data, error } = await admin
-    .from("contacts")
-    .insert({
-      org_id: orgId,
-      user_id: userId,
-      first_name: firstName || null,
-      last_name: lastName || null,
+  try {
+    // Match-or-create the company so the contact links to a single account.
+    let companyId: string | null = null;
+    if (payload.company || payload.domain || payload.website) {
+      const company = await resolveCompany(admin, orgId, {
+        name: payload.company,
+        domain: payload.domain,
+        website: payload.website,
+      });
+      companyId = company?.id ?? null;
+    }
+    // contacts is user-owned (user_id NOT NULL) — the founder who approved owns
+    // any newly created contact; an existing match is reused (deduped).
+    const contact = await resolveContact(admin, orgId, userId, {
+      first_name: firstName,
+      last_name: lastName,
       email,
-      phone: payload.phone ? String(payload.phone) : null,
-      company: payload.company ? String(payload.company) : null,
-      source: payload.source ? String(payload.source) : "nova",
-      tags: Array.isArray(payload.tags) ? (payload.tags as string[]) : [],
-    })
-    .select("id, first_name, last_name, email")
-    .single();
+      phone: payload.phone,
+      company: payload.company,
+      source: payload.source ?? "nova",
+      tags: payload.tags,
+      company_id: companyId,
+    });
+    if (!contact) return { ok: false, error: "Provide at least a name or email" };
+    return {
+      ok: true,
+      result: { id: contact.id, created: contact.created, company_id: companyId },
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to create contact" };
+  }
+}
 
-  if (error) return { ok: false, error: error.message };
-  return { ok: true, result: data };
+async function executeCreateCompany(
+  admin: SupabaseClient,
+  orgId: string,
+  payload: Record<string, unknown>,
+): Promise<ExecuteResult> {
+  const name = String(payload.name ?? "").trim();
+  if (!name && !payload.domain && !payload.website) {
+    return { ok: false, error: "Provide a company name or domain" };
+  }
+  try {
+    const company = await resolveCompany(admin, orgId, {
+      name,
+      domain: payload.domain,
+      website: payload.website,
+      industry: payload.industry,
+      size: payload.size,
+      location: payload.location,
+    });
+    if (!company) return { ok: false, error: "Provide a company name or domain" };
+    return { ok: true, result: { id: company.id, name: company.name, created: company.created } };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Failed to create company" };
+  }
 }
 
 const VALID_MEMORY_CATEGORIES = new Set([
@@ -288,6 +327,8 @@ export async function executeNovaAction(
       return executeCreateTask(admin, orgId, userId, payload);
     case "create_contact":
       return executeCreateContact(admin, orgId, userId, payload);
+    case "create_company":
+      return executeCreateCompany(admin, orgId, payload);
     case "log_memory":
       return executeLogMemory(admin, orgId, userId, payload);
     case "trigger_n8n_workflow":

@@ -23,6 +23,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEdge } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { formatLabel, verdictCategory, pickScore, type VerdictCategory } from "@/lib/casefile";
 
@@ -327,18 +328,27 @@ function CasefilePage() {
                   <button
                     onClick={async () => {
                       setDealState("creating");
-                      const { error } = await supabase.from("leads").insert({
-                        organization_id: currentOrgId,
-                        name: run.title || `${formatLabel(run.tool_key)} lead`,
-                        stage: "New",
-                        source: "casefile",
-                        notes:
-                          `Created from ${formatLabel(run.tool_key)} (case ${run.id.slice(0, 8)}). ${recommendation}`.slice(
-                            0,
-                            500,
-                          ),
-                      });
-                      setDealState(error ? "idle" : "done");
+                      // create_lead (not a raw insert) so the deal is wired to a
+                      // deduped contact + company and logged on the CRM timeline.
+                      try {
+                        await invokeEdge("crm-action", {
+                          action: "create_lead",
+                          org_id: currentOrgId,
+                          payload: {
+                            name: run.title || `${formatLabel(run.tool_key)} lead`,
+                            stage: "New",
+                            source: "casefile",
+                            notes:
+                              `Created from ${formatLabel(run.tool_key)} (case ${run.id.slice(0, 8)}). ${recommendation}`.slice(
+                                0,
+                                500,
+                              ),
+                          },
+                        });
+                        setDealState("done");
+                      } catch {
+                        setDealState("idle");
+                      }
                     }}
                     disabled={dealState === "creating"}
                     className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--primary-hover] disabled:opacity-50"
