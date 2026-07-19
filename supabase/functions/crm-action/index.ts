@@ -151,6 +151,25 @@ async function createContact(
     .select("id, first_name, last_name, email")
     .single();
   if (error) return { ok: false, error: error.message };
+
+  // Best-effort nova_events ledger write. Mirrors the isolated-exception
+  // discipline of the track_graduation fix (not the looser advance-mission
+  // pattern): the contact insert above has already succeeded, so a ledger
+  // failure must never reach the caller. nova_events uses organization_id as
+  // its column name — pass orgId (the contacts table's org_id quirk stops here).
+  try {
+    await admin.from("nova_events").insert({
+      organization_id: orgId,
+      source: "crm",
+      event_type: "contact.created",
+      subject_type: "contact",
+      subject_id: data.id,
+      payload: { source: p.source ?? "nova" },
+    });
+  } catch {
+    // swallow — the ledger is non-critical; contact creation must be unaffected.
+  }
+
   return { ok: true, result: data };
 }
 
