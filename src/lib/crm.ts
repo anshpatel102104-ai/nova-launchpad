@@ -104,3 +104,14 @@ export function refreshPipelineInsights(orgId: string) {
     org_id: orgId,
   });
 }
+
+/**
+ * Drain due sequence steps for the org now (the cron does this every 15 min;
+ * this lets the UI kick it on demand, e.g. right after enrolling a contact).
+ */
+export function runSequences(orgId: string) {
+  return invokeEdge<{ ok: boolean; processed: number; advanced: number; completed: number }>(
+    "sequence-runner",
+    { org_id: orgId },
+  );
+}

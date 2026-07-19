@@ -112,6 +112,10 @@ verify_jwt = true
 [functions.process-reminders]
 verify_jwt = false
 
+# Sequence cadence worker — cron-invoked (internal) or authed member; self-checks.
+[functions.sequence-runner]
+verify_jwt = false
+
 # Inbound message webhook for the unified inbox — providers can't send a
 # Supabase JWT, so this is keyed by an HMAC-derived org key instead.
 [functions.receive-message]
