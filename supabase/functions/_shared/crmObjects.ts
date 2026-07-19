@@ -90,6 +90,8 @@ export async function resolveCompany(
     .select("id, name")
     .single();
   if (error || !created) throw new Error(error?.message ?? "Failed to create company");
+  // Flag any near-duplicates this new account collides with (best-effort).
+  await scanForDuplicates(admin, orgId, "company", created.id as string);
   return { id: created.id as string, name: created.name as string, created: true };
 }
 
@@ -172,7 +174,153 @@ export async function resolveContact(
     .select("id")
     .single();
   if (error || !created) throw new Error(error?.message ?? "Failed to create contact");
+  // Flag any near-duplicates this new person collides with (best-effort).
+  await scanForDuplicates(admin, orgId, "contact", created.id as string);
   return { id: created.id as string, created: true };
+}
+
+interface DuplicateCandidate {
+  id: string;
+  confidence: number;
+  reason: string;
+}
+
+/**
+ * Insert a duplicate pair into the dedupe queue, ordered deterministically so
+ * the (org, type, unordered-pair) unique index makes re-scanning idempotent.
+ * A unique-violation (pair already queued) is swallowed.
+ */
+async function queueDuplicate(
+  admin: SupabaseClient,
+  orgId: string,
+  entityType: "contact" | "company",
+  idA: string,
+  idB: string,
+  confidence: number,
+  reason: string,
+): Promise<void> {
+  const [a, b] = idA < idB ? [idA, idB] : [idB, idA];
+  const { error } = await admin.from("duplicate_matches").insert({
+    organization_id: orgId,
+    entity_type: entityType,
+    entity_id_a: a,
+    entity_id_b: b,
+    confidence,
+    reason,
+    status: "pending",
+  });
+  // 23505 = unique_violation: the pair is already queued — that's fine.
+  if (error && error.code !== "23505") {
+    // Non-fatal: dedupe is a best-effort background concern.
+    console.error("queueDuplicate failed", error.message);
+  }
+}
+
+/**
+ * Scan an org for likely duplicates of one just-created record and enqueue any
+ * matches into `duplicate_matches`. Best-effort: never throws to the caller.
+ * Contacts key on email (strong) then exact name; companies on normalized
+ * domain (strong) then exact name. Archived/merged records are ignored.
+ */
+export async function scanForDuplicates(
+  admin: SupabaseClient,
+  orgId: string,
+  entityType: "contact" | "company",
+  entityId: string,
+): Promise<void> {
+  try {
+    if (entityType === "contact") {
+      const { data: self } = await admin
+        .from("contacts")
+        .select("id, first_name, last_name, email")
+        .eq("id", entityId)
+        .maybeSingle();
+      if (!self) return;
+      const found = new Map<string, DuplicateCandidate>();
+
+      if (self.email) {
+        const { data } = await admin
+          .from("contacts")
+          .select("id")
+          .eq("org_id", orgId)
+          .neq("id", entityId)
+          .neq("status", "merged")
+          .ilike("email", String(self.email))
+          .limit(25);
+        for (const c of data ?? [])
+          found.set(c.id as string, { id: c.id as string, confidence: 0.95, reason: "same email" });
+      }
+      if (self.first_name && self.last_name) {
+        const { data } = await admin
+          .from("contacts")
+          .select("id")
+          .eq("org_id", orgId)
+          .neq("id", entityId)
+          .neq("status", "merged")
+          .ilike("first_name", String(self.first_name))
+          .ilike("last_name", String(self.last_name))
+          .limit(25);
+        for (const c of data ?? [])
+          if (!found.has(c.id as string))
+            found.set(c.id as string, {
+              id: c.id as string,
+              confidence: 0.75,
+              reason: "same name",
+            });
+      }
+      for (const m of found.values())
+        await queueDuplicate(admin, orgId, "contact", entityId, m.id, m.confidence, m.reason);
+      return;
+    }
+
+    // company
+    const { data: self } = await admin
+      .from("companies")
+      .select("id, name, domain")
+      .eq("id", entityId)
+      .maybeSingle();
+    if (!self) return;
+    const domain = normalizeDomain(self.domain);
+    const found = new Map<string, DuplicateCandidate>();
+
+    if (domain) {
+      const { data } = await admin
+        .from("companies")
+        .select("id, domain")
+        .eq("organization_id", orgId)
+        .neq("id", entityId)
+        .is("merged_into_id", null)
+        .ilike("domain", `%${domain}%`)
+        .limit(25);
+      for (const c of data ?? [])
+        if (normalizeDomain(c.domain) === domain)
+          found.set(c.id as string, {
+            id: c.id as string,
+            confidence: 0.95,
+            reason: "same domain",
+          });
+    }
+    if (self.name) {
+      const { data } = await admin
+        .from("companies")
+        .select("id, name")
+        .eq("organization_id", orgId)
+        .neq("id", entityId)
+        .is("merged_into_id", null)
+        .ilike("name", String(self.name))
+        .limit(25);
+      for (const c of data ?? [])
+        if (
+          !found.has(c.id as string) &&
+          String(c.name).trim().toLowerCase() === String(self.name).trim().toLowerCase()
+        )
+          found.set(c.id as string, { id: c.id as string, confidence: 0.75, reason: "same name" });
+    }
+    for (const m of found.values())
+      await queueDuplicate(admin, orgId, "company", entityId, m.id, m.confidence, m.reason);
+  } catch (e) {
+    console.error("scanForDuplicates failed", e instanceof Error ? e.message : e);
+  }
 }
 
 /**
