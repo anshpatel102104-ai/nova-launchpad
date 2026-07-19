@@ -115,3 +115,15 @@ export function runSequences(orgId: string) {
     { org_id: orgId },
   );
 }
+
+/** Run conversation intelligence on a call that already has a transcript. */
+export function analyzeCall(callId: string) {
+  return invokeEdge<{
+    ok: boolean;
+    objections: number;
+    competitor_mentions: number;
+    next_steps: number;
+    talk_ratio: number | null;
+    sentiment_score: number | null;
+  }>("analyze-call", { call_id: callId });
+}
