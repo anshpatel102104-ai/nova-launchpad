@@ -198,6 +198,26 @@ async function executeCreateContact(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  // Best-effort nova_events ledger write. This is the live create-contact path
+  // (nova-action / nova-chat), so the producer belongs here — crm-action carries
+  // the same insert but nothing invokes it. Isolated in its own try/catch (the
+  // track_graduation fix's discipline): the contact insert above has already
+  // succeeded, so a ledger failure must never reach the caller. nova_events uses
+  // organization_id — pass orgId (the contacts table's org_id quirk stops here).
+  try {
+    await admin.from("nova_events").insert({
+      organization_id: orgId,
+      source: "crm",
+      event_type: "contact.created",
+      subject_type: "contact",
+      subject_id: data.id,
+      payload: { source: payload.source ?? "nova" },
+    });
+  } catch {
+    // swallow — the ledger is non-critical; contact creation must be unaffected.
+  }
+
   return { ok: true, result: data };
 }
 
