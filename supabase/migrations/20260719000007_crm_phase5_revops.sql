@@ -2,6 +2,13 @@
 -- Territories + assignments, per-rep quotas, a derived forecast-category view,
 -- and forecast_snapshots for historical accuracy tracking. Additive/idempotent.
 
+-- Schema-drift guard: leads.user_id is in the base schema's create-table, but
+-- some environments' leads table predates it (create-table-if-not-exists skips
+-- column definitions on an existing table). The deal_forecast + rep_leaderboard
+-- views and the create_lead action all read leads.user_id, so ensure it exists.
+alter table public.leads
+  add column if not exists user_id uuid references auth.users(id) on delete set null;
+
 -- ── territories + assignments ────────────────────────────────────────────────
 create table if not exists public.territories (
   id              uuid primary key default gen_random_uuid(),
