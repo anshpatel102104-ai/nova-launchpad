@@ -4147,6 +4147,7 @@ export type Database = {
           model: string | null;
           organization_id: string;
           output: Json | null;
+          output_shape: string | null;
           provider_name: string | null;
           status: Database["public"]["Enums"]["tool_run_status"];
           surface: Database["public"]["Enums"]["tool_surface"];
@@ -4167,6 +4168,7 @@ export type Database = {
           model?: string | null;
           organization_id: string;
           output?: Json | null;
+          output_shape?: string | null;
           provider_name?: string | null;
           status?: Database["public"]["Enums"]["tool_run_status"];
           surface?: Database["public"]["Enums"]["tool_surface"];
@@ -4187,6 +4189,7 @@ export type Database = {
           model?: string | null;
           organization_id?: string;
           output?: Json | null;
+          output_shape?: string | null;
           provider_name?: string | null;
           status?: Database["public"]["Enums"]["tool_run_status"];
           surface?: Database["public"]["Enums"]["tool_surface"];

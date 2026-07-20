@@ -270,6 +270,64 @@ function withOutputContract(schema: {
   };
 }
 
+/**
+ * Canonical tool_key -> Casefile output_shape mapping. Kept in sync with
+ * public.tool_output_shape() (migration) and deriveOutputShape() in
+ * src/lib/casefile.ts. Returns null for unmapped tools so the frontend can
+ * surface them rather than silently defaulting to a memo.
+ */
+export function toolOutputShape(toolKey: string): string | null {
+  const EXPLICIT: Record<string, string> = {
+    "validate-idea": "score_verdict",
+    "idea-validator": "score_verdict",
+    "kill-my-idea": "score_verdict",
+    "funding-readiness-score": "score_verdict",
+    "funding-readiness": "score_verdict",
+    "score-idea": "score_verdict",
+    validate: "score_verdict",
+    "pricing-strategy": "comparison",
+    "pricing-calculator": "comparison",
+    "competitor-scanner": "comparison",
+    "competitor-analysis": "comparison",
+    compare: "comparison",
+    "business-plan": "report",
+    "generate-gtm-strategy": "report",
+    "gtm-strategy-builder": "report",
+    positioning: "report",
+    research: "report",
+    "market-research": "report",
+    "analyze-website": "report",
+    "generate-offer": "report",
+    "generate-pitch": "report",
+    "investor-emails": "report",
+    decision: "memo",
+    "pricing-memo": "memo",
+    "first-10-customers": "plan_with_steps",
+    "first-10-customers-finder": "plan_with_steps",
+    "generate-followup-sequence": "plan_with_steps",
+    "launch-plan": "plan_with_steps",
+    "90-day-plan": "plan_with_steps",
+    "action-plan": "plan_with_steps",
+    "generate-gtm-plan": "plan_with_steps",
+    "pipeline-snapshot": "pipeline_snapshot",
+    "crm-snapshot": "pipeline_snapshot",
+    forecast: "pipeline_snapshot",
+    "forecast-rollup": "pipeline_snapshot",
+    "mentor-session": "session_summary",
+    "session-summary": "session_summary",
+    "coaching-session": "session_summary",
+  };
+  if (EXPLICIT[toolKey]) return EXPLICIT[toolKey];
+  const k = toolKey.toLowerCase();
+  if (/(valid|readiness|assess)/.test(k)) return "score_verdict";
+  if (/(pric|compar|competitor|versus)/.test(k)) return "comparison";
+  if (/(pipeline|forecast|snapshot)/.test(k)) return "pipeline_snapshot";
+  if (/(mentor|session|coaching)/.test(k)) return "session_summary";
+  if (/(sequence|customers|outreach|roadmap|steps|plan)/.test(k)) return "plan_with_steps";
+  if (/(report|research|analy|strateg|gtm|positioning|pitch|offer)/.test(k)) return "report";
+  return null;
+}
+
 const CONTEXT_CONTRACT_PROMPT = `
 
 ## CONTEXT RULES
@@ -315,6 +373,7 @@ export async function runTool(opts: {
       user_id: ctx.userId,
       surface: (opts as { surface?: string }).surface ?? "launchpad",
       tool_key: opts.toolKey,
+      output_shape: toolOutputShape(opts.toolKey),
       title: opts.assetTitle ? opts.assetTitle(input, {}) : null,
       status: "running",
       input,
