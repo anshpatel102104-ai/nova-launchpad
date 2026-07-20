@@ -116,6 +116,11 @@ export function runSequences(orgId: string) {
   );
 }
 
+/** Snapshot the org's forecast by category and refresh Dhruv's verdict. */
+export function refreshForecast(orgId: string) {
+  return invokeEdge<{ ok: boolean; period: string }>("forecast-rollup", { org_id: orgId });
+}
+
 /** Run conversation intelligence on a call that already has a transcript. */
 export function analyzeCall(callId: string) {
   return invokeEdge<{

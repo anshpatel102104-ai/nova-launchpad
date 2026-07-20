@@ -120,6 +120,10 @@ verify_jwt = false
 [functions.sequence-runner]
 verify_jwt = false
 
+# Forecast rollup — snapshots + Dhruv verdict; cron-invoked (internal) or member.
+[functions.forecast-rollup]
+verify_jwt = false
+
 # Inbound message webhook for the unified inbox — providers can't send a
 # Supabase JWT, so this is keyed by an HMAC-derived org key instead.
 [functions.receive-message]
