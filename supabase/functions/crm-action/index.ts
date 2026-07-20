@@ -164,6 +164,8 @@ async function createContact(
       company_id: companyId,
     });
     if (!contact) return { ok: false, error: "Provide at least a name or email" };
+    // nova_events "contact.created" is emitted by the AFTER INSERT trigger on
+    // public.contacts, which fires for the resolveContact insert path too.
     return {
       ok: true,
       result: { id: contact.id, created: contact.created, company_id: companyId },
