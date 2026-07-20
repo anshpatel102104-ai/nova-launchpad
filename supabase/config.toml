@@ -136,6 +136,10 @@ verify_jwt = false
 [functions.compile-workflow]
 verify_jwt = true
 
+# Next-best-action — unified copilot read across leads/messages/CS/forecast.
+[functions.next-best-action]
+verify_jwt = true
+
 # Inbound message webhook for the unified inbox — providers can't send a
 # Supabase JWT, so this is keyed by an HMAC-derived org key instead.
 [functions.receive-message]

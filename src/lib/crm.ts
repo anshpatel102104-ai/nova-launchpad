@@ -140,6 +140,23 @@ export function compileWorkflow(definitionId: string) {
   });
 }
 
+export type NextBestAction = {
+  kind: string;
+  title: string;
+  detail: string;
+  score: number;
+  entity_type: string;
+  entity_id: string;
+};
+
+/** Unified copilot: ranked next-best actions across the whole CRM. */
+export function nextBestActions(orgId: string, persist = false) {
+  return invokeEdge<{ ok: boolean; actions: NextBestAction[] }>("next-best-action", {
+    org_id: orgId,
+    persist,
+  });
+}
+
 /** Run conversation intelligence on a call that already has a transcript. */
 export function analyzeCall(callId: string) {
   return invokeEdge<{
