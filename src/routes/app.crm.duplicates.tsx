@@ -45,7 +45,10 @@ function DuplicatesPage() {
   async function load() {
     if (!currentOrgId) return;
     setLoading(true);
-    const { data } = await supabase
+    // `supabase as any`: house escape hatch for tables not yet in the generated
+    // types (duplicate_matches ships in this PR's migrations). See queries.ts.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase as any)
       .from("duplicate_matches")
       .select("id, entity_type, entity_id_a, entity_id_b, confidence, reason")
       .eq("organization_id", currentOrgId)
@@ -101,7 +104,8 @@ function DuplicatesPage() {
   async function onDismiss(m: DupMatch) {
     if (!currentOrgId) return;
     setBusy(m.id);
-    await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
       .from("duplicate_matches")
       .update({ status: "dismissed", resolved_at: new Date().toISOString() })
       .eq("id", m.id)
