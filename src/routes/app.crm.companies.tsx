@@ -128,9 +128,12 @@ function CompaniesPage() {
             <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
               Group contacts and deals under the accounts they belong to.
             </p>
+            {/* Secondary weight: the persistent header "Add Company" is this
+                screen's single primary CTA, so this empty-state twin is an
+                outline button (CTA reduction — one primary per screen). */}
             <button
               onClick={() => setShowAdd(true)}
-              className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+              className="rounded-xl border border-[--accent] px-5 py-2.5 text-sm font-semibold text-[--accent] hover:bg-[--accent]/10"
             >
               Add Company
             </button>

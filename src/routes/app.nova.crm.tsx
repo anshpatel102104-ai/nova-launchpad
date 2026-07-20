@@ -3202,10 +3202,12 @@ function EmptyPipeline({ onAdd }: { onAdd: () => void }) {
       <p className="text-[13px] max-w-xs mb-6" style={{ color: "var(--muted-foreground)" }}>
         Add your first deal to start tracking your sales pipeline, close rates, and revenue.
       </p>
+      {/* Outline weight — the persistent header "Add deal" is the pipeline's
+          single primary CTA (CTA reduction: one primary per screen). */}
       <button
         onClick={onAdd}
-        className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-semibold"
-        style={{ background: "var(--primary)", color: "white" }}
+        className="flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-[13px] font-semibold"
+        style={{ borderColor: "var(--primary)", color: "var(--primary)" }}
       >
         <Plus className="h-4 w-4" />
         Add First Deal

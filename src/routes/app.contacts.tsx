@@ -781,11 +781,13 @@ function ContactsPage() {
                             ? "No contacts match your filters"
                             : "No contacts yet"}
                         </p>
+                        {/* Outline weight — the header "Add Contact" is the
+                            screen's single primary CTA (one primary/screen). */}
                         {!search && statusFilter === "all" && minScore === 0 && (
                           <button
                             onClick={() => setShowAddModal(true)}
-                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium"
-                            style={{ background: "var(--primary)", color: "#fff" }}
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium"
+                            style={{ borderColor: "var(--primary)", color: "var(--primary)" }}
                           >
                             <Plus className="h-3.5 w-3.5" /> Add your first contact
                           </button>
