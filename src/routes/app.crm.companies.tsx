@@ -5,8 +5,8 @@
  * with linked contacts and deals (leads). Fills the CRM "Accounts" surface.
  */
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Building2, Trash2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus, Building2, Trash2, GitMerge } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -92,12 +92,20 @@ function CompaniesPage() {
             </h1>
             <p className="mt-1 text-sm text-[--text-secondary]">{companies.length} accounts</p>
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]"
-          >
-            <Plus className="h-4 w-4" /> Add Company
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/app/crm/duplicates"
+              className="flex items-center gap-1.5 rounded-xl border border-[--border] bg-[--surface] px-4 py-2.5 text-sm font-semibold text-[--text-primary] hover:bg-[--surface-2]"
+            >
+              <GitMerge className="h-4 w-4" /> Duplicates
+            </Link>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="flex items-center gap-1.5 rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_var(--accent-glow)] hover:bg-[--accent-hover]"
+            >
+              <Plus className="h-4 w-4" /> Add Company
+            </button>
+          </div>
         </div>
 
         <input
