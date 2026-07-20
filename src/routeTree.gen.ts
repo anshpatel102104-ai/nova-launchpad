@@ -83,6 +83,7 @@ import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
 import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
 import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
 import { Route as AppCrmCompaniesRouteImport } from './routes/app.crm.companies'
+import { Route as AppCrmDuplicatesRouteImport } from './routes/app.crm.duplicates'
 import { Route as AppCrmCampaignsRouteImport } from './routes/app.crm.campaigns'
 import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
 import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
@@ -461,6 +462,11 @@ const AppCrmCompaniesRoute = AppCrmCompaniesRouteImport.update({
   path: '/crm/companies',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCrmDuplicatesRoute = AppCrmDuplicatesRouteImport.update({
+  id: '/crm/duplicates',
+  path: '/crm/duplicates',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmCampaignsRoute = AppCrmCampaignsRouteImport.update({
   id: '/crm/campaigns',
   path: '/crm/campaigns',
@@ -548,6 +554,7 @@ export interface FileRoutesByFullPath {
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -629,6 +636,7 @@ export interface FileRoutesByTo {
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -712,6 +720,7 @@ export interface FileRoutesById {
   '/app/crm/calendar': typeof AppCrmCalendarRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
@@ -796,6 +805,7 @@ export interface FileRouteTypes {
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
+    | '/app/crm/duplicates'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -877,6 +887,7 @@ export interface FileRouteTypes {
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
+    | '/app/crm/duplicates'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -959,6 +970,7 @@ export interface FileRouteTypes {
     | '/app/crm/calendar'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
+    | '/app/crm/duplicates'
     | '/app/crm/conversations'
     | '/app/crm/forms'
     | '/app/crm/tasks'
@@ -1523,6 +1535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmCompaniesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/crm/duplicates': {
+      id: '/app/crm/duplicates'
+      path: '/crm/duplicates'
+      fullPath: '/app/crm/duplicates'
+      preLoaderRoute: typeof AppCrmDuplicatesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm/campaigns': {
       id: '/app/crm/campaigns'
       path: '/crm/campaigns'
@@ -1664,6 +1683,7 @@ interface AppRouteChildren {
   AppCrmCalendarRoute: typeof AppCrmCalendarRoute
   AppCrmCampaignsRoute: typeof AppCrmCampaignsRoute
   AppCrmCompaniesRoute: typeof AppCrmCompaniesRoute
+  AppCrmDuplicatesRoute: typeof AppCrmDuplicatesRoute
   AppCrmConversationsRoute: typeof AppCrmConversationsRoute
   AppCrmFormsRoute: typeof AppCrmFormsRoute
   AppCrmTasksRoute: typeof AppCrmTasksRoute
@@ -1725,6 +1745,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCrmCalendarRoute: AppCrmCalendarRoute,
   AppCrmCampaignsRoute: AppCrmCampaignsRoute,
   AppCrmCompaniesRoute: AppCrmCompaniesRoute,
+  AppCrmDuplicatesRoute: AppCrmDuplicatesRoute,
   AppCrmConversationsRoute: AppCrmConversationsRoute,
   AppCrmFormsRoute: AppCrmFormsRoute,
   AppCrmTasksRoute: AppCrmTasksRoute,

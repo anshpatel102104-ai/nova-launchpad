@@ -75,8 +75,8 @@ function DuplicatesPage() {
             .in("id", [...companyIds])
         : Promise.resolve({ data: [] as CompanyRec[] }),
     ]);
-    setContacts(Object.fromEntries((cData ?? []).map((c) => [c.id, c as ContactRec])));
-    setCompanies(Object.fromEntries((coData ?? []).map((c) => [c.id, c as CompanyRec])));
+    setContacts(Object.fromEntries(((cData ?? []) as ContactRec[]).map((c) => [c.id, c])));
+    setCompanies(Object.fromEntries(((coData ?? []) as CompanyRec[]).map((c) => [c.id, c])));
     setLoading(false);
   }
 
