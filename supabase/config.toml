@@ -132,6 +132,10 @@ verify_jwt = false
 [functions.marketing-attribution]
 verify_jwt = false
 
+# Workflow compiler — lowers a visual graph into an executable workflow.
+[functions.compile-workflow]
+verify_jwt = true
+
 # Inbound message webhook for the unified inbox — providers can't send a
 # Supabase JWT, so this is keyed by an HMAC-derived org key instead.
 [functions.receive-message]

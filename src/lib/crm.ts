@@ -133,6 +133,13 @@ export function refreshAttribution(orgId: string) {
   });
 }
 
+/** Compile a visual workflow_definitions graph into an executable workflow. */
+export function compileWorkflow(definitionId: string) {
+  return invokeEdge<{ ok: boolean; workflow_id: string; steps: number }>("compile-workflow", {
+    definition_id: definitionId,
+  });
+}
+
 /** Run conversation intelligence on a call that already has a transcript. */
 export function analyzeCall(callId: string) {
   return invokeEdge<{
