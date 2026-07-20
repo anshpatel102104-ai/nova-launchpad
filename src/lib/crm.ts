@@ -126,6 +126,13 @@ export function refreshCustomerHealth(orgId: string) {
   return invokeEdge<{ ok: boolean; accounts_scored: number }>("cs-health", { org_id: orgId });
 }
 
+/** Link leads to campaigns by UTM and credit won-deal revenue. */
+export function refreshAttribution(orgId: string) {
+  return invokeEdge<{ ok: boolean; leads_attributed: number }>("marketing-attribution", {
+    org_id: orgId,
+  });
+}
+
 /** Run conversation intelligence on a call that already has a transcript. */
 export function analyzeCall(callId: string) {
   return invokeEdge<{
