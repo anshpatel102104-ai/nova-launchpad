@@ -121,6 +121,11 @@ export function refreshForecast(orgId: string) {
   return invokeEdge<{ ok: boolean; period: string }>("forecast-rollup", { org_id: orgId });
 }
 
+/** Recompute customer health / churn risk for the org's accounts. */
+export function refreshCustomerHealth(orgId: string) {
+  return invokeEdge<{ ok: boolean; accounts_scored: number }>("cs-health", { org_id: orgId });
+}
+
 /** Run conversation intelligence on a call that already has a transcript. */
 export function analyzeCall(callId: string) {
   return invokeEdge<{

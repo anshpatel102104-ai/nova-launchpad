@@ -124,6 +124,10 @@ verify_jwt = false
 [functions.forecast-rollup]
 verify_jwt = false
 
+# Customer health / churn scoring — cron-invoked (internal) or authed member.
+[functions.cs-health]
+verify_jwt = false
+
 # Inbound message webhook for the unified inbox — providers can't send a
 # Supabase JWT, so this is keyed by an HMAC-derived org key instead.
 [functions.receive-message]
