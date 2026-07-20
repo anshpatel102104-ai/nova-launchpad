@@ -178,8 +178,12 @@ begin
   end loop;
 end $$;
 
--- ── workspace_members — multi-workspace-per-org role scoping ─────────────────
-create table if not exists public.workspace_members (
+-- ── workspace_member_roles — multi-workspace-per-org role scoping ────────────
+-- Named workspace_member_roles (not workspace_members) because a compatibility
+-- VIEW named workspace_members already exists in some environments — it derives
+-- membership from organization_members ⋈ workspaces. This is a distinct,
+-- writable table for assigning a user an explicit role within one workspace.
+create table if not exists public.workspace_member_roles (
   id           uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -188,12 +192,12 @@ create table if not exists public.workspace_members (
   created_at   timestamptz not null default now(),
   unique (workspace_id, user_id)
 );
-alter table public.workspace_members enable row level security;
-create index if not exists idx_workspace_members_ws   on public.workspace_members(workspace_id);
-create index if not exists idx_workspace_members_user on public.workspace_members(user_id);
+alter table public.workspace_member_roles enable row level security;
+create index if not exists idx_workspace_member_roles_ws   on public.workspace_member_roles(workspace_id);
+create index if not exists idx_workspace_member_roles_user on public.workspace_member_roles(user_id);
 
-drop policy if exists "workspace_members_org_member" on public.workspace_members;
-create policy "workspace_members_org_member" on public.workspace_members
+drop policy if exists "workspace_member_roles_org_member" on public.workspace_member_roles;
+create policy "workspace_member_roles_org_member" on public.workspace_member_roles
   for all to authenticated
   using (public.is_org_member(organization_id, auth.uid()))
   with check (public.is_org_member(organization_id, auth.uid()));
