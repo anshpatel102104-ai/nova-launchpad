@@ -198,6 +198,9 @@ async function executeCreateContact(
     .single();
 
   if (error) return { ok: false, error: error.message };
+  // nova_events "contact.created" is emitted by the AFTER INSERT trigger on
+  // public.contacts (migration 20260719000001), which covers every insert path
+  // (this one, the People page, its bulk import, and crm-action).
   return { ok: true, result: data };
 }
 

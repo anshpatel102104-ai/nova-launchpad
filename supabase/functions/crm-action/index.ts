@@ -151,6 +151,8 @@ async function createContact(
     .select("id, first_name, last_name, email")
     .single();
   if (error) return { ok: false, error: error.message };
+  // nova_events "contact.created" is emitted by the AFTER INSERT trigger on
+  // public.contacts (migration 20260719000001), which covers every insert path.
   return { ok: true, result: data };
 }
 
