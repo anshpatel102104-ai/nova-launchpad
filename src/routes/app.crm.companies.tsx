@@ -9,6 +9,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Building2, Trash2, GitMerge } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { MomentumRail } from "@/components/nova/MomentumRail";
 
 export const Route = createFileRoute("/app/crm/companies")({ component: CompaniesPage });
 
@@ -289,6 +290,20 @@ function CompanyDrawer({
         </div>
 
         <div className="p-5">
+          {tab === "profile" && (
+            <MomentumRail
+              className="mb-4"
+              loop={{
+                asset: company.industry ? `${company.industry} account` : "Company account",
+                task: contacts.length
+                  ? `${contacts.length} contact${contacts.length > 1 ? "s" : ""} linked`
+                  : undefined,
+                momentum: deals.length
+                  ? `${deals.length} deal${deals.length > 1 ? "s" : ""} in play`
+                  : undefined,
+              }}
+            />
+          )}
           {tab === "profile" && (
             <dl className="space-y-3">
               {[

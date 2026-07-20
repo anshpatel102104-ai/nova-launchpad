@@ -69,6 +69,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { MomentumRail } from "@/components/nova/MomentumRail";
 
 export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
 
@@ -2311,6 +2312,17 @@ function DealDetailPanel({
       <div className="flex-1 overflow-y-auto">
         {tab === "overview" ? (
           <div>
+            {/* Loop context — what led to this deal (collapsed by default) */}
+            <div className="px-5 pt-4">
+              <MomentumRail
+                loop={{
+                  decision: deal.source ? `Sourced via ${deal.source}` : undefined,
+                  asset: deal.company ? `${deal.company} — ${deal.name}` : deal.name,
+                  task: `At ${deal.stage} stage`,
+                  momentum: expected ? `${fmt(expected)} weighted` : undefined,
+                }}
+              />
+            </div>
             {/* Tags */}
             {(deal.tags ?? []).length > 0 && (
               <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
