@@ -10,6 +10,7 @@ import { ArrowRight, Radar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
+import { AiOriginCard } from "@/components/nova/AiOriginCard";
 
 interface BriefingRow {
   briefing_date: string;
@@ -74,30 +75,10 @@ export function DailyBriefingCard() {
         Daily briefing{" "}
         <ClosedLoopChip kind="updated" label={`Nova checked ${dayLabel(b.briefing_date)}`} />
       </div>
-      <div
-        className="rounded-2xl border px-5 py-4"
-        style={{
-          borderColor: "color-mix(in oklab, var(--primary) 30%, var(--border))",
-          background: "color-mix(in oklab, var(--primary) 3%, var(--surface))",
-        }}
-      >
-        <div className="flex items-start gap-3">
-          <Radar className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
-          <div className="min-w-0 flex-1">
-            {counts.length > 0 && (
-              <div className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-                {counts.map((c) => `${c.n} ${c.label}`).join(" · ")}
-              </div>
-            )}
-            {b.top_alert && (
-              <div className="mt-1 text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-                Top alert [{b.top_alert.severity.toUpperCase()}]: {b.top_alert.title}
-              </div>
-            )}
-            <div className="mt-1.5 text-[13px]" style={{ color: "var(--foreground)" }}>
-              <b style={{ fontWeight: 700 }}>Recommended:</b> {b.recommended_action}
-            </div>
-          </div>
+      <AiOriginCard
+        icon={Radar}
+        label="Nova's read"
+        action={
           <Link
             to="/app/monitoring"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-[4px] px-3.5 py-2 text-[12.5px] font-bold text-white"
@@ -105,8 +86,18 @@ export function DailyBriefingCard() {
           >
             Review <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+        }
+      >
+        {counts.length > 0 && <div>{counts.map((c) => `${c.n} ${c.label}`).join(" · ")}</div>}
+        {b.top_alert && (
+          <div className="mt-1 font-bold" style={{ color: "var(--foreground)" }}>
+            Top alert [{b.top_alert.severity.toUpperCase()}]: {b.top_alert.title}
+          </div>
+        )}
+        <div className="mt-1.5" style={{ color: "var(--foreground)" }}>
+          <b style={{ fontWeight: 700 }}>Recommended:</b> {b.recommended_action}
         </div>
-      </div>
+      </AiOriginCard>
     </div>
   );
 }

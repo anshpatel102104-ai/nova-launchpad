@@ -34,6 +34,7 @@ import {
   type CasefileCore as Core,
   type NextAction,
 } from "@/lib/casefile";
+import { AiOriginCard } from "@/components/nova/AiOriginCard";
 
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
@@ -68,6 +69,15 @@ const TONE_CLASSES: Record<VerdictCategory, { badge: string; card: string; text:
 
 function verdictTone(v: string) {
   return TONE_CLASSES[verdictCategory(v)];
+}
+
+/** Secondary "Nova's Take" block — the shared AI-origin grammar. */
+function NovaTake({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <AiOriginCard label="Nova's Take" className={className}>
+      <span className="whitespace-pre-wrap">{text}</span>
+    </AiOriginCard>
+  );
 }
 
 /* ── Shared building blocks ────────────────────────────────────── */
@@ -472,19 +482,7 @@ export function ReportLayout({
           </div>
         </div>
       )}
-      {core.novaTake && !core.fullReport && (
-        <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
-          <div className="mb-1 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-              Nova's Take
-            </span>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
-            {core.novaTake}
-          </p>
-        </div>
-      )}
+      {core.novaTake && !core.fullReport && <NovaTake text={core.novaTake} />}
       <RecommendedMove nextActions={core.nextActions} />
       {extra}
       <MentorBridge />
@@ -525,19 +523,7 @@ export function MemoLayout({
           )}
         </div>
       )}
-      {core.novaTake && (
-        <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
-          <div className="mb-1 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-              Nova's Take
-            </span>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
-            {core.novaTake}
-          </p>
-        </div>
-      )}
+      {core.novaTake && <NovaTake text={core.novaTake} />}
       {core.fullReport && (
         <div className="rounded-2xl border border-[--border] bg-[--surface] p-6 shadow-sm">
           <div className="prose-casefile whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
@@ -750,19 +736,7 @@ export function PlanWithStepsLayout({
   const doneCount = steps.filter((s) => s.done).length;
   return (
     <FounderShell run={run} core={core} header={<CommandHeader run={run} core={core} />}>
-      {core.novaTake && (
-        <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
-          <div className="mb-1 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-              Nova's Take
-            </span>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
-            {core.novaTake}
-          </p>
-        </div>
-      )}
+      {core.novaTake && <NovaTake text={core.novaTake} />}
       {steps.length > 0 ? (
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -853,19 +827,7 @@ export function PipelineSnapshotLayout({ run, core }: { run: CasefileRun; core: 
             })}
           </div>
         </div>
-        {core.novaTake && (
-          <div className="mt-4 rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
-            <div className="mb-1 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-                Nova's Take
-              </span>
-            </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
-              {core.novaTake}
-            </p>
-          </div>
-        )}
+        {core.novaTake && <NovaTake text={core.novaTake} className="mt-4" />}
       </div>
     </div>
   );

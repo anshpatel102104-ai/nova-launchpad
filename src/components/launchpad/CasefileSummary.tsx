@@ -6,8 +6,9 @@
 // Plus the memory strip: what the system has saved, visibly (closed loop).
 
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, CheckCircle2, CircleDashed, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleDashed } from "lucide-react";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
+import { AiOriginCard } from "@/components/nova/AiOriginCard";
 import type { BusinessGraph } from "@/hooks/use-business-graph";
 import type { LaunchpadProgress } from "@/lib/ecosystem";
 
@@ -32,28 +33,8 @@ export function CasefileSummary({
 }) {
   return (
     <div className="space-y-3.5">
-      {/* Nova's take — the verdict block */}
-      <div
-        className="rounded-[6px] border px-5 py-4"
-        style={{
-          borderColor: "var(--primary-border)",
-          background: "color-mix(in oklab, var(--primary) 5%, var(--surface))",
-        }}
-      >
-        <div
-          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.07em]"
-          style={{ color: "var(--primary)" }}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Nova's take
-        </div>
-        <p
-          className="mt-1 text-[14px] font-bold leading-snug"
-          style={{ color: "var(--foreground)" }}
-        >
-          {verdictFor(graph, progress)}
-        </p>
-      </div>
+      {/* Nova's take — the verdict block (shared AI-origin grammar) */}
+      <AiOriginCard label="Nova's take" title={verdictFor(graph, progress)} />
 
       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
         {/* Proven */}
