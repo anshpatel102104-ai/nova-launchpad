@@ -35,6 +35,7 @@ import {
   type NextAction,
 } from "@/lib/casefile";
 import { AiOriginCard } from "@/components/nova/AiOriginCard";
+import { MomentumRail, type MomentumLoop } from "@/components/nova/MomentumRail";
 
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
@@ -368,6 +369,7 @@ function FounderShell({
     <div className="min-h-full bg-[--background] pb-12">
       {header}
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <MomentumRail loop={loopFromRun(run, core)} className="mb-4" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr]">
           <div className={`space-y-4 ${ENTRANCE}`}>{children}</div>
           <CaseRail run={run} core={core} />
@@ -375,6 +377,17 @@ function FounderShell({
       </div>
     </div>
   );
+}
+
+/** Build the loop-context strip from a saved run — the chain that led here. */
+function loopFromRun(run: CasefileRun, core: Core): MomentumLoop {
+  const momentum =
+    (core.verdict && `Verdict: ${core.verdict}`) || core.nextActions[0]?.label || undefined;
+  return {
+    decision: `Chose to run ${formatLabel(run.tool_key)}`,
+    asset: run.title || formatLabel(run.tool_key),
+    momentum,
+  };
 }
 
 /* ── LAYOUT: score_verdict (highest priority) ──────────────────── */

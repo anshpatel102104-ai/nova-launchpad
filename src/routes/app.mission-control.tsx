@@ -24,6 +24,7 @@ import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatu
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
+import { MomentumRail } from "@/components/nova/MomentumRail";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
   BusinessSchematic,
@@ -138,6 +139,20 @@ function HomePage() {
           {blocker ? "1 thing to fix" : "On track"}
         </StatusChip>
       </div>
+
+      {/* ── Momentum loop — what led to this screen (collapsed by default) ── */}
+      <MomentumRail
+        loop={{
+          goal: graph.goal || undefined,
+          decision: `Working the ${progress.current.label} stage`,
+          task: hero?.title || progress.current.headline,
+          asset: graph.signals.hasOffer ? "Offer defined" : undefined,
+          automation: graph.signals.activeAutomationCount
+            ? `${graph.signals.activeAutomationCount} automation${graph.signals.activeAutomationCount > 1 ? "s" : ""} running`
+            : undefined,
+          momentum: recs[0]?.title,
+        }}
+      />
 
       {/* ── Nova handoff — the build is proven, take it live ── */}
       {progress.readyForNova && <NovaHandoffCard graph={graph} />}
