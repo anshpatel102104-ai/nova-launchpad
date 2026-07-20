@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { guestStore, GUEST_CONTACTS } from "@/lib/guest";
 import { computeLeadScore } from "@/lib/lead-scoring";
 import { nudgeAutomationDispatch } from "@/lib/automation-run";
+import { MomentumRail } from "@/components/nova/MomentumRail";
 import { toast } from "sonner";
 import {
   Users,
@@ -1388,6 +1389,15 @@ function ContactDetail({
           {/* ── Overview Tab ── */}
           {activeTab === "overview" && (
             <div className="px-5 py-5 space-y-5">
+              {/* Loop context — what led to this contact (collapsed by default) */}
+              <MomentumRail
+                loop={{
+                  decision: contact.source ? `Came in via ${contact.source}` : undefined,
+                  asset: contact.company ? `Linked to ${contact.company}` : undefined,
+                  task: `Working this contact — ${sc.label}`,
+                  momentum: score != null ? `Lead score ${score}` : undefined,
+                }}
+              />
               {/* Score bar */}
               {score != null && (
                 <div>
