@@ -15,6 +15,8 @@ import {
   Calendar,
   CheckSquare,
   FileText,
+  HeartPulse,
+  PhoneCall,
   type LucideIcon,
 } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
@@ -40,6 +42,8 @@ export const SECTIONS = {
       { to: "/app/contacts", label: "People", icon: Users },
       { to: "/app/crm/companies", label: "Companies", icon: Building2 },
       { to: "/app/nova/crm", label: "Pipeline", icon: Workflow },
+      { to: "/app/crm/accounts", label: "Health", icon: HeartPulse },
+      { to: "/app/crm/calls", label: "Calls", icon: PhoneCall },
       { to: "/app/crm/conversations", label: "Inbox", icon: MessageSquare },
       { to: "/app/crm/calendar", label: "Calendar", icon: Calendar },
       { to: "/app/crm/tasks", label: "Tasks", icon: CheckSquare },

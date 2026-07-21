@@ -81,12 +81,14 @@ import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$to
 import { Route as AppCrmWaitlistRouteImport } from './routes/app.crm.waitlist'
 import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
 import { Route as AppCrmFormsRouteImport } from './routes/app.crm.forms'
+import { Route as AppCrmDuplicatesRouteImport } from './routes/app.crm.duplicates'
 import { Route as AppCrmConversationsRouteImport } from './routes/app.crm.conversations'
 import { Route as AppCrmCompaniesRouteImport } from './routes/app.crm.companies'
-import { Route as AppCrmDuplicatesRouteImport } from './routes/app.crm.duplicates'
 import { Route as AppCrmCampaignsRouteImport } from './routes/app.crm.campaigns'
+import { Route as AppCrmCallsRouteImport } from './routes/app.crm.calls'
 import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
 import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
+import { Route as AppCrmAccountsRouteImport } from './routes/app.crm.accounts'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
 import { Route as AppLaunchpadOutputsIdRouteImport } from './routes/app.launchpad.outputs.$id'
@@ -452,6 +454,11 @@ const AppCrmFormsRoute = AppCrmFormsRouteImport.update({
   path: '/crm/forms',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCrmDuplicatesRoute = AppCrmDuplicatesRouteImport.update({
+  id: '/crm/duplicates',
+  path: '/crm/duplicates',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmConversationsRoute = AppCrmConversationsRouteImport.update({
   id: '/crm/conversations',
   path: '/crm/conversations',
@@ -462,14 +469,14 @@ const AppCrmCompaniesRoute = AppCrmCompaniesRouteImport.update({
   path: '/crm/companies',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCrmDuplicatesRoute = AppCrmDuplicatesRouteImport.update({
-  id: '/crm/duplicates',
-  path: '/crm/duplicates',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppCrmCampaignsRoute = AppCrmCampaignsRouteImport.update({
   id: '/crm/campaigns',
   path: '/crm/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmCallsRoute = AppCrmCallsRouteImport.update({
+  id: '/crm/calls',
+  path: '/crm/calls',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCrmCalendarRoute = AppCrmCalendarRouteImport.update({
@@ -480,6 +487,11 @@ const AppCrmCalendarRoute = AppCrmCalendarRouteImport.update({
 const AppCrmAutomationsRoute = AppCrmAutomationsRouteImport.update({
   id: '/crm/automations',
   path: '/crm/automations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCrmAccountsRoute = AppCrmAccountsRouteImport.update({
+  id: '/crm/accounts',
+  path: '/crm/accounts',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
@@ -550,12 +562,14 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/calls': typeof AppCrmCallsRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
-  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
@@ -632,12 +646,14 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/calls': typeof AppCrmCallsRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
-  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
@@ -716,12 +732,14 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
+  '/app/crm/calls': typeof AppCrmCallsRoute
   '/app/crm/campaigns': typeof AppCrmCampaignsRoute
   '/app/crm/companies': typeof AppCrmCompaniesRoute
-  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/conversations': typeof AppCrmConversationsRoute
+  '/app/crm/duplicates': typeof AppCrmDuplicatesRoute
   '/app/crm/forms': typeof AppCrmFormsRoute
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
@@ -801,12 +819,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
+    | '/app/crm/calls'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
-    | '/app/crm/duplicates'
     | '/app/crm/conversations'
+    | '/app/crm/duplicates'
     | '/app/crm/forms'
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
@@ -883,12 +903,14 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
+    | '/app/crm/calls'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
-    | '/app/crm/duplicates'
     | '/app/crm/conversations'
+    | '/app/crm/duplicates'
     | '/app/crm/forms'
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
@@ -966,12 +988,14 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
+    | '/app/crm/calls'
     | '/app/crm/campaigns'
     | '/app/crm/companies'
-    | '/app/crm/duplicates'
     | '/app/crm/conversations'
+    | '/app/crm/duplicates'
     | '/app/crm/forms'
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
@@ -1521,6 +1545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmFormsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/crm/duplicates': {
+      id: '/app/crm/duplicates'
+      path: '/crm/duplicates'
+      fullPath: '/app/crm/duplicates'
+      preLoaderRoute: typeof AppCrmDuplicatesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm/conversations': {
       id: '/app/crm/conversations'
       path: '/crm/conversations'
@@ -1535,18 +1566,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmCompaniesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/crm/duplicates': {
-      id: '/app/crm/duplicates'
-      path: '/crm/duplicates'
-      fullPath: '/app/crm/duplicates'
-      preLoaderRoute: typeof AppCrmDuplicatesRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/crm/campaigns': {
       id: '/app/crm/campaigns'
       path: '/crm/campaigns'
       fullPath: '/app/crm/campaigns'
       preLoaderRoute: typeof AppCrmCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/calls': {
+      id: '/app/crm/calls'
+      path: '/crm/calls'
+      fullPath: '/app/crm/calls'
+      preLoaderRoute: typeof AppCrmCallsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/crm/calendar': {
@@ -1561,6 +1592,13 @@ declare module '@tanstack/react-router' {
       path: '/crm/automations'
       fullPath: '/app/crm/automations'
       preLoaderRoute: typeof AppCrmAutomationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/crm/accounts': {
+      id: '/app/crm/accounts'
+      path: '/crm/accounts'
+      fullPath: '/app/crm/accounts'
+      preLoaderRoute: typeof AppCrmAccountsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/billing/return': {
@@ -1679,12 +1717,14 @@ interface AppRouteChildren {
   AppTutorialsRoute: typeof AppTutorialsRoute
   AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCrmAccountsRoute: typeof AppCrmAccountsRoute
   AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
   AppCrmCalendarRoute: typeof AppCrmCalendarRoute
+  AppCrmCallsRoute: typeof AppCrmCallsRoute
   AppCrmCampaignsRoute: typeof AppCrmCampaignsRoute
   AppCrmCompaniesRoute: typeof AppCrmCompaniesRoute
-  AppCrmDuplicatesRoute: typeof AppCrmDuplicatesRoute
   AppCrmConversationsRoute: typeof AppCrmConversationsRoute
+  AppCrmDuplicatesRoute: typeof AppCrmDuplicatesRoute
   AppCrmFormsRoute: typeof AppCrmFormsRoute
   AppCrmTasksRoute: typeof AppCrmTasksRoute
   AppCrmWaitlistRoute: typeof AppCrmWaitlistRoute
@@ -1741,12 +1781,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppTutorialsRoute: AppTutorialsRoute,
   AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCrmAccountsRoute: AppCrmAccountsRoute,
   AppCrmAutomationsRoute: AppCrmAutomationsRoute,
   AppCrmCalendarRoute: AppCrmCalendarRoute,
+  AppCrmCallsRoute: AppCrmCallsRoute,
   AppCrmCampaignsRoute: AppCrmCampaignsRoute,
   AppCrmCompaniesRoute: AppCrmCompaniesRoute,
-  AppCrmDuplicatesRoute: AppCrmDuplicatesRoute,
   AppCrmConversationsRoute: AppCrmConversationsRoute,
+  AppCrmDuplicatesRoute: AppCrmDuplicatesRoute,
   AppCrmFormsRoute: AppCrmFormsRoute,
   AppCrmTasksRoute: AppCrmTasksRoute,
   AppCrmWaitlistRoute: AppCrmWaitlistRoute,

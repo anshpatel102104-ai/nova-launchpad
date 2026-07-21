@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   List,
   X,
+  Sparkles,
   Building2,
   Mail,
   Phone,
@@ -71,6 +72,7 @@ import {
 } from "recharts";
 import { MomentumRail } from "@/components/nova/MomentumRail";
 import { CrmNextBestAction } from "@/components/nova/CrmNextBestAction";
+import { refreshForecast, refreshPipelineInsights } from "@/lib/crm";
 
 export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
 
@@ -584,6 +586,7 @@ function CRMPage() {
                 />
               )}
             </div>
+            <InsightsRefreshButton orgId={currentOrgId} />
             <button
               onClick={() => {
                 if (blockIfGuest("Sign up to add deals.")) return;
@@ -821,7 +824,7 @@ function CRMPage() {
               settings={settings}
             />
           ) : (
-            <ForecastView deals={deals} />
+            <ForecastView deals={deals} orgId={currentOrgId} />
           )}
         </div>
 
@@ -1982,7 +1985,43 @@ function DealsListView({
 }
 
 /* ════════════════════════ FORECAST VIEW ════════════════════════ */
-function ForecastView({ deals }: { deals: Deal[] }) {
+/** Regenerate Mo Latif's pipeline coaching signals (crm-insights) on demand. */
+function InsightsRefreshButton({ orgId }: { orgId: string | null }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      disabled={!orgId || busy}
+      title="Refresh Nova's pipeline insights"
+      onClick={async () => {
+        if (!orgId) return;
+        setBusy(true);
+        try {
+          const r = await refreshPipelineInsights(orgId);
+          toast.success(
+            r.insights_written > 0
+              ? `Nova refreshed ${r.insights_written} pipeline insight${r.insights_written > 1 ? "s" : ""}`
+              : "Pipeline looks healthy — no new signals",
+          );
+        } catch {
+          toast.error("Couldn't refresh insights");
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold disabled:opacity-50"
+      style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+    >
+      <Sparkles
+        className={`h-3.5 w-3.5 ${busy ? "animate-pulse" : ""}`}
+        style={{ color: "var(--primary)" }}
+      />
+      {busy ? "Refreshing…" : "Refresh insights"}
+    </button>
+  );
+}
+
+function ForecastView({ deals, orgId }: { deals: Deal[]; orgId: string | null }) {
+  const [snapshotting, setSnapshotting] = useState(false);
   const data = STAGES.map((stage) => {
     const stageDeals = deals.filter((d) => d.stage === stage);
     const pipeline = stageDeals.reduce((s, d) => s + (d.value || 0), 0);
@@ -2001,6 +2040,34 @@ function ForecastView({ deals }: { deals: Deal[] }) {
 
   return (
     <div className="space-y-6">
+      {/* Snapshot this forecast into forecast_snapshots + refresh Dhruv's
+          verdict (forecast-rollup). The chart above is live; this records a
+          point-in-time snapshot for accuracy tracking. */}
+      <div className="flex items-center justify-between">
+        <p className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+          Live from your open pipeline. Snapshot to track forecast accuracy over time.
+        </p>
+        <button
+          disabled={!orgId || snapshotting}
+          onClick={async () => {
+            if (!orgId) return;
+            setSnapshotting(true);
+            try {
+              await refreshForecast(orgId);
+              toast.success("Forecast snapshot saved");
+            } catch {
+              toast.error("Couldn't snapshot the forecast");
+            } finally {
+              setSnapshotting(false);
+            }
+          }}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-semibold disabled:opacity-50"
+          style={{ background: "var(--primary)", color: "white" }}
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${snapshotting ? "animate-spin" : ""}`} />
+          {snapshotting ? "Snapshotting…" : "Snapshot forecast"}
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div
           className="rounded-xl p-5"
