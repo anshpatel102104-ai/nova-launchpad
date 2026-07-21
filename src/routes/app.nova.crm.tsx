@@ -70,6 +70,7 @@ import {
   Cell,
 } from "recharts";
 import { MomentumRail } from "@/components/nova/MomentumRail";
+import { CrmNextBestAction } from "@/components/nova/CrmNextBestAction";
 
 export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
 
@@ -742,6 +743,17 @@ function CRMPage() {
       {/* ── Main content + detail panel ── */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto p-6">
+          {/* Nova's single highest-leverage move across the pipeline */}
+          {deals.length > 0 && (
+            <CrmNextBestAction
+              orgId={currentOrgId}
+              className="mb-4"
+              onAct={(a) => {
+                const d = deals.find((x) => x.id === a.entity_id);
+                if (d) onSelect(d);
+              }}
+            />
+          )}
           {q.isLoading ? (
             <div className="flex justify-center py-20">
               <Loader2
