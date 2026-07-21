@@ -13,12 +13,22 @@ export type IntakeQuestion =
       novaText: string;
       placeholder: string;
       optional?: boolean;
+      /**
+       * Draft-before-type scaffold. When present, the field offers a "Draft it
+       * for me" action (and doubles as the idle-user fallback) that pre-fills
+       * this starter for the user to lightly edit — never a blank page. Kept as
+       * a fill-in-the-blank template today; a draft-intake-field edge call can
+       * replace the string later without any shape change.
+       */
+      suggestion?: string;
     }
   | {
       key: string;
       type: "chips";
       novaText: string;
       options: IntakeChipOption[];
+      /** Idle-user fallback: option id Nova picks when the user taps "not sure". */
+      recommend?: string;
     }
   | {
       key: string;
@@ -26,6 +36,8 @@ export type IntakeQuestion =
       novaText: string;
       options: IntakeChipOption[];
       max?: number;
+      /** Idle-user fallback: option ids Nova picks when the user taps "not sure". */
+      recommend?: string[];
     };
 
 // ── Track detection — 3 quick signal questions ─────────────────────────────────
@@ -88,6 +100,8 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
     novaText:
       "Let's build this business.\n\nI'll set up a workspace tuned to exactly where you are. Takes about two minutes.\n\nFirst: what's the business you want to build?",
     placeholder: "Describe your idea in a sentence or two…",
+    suggestion:
+      "I'm building a [product or service] that helps [who it's for] to [the outcome they want]. Right now they struggle with [the problem].",
   },
   {
     key: "industry",
@@ -186,6 +200,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
     key: "monetization",
     type: "chips",
     novaText: "How do you plan to make money?",
+    recommend: "Not sure yet",
     options: [
       { id: "Subscription", label: "Subscription", desc: "Recurring monthly revenue", emoji: "🔁" },
       { id: "One-time sales", label: "One-time sales", desc: "Pay once, own it", emoji: "🛒" },
@@ -297,6 +312,8 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
     type: "text",
     novaText: "And in one or two sentences — what does it do, and for whom?",
     placeholder: "e.g. We run paid ads for dental clinics in Texas…",
+    suggestion:
+      "We help [who it's for] with [what you do], so they can [the outcome]. We're different because [what sets you apart].",
   },
   {
     key: "company_type",

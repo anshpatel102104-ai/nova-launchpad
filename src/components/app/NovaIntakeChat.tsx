@@ -4,7 +4,9 @@
 // previously abandoned session (initialAnswers/initialStep).
 
 import React, { useState, useEffect, useRef } from "react";
+import { Mic, Sparkles } from "lucide-react";
 import type { IntakeQuestion, IntakeChipOption } from "@/constants/onboarding-questions";
+import { useSpeechInput } from "@/hooks/use-speech-input";
 
 export type IntakeAnswers = Record<string, string | string[]>;
 
@@ -37,6 +39,11 @@ const ANIM = `
   @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
+  }
+  @keyframes ambientPulse {
+    0%   { opacity: 0.55; }
+    50%  { opacity: 1; }
+    100% { opacity: 0.55; }
   }
 `;
 
@@ -138,6 +145,24 @@ export function NovaIntakeChat({
     }
   }
 
+  // Draft-before-type: fill the field with Nova's starter for the user to
+  // lightly edit — never a blank page. Doubles as the text-field idle fallback.
+  function draftText() {
+    const q = questions[step];
+    if (q.type === "text" && q.suggestion) {
+      setTextValue(q.suggestion);
+      requestAnimationFrame(() => textareaRef.current?.focus());
+    }
+  }
+
+  // Idle-user fallback for choice questions: "not sure — Nova picks and moves
+  // on." Uses the question's recommend, else the first (safest-starter) option.
+  function pickForMe() {
+    const q = questions[step];
+    if (q.type === "chips") submitAnswer(q.recommend ?? q.options[0].id);
+    else if (q.type === "multi") submitAnswer(q.recommend ?? [q.options[0].id]);
+  }
+
   const currentQ = questions[step];
   const progress = ((Math.min(step, questions.length) / questions.length) * 100).toFixed(0);
 
@@ -191,17 +216,24 @@ export function NovaIntakeChat({
               value={textValue}
               onChange={setTextValue}
               onSubmit={() => submitAnswer(textValue)}
+              onDraft={currentQ.suggestion ? draftText : undefined}
               textareaRef={textareaRef}
             />
           ) : currentQ.type === "chips" ? (
-            <ChipGrid accent={accent} options={currentQ.options} onSelect={submitAnswer} />
+            <>
+              <ChipGrid accent={accent} options={currentQ.options} onSelect={submitAnswer} />
+              <NotSureButton accent={accent} onClick={pickForMe} />
+            </>
           ) : (
-            <MultiChipGrid
-              accent={accent}
-              options={currentQ.options}
-              max={currentQ.max ?? currentQ.options.length}
-              onSubmit={submitAnswer}
-            />
+            <>
+              <MultiChipGrid
+                accent={accent}
+                options={currentQ.options}
+                max={currentQ.max ?? currentQ.options.length}
+                onSubmit={submitAnswer}
+              />
+              <NotSureButton accent={accent} onClick={pickForMe} />
+            </>
           )}
         </div>
       )}
@@ -316,6 +348,7 @@ function TextInput({
   value,
   onChange,
   onSubmit,
+  onDraft,
   textareaRef,
 }: {
   accent: string;
@@ -323,8 +356,12 @@ function TextInput({
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
+  /** Present when the question ships a draft scaffold — shows "Draft it for me". */
+  onDraft?: () => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
+  const { supported, listening, start, stop } = useSpeechInput(onChange);
+
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -332,59 +369,154 @@ function TextInput({
     }
   };
 
+  const toggleMic = () => {
+    if (listening) stop();
+    else start(value);
+  };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 10,
-        background: "rgba(255,255,255,0.04)",
-        border: `1px solid color-mix(in oklab, ${accent} 25%, transparent)`,
-        borderRadius: 14,
-        padding: "10px 10px 10px 16px",
-      }}
-    >
-      <textarea
-        ref={textareaRef}
-        autoFocus
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKey}
-        rows={2}
+    <div>
+      <div
         style={{
-          flex: 1,
-          background: "none",
-          border: "none",
-          outline: "none",
-          resize: "none",
-          color: "rgba(247,240,232,0.9)",
-          fontSize: 14,
-          lineHeight: 1.6,
-          fontFamily: "inherit",
-        }}
-      />
-      <button
-        onClick={onSubmit}
-        disabled={!value.trim()}
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 10,
-          background: value.trim() ? accent : `color-mix(in oklab, ${accent} 20%, transparent)`,
-          border: "none",
-          cursor: value.trim() ? "pointer" : "not-allowed",
-          color: "#fff",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          alignSelf: "flex-end",
-          fontSize: 16,
+          gap: 10,
+          background: "rgba(255,255,255,0.04)",
+          border: `1px solid color-mix(in oklab, ${listening ? "#ef4444" : accent} ${listening ? 55 : 25}%, transparent)`,
+          borderRadius: 14,
+          padding: "10px 10px 10px 16px",
+          transition: "border-color 0.2s",
         }}
       >
-        ↑
-      </button>
+        <textarea
+          ref={textareaRef}
+          autoFocus
+          placeholder={listening ? "Listening… just talk, I'll type it out." : placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKey}
+          rows={2}
+          style={{
+            flex: 1,
+            background: "none",
+            border: "none",
+            outline: "none",
+            resize: "none",
+            color: "rgba(247,240,232,0.9)",
+            fontSize: 14,
+            lineHeight: 1.6,
+            fontFamily: "inherit",
+          }}
+        />
+        <div
+          style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 6 }}
+        >
+          {supported && (
+            <button
+              type="button"
+              onClick={toggleMic}
+              aria-label={listening ? "Stop dictation" : "Dictate your answer"}
+              title={listening ? "Stop dictation" : "Speak your answer"}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: listening ? "#ef4444" : "rgba(255,255,255,0.06)",
+                border: `1px solid ${listening ? "#ef4444" : "rgba(255,255,255,0.12)"}`,
+                cursor: "pointer",
+                color: listening ? "#fff" : "rgba(247,240,232,0.7)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                animation: listening ? "ambientPulse 1.2s infinite" : undefined,
+              }}
+            >
+              <Mic size={16} />
+            </button>
+          )}
+          <button
+            onClick={onSubmit}
+            disabled={!value.trim()}
+            aria-label="Send answer"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: value.trim() ? accent : `color-mix(in oklab, ${accent} 20%, transparent)`,
+              border: "none",
+              cursor: value.trim() ? "pointer" : "not-allowed",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              fontSize: 16,
+            }}
+          >
+            ↑
+          </button>
+        </div>
+      </div>
+
+      {onDraft && (
+        <button
+          type="button"
+          onClick={onDraft}
+          style={{
+            marginTop: 10,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            fontSize: 12.5,
+            fontWeight: 600,
+            fontFamily: "inherit",
+            color: accent,
+          }}
+        >
+          <Sparkles size={13} />
+          Not sure how to word it? Draft it for me
+        </button>
+      )}
     </div>
+  );
+}
+
+// Idle-user escape hatch shown under every choice question — "just decide for
+// me." Deliberately low-emphasis so it never competes with the real options.
+function NotSureButton({ accent, onClick }: { accent: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        marginTop: 12,
+        width: "100%",
+        padding: "9px 0",
+        borderRadius: 10,
+        background: "none",
+        border: "1px dashed rgba(255,255,255,0.14)",
+        cursor: "pointer",
+        fontSize: 12.5,
+        fontWeight: 600,
+        fontFamily: "inherit",
+        color: "rgba(247,240,232,0.55)",
+        transition: "all 0.15s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = accent;
+        e.currentTarget.style.borderColor = `color-mix(in oklab, ${accent} 40%, transparent)`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = "rgba(247,240,232,0.55)";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.14)";
+      }}
+    >
+      Not sure? Let Nova pick a strong default →
+    </button>
   );
 }
 
