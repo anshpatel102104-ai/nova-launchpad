@@ -25,6 +25,7 @@ import {
   Filter,
   MoreHorizontal,
   Activity,
+  Clock,
   AlertCircle,
   CheckSquare,
   Square,
@@ -1252,13 +1253,48 @@ function ContactDetail({
   onDelete: (id: string) => void;
 }) {
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"overview" | "notes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "activity" | "notes">("overview");
   const [newNote, setNewNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
   const notesQ = useQuery({
     queryKey: ["contact-notes", contact.id],
     queryFn: () => fetchContactNotes(contact.id),
+  });
+
+  // Activity timeline — crm_activities links by deal_id, and leads carry a
+  // contact_id, so a contact's activity is the feed across the deals it's on.
+  const activityQ = useQuery({
+    queryKey: ["contact-activity", contact.id],
+    queryFn: async () => {
+      const { data: dealRows } = await supabase
+        .from("leads")
+        .select("id, name")
+        .eq("contact_id", contact.id);
+      const deals = (dealRows as { id: string; name: string }[] | null) ?? [];
+      if (deals.length === 0) return [];
+      const { data } = await supabase
+        .from("crm_activities")
+        .select("id, type, content, created_at, deal_id")
+        .in(
+          "deal_id",
+          deals.map((d) => d.id),
+        )
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const nameById = new Map(deals.map((d) => [d.id, d.name]));
+      return (
+        (data as
+          | {
+              id: string;
+              type: string;
+              content: string | null;
+              created_at: string;
+              deal_id: string;
+            }[]
+          | null) ?? []
+      ).map((a) => ({ ...a, deal_name: nameById.get(a.deal_id) ?? null }));
+    },
   });
 
   const fullName =
@@ -1345,7 +1381,7 @@ function ContactDetail({
 
         {/* Tabs */}
         <div className="flex shrink-0 px-5" style={{ borderBottom: "1px solid var(--border)" }}>
-          {(["overview", "notes"] as const).map((tab) => (
+          {(["overview", "activity", "notes"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1356,25 +1392,20 @@ function ContactDetail({
                   : { color: "var(--muted-foreground)" }
               }
             >
-              {tab === "notes" ? (
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" />
-                  Notes
-                  {notesQ.data && notesQ.data.length > 0 && (
-                    <span
-                      className="ml-0.5 rounded-full px-1.5 py-0 text-[9px] font-bold"
-                      style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-                    >
-                      {notesQ.data.length}
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <Activity className="h-3 w-3" />
-                  Overview
-                </span>
-              )}
+              <span className="flex items-center gap-1">
+                {tab === "overview" && <Activity className="h-3 w-3" />}
+                {tab === "activity" && <Clock className="h-3 w-3" />}
+                {tab === "notes" && <MessageSquare className="h-3 w-3" />}
+                {tab === "overview" ? "Overview" : tab === "activity" ? "Activity" : "Notes"}
+                {tab === "notes" && notesQ.data && notesQ.data.length > 0 && (
+                  <span
+                    className="ml-0.5 rounded-full px-1.5 py-0 text-[9px] font-bold"
+                    style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                  >
+                    {notesQ.data.length}
+                  </span>
+                )}
+              </span>
               {activeTab === tab && (
                 <div
                   className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
@@ -1566,6 +1597,66 @@ function ContactDetail({
                   Delete
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── Activity Tab ── */}
+          {activeTab === "activity" && (
+            <div className="px-5 py-5">
+              {activityQ.isLoading ? (
+                <div className="space-y-2">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-10 animate-pulse rounded-lg"
+                      style={{ background: "var(--surface-2)" }}
+                    />
+                  ))}
+                </div>
+              ) : (activityQ.data ?? []).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Clock className="mb-2 h-6 w-6" style={{ color: "var(--text-faint)" }} />
+                  <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    No activity yet
+                  </p>
+                  <p
+                    className="mt-1 max-w-[16rem] text-xs"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Stage changes, notes, and tasks on this contact&apos;s deals appear here
+                    automatically.
+                  </p>
+                </div>
+              ) : (
+                <ol className="relative space-y-4 pl-4">
+                  {(activityQ.data ?? []).map((a) => (
+                    <li key={a.id} className="relative">
+                      <span
+                        className="absolute -left-4 top-1.5 h-2 w-2 rounded-full"
+                        style={{ background: "var(--primary)" }}
+                      />
+                      <span
+                        className="absolute -left-[13px] top-3 bottom-[-16px] w-px"
+                        style={{ background: "var(--border)" }}
+                      />
+                      <p className="text-sm" style={{ color: "var(--foreground)" }}>
+                        {a.content || a.type.replace(/_/g, " ")}
+                      </p>
+                      <p
+                        className="mt-0.5 text-[11px]"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {a.deal_name ? `${a.deal_name} · ` : ""}
+                        {new Date(a.created_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </div>
           )}
 
