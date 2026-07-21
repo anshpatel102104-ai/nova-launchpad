@@ -77,6 +77,7 @@ import { Route as AppLaunchpadMissionsRouteImport } from './routes/app.launchpad
 import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.mentors'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
+import { Route as AppLaunchpadCourseRouteImport } from './routes/app.launchpad.course'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppCrmWaitlistRouteImport } from './routes/app.crm.waitlist'
 import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
@@ -434,6 +435,11 @@ const AppLaunchpadFirstCustomersRoute =
     path: '/launchpad/first-customers',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLaunchpadCourseRoute = AppLaunchpadCourseRouteImport.update({
+  id: '/launchpad/course',
+  path: '/launchpad/course',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
   id: '/launchpad/$tool',
   path: '/launchpad/$tool',
@@ -574,6 +580,7 @@ export interface FileRoutesByFullPath {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
@@ -658,6 +665,7 @@ export interface FileRoutesByTo {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
@@ -744,6 +752,7 @@ export interface FileRoutesById {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
@@ -831,6 +840,7 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
@@ -915,6 +925,7 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
@@ -1000,6 +1011,7 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
@@ -1517,6 +1529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLaunchpadFirstCustomersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/launchpad/course': {
+      id: '/app/launchpad/course'
+      path: '/launchpad/course'
+      fullPath: '/app/launchpad/course'
+      preLoaderRoute: typeof AppLaunchpadCourseRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/launchpad/$tool': {
       id: '/app/launchpad/$tool'
       path: '/launchpad/$tool'
@@ -1729,6 +1748,7 @@ interface AppRouteChildren {
   AppCrmTasksRoute: typeof AppCrmTasksRoute
   AppCrmWaitlistRoute: typeof AppCrmWaitlistRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
+  AppLaunchpadCourseRoute: typeof AppLaunchpadCourseRoute
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
   AppLaunchpadMentorsRoute: typeof AppLaunchpadMentorsRoute
@@ -1793,6 +1813,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCrmTasksRoute: AppCrmTasksRoute,
   AppCrmWaitlistRoute: AppCrmWaitlistRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
+  AppLaunchpadCourseRoute: AppLaunchpadCourseRoute,
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
   AppLaunchpadMentorsRoute: AppLaunchpadMentorsRoute,

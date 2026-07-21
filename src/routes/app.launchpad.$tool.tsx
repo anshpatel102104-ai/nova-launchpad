@@ -1601,7 +1601,11 @@ function ToolPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6"
+      data-coach="tool-runner"
+      data-coach-label="Run this tool — Nova brought you here"
+    >
       <PaywallModal
         open={paywallOpen}
         onOpenChange={setPaywallOpen}

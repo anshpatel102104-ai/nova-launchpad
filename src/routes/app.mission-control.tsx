@@ -50,9 +50,9 @@ import {
   Map,
   FlaskConical,
   FileText,
-  Users,
   Bot,
   Radio,
+  GraduationCap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
@@ -582,11 +582,11 @@ function MissionHero({
 /* ─── Supporting tools ──────────────────────────────────────── */
 
 const SUPPORT_TOOLS = [
+  { label: "Course", to: "/app/launchpad/course", icon: GraduationCap },
   { label: "Roadmap", to: "/app/roadmap", icon: Map },
   { label: "Research", to: "/app/research", icon: FlaskConical },
   { label: "Assets", to: "/app/assets", icon: FileText },
   { label: "Automations", to: "/app/automations", icon: Zap },
-  { label: "Contacts", to: "/app/contacts", icon: Users },
   { label: "Ask Nova", to: "/app/mentor", icon: Bot },
 ] as const;
 

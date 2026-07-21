@@ -340,6 +340,35 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Founder Course: when a course module completes, unlock the next one.
+        // The course lives on this same mission spine (generated_from_casefile_id
+        // marks course modules), so progression is just flipping the next locked
+        // module to active — no parallel tracker.
+        const { data: doneMission } = await admin
+          .from("missions")
+          .select("generated_from_casefile_id, sort_order, workspace_id")
+          .eq("id", mission_id)
+          .maybeSingle();
+        if (doneMission?.generated_from_casefile_id) {
+          const { data: nextModule } = await admin
+            .from("missions")
+            .select("id")
+            .eq("workspace_id", doneMission.workspace_id)
+            .not("generated_from_casefile_id", "is", null)
+            .eq("status", "locked")
+            .gt("sort_order", doneMission.sort_order)
+            .order("sort_order", { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          if (nextModule) {
+            await admin.from("missions").update({ status: "active" }).eq("id", nextModule.id);
+            await admin
+              .from("workspaces")
+              .update({ current_mission_id: nextModule.id })
+              .eq("id", doneMission.workspace_id);
+          }
+        }
+
         return json({ ok: true, step_completed: true, mission_auto_completed: true });
       }
     }

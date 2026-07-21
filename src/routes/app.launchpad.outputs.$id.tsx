@@ -12,7 +12,7 @@
  * interactive runner at /app/launchpad/$tool is untouched.
  */
 import { useMemo, useState } from "react";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdge } from "@/lib/invokeEdge";
@@ -63,10 +63,12 @@ function CasefilePage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tool_runs")
-        .select("id, tool_key, title, status, output, output_shape, model, created_at")
+        .select(
+          "id, tool_key, title, status, output, output_shape, model, created_at, casefile_status",
+        )
         .eq("id", id)
         .maybeSingle();
-      return (data as CasefileRun) ?? null;
+      return (data as CasefileRunWithApproval) ?? null;
     },
   });
 
@@ -121,23 +123,96 @@ function CasefilePage() {
       <CreateDealCard run={run} recommendation={core.recommendation} orgId={currentOrgId} />
     ) : undefined;
 
+  // The score_verdict casefile is the Founder Casefile of record — approving it
+  // builds the personalized course (generate-course edge fn).
+  const approveExtra =
+    shape === "score_verdict" && currentOrgId ? <ApproveCasefileCard run={run} /> : undefined;
+
+  const extra =
+    approveExtra || dealExtra ? (
+      <div className="space-y-3">
+        {approveExtra}
+        {dealExtra}
+      </div>
+    ) : undefined;
+
   switch (shape) {
     case "score_verdict":
-      return <ScoreVerdictLayout run={run} core={core} extra={dealExtra} />;
+      return <ScoreVerdictLayout run={run} core={core} extra={extra} />;
     case "comparison":
-      return <ComparisonLayout run={run} core={core} extra={dealExtra} />;
+      return <ComparisonLayout run={run} core={core} extra={extra} />;
     case "report":
-      return <ReportLayout run={run} core={core} extra={dealExtra} />;
+      return <ReportLayout run={run} core={core} extra={extra} />;
     case "plan_with_steps":
-      return <PlanWithStepsLayout run={run} core={core} extra={dealExtra} />;
+      return <PlanWithStepsLayout run={run} core={core} extra={extra} />;
     case "pipeline_snapshot":
       return <PipelineSnapshotLayout run={run} core={core} />;
     case "session_summary":
       return <SessionSummaryLayout run={run} core={core} />;
     case "memo":
     default:
-      return <MemoLayout run={run} core={core} extra={dealExtra} />;
+      return <MemoLayout run={run} core={core} extra={extra} />;
   }
+}
+
+type CasefileRunWithApproval = CasefileRun & { casefile_status?: string | null };
+
+// The one primary action on the Founder Casefile: approve it, and Nova builds
+// the personalized course. Once approved it becomes a link into the course.
+function ApproveCasefileCard({ run }: { run: CasefileRunWithApproval }) {
+  const navigate = useNavigate();
+  const [state, setState] = useState<"idle" | "building" | "done" | "error">(
+    run.casefile_status === "approved" ? "done" : "idle",
+  );
+
+  if (state === "done") {
+    return (
+      <div className="flex items-center justify-between rounded-2xl border border-[--primary-border] bg-[color-mix(in_oklab,var(--primary)_6%,var(--surface))] p-4">
+        <div>
+          <p className="text-sm font-bold text-[--foreground]">Casefile approved ✓</p>
+          <p className="text-xs text-[--text-faint]">Your personalized course is ready.</p>
+        </div>
+        <button
+          onClick={() => navigate({ to: "/app/launchpad/course" })}
+          className="rounded-xl bg-[--primary] px-4 py-2 text-sm font-bold text-[--primary-foreground]"
+        >
+          Open my course →
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-[--primary-border] bg-[color-mix(in_oklab,var(--primary)_7%,var(--surface))] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm font-bold text-[--foreground]">Approve this casefile</p>
+        <p className="text-xs text-[--text-faint]">
+          Nova turns it into a step-by-step course built around this exact business.
+        </p>
+        {state === "error" && (
+          <p className="mt-1 text-xs font-semibold text-[--destructive]">
+            Couldn't build the course. Try again.
+          </p>
+        )}
+      </div>
+      <button
+        onClick={async () => {
+          setState("building");
+          try {
+            await invokeEdge("generate-course", { casefile_run_id: run.id }, { timeoutMs: 60_000 });
+            setState("done");
+            navigate({ to: "/app/launchpad/course" });
+          } catch {
+            setState("error");
+          }
+        }}
+        disabled={state === "building"}
+        className="shrink-0 rounded-xl bg-[--primary] px-5 py-2.5 text-sm font-bold text-[--primary-foreground] disabled:opacity-60"
+      >
+        {state === "building" ? "Building your course…" : "Approve & build my course"}
+      </button>
+    </div>
+  );
 }
 
 function CreateDealCard({

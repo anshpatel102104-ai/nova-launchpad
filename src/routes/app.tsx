@@ -6,6 +6,7 @@ import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { IntelligenceRail } from "@/components/app/IntelligenceRail";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { NovaBar } from "@/components/nova/NovaBar";
+import { CoachmarkListener } from "@/components/launchpad/Coachmark";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore, isDemoEmail } from "@/lib/guest";
 import { useImpersonation, impersonationStore } from "@/lib/impersonation";
@@ -137,6 +138,7 @@ function AppLayout() {
 
       <MobileTabBar />
       <GuestGateModal />
+      <CoachmarkListener />
     </div>
   );
 }
