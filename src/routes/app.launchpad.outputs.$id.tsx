@@ -1,31 +1,38 @@
 /**
  * FOUNDER CASEFILE — /app/launchpad/outputs/[id]
  *
- * Renders a saved tool_run as the master-build 3-layer casefile:
- *   Layer 1 — dark command header (case id, verdict, scores, stage chips)
- *   Layer 2 — key content (verdict, Nova's take, recommended move, mentor bridge)
- *   Layer 3 — expandable detail (strengths, what needs proof, risks, next missions)
- *   Right rail — score breakdown, saved-to-memory, case metadata
- * A light format mapper adapts the header label per tool family. Reads the
- * tool_run output defensively so any tool renders. Additive: the interactive
- * runner at /app/launchpad/$tool is untouched.
+ * Routes a saved tool_run to a layout by its output_shape (score_verdict,
+ * comparison, report, memo, plan_with_steps, pipeline_snapshot,
+ * session_summary). output_shape is authoritative from the DB; if a row
+ * predates the column we derive it from tool_key, and if it's still unknown
+ * we fall back to MemoLayout AND log a console warning so unwired tools get
+ * surfaced instead of silently blobbed.
+ *
+ * Layout components live in components/launchpad/casefile-layouts.tsx. The
+ * interactive runner at /app/launchpad/$tool is untouched.
  */
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ChevronDown,
-  Sparkles,
-  Target,
-  ShieldAlert,
-  CheckCircle2,
-  ArrowRight,
-} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdge } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
-import { formatLabel, verdictCategory, pickScore, type VerdictCategory } from "@/lib/casefile";
+import {
+  deriveOutputShape,
+  formatLabel,
+  readCore,
+  type OutputShape,
+  type CasefileRun,
+} from "@/lib/casefile";
+import {
+  ScoreVerdictLayout,
+  ReportLayout,
+  MemoLayout,
+  ComparisonLayout,
+  PlanWithStepsLayout,
+  PipelineSnapshotLayout,
+  SessionSummaryLayout,
+} from "@/components/launchpad/casefile-layouts";
 
 // Offer/GTM analyses are the ones worth turning into a pipeline deal (Connection 2).
 const DEAL_TOOLS = new Set([
@@ -36,96 +43,50 @@ const DEAL_TOOLS = new Set([
   "generate-pitch",
 ]);
 
+const SHAPES: OutputShape[] = [
+  "score_verdict",
+  "comparison",
+  "report",
+  "memo",
+  "plan_with_steps",
+  "pipeline_snapshot",
+  "session_summary",
+];
+
 export const Route = createFileRoute("/app/launchpad/outputs/$id")({ component: CasefilePage });
-
-type ToolRun = {
-  id: string;
-  tool_key: string;
-  title: string | null;
-  status: string;
-  output: Record<string, unknown> | null;
-  model: string | null;
-  created_at: string;
-};
-
-const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
-
-const TONE_CLASSES: Record<VerdictCategory, { badge: string; card: string }> = {
-  danger: {
-    badge:
-      "bg-[color-mix(in_oklab,var(--destructive)_12%,transparent)] text-[--destructive] border-[color-mix(in_oklab,var(--destructive)_30%,transparent)]",
-    card: "border-l-[--destructive] bg-[color-mix(in_oklab,var(--destructive)_6%,transparent)]",
-  },
-  success: {
-    badge:
-      "bg-[color-mix(in_oklab,var(--success)_12%,transparent)] text-[--success] border-[color-mix(in_oklab,var(--success)_30%,transparent)]",
-    card: "border-l-[--success] bg-[color-mix(in_oklab,var(--success)_6%,transparent)]",
-  },
-  warning: {
-    badge:
-      "bg-[color-mix(in_oklab,var(--warning)_12%,transparent)] text-[--warning] border-[color-mix(in_oklab,var(--warning)_30%,transparent)]",
-    card: "border-l-[--warning] bg-[color-mix(in_oklab,var(--warning)_6%,transparent)]",
-  },
-  neutral: {
-    badge:
-      "bg-[--primary-soft] text-[--accent] border-[color-mix(in_oklab,var(--accent)_30%,transparent)]",
-    card: "border-l-[--accent] bg-[--primary-soft]",
-  },
-};
-
-function verdictTone(v: string): { badge: string; card: string } {
-  return TONE_CLASSES[verdictCategory(v)];
-}
-
-function asArray(v: unknown): string[] {
-  if (Array.isArray(v))
-    return v.map((x) =>
-      typeof x === "string"
-        ? x
-        : ((x as { label?: string; text?: string })?.label ??
-          (x as { text?: string })?.text ??
-          JSON.stringify(x)),
-    );
-  return [];
-}
-
-type NextAction = { type?: string; label?: string; reason?: string; target?: string };
 
 function CasefilePage() {
   const { id } = useParams({ from: "/app/launchpad/outputs/$id" });
   const { currentOrgId } = useAuth();
-  const [dealState, setDealState] = useState<"idle" | "creating" | "done">("idle");
   const runQ = useQuery({
     queryKey: ["tool_run", id],
     queryFn: async () => {
       const { data } = await supabase
         .from("tool_runs")
-        .select("id, tool_key, title, status, output, model, created_at")
+        .select("id, tool_key, title, status, output, output_shape, model, created_at")
         .eq("id", id)
         .maybeSingle();
-      return (data as ToolRun) ?? null;
+      return (data as CasefileRun) ?? null;
     },
   });
 
   const run = runQ.data;
-  const out = (run?.output ?? {}) as Record<string, unknown>;
 
-  const score = useMemo(() => pickScore(out), [out]);
-  const verdict = String(out.verdict ?? "").trim();
-  const tone = verdictTone(verdict || "review");
-  const scores = (out.scores && typeof out.scores === "object" ? out.scores : {}) as Record<
-    string,
-    number
-  >;
-  const strengths = asArray(out.strengths ?? out.confirmed_strengths);
-  const proof = asArray(out.weaknesses ?? out.reasons_to_fail ?? out.what_needs_proof ?? out.risks);
-  const nextActions = (
-    Array.isArray(out.recommended_next_actions) ? out.recommended_next_actions : []
-  ) as NextAction[];
-  const novaTake = String(
-    out.rationale ?? out.recommendation ?? out.fatal_flaw ?? out.summary ?? out.full_report ?? "",
-  ).slice(0, 900);
-  const recommendation = String(out.recommendation ?? out.next_step ?? "").slice(0, 400);
+  // Resolve the render shape: DB column → tool_key derivation → fallback.
+  const shape = useMemo<OutputShape>(() => {
+    if (!run) return "memo";
+    const dbShape = run.output_shape as OutputShape | null | undefined;
+    if (dbShape && SHAPES.includes(dbShape)) return dbShape;
+    const derived = deriveOutputShape(run.tool_key);
+    if (derived) return derived;
+    // Unwired tool — surface it rather than silently defaulting to memo.
+    console.warn(
+      `[Casefile] No output_shape for tool "${run.tool_key}" (run ${run.id}); falling back to MemoLayout.`,
+    );
+    return "memo";
+  }, [run]);
+
+  const core = useMemo(() => (run ? readCore(run) : null), [run]);
 
   if (runQ.isLoading) {
     return (
@@ -138,7 +99,7 @@ function CasefilePage() {
     );
   }
 
-  if (!run) {
+  if (!run || !core) {
     return (
       <div className="flex min-h-full items-center justify-center bg-[--background] p-6">
         <div className="rounded-2xl border border-[--border] bg-[--surface] p-8 text-center">
@@ -154,348 +115,85 @@ function CasefilePage() {
     );
   }
 
-  const topDims = Object.entries(scores).slice(0, 4);
+  // Founder-analysis shapes can spin up a pipeline deal from the analysis.
+  const dealExtra =
+    DEAL_TOOLS.has(run.tool_key) && currentOrgId ? (
+      <CreateDealCard run={run} recommendation={core.recommendation} orgId={currentOrgId} />
+    ) : undefined;
 
-  return (
-    <div className="min-h-full bg-[--background] pb-12">
-      {/* ── LAYER 1: Command header (dark) ── */}
-      <div className="bg-[--bg-command] px-4 py-6 text-[--text-inverse] sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <Link
-            to="/app/launchpad/history"
-            className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-white/60 hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Outputs
-          </Link>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-wider text-[#b9a4ff]">
-                {formatLabel(run.tool_key)} · CASE {run.id.slice(0, 8)}
-              </p>
-              <h1 className="mt-1 text-[22px] font-bold tracking-[-0.025em]">
-                {run.title || run.tool_key.replace(/-/g, " ")}
-              </h1>
-              <p className="mt-0.5 text-xs text-white/50">
-                {new Date(run.created_at).toLocaleDateString(undefined, {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-                {run.model ? ` · ${run.model}` : ""}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {verdict && (
-                <span
-                  className={`rounded-full border px-3 py-1 text-sm font-semibold ${tone.badge}`}
-                >
-                  {verdict}
-                </span>
-              )}
-              {score != null && (
-                <div className="rounded-xl bg-white/10 px-4 py-2 text-center">
-                  <p className="text-2xl font-bold leading-none">{score}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-white/50">score</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Stage chips */}
-          <div className="mt-5 flex flex-wrap gap-1.5">
-            {STAGES.map((s, i) => (
-              <span
-                key={s}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                  i === 1 ? "bg-[#6B46E8] text-white" : "bg-white/5 text-white/40"
-                }`}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-
-          {/* Score cards */}
-          {topDims.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {topDims.map(([k, v]) => (
-                <div key={k} className="rounded-xl bg-[--bg-command-2] p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-white/40">
-                    {k.replace(/_/g, " ")}
-                  </p>
-                  <p className="mt-1 text-lg font-bold">
-                    {v}
-                    <span className="text-xs text-white/40">/10</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── LAYER 2 + rail ── */}
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr]">
-          <div className="space-y-4">
-            {/* Verdict card */}
-            {(verdict || recommendation) && (
-              <div
-                className={`rounded-2xl border border-[--border] border-l-4 bg-[--surface] p-5 shadow-sm ${tone.card}`}
-              >
-                <p className="text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
-                  Verdict
-                </p>
-                <p className="mt-1 text-[17px] font-semibold text-[--foreground]">
-                  {verdict || "Assessment complete"}
-                </p>
-                {recommendation && (
-                  <p className="mt-1.5 text-sm leading-relaxed text-[--muted-foreground]">
-                    {recommendation}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Nova's Take */}
-            {novaTake && (
-              <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-5 shadow-sm">
-                <div className="mb-1 flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-                    Nova's Take
-                  </span>
-                </div>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
-                  {novaTake}
-                </p>
-              </div>
-            )}
-
-            {/* Recommended move */}
-            {nextActions.length > 0 && (
-              <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
-                <div className="mb-2 flex items-center gap-1.5">
-                  <Target className="h-4 w-4 text-[--accent]" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
-                    Recommended Move
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {nextActions.slice(0, 3).map((a, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl border border-[--border] bg-[--surface-2] p-3"
-                    >
-                      <p className="text-sm font-semibold text-[--foreground]">{a.label}</p>
-                      {a.reason && (
-                        <p className="mt-0.5 text-xs leading-relaxed text-[--text-faint]">
-                          {a.reason}
-                        </p>
-                      )}
-                      {a.type === "tool" && a.target && (
-                        <Link
-                          to="/app/launchpad/$tool"
-                          params={{ tool: a.target }}
-                          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[--accent] hover:underline"
-                        >
-                          Run this tool <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Create Deal from this analysis (Connection 2) */}
-            {DEAL_TOOLS.has(run.tool_key) && currentOrgId && (
-              <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--surface] p-4 shadow-sm">
-                <div>
-                  <p className="text-sm font-semibold text-[--foreground]">Turn this into a deal</p>
-                  <p className="text-xs text-[--text-faint]">
-                    Start a pipeline opportunity from this analysis.
-                  </p>
-                </div>
-                {dealState === "done" ? (
-                  <Link
-                    to="/app/nova/crm"
-                    className="text-sm font-semibold text-[--success] hover:underline"
-                  >
-                    Deal created — view pipeline →
-                  </Link>
-                ) : (
-                  <button
-                    onClick={async () => {
-                      setDealState("creating");
-                      // create_lead (not a raw insert) so the deal is wired to a
-                      // deduped contact + company and logged on the CRM timeline.
-                      try {
-                        await invokeEdge("crm-action", {
-                          action: "create_lead",
-                          org_id: currentOrgId,
-                          payload: {
-                            name: run.title || `${formatLabel(run.tool_key)} lead`,
-                            stage: "New",
-                            source: "casefile",
-                            notes:
-                              `Created from ${formatLabel(run.tool_key)} (case ${run.id.slice(0, 8)}). ${recommendation}`.slice(
-                                0,
-                                500,
-                              ),
-                          },
-                        });
-                        setDealState("done");
-                      } catch {
-                        setDealState("idle");
-                      }
-                    }}
-                    disabled={dealState === "creating"}
-                    className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--primary-hover] disabled:opacity-50"
-                  >
-                    {dealState === "creating" ? "Creating…" : "Create Deal"}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Mentor bridge */}
-            <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--primary-soft] p-4">
-              <p className="text-sm text-[--foreground]">Want a second opinion on this?</p>
-              <Link
-                to="/app/launchpad/mentors"
-                className="text-sm font-semibold text-[--accent] hover:underline"
-              >
-                Ask a mentor →
-              </Link>
-            </div>
-
-            {/* ── LAYER 3: expandable detail ── */}
-            {strengths.length > 0 && (
-              <Drawer
-                title="Confirmed Strengths"
-                icon={<CheckCircle2 className="h-4 w-4 text-[--success]" />}
-                count={strengths.length}
-              >
-                <ul className="space-y-2">
-                  {strengths.map((s, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-[--muted-foreground]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[--success]" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </Drawer>
-            )}
-            {proof.length > 0 && (
-              <Drawer
-                title="What Needs Proof"
-                icon={<ShieldAlert className="h-4 w-4 text-[--warning]" />}
-                count={proof.length}
-              >
-                <ul className="space-y-2">
-                  {proof.map((s, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-[--muted-foreground]">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[--warning]" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </Drawer>
-            )}
-          </div>
-
-          {/* Right rail */}
-          <div className="space-y-4">
-            {Object.keys(scores).length > 0 && (
-              <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
-                  Score Breakdown
-                </p>
-                <div className="space-y-2.5">
-                  {Object.entries(scores).map(([k, v]) => (
-                    <div key={k}>
-                      <div className="mb-1 flex justify-between text-xs">
-                        <span className="text-[--muted-foreground]">{k.replace(/_/g, " ")}</span>
-                        <span className="font-semibold text-[--foreground]">{v}/10</span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-[--surface-2]">
-                        <div
-                          className="h-full rounded-full bg-[--accent] transition-all duration-700"
-                          style={{
-                            width: `${Math.max(0, Math.min(100, (Number(v) / 10) * 100))}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
-                Case Metadata
-              </p>
-              <dl className="space-y-2 text-xs">
-                {[
-                  ["Case ID", run.id.slice(0, 8)],
-                  ["Tool", run.tool_key],
-                  ["Model", run.model ?? "—"],
-                  ["Status", run.status],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-2">
-                    <dt className="text-[--text-faint]">{k}</dt>
-                    <dd className="truncate font-mono text-[--muted-foreground]">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="rounded-2xl border border-[--border] bg-[--surface] p-5 shadow-sm">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[--text-faint]">
-                Saved to Memory
-              </p>
-              <div className="flex items-center gap-2 text-sm text-[--muted-foreground]">
-                <span className="h-2 w-2 rounded-full bg-[--success]" />
-                This output is indexed in your Nova memory.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  switch (shape) {
+    case "score_verdict":
+      return <ScoreVerdictLayout run={run} core={core} extra={dealExtra} />;
+    case "comparison":
+      return <ComparisonLayout run={run} core={core} extra={dealExtra} />;
+    case "report":
+      return <ReportLayout run={run} core={core} extra={dealExtra} />;
+    case "plan_with_steps":
+      return <PlanWithStepsLayout run={run} core={core} extra={dealExtra} />;
+    case "pipeline_snapshot":
+      return <PipelineSnapshotLayout run={run} core={core} />;
+    case "session_summary":
+      return <SessionSummaryLayout run={run} core={core} />;
+    case "memo":
+    default:
+      return <MemoLayout run={run} core={core} extra={dealExtra} />;
+  }
 }
 
-function Drawer({
-  title,
-  icon,
-  count,
-  children,
+function CreateDealCard({
+  run,
+  recommendation,
+  orgId,
 }: {
-  title: string;
-  icon: React.ReactNode;
-  count: number;
-  children: React.ReactNode;
+  run: CasefileRun;
+  recommendation: string;
+  orgId: string;
 }) {
-  const [open, setOpen] = useState(true);
+  const [dealState, setDealState] = useState<"idle" | "creating" | "done">("idle");
   return (
-    <div className="overflow-hidden rounded-2xl border border-[--border] bg-[--surface] shadow-sm">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-5 py-3.5 text-left hover:bg-[--surface-2]"
-      >
-        {icon}
-        <span className="text-sm font-semibold text-[--foreground]">{title}</span>
-        <span className="rounded-full bg-[--surface-2] px-2 py-0.5 text-xs font-semibold text-[--text-faint]">
-          {count}
-        </span>
-        <ChevronDown
-          className={`ml-auto h-4 w-4 text-[--text-faint] transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      {open && <div className="border-t border-[--border] px-5 py-4">{children}</div>}
+    <div className="flex items-center justify-between rounded-2xl border border-[--border] bg-[--surface] p-4 shadow-sm">
+      <div>
+        <p className="text-sm font-semibold text-[--foreground]">Turn this into a deal</p>
+        <p className="text-xs text-[--text-faint]">
+          Start a pipeline opportunity from this analysis.
+        </p>
+      </div>
+      {dealState === "done" ? (
+        <Link to="/app/nova/crm" className="text-sm font-semibold text-[--success] hover:underline">
+          Deal created — view pipeline →
+        </Link>
+      ) : (
+        <button
+          onClick={async () => {
+            setDealState("creating");
+            // create_lead (not a raw insert) so the deal is wired to a deduped
+            // contact + company and logged on the CRM timeline.
+            try {
+              await invokeEdge("crm-action", {
+                action: "create_lead",
+                org_id: orgId,
+                payload: {
+                  name: run.title || `${formatLabel(run.tool_key)} lead`,
+                  stage: "New",
+                  source: "casefile",
+                  notes:
+                    `Created from ${formatLabel(run.tool_key)} (case ${run.id.slice(0, 8)}). ${recommendation}`.slice(
+                      0,
+                      500,
+                    ),
+                },
+              });
+              setDealState("done");
+            } catch {
+              setDealState("idle");
+            }
+          }}
+          disabled={dealState === "creating"}
+          className="rounded-xl bg-[--accent] px-4 py-2 text-sm font-semibold text-white hover:bg-[--primary-hover] disabled:opacity-50"
+        >
+          {dealState === "creating" ? "Creating…" : "Create Deal"}
+        </button>
+      )}
     </div>
   );
 }

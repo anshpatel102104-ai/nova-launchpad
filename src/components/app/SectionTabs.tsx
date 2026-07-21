@@ -10,6 +10,13 @@ import {
   TrendingUp,
   Activity,
   Hourglass,
+  Building2,
+  MessageSquare,
+  Calendar,
+  CheckSquare,
+  FileText,
+  HeartPulse,
+  PhoneCall,
   type LucideIcon,
 } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
@@ -33,7 +40,14 @@ export const SECTIONS = {
     accent: "var(--domain-customers)",
     tabs: [
       { to: "/app/contacts", label: "People", icon: Users },
+      { to: "/app/crm/companies", label: "Companies", icon: Building2 },
       { to: "/app/nova/crm", label: "Pipeline", icon: Workflow },
+      { to: "/app/crm/accounts", label: "Health", icon: HeartPulse },
+      { to: "/app/crm/calls", label: "Calls", icon: PhoneCall },
+      { to: "/app/crm/conversations", label: "Inbox", icon: MessageSquare },
+      { to: "/app/crm/calendar", label: "Calendar", icon: Calendar },
+      { to: "/app/crm/tasks", label: "Tasks", icon: CheckSquare },
+      { to: "/app/crm/forms", label: "Forms", icon: FileText },
       { to: "/app/launchpad/first-customers", label: "First Customers", icon: Crosshair },
       { to: "/app/crm/waitlist", label: "Waitlist", icon: Hourglass, adminOnly: true },
     ],
@@ -55,7 +69,7 @@ export function SectionTabs({ section }: { section: keyof typeof SECTIONS }) {
 
   return (
     <div
-      className="inline-flex items-center gap-1 rounded-xl p-1"
+      className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
     >
       {tabs.map((t) => {
@@ -64,7 +78,7 @@ export function SectionTabs({ section }: { section: keyof typeof SECTIONS }) {
           <Link
             key={t.to}
             to={t.to}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[12px] font-medium transition"
             style={{
               background: active ? "var(--surface)" : "transparent",
               color: active ? "var(--foreground)" : "var(--muted-foreground)",

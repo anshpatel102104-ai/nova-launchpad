@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check, Lock, ArrowRight, Sparkles, Circle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { currentMissionQuery } from "@/lib/queries";
+import { AiOriginCard } from "@/components/nova/AiOriginCard";
 
 export const Route = createFileRoute("/app/launchpad/missions")({ component: MissionDetail });
 
@@ -139,29 +140,24 @@ function MissionDetail() {
               )}
             </div>
 
-            {/* Pinned Nova guidance */}
-            <div
-              className="mt-6 rounded-2xl border border-[--border] p-5 text-white shadow-sm"
-              style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
+            {/* Pinned Nova guidance — shared AI-origin grammar */}
+            <AiOriginCard
+              className="mt-6"
+              label="Nova"
+              action={
+                <Link
+                  to="/app/launchpad/nova"
+                  className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+                  style={{ background: "var(--primary)" }}
+                >
+                  Ask Nova about this mission <ArrowRight className="h-4 w-4" />
+                </Link>
+              }
             >
-              <div className="mb-1 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#b9a4ff]" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#b9a4ff]">
-                  Nova
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed text-white/90">
-                {activeIndex === -1
-                  ? "Every step is done — ask Nova to set your next mission."
-                  : "Focus on the highlighted step. When you finish it, come back and Nova will unlock the next move."}
-              </p>
-              <Link
-                to="/app/launchpad/nova"
-                className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
-              >
-                Ask Nova about this mission <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+              {activeIndex === -1
+                ? "Every step is done — ask Nova to set your next mission."
+                : "Focus on the highlighted step. When you finish it, come back and Nova will unlock the next move."}
+            </AiOriginCard>
           </>
         )}
       </div>

@@ -24,6 +24,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { CustomersNav } from "@/components/app/CustomersNav";
 
 export const Route = createFileRoute("/app/crm/forms")({ component: FormsPage });
 
@@ -99,6 +100,9 @@ function FormsPage() {
   return (
     <div className="min-h-full bg-[--bg-page] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
+        <div className="mb-4">
+          <CustomersNav />
+        </div>
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">

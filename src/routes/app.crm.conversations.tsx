@@ -11,6 +11,7 @@ import { Sparkles, Send, Mail, MessageSquare, Inbox } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeEdge } from "@/lib/invokeEdge";
+import { CustomersNav } from "@/components/app/CustomersNav";
 
 export const Route = createFileRoute("/app/crm/conversations")({ component: ConversationsPage });
 
@@ -155,98 +156,103 @@ function ConversationsPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-100px)] min-h-[520px] bg-[--bg-page]">
-      {/* Thread list */}
-      <aside className="flex w-full max-w-[300px] flex-col border-r border-[--border] bg-[--bg-surface]">
-        <div className="border-b border-[--border] p-3">
-          <div className="flex items-center justify-between px-1 pb-2">
-            <h1 className="text-[15px] font-semibold text-[--text-primary]">Inbox</h1>
-            <button
-              onClick={() => setShowConnect((s) => !s)}
-              className="text-xs font-semibold text-[--accent] hover:underline"
-            >
-              Connect
-            </button>
-          </div>
-          {showConnect && <ConnectChannelPanel orgId={currentOrgId ?? null} />}
-          <div className="flex gap-1">
-            {(["all", "unread", "email", "sms"] as const).map((f) => (
+    <div className="flex h-[calc(100vh-72px)] min-h-[560px] flex-col bg-[--bg-page]">
+      <div className="border-b border-[--border] px-4 py-2">
+        <CustomersNav />
+      </div>
+      <div className="flex min-h-0 flex-1">
+        {/* Thread list */}
+        <aside className="flex w-full max-w-[300px] flex-col border-r border-[--border] bg-[--bg-surface]">
+          <div className="border-b border-[--border] p-3">
+            <div className="flex items-center justify-between px-1 pb-2">
+              <h1 className="text-[15px] font-semibold text-[--text-primary]">Inbox</h1>
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
-                  filter === f
-                    ? "bg-[--accent-light] text-[--accent]"
-                    : "text-[--text-muted] hover:text-[--text-primary]"
-                }`}
+                onClick={() => setShowConnect((s) => !s)}
+                className="text-xs font-semibold text-[--accent] hover:underline"
               >
-                {f}
+                Connect
               </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="space-y-2 p-3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="h-14 animate-pulse rounded-xl bg-[--bg-surface-2]" />
-              ))}
             </div>
-          ) : filteredThreads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <Inbox className="mb-2 h-7 w-7 text-[--text-muted]" />
-              <p className="text-sm font-semibold text-[--text-primary]">No conversations</p>
-              <p className="mt-1 text-xs text-[--text-muted]">
-                Inbound messages across channels land here.
-              </p>
-            </div>
-          ) : (
-            filteredThreads.map((t) => {
-              const Icon = CHANNEL_ICON[t.channel] ?? MessageSquare;
-              return (
+            {showConnect && <ConnectChannelPanel orgId={currentOrgId ?? null} />}
+            <div className="flex gap-1">
+              {(["all", "unread", "email", "sms"] as const).map((f) => (
                 <button
-                  key={t.key}
-                  onClick={() => setActiveKey(t.key)}
-                  className={`flex w-full items-start gap-2.5 border-b border-[--border] px-3 py-3 text-left transition-colors hover:bg-[--bg-surface-2] ${
-                    activeKey === t.key ? "bg-[--bg-surface-2]" : ""
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                    filter === f
+                      ? "bg-[--accent-light] text-[--accent]"
+                      : "text-[--text-muted] hover:text-[--text-primary]"
                   }`}
                 >
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[--accent-light] text-xs font-semibold text-[--accent]">
-                    {t.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium text-[--text-primary]">
-                        {t.name}
-                      </span>
-                      <Icon className="h-3 w-3 shrink-0 text-[--text-muted]" />
-                      {t.unread && (
-                        <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-[--accent]" />
-                      )}
-                    </div>
-                    <p className="truncate text-xs text-[--text-muted]">{t.last.body}</p>
-                  </div>
+                  {f}
                 </button>
-              );
-            })
-          )}
-        </div>
-      </aside>
-
-      {/* Thread view */}
-      <section className="flex flex-1 flex-col">
-        {active ? (
-          <ThreadView thread={active} orgId={currentOrgId ?? null} onSent={load} />
-        ) : (
-          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-            <MessageSquare className="mb-3 h-9 w-9 text-[--text-muted]" />
-            <p className="text-sm font-semibold text-[--text-primary]">Select a conversation</p>
-            <p className="mt-1 max-w-xs text-xs text-[--text-muted]">
-              Pick a thread on the left to read it and reply with help from Nova.
-            </p>
+              ))}
+            </div>
           </div>
-        )}
-      </section>
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="space-y-2 p-3">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="h-14 animate-pulse rounded-xl bg-[--bg-surface-2]" />
+                ))}
+              </div>
+            ) : filteredThreads.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                <Inbox className="mb-2 h-7 w-7 text-[--text-muted]" />
+                <p className="text-sm font-semibold text-[--text-primary]">No conversations</p>
+                <p className="mt-1 text-xs text-[--text-muted]">
+                  Inbound messages across channels land here.
+                </p>
+              </div>
+            ) : (
+              filteredThreads.map((t) => {
+                const Icon = CHANNEL_ICON[t.channel] ?? MessageSquare;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setActiveKey(t.key)}
+                    className={`flex w-full items-start gap-2.5 border-b border-[--border] px-3 py-3 text-left transition-colors hover:bg-[--bg-surface-2] ${
+                      activeKey === t.key ? "bg-[--bg-surface-2]" : ""
+                    }`}
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[--accent-light] text-xs font-semibold text-[--accent]">
+                      {t.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-medium text-[--text-primary]">
+                          {t.name}
+                        </span>
+                        <Icon className="h-3 w-3 shrink-0 text-[--text-muted]" />
+                        {t.unread && (
+                          <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-[--accent]" />
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-[--text-muted]">{t.last.body}</p>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        {/* Thread view */}
+        <section className="flex flex-1 flex-col">
+          {active ? (
+            <ThreadView thread={active} orgId={currentOrgId ?? null} onSent={load} />
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+              <MessageSquare className="mb-3 h-9 w-9 text-[--text-muted]" />
+              <p className="text-sm font-semibold text-[--text-primary]">Select a conversation</p>
+              <p className="mt-1 max-w-xs text-xs text-[--text-muted]">
+                Pick a thread on the left to read it and reply with help from Nova.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

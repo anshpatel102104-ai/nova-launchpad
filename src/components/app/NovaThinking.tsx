@@ -1,25 +1,85 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Zap } from "lucide-react";
+import { deriveOutputShape, type OutputShape } from "@/lib/casefile";
 
-// Staged, literal status copy — advances with elapsed time instead of
-// cycling. Boring on purpose: it should read like a status line, not sales
-// copy. The last stage holds until the run finishes.
-const RUN_STAGES: Array<{ afterSeconds: number; label: string }> = [
+// SIMULATED reasoning sequence — NOT real intermediate state.
+//
+// The tool-run edge path (runTool) returns a single JSON response; it does
+// not stream, so there is no genuine "Nova is now doing X" signal to surface
+// (streamText stays empty for these runs). Until the router exposes
+// streaming, we advance a short, tool-shape-specific status sequence on a
+// timer so the wait reads like reasoning rather than a blank spinner. It is
+// paced by elapsed time (not a fixed cycle) and the last real step holds
+// until the run finishes. Swap this for real states once streaming exists.
+type Stage = { afterSeconds: number; label: string };
+
+const TAIL: Stage = {
+  afterSeconds: 20,
+  label: "Still working — long runs can take up to a minute…",
+};
+
+const GENERIC_STAGES: Stage[] = [
   { afterSeconds: 0, label: "Reading your business context…" },
   { afterSeconds: 3, label: "Working through your inputs…" },
   { afterSeconds: 8, label: "Writing the result…" },
-  { afterSeconds: 20, label: "Still working — long runs can take up to a minute…" },
+  TAIL,
 ];
+
+// Three-beat sequences per output shape: read → analyze → draft.
+const SHAPE_STEPS: Record<OutputShape, [string, string, string]> = {
+  score_verdict: [
+    "Reading your inputs…",
+    "Scoring against benchmarks…",
+    "Drafting Nova's verdict…",
+  ],
+  comparison: [
+    "Gathering the options…",
+    "Comparing on price and fit…",
+    "Picking the recommended move…",
+  ],
+  report: ["Reading your business context…", "Structuring the analysis…", "Writing the report…"],
+  memo: ["Reading your business context…", "Working through the decision…", "Writing the memo…"],
+  plan_with_steps: [
+    "Reading your business context…",
+    "Sequencing the steps…",
+    "Writing your plan…",
+  ],
+  pipeline_snapshot: [
+    "Reviewing your pipeline data…",
+    "Comparing against stage benchmarks…",
+    "Summarizing the snapshot…",
+  ],
+  session_summary: [
+    "Reviewing the session…",
+    "Pulling out the key takeaways…",
+    "Writing your summary…",
+  ],
+};
+
+function stagesForTool(toolKey?: string): Stage[] {
+  const shape = toolKey ? deriveOutputShape(toolKey) : null;
+  if (!shape) return GENERIC_STAGES;
+  const [a, b, c] = SHAPE_STEPS[shape];
+  return [
+    { afterSeconds: 0, label: a },
+    { afterSeconds: 3, label: b },
+    { afterSeconds: 8, label: c },
+    TAIL,
+  ];
+}
 
 type Props = {
   streamText: string;
   toolName?: string;
+  /** Tool key — selects a shape-specific (simulated) reasoning sequence. */
+  toolKey?: string;
 };
 
-export function NovaThinking({ streamText, toolName }: Props) {
+export function NovaThinking({ streamText, toolName, toolKey }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const textRef = useRef<HTMLDivElement>(null);
+  const stages = useMemo(() => stagesForTool(toolKey), [toolKey]);
 
   useEffect(() => {
     const started = Date.now();
@@ -29,7 +89,7 @@ export function NovaThinking({ streamText, toolName }: Props) {
     return () => clearInterval(interval);
   }, []);
 
-  const stage = [...RUN_STAGES].reverse().find((s) => elapsed >= s.afterSeconds) ?? RUN_STAGES[0];
+  const stage = [...stages].reverse().find((s) => elapsed >= s.afterSeconds) ?? stages[0];
 
   useEffect(() => {
     setCharCount(streamText.length);

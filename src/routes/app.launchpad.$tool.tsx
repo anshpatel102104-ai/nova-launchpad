@@ -2229,7 +2229,9 @@ function ToolPage() {
                 />
               )}
 
-              {generating && <NovaThinking streamText={streamText} toolName={tool.name} />}
+              {generating && (
+                <NovaThinking streamText={streamText} toolName={tool.name} toolKey={tool.key} />
+              )}
 
               {output && !generating && (
                 <div className="max-h-[68vh] overflow-y-auto pr-1">

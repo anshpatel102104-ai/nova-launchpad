@@ -6,9 +6,11 @@
  */
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Building2, Trash2, GitMerge } from "lucide-react";
+import { Plus, Building2, Trash2, GitMerge, Activity } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { MomentumRail } from "@/components/nova/MomentumRail";
+import { CustomersNav } from "@/components/app/CustomersNav";
 
 export const Route = createFileRoute("/app/crm/companies")({ component: CompaniesPage });
 
@@ -85,6 +87,9 @@ function CompaniesPage() {
   return (
     <div className="min-h-full bg-[--bg-page] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
+        <div className="mb-4">
+          <CustomersNav />
+        </div>
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">
@@ -128,9 +133,12 @@ function CompaniesPage() {
             <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
               Group contacts and deals under the accounts they belong to.
             </p>
+            {/* Secondary weight: the persistent header "Add Company" is this
+                screen's single primary CTA, so this empty-state twin is an
+                outline button (CTA reduction — one primary per screen). */}
             <button
               onClick={() => setShowAdd(true)}
-              className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--accent-hover]"
+              className="rounded-xl border border-[--accent] px-5 py-2.5 text-sm font-semibold text-[--accent] hover:bg-[--accent]/10"
             >
               Add Company
             </button>
@@ -221,12 +229,15 @@ function CompanyDrawer({
   orgId: string | null;
   onClose: () => void;
 }) {
-  const [tab, setTab] = useState<"profile" | "contacts" | "deals">("profile");
+  const [tab, setTab] = useState<"profile" | "contacts" | "deals" | "activity">("profile");
   const [contacts, setContacts] = useState<
     { id: string; first_name: string | null; last_name: string | null; email: string | null }[]
   >([]);
   const [deals, setDeals] = useState<
     { id: string; name: string; stage: string; value: number | null }[]
+  >([]);
+  const [activities, setActivities] = useState<
+    { id: string; type: string; content: string | null; created_at: string; deal_id: string }[]
   >([]);
 
   useEffect(() => {
@@ -242,6 +253,26 @@ function CompanyDrawer({
       .eq("company_id", company.id)
       .then(({ data }) => setDeals((data as typeof deals) ?? []));
   }, [company.id, orgId]);
+
+  // Activity timeline — the chronological crm_activities feed across this
+  // company's deals (crm_activities links by deal_id, so we join through the
+  // company's leads). Auto-populated: nothing manual to log here.
+  useEffect(() => {
+    if (deals.length === 0) {
+      setActivities([]);
+      return;
+    }
+    void supabase
+      .from("crm_activities")
+      .select("id, type, content, created_at, deal_id")
+      .in(
+        "deal_id",
+        deals.map((d) => d.id),
+      )
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => setActivities((data as typeof activities) ?? []));
+  }, [deals]);
 
   return (
     <div
@@ -270,7 +301,7 @@ function CompanyDrawer({
         </div>
 
         <div className="flex gap-1 border-b border-[--border] px-3">
-          {(["profile", "contacts", "deals"] as const).map((t) => (
+          {(["profile", "contacts", "deals", "activity"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -286,6 +317,20 @@ function CompanyDrawer({
         </div>
 
         <div className="p-5">
+          {tab === "profile" && (
+            <MomentumRail
+              className="mb-4"
+              loop={{
+                asset: company.industry ? `${company.industry} account` : "Company account",
+                task: contacts.length
+                  ? `${contacts.length} contact${contacts.length > 1 ? "s" : ""} linked`
+                  : undefined,
+                momentum: deals.length
+                  ? `${deals.length} deal${deals.length > 1 ? "s" : ""} in play`
+                  : undefined,
+              }}
+            />
+          )}
           {tab === "profile" && (
             <dl className="space-y-3">
               {[
@@ -342,6 +387,46 @@ function CompanyDrawer({
                   </div>
                 ))}
               </div>
+            ))}
+          {tab === "activity" &&
+            (activities.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Activity className="mb-2 h-6 w-6 text-[--text-muted]" />
+                <p className="text-sm font-semibold text-[--text-primary]">No activity yet</p>
+                <p className="mt-1 max-w-[16rem] text-xs text-[--text-muted]">
+                  Stage changes, notes, and tasks on this account's deals will appear here
+                  automatically.
+                </p>
+              </div>
+            ) : (
+              <ol className="relative space-y-4 pl-4">
+                {activities.map((a) => {
+                  const deal = deals.find((d) => d.id === a.deal_id);
+                  return (
+                    <li key={a.id} className="relative">
+                      <span
+                        className="absolute -left-4 top-1.5 h-2 w-2 rounded-full"
+                        style={{ background: "var(--accent)" }}
+                      />
+                      <span
+                        className="absolute -left-[13px] top-3 bottom-[-16px] w-px"
+                        style={{ background: "var(--border)" }}
+                      />
+                      <p className="text-sm text-[--text-primary]">
+                        {a.content || a.type.replace(/_/g, " ")}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-[--text-muted]">
+                        {deal ? `${deal.name} · ` : ""}
+                        {new Date(a.created_at).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
             ))}
         </div>
       </div>

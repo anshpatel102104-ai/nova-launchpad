@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   List,
   X,
+  Sparkles,
   Building2,
   Mail,
   Phone,
@@ -69,6 +70,9 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { MomentumRail } from "@/components/nova/MomentumRail";
+import { CrmNextBestAction } from "@/components/nova/CrmNextBestAction";
+import { refreshForecast, refreshPipelineInsights } from "@/lib/crm";
 
 export const Route = createFileRoute("/app/nova/crm")({ component: CRMPage });
 
@@ -582,6 +586,7 @@ function CRMPage() {
                 />
               )}
             </div>
+            <InsightsRefreshButton orgId={currentOrgId} />
             <button
               onClick={() => {
                 if (blockIfGuest("Sign up to add deals.")) return;
@@ -741,6 +746,17 @@ function CRMPage() {
       {/* ── Main content + detail panel ── */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto p-6">
+          {/* Nova's single highest-leverage move across the pipeline */}
+          {deals.length > 0 && (
+            <CrmNextBestAction
+              orgId={currentOrgId}
+              className="mb-4"
+              onAct={(a) => {
+                const d = deals.find((x) => x.id === a.entity_id);
+                if (d) onSelect(d);
+              }}
+            />
+          )}
           {q.isLoading ? (
             <div className="flex justify-center py-20">
               <Loader2
@@ -808,7 +824,7 @@ function CRMPage() {
               settings={settings}
             />
           ) : (
-            <ForecastView deals={deals} />
+            <ForecastView deals={deals} orgId={currentOrgId} />
           )}
         </div>
 
@@ -1969,7 +1985,43 @@ function DealsListView({
 }
 
 /* ════════════════════════ FORECAST VIEW ════════════════════════ */
-function ForecastView({ deals }: { deals: Deal[] }) {
+/** Regenerate Mo Latif's pipeline coaching signals (crm-insights) on demand. */
+function InsightsRefreshButton({ orgId }: { orgId: string | null }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      disabled={!orgId || busy}
+      title="Refresh Nova's pipeline insights"
+      onClick={async () => {
+        if (!orgId) return;
+        setBusy(true);
+        try {
+          const r = await refreshPipelineInsights(orgId);
+          toast.success(
+            r.insights_written > 0
+              ? `Nova refreshed ${r.insights_written} pipeline insight${r.insights_written > 1 ? "s" : ""}`
+              : "Pipeline looks healthy — no new signals",
+          );
+        } catch {
+          toast.error("Couldn't refresh insights");
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold disabled:opacity-50"
+      style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+    >
+      <Sparkles
+        className={`h-3.5 w-3.5 ${busy ? "animate-pulse" : ""}`}
+        style={{ color: "var(--primary)" }}
+      />
+      {busy ? "Refreshing…" : "Refresh insights"}
+    </button>
+  );
+}
+
+function ForecastView({ deals, orgId }: { deals: Deal[]; orgId: string | null }) {
+  const [snapshotting, setSnapshotting] = useState(false);
   const data = STAGES.map((stage) => {
     const stageDeals = deals.filter((d) => d.stage === stage);
     const pipeline = stageDeals.reduce((s, d) => s + (d.value || 0), 0);
@@ -1988,6 +2040,34 @@ function ForecastView({ deals }: { deals: Deal[] }) {
 
   return (
     <div className="space-y-6">
+      {/* Snapshot this forecast into forecast_snapshots + refresh Dhruv's
+          verdict (forecast-rollup). The chart above is live; this records a
+          point-in-time snapshot for accuracy tracking. */}
+      <div className="flex items-center justify-between">
+        <p className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
+          Live from your open pipeline. Snapshot to track forecast accuracy over time.
+        </p>
+        <button
+          disabled={!orgId || snapshotting}
+          onClick={async () => {
+            if (!orgId) return;
+            setSnapshotting(true);
+            try {
+              await refreshForecast(orgId);
+              toast.success("Forecast snapshot saved");
+            } catch {
+              toast.error("Couldn't snapshot the forecast");
+            } finally {
+              setSnapshotting(false);
+            }
+          }}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-semibold disabled:opacity-50"
+          style={{ background: "var(--primary)", color: "white" }}
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${snapshotting ? "animate-spin" : ""}`} />
+          {snapshotting ? "Snapshotting…" : "Snapshot forecast"}
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div
           className="rounded-xl p-5"
@@ -2311,6 +2391,17 @@ function DealDetailPanel({
       <div className="flex-1 overflow-y-auto">
         {tab === "overview" ? (
           <div>
+            {/* Loop context — what led to this deal (collapsed by default) */}
+            <div className="px-5 pt-4">
+              <MomentumRail
+                loop={{
+                  decision: deal.source ? `Sourced via ${deal.source}` : undefined,
+                  asset: deal.company ? `${deal.company} — ${deal.name}` : deal.name,
+                  task: `At ${deal.stage} stage`,
+                  momentum: expected ? `${fmt(expected)} weighted` : undefined,
+                }}
+              />
+            </div>
             {/* Tags */}
             {(deal.tags ?? []).length > 0 && (
               <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
@@ -3202,10 +3293,12 @@ function EmptyPipeline({ onAdd }: { onAdd: () => void }) {
       <p className="text-[13px] max-w-xs mb-6" style={{ color: "var(--muted-foreground)" }}>
         Add your first deal to start tracking your sales pipeline, close rates, and revenue.
       </p>
+      {/* Outline weight — the persistent header "Add deal" is the pipeline's
+          single primary CTA (CTA reduction: one primary per screen). */}
       <button
         onClick={onAdd}
-        className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-semibold"
-        style={{ background: "var(--primary)", color: "white" }}
+        className="flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-[13px] font-semibold"
+        style={{ borderColor: "var(--primary)", color: "var(--primary)" }}
       >
         <Plus className="h-4 w-4" />
         Add First Deal
