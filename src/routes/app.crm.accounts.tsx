@@ -17,6 +17,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/crm/accounts")({ component: AccountsPage });
 
+// customer_accounts isn't in the generated Supabase types yet; cast like the
+// other CRM surfaces do for not-yet-typed tables. Result is typed as Account[].
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 type Account = {
   id: string;
   name: string;
@@ -55,7 +60,7 @@ function AccountsPage() {
   async function load() {
     if (!currentOrgId) return;
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await db
       .from("customer_accounts")
       .select("id, name, stage, health_score, mrr, renewal_date, churned_at")
       .eq("organization_id", currentOrgId)

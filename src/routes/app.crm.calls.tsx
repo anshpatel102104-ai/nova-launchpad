@@ -17,6 +17,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/crm/calls")({ component: CallsPage });
 
+// call_transcripts isn't in the generated Supabase types yet; cast like the
+// other CRM surfaces do for not-yet-typed tables. Result is typed as Transcript[].
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 type Transcript = {
   id: string;
   call_id: string;
@@ -41,7 +46,7 @@ function CallsPage() {
   async function load() {
     if (!currentOrgId) return;
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await db
       .from("call_transcripts")
       .select("id, call_id, transcript_text, sentiment_score, created_at")
       .eq("organization_id", currentOrgId)
