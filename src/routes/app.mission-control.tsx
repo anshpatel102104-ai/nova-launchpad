@@ -24,6 +24,7 @@ import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatu
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
+import { StageSpine } from "@/components/launchpad/StageSpine";
 import { MomentumRail } from "@/components/nova/MomentumRail";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
@@ -40,9 +41,7 @@ import { ProgressRing } from "@/components/app/ProgressRing";
 import {
   ArrowRight,
   AlertTriangle,
-  Check,
   Clock,
-  Lock,
   Target,
   Zap,
   Trophy,
@@ -529,45 +528,21 @@ function MissionHero({
           </span>
         </div>
 
-        {/* stage stepper — the journey at a glance */}
-        <div className="mt-6 flex items-center gap-1.5">
-          {stages.map((s, i) => (
-            <React.Fragment key={s.id}>
-              <div
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10.5px] font-bold"
-                title={s.label}
-                style={
-                  s.done
-                    ? { background: "var(--success)", color: "var(--success-foreground)" }
-                    : s.current
-                      ? {
-                          background: "var(--primary)",
-                          color: "var(--primary-foreground)",
-                          boxShadow: "0 0 0 3px var(--primary-soft)",
-                        }
-                      : {
-                          background: "var(--surface-2)",
-                          color: "var(--text-faint)",
-                          border: "1px solid var(--border)",
-                        }
-                }
-              >
-                {s.done ? (
-                  <Check className="h-3 w-3" />
-                ) : s.upcoming ? (
-                  <Lock className="h-2.5 w-2.5" />
-                ) : (
-                  i + 1
-                )}
-              </div>
-              {i < stages.length - 1 && (
-                <div
-                  className="h-[2px] flex-1 rounded-full"
-                  style={{ background: s.done ? "var(--success)" : "var(--border)" }}
-                />
-              )}
-            </React.Fragment>
-          ))}
+        {/* stage stepper — the shared founder-journey spine, fed by the app's
+            canonical 6-stage progress model (same component as onboarding). */}
+        <div className="mt-6 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          <StageSpine
+            stages={stages.map((s) => ({ id: s.id, label: s.label }))}
+            currentIndex={Math.max(
+              0,
+              stages.findIndex((s) => s.current),
+            )}
+            accent="var(--primary)"
+            doneColor="var(--success)"
+            mutedColor="var(--text-faint)"
+            trackColor="var(--border)"
+            labelColor="var(--muted-foreground)"
+          />
         </div>
         {missionPercent > 0 && (
           <div className="mt-2 text-[11.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
