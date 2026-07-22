@@ -14,11 +14,22 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCourse, type CourseModule, type CourseStep } from "@/hooks/use-course";
 import { requestCoachmark } from "@/components/launchpad/Coachmark";
+import { StageSpine } from "@/components/launchpad/StageSpine";
 import { invokeEdge } from "@/lib/invokeEdge";
 import { mentorById, mentorInitials, type Mentor } from "@/lib/mentors";
 import { ArrowRight, Check, Lock, GraduationCap, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/app/launchpad/course")({ component: CoursePage });
+
+// Map the active module's lane → position on the shared founder-journey spine
+// (Idea → Validate → Build → Launch → Operate). When every module is complete,
+// the founder has reached the end of the journey.
+const LANE_TO_JOURNEY: Record<string, number> = { Idea: 0, Offer: 1, Customer: 3, Systems: 4 };
+function journeyIndex(activeLane: string | null, allComplete: boolean): number {
+  if (allComplete) return 4;
+  if (!activeLane) return 0;
+  return LANE_TO_JOURNEY[activeLane] ?? 0;
+}
 
 function CoursePage() {
   const course = useCourse();
@@ -96,6 +107,21 @@ function CoursePage() {
             Built from your casefile. One module at a time — Nova points at exactly what to click.
           </p>
         </div>
+      </div>
+
+      {/* Where this course sits in the founder journey — the shared spine. */}
+      <div className="overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+        <StageSpine
+          currentIndex={journeyIndex(
+            course.activeModule?.lane ?? null,
+            course.modules.length > 0 && !course.activeModule,
+          )}
+          accent="var(--primary)"
+          doneColor="var(--success)"
+          mutedColor="var(--text-faint)"
+          trackColor="var(--border)"
+          labelColor="var(--muted-foreground)"
+        />
       </div>
 
       {/* Vertical path */}
