@@ -19,6 +19,16 @@ import {
   resolveMode,
 } from "@/constants/onboarding-questions";
 import { invokeEdge, EdgeError } from "@/lib/invokeEdge";
+import { StageSpine } from "@/components/launchpad/StageSpine";
+
+// Map the founder's answered stage → index on the Idea→Validate→Build→Launch→Operate
+// spine. Before they answer, they're at the very start (Idea).
+function spineIndexFromAnswers(answers: IntakeAnswers | undefined): number {
+  const s = String(answers?.stage ?? "").toLowerCase();
+  if (s.includes("launch")) return 3;
+  if (s.includes("validate")) return 1;
+  return 0;
+}
 
 // Accent used during the pre-track detection step (mode isn't known yet).
 const DETECT_ACCENT = "#8b5cf6";
@@ -258,6 +268,11 @@ function Onboarding() {
             accentDark={accentDark}
             initialAnswers={resume?.answers}
             initialStep={resume?.step ?? 0}
+            stageSpine={
+              mode === "create" ? (
+                <StageSpine currentIndex={spineIndexFromAnswers(resume?.answers)} accent={accent} />
+              ) : undefined
+            }
             onAnswer={(key, value, step) => {
               const merged = { ...(resume?.answers ?? {}), [key]: value };
               setResume({ step, answers: merged });

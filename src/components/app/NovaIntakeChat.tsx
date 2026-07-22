@@ -16,6 +16,8 @@ interface Props {
   accentDark: string; // gradient partner
   initialAnswers?: IntakeAnswers;
   initialStep?: number;
+  /** Persistent "you are here" stage path, shown under the progress bar. */
+  stageSpine?: React.ReactNode;
   /** Fired after every answer — used for per-step persistence. */
   onAnswer?: (key: string, value: string | string[], step: number) => void;
   onComplete: (answers: IntakeAnswers) => Promise<void> | void;
@@ -60,6 +62,7 @@ export function NovaIntakeChat({
   accentDark,
   initialAnswers,
   initialStep = 0,
+  stageSpine,
   onAnswer,
   onComplete,
 }: Props) {
@@ -198,6 +201,9 @@ export function NovaIntakeChat({
           }}
         />
       </div>
+
+      {/* Persistent "you are here" stage path (create track) */}
+      {stageSpine && <div style={{ marginBottom: 22 }}>{stageSpine}</div>}
 
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
         {messages.map((msg) => (
