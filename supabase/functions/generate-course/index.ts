@@ -224,10 +224,7 @@ Deno.serve(async (req) => {
 
   // ── Point the workspace at the first module + flip casefile approved ───────
   if (firstModuleId) {
-    await admin
-      .from("workspaces")
-      .update({ current_mission_id: firstModuleId })
-      .eq("id", ws.id);
+    await admin.from("workspaces").update({ current_mission_id: firstModuleId }).eq("id", ws.id);
   }
   await admin
     .from("tool_runs")

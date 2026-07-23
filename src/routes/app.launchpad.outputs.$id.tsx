@@ -61,7 +61,10 @@ function CasefilePage() {
   const runQ = useQuery({
     queryKey: ["tool_run", id],
     queryFn: async () => {
-      const { data } = await supabase
+      // casefile_status is newer than the generated Supabase types.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      const { data } = await db
         .from("tool_runs")
         .select(
           "id, tool_key, title, status, output, output_shape, model, created_at, casefile_status",
