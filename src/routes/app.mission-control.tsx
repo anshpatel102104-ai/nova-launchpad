@@ -27,6 +27,7 @@ import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { StageSpine } from "@/components/launchpad/StageSpine";
 import { nextBestMove, type NextMove } from "@/lib/next-move";
 import { MomentumRail } from "@/components/nova/MomentumRail";
+import { RecentWinChip } from "@/components/app/RecentWinChip";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
   BusinessSchematic,
@@ -106,6 +107,9 @@ function HomePage() {
           <p className="mt-1 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
             {graph.businessName} · you have one clear next move. Nova will guide you.
           </p>
+          <div className="mt-2.5">
+            <RecentWinChip />
+          </div>
         </div>
         <StatusChip tone={blocker ? "warning" : "success"}>
           {blocker ? "1 thing to fix" : "On track"}

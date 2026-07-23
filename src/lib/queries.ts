@@ -382,6 +382,33 @@ export const recentMomentumQuery = (orgId: string) =>
     },
   });
 
+/** The single most recent "win" event, for the in-the-moment celebration chip. */
+export const latestWinQuery = (orgId: string) =>
+  queryOptions({
+    queryKey: ["latest-win", orgId],
+    queryFn: async (): Promise<{ event_type: string; created_at: string } | null> => {
+      if (!orgId || isGuest()) return null;
+      const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString();
+      const { data } = await supabase
+        .from("nova_events")
+        .select("event_type, created_at")
+        .eq("organization_id", orgId)
+        .in("event_type", [
+          "step.completed",
+          "mission.completed",
+          "course.generated",
+          "track.graduation",
+          "contact.created",
+        ])
+        .gte("created_at", twoDaysAgo)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return (data as { event_type: string; created_at: string } | null) ?? null;
+    },
+    staleTime: 30_000,
+  });
+
 export type MaskedIntegration = {
   id: string;
   user_id: string;
