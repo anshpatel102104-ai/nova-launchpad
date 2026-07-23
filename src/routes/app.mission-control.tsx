@@ -25,6 +25,7 @@ import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { StageSpine } from "@/components/launchpad/StageSpine";
+import { nextBestMove, type NextMove } from "@/lib/next-move";
 import { MomentumRail } from "@/components/nova/MomentumRail";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
@@ -76,37 +77,9 @@ function HomePage() {
   const blocker = graph.blockers[0];
   const recs = graph.recommendations;
 
-  // The single most important next move — a blocker to fix always wins,
-  // otherwise the top recommendation, otherwise "continue this stage."
-  const hero: HeroMove = blocker
-    ? {
-        tone: "fix",
-        eyebrow: "Fix this first",
-        title: blocker.title,
-        sub: blocker.why,
-        to: blocker.resolveTo,
-        cta: blocker.resolveLabel,
-        minutes: blocker.estimatedMinutes,
-      }
-    : recs[0]
-      ? {
-          tone: "do",
-          eyebrow: "Do this next",
-          title: recs[0].title,
-          sub: recs[0].impact,
-          to: recs[0].to,
-          cta: "Start now",
-          minutes: recs[0].estimatedMinutes,
-        }
-      : {
-          tone: "do",
-          eyebrow: "Continue your mission",
-          title: progress.current.headline,
-          sub: progress.current.proof,
-          to: progress.current.to,
-          cta: "Continue",
-          minutes: 15,
-        };
+  // The single most important next move — shared with the app-wide
+  // NextBestActionBar so both surfaces always agree (src/lib/next-move.ts).
+  const hero = nextBestMove(graph, progress);
 
   // Task queue behind the hero — the recommendations we didn't surface above.
   const queue = (blocker ? recs.slice(0, 4) : recs.slice(1, 5)).filter(Boolean);
@@ -421,16 +394,6 @@ function HomePage() {
 
 /* ─── Current Mission hero ──────────────────────────────────── */
 
-interface HeroMove {
-  tone: "fix" | "do";
-  eyebrow: string;
-  title: string;
-  sub: string;
-  to: string;
-  cta: string;
-  minutes: number;
-}
-
 function MissionHero({
   hero,
   stageLabel,
@@ -439,7 +402,7 @@ function MissionHero({
   stages,
   missionPercent,
 }: {
-  hero: HeroMove;
+  hero: NextMove;
   stageLabel: string;
   stageNumber: number;
   stageCount: number;

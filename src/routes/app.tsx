@@ -6,6 +6,7 @@ import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { IntelligenceRail } from "@/components/app/IntelligenceRail";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
 import { NovaBar } from "@/components/nova/NovaBar";
+import { NextBestActionBar } from "@/components/app/NextBestActionBar";
 import { CoachmarkListener } from "@/components/launchpad/Coachmark";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore, isDemoEmail } from "@/lib/guest";
@@ -127,6 +128,7 @@ function AppLayout() {
             className="flex-1 overflow-x-hidden overflow-y-auto"
             style={{ paddingBottom: railOpen ? 360 : 0 }}
           >
+            <NextBestActionBar />
             <div key={path} className="page-in w-full px-5 py-5 pb-20 md:px-7 md:py-6">
               <Outlet />
             </div>
