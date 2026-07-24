@@ -2,26 +2,19 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef } from "react";
 import {
   LogOut,
-  Sun,
-  Moon,
-  Monitor,
   ChevronDown,
   ChevronRight,
   User as UserIcon,
   Settings as SettingsIcon,
-  Check,
   Search,
   Zap,
   HelpCircle,
   Plus,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useTheme } from "@/lib/theme";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { useGuest } from "@/lib/guest";
-import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
-import { ThemePaletteButton } from "./ThemePaletteButton";
 
 const PAGE_TITLES: Record<string, string> = {
   "/app/launchpad/history": "Run History",
@@ -81,14 +74,11 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-  const { theme, resolvedTheme, setTheme } = useTheme();
   const { isGuest, disable } = useGuest();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [themeOpen, setThemeOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const themeRef = useRef<HTMLDivElement>(null);
 
   const initials = (profile?.full_name || user?.email || "U")
     .split(/[\s@]/)
@@ -116,11 +106,10 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
-      if (!themeRef.current?.contains(e.target as Node)) setThemeOpen(false);
     };
-    if (menuOpen || themeOpen) document.addEventListener("mousedown", onClick);
+    if (menuOpen) document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
-  }, [menuOpen, themeOpen]);
+  }, [menuOpen]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -206,7 +195,8 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
         {/* ── Right controls ── */}
         <div className="flex items-center gap-0.5">
           {/* New / Quick add */}
-          <button
+          <Link
+            to="/app/contacts"
             className="hidden sm:flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-semibold transition-colors mr-1"
             style={{ background: "var(--primary)", color: "white" }}
             onMouseEnter={(e) => {
@@ -217,8 +207,8 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
             }}
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>New</span>
-          </button>
+            <span>Add contact</span>
+          </Link>
 
           {/* Bell */}
           <NotificationBell />
@@ -227,66 +217,6 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           <IconBtn title="Help & support">
             <HelpCircle className="h-4 w-4" />
           </IconBtn>
-
-          {/* Custom 3-color palette (Base / Secondary / Text) */}
-          <ThemePaletteButton />
-
-          {/* Theme picker */}
-          <div className="relative" ref={themeRef}>
-            <IconBtn onClick={() => setThemeOpen((o) => !o)} title="Theme">
-              {theme === "system" ? (
-                <Monitor className="h-4 w-4" />
-              ) : resolvedTheme === "dark" ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-            </IconBtn>
-
-            {themeOpen && (
-              <div
-                className="absolute right-0 mt-1.5 w-36 rounded-xl border p-1 overflow-hidden"
-                style={{
-                  background: "var(--popover)",
-                  borderColor: "var(--border)",
-                  boxShadow: "var(--shadow-md)",
-                  zIndex: 50,
-                }}
-              >
-                {(
-                  [
-                    { id: "light", label: "Light", Icon: Sun },
-                    { id: "dark", label: "Dark", Icon: Moon },
-                    { id: "system", label: "System", Icon: Monitor },
-                  ] as const
-                ).map(({ id, label, Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => {
-                      setTheme(id);
-                      setThemeOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] transition-colors"
-                    style={{
-                      color: theme === id ? "var(--foreground)" : "var(--muted-foreground)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "var(--surface-2)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "transparent";
-                    }}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span className="flex-1 text-left">{label}</span>
-                    {theme === id && (
-                      <Check className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Divider */}
           <div className="h-5 w-px mx-1.5" style={{ background: "var(--border)" }} />
