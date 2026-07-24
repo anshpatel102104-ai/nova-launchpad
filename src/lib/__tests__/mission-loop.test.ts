@@ -138,7 +138,7 @@ describe("buildRunMomentum", () => {
 describe("extractAndSaveProfileFromFields — learned facts", () => {
   beforeEach(() => localStorage.clear());
 
-  it("returns the facts a run taught Nova", () => {
+  it("returns the facts a run taught Bylda", () => {
     const facts = extractAndSaveProfileFromFields({
       startupName: "Acme",
       targetCustomer: "dentists in Texas",

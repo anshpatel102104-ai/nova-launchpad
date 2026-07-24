@@ -43,8 +43,8 @@ const NEXT_MISSIONS: Record<
         {
           title: "Step 1 — Build a Full Go-To-Market Plan",
           description:
-            "Open the GTM Strategy tool. Tell Nova about your business, who your ideal customer is, and what problem you solve. " +
-            "Nova will create a detailed plan that covers: (1) which type of customer to target first, " +
+            "Open the GTM Strategy tool. Tell Bylda about your business, who your ideal customer is, and what problem you solve. " +
+            "Bylda will create a detailed plan that covers: (1) which type of customer to target first, " +
             "(2) exactly where to find them (LinkedIn, cold email, local networking, Facebook groups, etc.), " +
             "(3) what to say to get their attention, and (4) a week-by-week schedule for the next 90 days. " +
             "After reading the plan, highlight the ONE channel you will focus on for the first 30 days. " +
@@ -56,7 +56,7 @@ const NEXT_MISSIONS: Record<
           description:
             "A pitch is the story you tell about your business that makes people want to learn more or invest. " +
             "Open the Pitch Generator tool and describe your business, the problem you solve, and who your customer is. " +
-            "Nova will write a short, compelling pitch you can use in emails, social media posts, investor meetings, or conversations. " +
+            "Bylda will write a short, compelling pitch you can use in emails, social media posts, investor meetings, or conversations. " +
             "Practice saying the pitch out loud 5 times. Then record yourself on your phone saying it. " +
             "Watch it back. If you sound confident and clear, you're ready. If you stumble, practice more. " +
             "Share your pitch with one trusted person and ask: 'Does this make sense? Would you buy this?'",
@@ -89,7 +89,7 @@ const NEXT_MISSIONS: Record<
           title: "Step 1 — Get Your First 10 Customers Blueprint",
           description:
             "Open the First 10 Customers tool. Enter your offer details, your target customer type, and your price. " +
-            "Nova will give you a specific, step-by-step plan to land 10 customers within 30 days. " +
+            "Bylda will give you a specific, step-by-step plan to land 10 customers within 30 days. " +
             "The plan will include outreach scripts, platforms to use, and daily actions. " +
             "After reading the output, DO THIS: make a list of 20 specific people or businesses who fit your target customer. " +
             "Not categories — actual names or company names. Real people. This list is your 'hit list.' " +
@@ -101,7 +101,7 @@ const NEXT_MISSIONS: Record<
           description:
             "Most people say no the first time — not because they don't want your product, but because they're busy. " +
             "The key is following up without being annoying. Open the Follow-Up Sequence tool. " +
-            "Tell Nova your business type and target customer. Nova will write 5 emails spread over 14 days. " +
+            "Tell Bylda your business type and target customer. Bylda will write 5 emails spread over 14 days. " +
             "Each email has one job: Email 1 introduces you. Email 2 gives free value. Email 3 handles the most common objection. " +
             "Email 4 shares a story or testimonial. Email 5 makes a clear, direct ask for the sale. " +
             "Set these up as templates in your email tool right now. Every prospect on your hit list gets this sequence after your first message.",
@@ -134,7 +134,7 @@ const NEXT_MISSIONS: Record<
           title: "Step 1 — Document Your Full Go-To-Market Strategy",
           description:
             "Open the GTM Strategy tool and enter your current business details: how you currently get customers, your pricing, and your target customer. " +
-            "This time, ask Nova to build a strategy a team member could execute. " +
+            "This time, ask Bylda to build a strategy a team member could execute. " +
             "The goal is to turn YOUR personal selling skills into a documented process anyone could follow. " +
             "After getting the output, take each major step in the strategy and write: " +
             "'Who does this? How long does it take? What does success look like?' " +
@@ -147,7 +147,7 @@ const NEXT_MISSIONS: Record<
             "An operations plan answers the question: 'How does this business actually work every day?' " +
             "Open the Operations Plan tool. Describe your current business in detail — " +
             "how you deliver your product or service, how customers interact with you, how you get paid, and any recurring tasks. " +
-            "Nova will output a plan that shows your key processes, tools to use, team roles, and automation opportunities. " +
+            "Bylda will output a plan that shows your key processes, tools to use, team roles, and automation opportunities. " +
             "After reading the plan, identify the 3 tasks that take the most time in your week. " +
             "Those are the first things to automate or delegate. If you can free up even 5 hours per week, you can use that time to get more customers.",
           tool_key: "generate-ops-plan",
@@ -180,10 +180,10 @@ const NEXT_MISSIONS: Record<
         {
           title: "Step 1 — Create a Content Strategy That Attracts Your Ideal Customers",
           description:
-            "Open the GTM Strategy tool and ask Nova to build a CONTENT-focused GTM strategy for your business. " +
+            "Open the GTM Strategy tool and ask Bylda to build a CONTENT-focused GTM strategy for your business. " +
             "Tell it: your business type, your target customer, and the platforms where your customers spend time " +
             "(LinkedIn, Instagram, YouTube, TikTok, Twitter/X, industry blogs, etc.). " +
-            "Nova will create a content plan that includes: what topics to cover, what formats to use " +
+            "Bylda will create a content plan that includes: what topics to cover, what formats to use " +
             "(short videos, long articles, social posts), how often to post, and how to repurpose one piece of content across multiple platforms. " +
             "Pick ONE platform to start. Post consistently for 30 days before adding a second platform.",
           tool_key: "gtm-strategy",
@@ -195,7 +195,7 @@ const NEXT_MISSIONS: Record<
             "This is one of the fastest ways to grow because you're borrowing someone else's trust with their customers. " +
             "Open the Pitch Generator tool and select 'Partnership Pitch' as the type. " +
             "Describe your business and the type of business you want to partner with (complementary, not a competitor). " +
-            "Nova will write a professional partnership proposal email you can send. " +
+            "Bylda will write a professional partnership proposal email you can send. " +
             "After getting the pitch, make a list of 10 businesses that serve your same target customer but don't compete with you. " +
             "Send the partnership pitch to all 10 this week.",
           tool_key: "pitch-generator",
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
       .eq("id", step_id);
     if (error) return json({ error: error.message }, 500);
 
-    // Resolve organization_id once per request (nova_events dual-write only).
+    // Resolve organization_id once per request (bylda_events dual-write only).
     // Only when workspace_id is present — not part of the top-level auth flow.
     let ws: { organization_id: string | null } | null = null;
     if (workspace_id) {
@@ -279,11 +279,11 @@ Deno.serve(async (req) => {
         properties: { step_id, mission_id },
       });
 
-      // Dual-write to nova_events (best-effort, non-blocking — a failure here
+      // Dual-write to bylda_events (best-effort, non-blocking — a failure here
       // must not affect the step_completed response).
       if (ws?.organization_id) {
         await admin
-          .from("nova_events")
+          .from("bylda_events")
           .insert({
             organization_id: ws.organization_id,
             source: "mission",
@@ -321,10 +321,10 @@ Deno.serve(async (req) => {
             properties: { mission_id },
           });
 
-          // Dual-write to nova_events (best-effort, non-blocking).
+          // Dual-write to bylda_events (best-effort, non-blocking).
           if (ws?.organization_id) {
             await admin
-              .from("nova_events")
+              .from("bylda_events")
               .insert({
                 organization_id: ws.organization_id,
                 source: "mission",

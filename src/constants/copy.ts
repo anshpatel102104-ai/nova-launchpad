@@ -43,7 +43,7 @@ export const LANE_COPY = {
     tagline: "From operator to owner",
     emptyState: "No automations live yet. Start with your first workflow.",
     ctaLabel: "Set up automations",
-    ctaPath: "/app/nova/workflows",
+    ctaPath: "/app/bylda/workflows",
     color: "#06b6d4",
   },
 } as const;
@@ -202,7 +202,7 @@ export const ONBOARDING_COPY = {
   },
   step3: {
     heading: "What's your biggest challenge?",
-    subheading: "We'll tailor your Nova experience to solve this first.",
+    subheading: "We'll tailor your Bylda experience to solve this first.",
   },
   complete: {
     heading: "Your workspace is ready.",

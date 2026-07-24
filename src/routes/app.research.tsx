@@ -411,7 +411,7 @@ function ResearchPage() {
   const userId = user?.id ?? "";
 
   // Pre-brief from the workspace profile so the idea field never renders
-  // as an empty required textbox when Nova already knows the business.
+  // as an empty required textbox when Bylda already knows the business.
   const [form, setForm] = useState<ResearchForm>(() => {
     const profile = loadWorkspaceProfile();
     return {
@@ -450,7 +450,7 @@ function ResearchPage() {
       // same lifecycle guarantees as every Launchpad tool run — the raw
       // invoke had no timeout, so a stalled call spun "Researching…" forever.
       const data = await invokeEdge<{ content?: string; message?: string }>(
-        "nova-chat",
+        "bylda-chat",
         {
           messages: [{ role: "user", content: prompt }],
           system:
@@ -574,7 +574,7 @@ function ResearchPage() {
             </div>
 
             {/* Pre-briefed fields — known values render read-only in the
-                "Nova knows" panel; only unknown fields render as inputs. */}
+                "Bylda knows" panel; only unknown fields render as inputs. */}
             <PreBriefedToolLauncher
               fieldDefs={[
                 {
@@ -670,7 +670,7 @@ function ResearchPage() {
           {isLoading && (
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-[13px] text-muted-foreground space-y-1.5">
               <div className="font-semibold text-foreground flex items-center gap-2">
-                <Brain className="h-4 w-4 text-primary animate-pulse" /> What Nova is doing right
+                <Brain className="h-4 w-4 text-primary animate-pulse" /> What Bylda is doing right
                 now:
               </div>
               {[

@@ -136,7 +136,7 @@ const STATIC_PAGES: Item[] = [
     group: "Page",
     label: "Pipeline (CRM)",
     icon: KanbanSquare,
-    to: "/app/nova/crm",
+    to: "/app/bylda/crm",
     match: /pipeline|crm|deals|kanban/i,
   },
   {
@@ -144,7 +144,7 @@ const STATIC_PAGES: Item[] = [
     group: "Page",
     label: "Lead Capture",
     icon: Inbox,
-    to: "/app/nova/leads",
+    to: "/app/bylda/leads",
     match: /lead|capture|inbound/i,
   },
   {
@@ -152,7 +152,7 @@ const STATIC_PAGES: Item[] = [
     group: "Page",
     label: "Automation Workflows",
     icon: Workflow,
-    to: "/app/nova/workflows",
+    to: "/app/bylda/workflows",
     match: /automation|workflow|trigger/i,
   },
   {
@@ -160,7 +160,7 @@ const STATIC_PAGES: Item[] = [
     group: "Page",
     label: "Client Onboarding",
     icon: UserCheck,
-    to: "/app/nova/clients",
+    to: "/app/bylda/clients",
     match: /onboard|client|kickoff/i,
   },
   {
@@ -168,7 +168,7 @@ const STATIC_PAGES: Item[] = [
     group: "Page",
     label: "Reporting",
     icon: BarChart3,
-    to: "/app/nova/reports",
+    to: "/app/bylda/reports",
     match: /report|analytics|metrics|kpi/i,
   },
   {
@@ -179,7 +179,7 @@ const STATIC_PAGES: Item[] = [
     to: "/app/launchpad",
     match: /launchpad|tools/i,
   },
-  { id: "p-nova", group: "Page", label: "Nova OS", icon: Zap, to: "/app/nova", match: /nova/i },
+  { id: "p-bylda", group: "Page", label: "Bylda OS", icon: Zap, to: "/app/bylda", match: /bylda/i },
   {
     id: "p-history",
     group: "Page",

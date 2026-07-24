@@ -174,7 +174,7 @@ export function StepExecutionGuide({ guidance, onMarkDone, isCompleted, compact,
           style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}
         >
           <MessageCircle className="h-3.5 w-3.5" />
-          I'm stuck — ask Nova
+          I'm stuck — ask Bylda
         </Link>
         <span
           className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold"

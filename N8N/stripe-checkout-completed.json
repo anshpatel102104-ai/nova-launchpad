@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body;\nconst headers = $input.first().json.headers;\n\n// Extract event data\nconst event = body;\nconst session = event?.data?.object || {};\n\n// Extract core fields\nconst customerEmail = session.customer_details?.email || session.metadata?.email || '';\nconst customerId = session.customer || '';\nconst subscriptionId = session.subscription || '';\nconst priceId = session.line_items?.data?.[0]?.price?.id || session.metadata?.price_id || '';\nconst businessName = session.metadata?.business_name || '';\nconst niche = session.metadata?.niche || '';\n\n// Map price ID to plan tier\nconst priceMap = {\n  'price_free': 'free',\n  'price_starter': 'starter',\n  'price_pro': 'pro',\n  'price_scale': 'scale'\n};\n\n// Check for partial matches if exact match not found\nlet planTier = priceMap[priceId] || 'free';\nif (!priceMap[priceId]) {\n  if (priceId.includes('starter')) planTier = 'starter';\n  else if (priceId.includes('pro')) planTier = 'pro';\n  else if (priceId.includes('scale')) planTier = 'scale';\n}\n\n// Feature flags by plan\nconst featureFlags = {\n  free: {\n    launchpad_access: true,\n    nova_os_access: false,\n    ai_tools_limit: 3,\n    automation_systems: 0,\n    priority_support: false,\n    white_label: false\n  },\n  starter: {\n    launchpad_access: true,\n    nova_os_access: false,\n    ai_tools_limit: 10,\n    automation_systems: 2,\n    priority_support: false,\n    white_label: false\n  },\n  pro: {\n    launchpad_access: true,\n    nova_os_access: true,\n    ai_tools_limit: 10,\n    automation_systems: 6,\n    priority_support: true,\n    white_label: false\n  },\n  scale: {\n    launchpad_access: true,\n    nova_os_access: true,\n    ai_tools_limit: 10,\n    automation_systems: 6,\n    priority_support: true,\n    white_label: true\n  }\n};\n\nconst flags = featureFlags[planTier] || featureFlags['free'];\n\nreturn [{\n  json: {\n    customerEmail,\n    customerId,\n    subscriptionId,\n    priceId,\n    planTier,\n    businessName,\n    niche,\n    flags,\n    rawPayload: JSON.stringify(body),\n    createdAt: new Date().toISOString()\n  }\n}];"
+        "jsCode": "const body = $input.first().json.body;\nconst headers = $input.first().json.headers;\n\n// Extract event data\nconst event = body;\nconst session = event?.data?.object || {};\n\n// Extract core fields\nconst customerEmail = session.customer_details?.email || session.metadata?.email || '';\nconst customerId = session.customer || '';\nconst subscriptionId = session.subscription || '';\nconst priceId = session.line_items?.data?.[0]?.price?.id || session.metadata?.price_id || '';\nconst businessName = session.metadata?.business_name || '';\nconst niche = session.metadata?.niche || '';\n\n// Map price ID to plan tier\nconst priceMap = {\n  'price_free': 'free',\n  'price_starter': 'starter',\n  'price_pro': 'pro',\n  'price_scale': 'scale'\n};\n\n// Check for partial matches if exact match not found\nlet planTier = priceMap[priceId] || 'free';\nif (!priceMap[priceId]) {\n  if (priceId.includes('starter')) planTier = 'starter';\n  else if (priceId.includes('pro')) planTier = 'pro';\n  else if (priceId.includes('scale')) planTier = 'scale';\n}\n\n// Feature flags by plan\nconst featureFlags = {\n  free: {\n    launchpad_access: true,\n    bylda_os_access: false,\n    ai_tools_limit: 3,\n    automation_systems: 0,\n    priority_support: false,\n    white_label: false\n  },\n  starter: {\n    launchpad_access: true,\n    bylda_os_access: false,\n    ai_tools_limit: 10,\n    automation_systems: 2,\n    priority_support: false,\n    white_label: false\n  },\n  pro: {\n    launchpad_access: true,\n    bylda_os_access: true,\n    ai_tools_limit: 10,\n    automation_systems: 6,\n    priority_support: true,\n    white_label: false\n  },\n  scale: {\n    launchpad_access: true,\n    bylda_os_access: true,\n    ai_tools_limit: 10,\n    automation_systems: 6,\n    priority_support: true,\n    white_label: true\n  }\n};\n\nconst flags = featureFlags[planTier] || featureFlags['free'];\n\nreturn [{\n  json: {\n    customerEmail,\n    customerId,\n    subscriptionId,\n    priceId,\n    planTier,\n    businessName,\n    niche,\n    flags,\n    rawPayload: JSON.stringify(body),\n    createdAt: new Date().toISOString()\n  }\n}];"
       },
       "id": "a1b2c3d4-0002-0002-0002-000000000002",
       "name": "Parse Stripe Payload",
@@ -167,7 +167,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"email\": \"{{ $('Parse Stripe Payload').first().json.customerEmail }}\",\n  \"plan_tier\": \"{{ $('Parse Stripe Payload').first().json.planTier }}\",\n  \"launchpad_access\": {{ $('Parse Stripe Payload').first().json.flags.launchpad_access }},\n  \"nova_os_access\": {{ $('Parse Stripe Payload').first().json.flags.nova_os_access }},\n  \"ai_tools_limit\": {{ $('Parse Stripe Payload').first().json.flags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Parse Stripe Payload').first().json.flags.automation_systems }},\n  \"priority_support\": {{ $('Parse Stripe Payload').first().json.flags.priority_support }},\n  \"white_label\": {{ $('Parse Stripe Payload').first().json.flags.white_label }},\n  \"updated_at\": \"{{ $now.toISO() }}\"\n}",
+        "jsonBody": "={\n  \"email\": \"{{ $('Parse Stripe Payload').first().json.customerEmail }}\",\n  \"plan_tier\": \"{{ $('Parse Stripe Payload').first().json.planTier }}\",\n  \"launchpad_access\": {{ $('Parse Stripe Payload').first().json.flags.launchpad_access }},\n  \"bylda_os_access\": {{ $('Parse Stripe Payload').first().json.flags.bylda_os_access }},\n  \"ai_tools_limit\": {{ $('Parse Stripe Payload').first().json.flags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Parse Stripe Payload').first().json.flags.automation_systems }},\n  \"priority_support\": {{ $('Parse Stripe Payload').first().json.flags.priority_support }},\n  \"white_label\": {{ $('Parse Stripe Payload').first().json.flags.white_label }},\n  \"updated_at\": \"{{ $now.toISO() }}\"\n}",
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi"
@@ -360,12 +360,12 @@
   },
   "staticData": null,
   "tags": [
-    "nova-ops",
+    "bylda-ops",
     "stripe",
     "payments",
     "onboarding"
   ],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-stripe-v1"
+  "versionId": "bylda-ops-stripe-v1"
 }

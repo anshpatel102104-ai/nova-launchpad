@@ -50,7 +50,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-response-formatter-stg"
+      "webhookId": "bylda-response-formatter-stg"
     },
     {
       "id": "d4000002-0000-0000-0000-000000000002",

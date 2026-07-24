@@ -1,4 +1,4 @@
-# Nova Launchpad · Tool Workflows
+# Bylda Launchpad · Tool Workflows
 
 Ten Claude-powered n8n workflows that back the LaunchPad tool surface. Each
 workflow is self-contained, entitlement-gated against `user_entitlements`,
@@ -90,7 +90,7 @@ const result = await callNicheValidator(
 ## 5 · Smoke test
 
 ```bash
-curl -X POST https://n8n.nova-ops.space/webhook/v1/niche/validate \
+curl -X POST https://n8n.usebylda.com/webhook/v1/niche/validate \
   -H "Content-Type: application/json" \
   -d '{"user_id":"<uuid>","niche":"med spas","region":"NA"}'
 ```

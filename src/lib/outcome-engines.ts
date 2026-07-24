@@ -100,14 +100,14 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     steps: [
       {
         title: "Score your idea",
-        description: "Nova grades your idea and tells you what's strong and what's weak.",
+        description: "Bylda grades your idea and tells you what's strong and what's weak.",
         toolSlug: "idea-validator",
         to: "/app/launchpad/idea-validator",
         estimatedMinutes: 8,
       },
       {
         title: "Stress-test it",
-        description: "Nova argues against your idea, like a tough customer. Find the holes first.",
+        description: "Bylda argues against your idea, like a tough customer. Find the holes first.",
         toolSlug: "kill-my-idea",
         to: "/app/launchpad/kill-my-idea",
         estimatedMinutes: 6,
@@ -133,14 +133,14 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     steps: [
       {
         title: "Design your offer",
-        description: "Answer 4 short questions. Nova writes the offer for you.",
+        description: "Answer 4 short questions. Bylda writes the offer for you.",
         toolSlug: "offer",
         to: "/app/launchpad/offer",
         estimatedMinutes: 12,
       },
       {
         title: "Make your customer plan",
-        description: "Nova shows you where to find customers and what to say to them.",
+        description: "Bylda shows you where to find customers and what to say to them.",
         toolSlug: "gtm-strategy",
         to: "/app/launchpad/gtm-strategy",
         estimatedMinutes: 10,
@@ -165,8 +165,8 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     icon: Target,
     steps: [
       {
-        title: "Let Nova write your pitch",
-        description: "Answer short questions. Nova turns them into a pitch.",
+        title: "Let Bylda write your pitch",
+        description: "Answer short questions. Bylda turns them into a pitch.",
         toolSlug: "pitch-generator",
         to: "/app/launchpad/pitch-generator",
         estimatedMinutes: 10,
@@ -194,14 +194,14 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     steps: [
       {
         title: "Get your 30-day plan",
-        description: "Nova builds a day-by-day plan to land 10 customers.",
+        description: "Bylda builds a day-by-day plan to land 10 customers.",
         toolSlug: "first-10-customers",
         to: "/app/launchpad/first-10-customers",
         estimatedMinutes: 15,
       },
       {
         title: "Get your 5 follow-up emails",
-        description: "Nova writes the emails that keep leads warm for 2 weeks.",
+        description: "Bylda writes the emails that keep leads warm for 2 weeks.",
         toolSlug: "followup",
         to: "/app/launchpad/followup",
         estimatedMinutes: 15,
@@ -221,13 +221,13 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     category: "launch",
     name: "Set up follow-up that sends itself",
     outcome: "follow-up emails that go out on their own — no lead is forgotten.",
-    impact: "Most people buy after 5 to 8 reminders. Nova sends them for you.",
+    impact: "Most people buy after 5 to 8 reminders. Bylda sends them for you.",
     estimatedMinutes: 20,
     icon: Mail,
     steps: [
       {
         title: "Write the emails",
-        description: "Nova writes 5 short emails that fit your business.",
+        description: "Bylda writes 5 short emails that fit your business.",
         toolSlug: "followup",
         to: "/app/launchpad/followup",
         estimatedMinutes: 10,
@@ -262,7 +262,7 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
       },
       {
         title: "Map how your business runs",
-        description: "Nova writes down your steps and picks what to automate first.",
+        description: "Bylda writes down your steps and picks what to automate first.",
         toolSlug: "generate-ops-plan",
         to: "/app/launchpad/ops-plan",
         estimatedMinutes: 20,
@@ -309,7 +309,7 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     id: "connect-systems",
     category: "automate",
     name: "Connect your tools",
-    outcome: "your real numbers flowing into Nova by themselves.",
+    outcome: "your real numbers flowing into Bylda by themselves.",
     impact: "No more typing numbers in by hand — your dashboard fills itself.",
     estimatedMinutes: 15,
     icon: Plug,
@@ -337,7 +337,7 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     steps: [
       {
         title: "Rebuild your plan with real numbers",
-        description: "Give Nova your real results. Get a plan that fixes the leaks.",
+        description: "Give Bylda your real results. Get a plan that fixes the leaks.",
         toolSlug: "gtm-strategy",
         to: "/app/launchpad/gtm-strategy",
         estimatedMinutes: 15,
@@ -353,7 +353,7 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
         title: "Walk through every open deal",
         description: "For each one, decide the next move and when you'll make it.",
         toolSlug: null,
-        to: "/app/nova/crm",
+        to: "/app/bylda/crm",
         estimatedMinutes: 10,
       },
     ],
@@ -372,7 +372,7 @@ export const OUTCOME_ENGINES: OutcomeEngine[] = [
     steps: [
       {
         title: "Write down how the business runs",
-        description: "Nova maps your steps, roles, and tools.",
+        description: "Bylda maps your steps, roles, and tools.",
         toolSlug: "generate-ops-plan",
         to: "/app/launchpad/ops-plan",
         estimatedMinutes: 20,

@@ -1,4 +1,4 @@
-// Static catalog for Launchpad tools and Nova OS modules (UI metadata only).
+// Static catalog for Launchpad tools and Bylda OS modules (UI metadata only).
 // Dynamic data (runs, outputs, usage, leads) lives in Supabase.
 
 export type Stage = "Idea" | "Validate" | "Launch" | "Operate" | "Scale";
@@ -517,13 +517,13 @@ export const launchpadCatalog: LaunchpadTool[] = [
   },
 ];
 
-export type NovaModule = {
+export type ByldaModule = {
   key: string;
   name: string;
   desc: string;
 };
 
-export const novaSystemsCatalog: NovaModule[] = [
+export const byldaSystemsCatalog: ByldaModule[] = [
   {
     key: "lead-capture",
     name: "Lead Capture System",

@@ -98,8 +98,8 @@ function InvitePage() {
         data: { full_name: fullName },
       });
       if (error) throw error;
-      toast.success("Welcome to Nova OPS! Your account is ready.");
-      // /app resolves the mode-aware product home (Launchpad vs Nova).
+      toast.success("Welcome to Bylda! Your account is ready.");
+      // /app resolves the mode-aware product home (Launchpad vs Bylda).
       navigate({ to: "/app" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to accept invite");
@@ -140,7 +140,7 @@ function InvitePage() {
 
   return (
     <AuthShell
-      title="Join your team on Nova OPS"
+      title="Join your team on Bylda"
       subtitle="Set up your account to accept the invite."
     >
       <form className="space-y-4" onSubmit={onSubmit} noValidate>

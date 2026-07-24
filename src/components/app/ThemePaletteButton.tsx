@@ -13,10 +13,10 @@ import {
   BASE_PRESETS,
   SECONDARY_PRESETS,
   TEXT_PRESETS,
-  type NovaPalette,
+  type ByldaPalette,
 } from "@/lib/theme-palette";
 
-const DEFAULT_PALETTE: NovaPalette = {
+const DEFAULT_PALETTE: ByldaPalette = {
   base: "#ffffff",
   secondary: "#7c3aed",
   text: "#111827",
@@ -24,7 +24,7 @@ const DEFAULT_PALETTE: NovaPalette = {
 
 export function ThemePaletteButton() {
   const [open, setOpen] = useState(false);
-  const [palette, setPalette] = useState<NovaPalette>(() => loadPalette() ?? DEFAULT_PALETTE);
+  const [palette, setPalette] = useState<ByldaPalette>(() => loadPalette() ?? DEFAULT_PALETTE);
   const [customized, setCustomized] = useState(() => loadPalette() !== null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -37,7 +37,7 @@ export function ThemePaletteButton() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  const pick = (key: keyof NovaPalette, value: string) => {
+  const pick = (key: keyof ByldaPalette, value: string) => {
     const next = { ...palette, [key]: value };
     setPalette(next);
     setCustomized(true);

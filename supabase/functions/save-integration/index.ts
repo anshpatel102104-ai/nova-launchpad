@@ -10,11 +10,11 @@ const corsHeaders = {
 // Accept any lowercase-alpha-start key with letters/digits/underscores/dashes (2-64 chars).
 // This covers all catalog keys and user-defined custom integration keys.
 const SAFE_KEY_RE = /^[a-z][a-z0-9_-]{1,63}$/;
-// Nova module webhooks keep their own prefix format.
-const NOVA_WEBHOOK_RE = /^nova:webhook:[a-z0-9_-]{1,64}$/;
+// Bylda module webhooks keep their own prefix format.
+const BYLDA_WEBHOOK_RE = /^bylda:webhook:[a-z0-9_-]{1,64}$/;
 
 function isAllowedKey(k: string): boolean {
-  return SAFE_KEY_RE.test(k) || NOVA_WEBHOOK_RE.test(k);
+  return SAFE_KEY_RE.test(k) || BYLDA_WEBHOOK_RE.test(k);
 }
 
 // Per-key validation for well-known integrations with strict formats.
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
       return json({ error: "Failed to save integration" }, 500);
     }
 
-    // Write a memory artifact so Nova knows what integrations are active for this org.
+    // Write a memory artifact so Bylda knows what integrations are active for this org.
     const { data: memberRow } = await admin
       .from("organization_members")
       .select("organization_id")
@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
         source_label: integrationKey,
         title: `${integrationKey} integration ${isConnecting ? "connected" : "disconnected"}`,
         content_preview: isConnecting
-          ? `The user has connected their ${integrationKey} account. Nova can reference and use this integration when helping with related tasks.`
+          ? `The user has connected their ${integrationKey} account. Bylda can reference and use this integration when helping with related tasks.`
           : `The user has disconnected their ${integrationKey} account.`,
         status: isConnecting ? "indexed" : "disabled",
         updated_at: new Date().toISOString(),

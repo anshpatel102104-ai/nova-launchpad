@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouterState } from "@tanstack/react-router";
 
-const KEY = "nova-coach-target";
+const KEY = "bylda-coach-target";
 
 /** Ask the coachmark to spotlight [data-coach="id"] on the next rendered route. */
 export function requestCoachmark(id: string) {
@@ -23,7 +23,7 @@ export function requestCoachmark(id: string) {
   } catch {
     /* sessionStorage unavailable — coachmark simply won't fire */
   }
-  window.dispatchEvent(new Event("nova-coach"));
+  window.dispatchEvent(new Event("bylda-coach"));
 }
 
 interface Box {
@@ -51,7 +51,7 @@ export function CoachmarkListener() {
       left: r.left - 6,
       width: r.width + 12,
       height: r.height + 12,
-      label: el.getAttribute("data-coach-label") ?? "Nova brought you here — do this",
+      label: el.getAttribute("data-coach-label") ?? "Bylda brought you here — do this",
     });
   }, []);
 
@@ -102,8 +102,8 @@ export function CoachmarkListener() {
   useEffect(() => {
     locate();
     const onReq = () => locate();
-    window.addEventListener("nova-coach", onReq);
-    return () => window.removeEventListener("nova-coach", onReq);
+    window.addEventListener("bylda-coach", onReq);
+    return () => window.removeEventListener("bylda-coach", onReq);
   }, [locate, path]);
 
   // A route change always clears an in-flight spotlight.

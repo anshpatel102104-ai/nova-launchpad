@@ -200,8 +200,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [{ "name": "nova-ops" }, { "name": "strategy-agent" }],
+  "tags": [{ "name": "bylda-ops" }, { "name": "strategy-agent" }],
   "triggerCount": 1,
   "updatedAt": "2026-05-14T00:00:00.000Z",
-  "id": "nova-ops-strategy-agent-v1"
+  "id": "bylda-ops-strategy-agent-v1"
 }

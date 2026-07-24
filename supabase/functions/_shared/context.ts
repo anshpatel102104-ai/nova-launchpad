@@ -228,7 +228,7 @@ export async function assembleContext(
       }
       if (parts.length > 0) {
         lines.push(
-          `\nPrior Nova outputs for this business (reference them; flag contradictions explicitly):\n${parts.join("\n\n")}`,
+          `\nPrior Bylda outputs for this business (reference them; flag contradictions explicitly):\n${parts.join("\n\n")}`,
         );
       }
     }

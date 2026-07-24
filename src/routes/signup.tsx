@@ -19,7 +19,7 @@ const PLANS: { key: PlanKey; label: string; price: string; tagline: string; high
       highlight: "Most popular",
     },
     { key: "operate", label: "Operate", price: "$149", tagline: "Run the business" },
-    { key: "scale", label: "Scale", price: "$299", tagline: "Full Nova OS" },
+    { key: "scale", label: "Scale", price: "$299", tagline: "Full Bylda OS" },
   ];
 
 function normalizePlan(p?: string): PlanKey {
@@ -119,7 +119,7 @@ function SignupPage() {
             .eq("organization_id", member.organization_id);
         }
 
-        toast.success("Account created — welcome to Nova!");
+        toast.success("Account created — welcome to Bylda!");
         navigate({ to: "/onboarding" });
       } else {
         toast.success("Check your email to confirm your account");
@@ -140,7 +140,7 @@ function SignupPage() {
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="font-display text-sm font-semibold">Launchpad Nova</span>
+          <span className="font-display text-sm font-semibold">Launchpad Bylda</span>
         </div>
         <div>
           <div className="text-3xl font-display font-semibold tracking-tight max-w-md">
@@ -162,7 +162,7 @@ function SignupPage() {
             ))}
           </ul>
         </div>
-        <div className="text-xs text-muted-foreground">© Launchpad Nova</div>
+        <div className="text-xs text-muted-foreground">© Launchpad Bylda</div>
       </div>
 
       {/* Right panel */}
@@ -173,7 +173,7 @@ function SignupPage() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="font-display text-sm font-semibold">Launchpad Nova</span>
+            <span className="font-display text-sm font-semibold">Launchpad Bylda</span>
           </div>
 
           <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>

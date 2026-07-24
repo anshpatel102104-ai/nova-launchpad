@@ -74,7 +74,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Feature not enabled\",\n  \"upgrade_url\": \"https://nova-ops.space/launchpad?tier=growth\"\n}"
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Feature not enabled\",\n  \"upgrade_url\": \"https://usebylda.com/launchpad?tier=growth\"\n}"
       },
       "id": "upsell_not_entitled",
       "name": "Return Upsell - Not Entitled",
@@ -84,7 +84,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.NOVA_OPS_WEBHOOK_URL }}/credit-deduction",
+        "url": "={{ $env.BYLDA_OPS_WEBHOOK_URL }}/credit-deduction",
         "method": "POST",
         "authentication": "none",
         "sendBody": true,
@@ -132,7 +132,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Insufficient credits\",\n  \"required\": 10,\n  \"current\": \"{{ $json.current_credits }}\",\n  \"upgrade_url\": \"https://nova-ops.space/billing\"\n}"
+        "responseBody": "{\n  \"success\": false,\n  \"error\": \"Insufficient credits\",\n  \"required\": 10,\n  \"current\": \"{{ $json.current_credits }}\",\n  \"upgrade_url\": \"https://usebylda.com/billing\"\n}"
       },
       "id": "upsell_insufficient_credits",
       "name": "Return Upsell - Insufficient Credits",

@@ -81,7 +81,7 @@ $ grep '"followup"' src/run-tool/index.ts
 | Category | Details |
 |----------|---------|
 | Severity | CRITICAL |
-| Location | `workers/nova-automations-api/worker.ts:190` |
+| Location | `workers/bylda-automations-api/worker.ts:190` |
 | Problem | `env.AUTOMATION_QUEUE.send(job)` not wrapped in try-catch |
 | Impact | If queue is down, automation silently fails; user never sees error |
 | **Status** | ✅ **FIXED** - Added error handling with automation log update |
@@ -124,13 +124,13 @@ $ grep '"followup"' src/run-tool/index.ts
 |----------|---------|
 | Severity | HIGH |
 | Location | `supabase/functions/_shared/missionSeeds.ts:206, 259-260, 266-271` |
-| Problem | References "Integrations section in Nova" without clear path |
+| Problem | References "Integrations section in Bylda" without clear path |
 | Impact | User can't find where to connect integrations |
 | **Status** | ✅ **FIXED** - Updated guidance to specify "Integrations page (left sidebar under Tools)" |
 | Lines Changed | 267-274 |
 
 **Before:**
-> "Go to the Integrations section in Nova and look for an automation that matches your task."
+> "Go to the Integrations section in Bylda and look for an automation that matches your task."
 
 **After:**
 > "Go to the Integrations page (left sidebar under Tools) and connect the tool you rely on most..."
@@ -159,7 +159,7 @@ $ grep '"followup"' src/run-tool/index.ts
 | Category | Details |
 |----------|---------|
 | Severity | HIGH |
-| Location | 3 files: `missionSeeds.ts`, `provision-workspace`, `nova_ops_provision_workspace_setup.json` |
+| Location | 3 files: `missionSeeds.ts`, `provision-workspace`, `bylda_ops_provision_workspace_setup.json` |
 | Problem | Mission definitions duplicated across 3+ files (1000+ lines) |
 | Impact | Maintenance nightmare; fix wording in one place, others diverge |
 | **Status** | 📋 **TODO** - Recommended for Phase 2 |
@@ -203,7 +203,7 @@ $ grep '"followup"' src/run-tool/index.ts
 | Category | Details |
 |----------|---------|
 | Severity | MEDIUM |
-| Location | `N8N/nova_ops_ai_validate_idea_n8n.json` line 22 |
+| Location | `N8N/bylda_ops_ai_validate_idea_n8n.json` line 22 |
 | Problem | Service role key visible in workflow execution logs |
 | Impact | If logs are viewed, service key could be exposed |
 | **Status** | 🔍 **INVESTIGATED** - N8N has permission controls; acceptable if logs are restricted |

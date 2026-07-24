@@ -124,7 +124,7 @@ describe("readCore", () => {
     });
     expect(core.score).toBe(72);
     expect(core.verdict).toBe("GO");
-    expect(core.novaTake).toBe("Strong signal.");
+    expect(core.byldaTake).toBe("Strong signal.");
     expect(core.scores).toEqual({ market: 8 });
     expect(core.strengths).toEqual(["clear ICP"]);
     expect(core.nextActions[0].label).toBe("Ship it");

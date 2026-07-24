@@ -1,6 +1,6 @@
 
 
-# Launchpad Nova — Full Lovable Cloud Backend
+# Launchpad Bylda — Full Lovable Cloud Backend
 
 Switching backend from external Supabase to **Lovable Cloud**. Existing 8-table naming kept; missing tables added; Claude wired through Edge Functions; new pricing seeded.
 
@@ -81,7 +81,7 @@ Build `src/lib/queries.ts` with TanStack Query options for every entity. Each `/
 | Dashboard | `profiles` + active `organizations` + recent `tool_runs` |
 | Launchpad index/$tool | Static catalog + `tool_runs` + Edge Function invocations |
 | Launchpad history | `tool_runs` desc |
-| Nova screens | `tool_runs` + `generated_assets` + `automation_settings` |
+| Bylda screens | `tool_runs` + `generated_assets` + `automation_settings` |
 | Billing | `subscriptions` + `plan_entitlements` + `usage_tracking` |
 | Settings | `profiles` + `organizations` mutations |
 | Stage tracker | `organizations.stage` |

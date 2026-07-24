@@ -30,7 +30,7 @@ execution index from tool runs, etc.).
    exists — this script does **not** create the login).
 3. Paste the contents of `seed-demo-account.sql` and click **Run**.
 4. Log in to the app as `ansh.patel102104@gmail.com` — you land on the populated
-   Nova OS home with a full CRM.
+   Bylda OS home with a full CRM.
 
 > Re-running is safe: every demo row is tagged and cleared before re-insert, so
 > you never get duplicates.

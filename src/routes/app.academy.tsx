@@ -203,8 +203,8 @@ function AcademyIndex({
             to="/app/academy/$module"
             params={{ module: module.id }}
             className={cn(
-              "rounded-xl p-4 nova-card transition-all module-reveal",
-              state === "locked" ? "pointer-events-none opacity-50" : "nova-card-hover",
+              "rounded-xl p-4 bylda-card transition-all module-reveal",
+              state === "locked" ? "pointer-events-none opacity-50" : "bylda-card-hover",
             )}
             style={
               {

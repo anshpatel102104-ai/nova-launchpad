@@ -368,7 +368,7 @@ export const recentMomentumQuery = (orgId: string) =>
 
       const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data, error } = await supabase
-        .from("nova_events")
+        .from("bylda_events")
         .select("event_type")
         .eq("organization_id", orgId)
         .gte("created_at", sevenDaysAgo);
@@ -390,7 +390,7 @@ export const latestWinQuery = (orgId: string) =>
       if (!orgId || isGuest()) return null;
       const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString();
       const { data } = await supabase
-        .from("nova_events")
+        .from("bylda_events")
         .select("event_type, created_at")
         .eq("organization_id", orgId)
         .in("event_type", [

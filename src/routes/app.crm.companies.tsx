@@ -9,7 +9,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Building2, Trash2, GitMerge, Activity } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { MomentumRail } from "@/components/nova/MomentumRail";
+import { MomentumRail } from "@/components/bylda/MomentumRail";
 import { CustomersNav } from "@/components/app/CustomersNav";
 
 export const Route = createFileRoute("/app/crm/companies")({ component: CompaniesPage });

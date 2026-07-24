@@ -338,7 +338,7 @@ export default function FounderCasefile() {
                   AI-Powered Meal Planning for Busy Parents
                 </h1>
                 <p className="text-[12px] text-ink-faint mt-1">
-                  Submitted 2 minutes ago &nbsp;·&nbsp; Nova Score{" "}
+                  Submitted 2 minutes ago &nbsp;·&nbsp; Bylda Score{" "}
                   <span className="font-bold text-blueprint-signal">74 / 100</span>
                 </p>
               </div>
@@ -356,7 +356,7 @@ export default function FounderCasefile() {
             {/* Verdict block — brass drafting annotation */}
             <div className="bg-blueprint-brass-soft border-l-4 border-blueprint-brass p-4">
               <div className="font-bp-mono text-[10px] font-bold uppercase tracking-[0.8px] text-blueprint-brass mb-1.5">
-                Nova's Verdict
+                Bylda's Verdict
               </div>
               <p className="text-[13px] text-ink leading-relaxed font-medium">
                 This idea has strong market timing and high founder-fit. The biggest risk is customer
@@ -366,14 +366,14 @@ export default function FounderCasefile() {
             </div>
           </div>
 
-          {/* Nova's Take */}
+          {/* Bylda's Take */}
           <div className="bg-panel rounded-none border border-line shadow-sm p-5 relative overflow-hidden">
             {/* Violet left-edge accent */}
             <div className="absolute left-0 top-0 w-1 h-full bg-blueprint-signal rounded-l-xl" aria-hidden="true" />
             <div className="pl-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.8px] text-blueprint-signal">
-                  Nova's Take
+                  Bylda's Take
                 </span>
                 <span className="text-[10px] text-ink-faint">· AI Analysis</span>
               </div>
@@ -512,7 +512,7 @@ export default function FounderCasefile() {
               Ready to move forward?
             </div>
             <p className="text-[12px] text-ink-faint mb-4">
-              Accepting this move starts your first validation mission. Nova will guide you step by step.
+              Accepting this move starts your first validation mission. Bylda will guide you step by step.
             </p>
             <button
               onClick={handleAccept}
@@ -577,7 +577,7 @@ export default function FounderCasefile() {
           {/* Proof Playbook */}
           <div className="bg-panel rounded-none border border-line shadow-sm p-4">
             <SideLabel>Proof Playbook</SideLabel>
-            <PbStep status="done" label="Submit idea to Nova" />
+            <PbStep status="done" label="Submit idea to Bylda" />
             <PbStep status="done" label="Review casefile analysis" />
             <PbStep status="active" label="Accept validation move" />
             <PbStep status="idle" label="Run landing page test" />

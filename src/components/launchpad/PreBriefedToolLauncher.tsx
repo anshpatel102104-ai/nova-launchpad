@@ -1,10 +1,10 @@
 /**
  * PreBriefedToolLauncher — kills the retype problem.
  *
- * Wraps a tool's input form. Fields Nova already knows (pre-briefed from
+ * Wraps a tool's input form. Fields Bylda already knows (pre-briefed from
  * the Business Context Graph + workspace profile — the exact same prefill
  * pipeline `run-tool` context assembly draws from, reused not refetched)
- * render as read-only rows in a dashed "NOVA KNOWS" panel. Each row has an
+ * render as read-only rows in a dashed "BYLDA KNOWS" panel. Each row has an
  * edit affordance that reveals an inline editable field only when clicked —
  * a briefed field never renders as an empty required textbox.
  *
@@ -127,12 +127,12 @@ export function PreBriefedToolLauncher({
 
   return (
     <div className="space-y-5">
-      {/* ── NOVA KNOWS — pre-briefed context, read-only until edited ── */}
+      {/* ── BYLDA KNOWS — pre-briefed context, read-only until edited ── */}
       {briefed.length > 0 && (
         <div className="border border-dashed border-blueprint-signal bg-blueprint-signal-soft">
           <div className="flex items-center justify-between border-b border-dashed border-blueprint-signal px-4 py-2">
             <span className="font-bp-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-blueprint-signal">
-              Nova knows
+              Bylda knows
             </span>
             <span className="font-bp-mono text-[9.5px] uppercase tracking-[0.1em] text-ink-dim">
               {revision ? `Rev ${revision}` : "workspace profile"} · {briefed.length} field
@@ -194,7 +194,7 @@ export function PreBriefedToolLauncher({
         </div>
       )}
 
-      {/* ── Fields Nova genuinely doesn't know yet ── */}
+      {/* ── Fields Bylda genuinely doesn't know yet ── */}
       {missing.map((def) => (
         <div key={def.key}>
           <div className="mb-1.5 flex items-baseline justify-between">

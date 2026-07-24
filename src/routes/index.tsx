@@ -9,7 +9,7 @@ function LandingPage() {
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // /app resolves the mode-aware product home (Launchpad vs Nova).
+      // /app resolves the mode-aware product home (Launchpad vs Bylda).
       if (!cancelled && session) navigate({ to: "/app" });
     });
     return () => {
@@ -60,7 +60,7 @@ function DashboardMock() {
             fontFamily: "monospace",
           }}
         >
-          nova-os — dashboard
+          bylda-os — dashboard
         </div>
       </div>
       <div style={{ display: "flex", height: 488 }}>
@@ -574,7 +574,7 @@ function CinematicLanding() {
                 marginBottom: 12,
               }}
             >
-              Nova OS
+              Bylda OS
             </div>
             <div
               style={{
@@ -654,7 +654,7 @@ function CinematicLanding() {
                 animation: "blink 2s ease-in-out infinite",
               }}
             />
-            Nova OS — Live Preview
+            Bylda OS — Live Preview
           </div>
 
           {/* Glowing border wrapper → inner content is what GSAP zooms */}
@@ -712,7 +712,7 @@ function CinematicLanding() {
         </div>
       </section>
 
-      {/* ══ S3 — WHAT NOVA IS (feature lines) ══════════════════════════════ */}
+      {/* ══ S3 — WHAT BYLDA IS (feature lines) ══════════════════════════════ */}
       <section
         ref={featSecRef}
         style={{ ...S, background: "#02020d", flexDirection: "column", padding: "100px 0" }}

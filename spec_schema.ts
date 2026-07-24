@@ -1,6 +1,6 @@
 // Agent-Executable Spec schema — Phase 4
 
-export type NovaSpec = {
+export type ByldaSpec = {
   id: string;
   org_id: string;
   spec_type: "campaign" | "product" | "automation" | "growth" | "ops";
@@ -29,7 +29,7 @@ export type NovaSpec = {
   created_at: string;
 };
 
-export function validateSpec(spec: unknown): spec is NovaSpec {
+export function validateSpec(spec: unknown): spec is ByldaSpec {
   if (!spec || typeof spec !== "object") return false;
   const s = spec as Record<string, unknown>;
 

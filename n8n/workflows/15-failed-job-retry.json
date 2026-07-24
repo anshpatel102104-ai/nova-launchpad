@@ -229,8 +229,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [{ "name": "nova-ops" }, { "name": "failed-job-retry" }],
+  "tags": [{ "name": "bylda-ops" }, { "name": "failed-job-retry" }],
   "triggerCount": 1,
   "updatedAt": "2026-05-14T00:00:00.000Z",
-  "id": "nova-ops-failed-job-retry-v1"
+  "id": "bylda-ops-failed-job-retry-v1"
 }

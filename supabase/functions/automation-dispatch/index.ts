@@ -290,7 +290,7 @@ Deno.serve(async (req: Request) => {
         .update({ status: "done", processed_at: new Date().toISOString() })
         .eq("id", ev.id);
 
-      // Best-effort nova_events ledger write. organization_id is already in
+      // Best-effort bylda_events ledger write. organization_id is already in
       // scope on ev — no lookup needed. Isolated in its own try/catch (not the
       // looser .then(noop,noop) used elsewhere in this repo): the completion
       // update above sits at the tail of this loop's try block, so an un-isolated
@@ -298,7 +298,7 @@ Deno.serve(async (req: Request) => {
       // event to "error"/attempts. This block guarantees a ledger failure can
       // never touch the status update or the retry logic.
       try {
-        await admin.from("nova_events").insert({
+        await admin.from("bylda_events").insert({
           organization_id: ev.organization_id,
           source: "automation",
           event_type: "automation.completed",

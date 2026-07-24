@@ -1,11 +1,11 @@
-# Launchpad Nova — Phase 10 Audit
+# Launchpad Bylda — Phase 10 Audit
 
 Status of the master-build audit checklist. **Verified** = confirmed
 programmatically (DB / deployed function / build / tests). **Wired** = code
 path is in place and type-checks/builds, but final confirmation needs an
 interactive logged-in session.
 
-Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/nova-master-build-rqm60r`
+Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/bylda-master-build-rqm60r`
 
 ## Verified
 
@@ -35,7 +35,7 @@ Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/nova-master-build-rqm60r`
 
 - ⏳ Drag deal to a new column updates `leads.stage` (mutation + realtime wired).
 - ⏳ Contact create / drawer tabs render (Deal & Contact drawers built).
-- ⏳ Unified inbox Nova Draft button (conversation-ai wired).
+- ⏳ Unified inbox Bylda Draft button (conversation-ai wired).
 - ⏳ New appointment saves; public `/book/[slug]` submits (book-appointment live).
 - ⏳ Workflow builder create/activate/test; form builder + public `/f/[id]`.
 - ⏳ Campaign draft + Send Now + Report; reputation request send.

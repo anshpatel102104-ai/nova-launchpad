@@ -164,7 +164,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"plan_tier\": \"suspended\",\n  \"launchpad_access\": false,\n  \"nova_os_access\": false,\n  \"ai_tools_limit\": 0,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.createdAt }}\"\n}",
+        "jsonBody": "={\n  \"plan_tier\": \"suspended\",\n  \"launchpad_access\": false,\n  \"bylda_os_access\": false,\n  \"ai_tools_limit\": 0,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.createdAt }}\"\n}",
         "options": {
           "response": {
             "response": {
@@ -388,7 +388,7 @@
   },
   "staticData": null,
   "tags": [
-    "nova-ops",
+    "bylda-ops",
     "stripe",
     "dispute",
     "chargeback",
@@ -396,5 +396,5 @@
   ],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-dispute-v1"
+  "versionId": "bylda-ops-dispute-v1"
 }

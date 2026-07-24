@@ -14,7 +14,7 @@ maps Part 3's requested `modules`/`module_steps` onto the systems that already e
 There are already **three overlapping "course/module" systems** in the repo. Part 3 must land
 on the *live* one and treat the other two as history:
 
-| System | Tables / source | Status | Casefile-personalized? | Feeds `nova_events` / `useProgressSpine`? |
+| System | Tables / source | Status | Casefile-personalized? | Feeds `bylda_events` / `useProgressSpine`? |
 |---|---|---|---|---|
 | **Mission spine** (LIVE) | `missions` → `mission_steps` + `src/lib/step-execution-guidance.ts` | **Canonical.** Seeded at onboarding (`missionSeeds.ts`), advanced by `advance-mission`, read by `useProgressSpine` | Partially (seeded from lane/stage) | **Yes** — `step.completed` / `mission.completed` dual-write |
 | Mentor curriculum | `playbooks` → `playbook_lessons` + `mentors` | **RETIRED** — `generate-playbook` returns HTTP 410 `CURRICULUM_RETIRED`; `use-curriculum.ts` is read-only history | Was (from casefile_run) | No |
@@ -32,7 +32,7 @@ current one), not a replacement.
 
 ## PART 1 — Onboarding / Create-a-Business flow
 
-Files: `src/routes/onboarding.tsx`, `src/components/app/NovaIntakeChat.tsx`,
+Files: `src/routes/onboarding.tsx`, `src/components/app/ByldaIntakeChat.tsx`,
 `src/constants/onboarding-questions.ts`.
 
 The flow is: `detect` (3 signal chips) → `resolveMode()` → `chat` (Founder or Operator intake) →
@@ -49,14 +49,14 @@ All free-text questions are blank fields with only a placeholder, no suggested d
   Every other question is chip-select (draft-by-default — the user confirms, never composes).
   Only these three violate "Launchpad drafts, user confirms." *Smallest fix:* see §1-Fix.
 
-**2. More than one question per screen? — NO.** `NovaIntakeChat` renders exactly one `currentQ`
-   at `step` (`NovaIntakeChat.tsx:141,185-206`). ✔
+**2. More than one question per screen? — NO.** `ByldaIntakeChat` renders exactly one `currentQ`
+   at `step` (`ByldaIntakeChat.tsx:141,185-206`). ✔
 
 **3. More than one primary path per screen? — NO.** Single-select chips auto-advance; text has one
-   submit arrow; multi-select has one "Continue" button (`NovaIntakeChat.tsx:412-505`). ✔
+   submit arrow; multi-select has one "Continue" button (`ByldaIntakeChat.tsx:412-505`). ✔
 
 **4. Persistent "you are here" progress path (idea→validate→launch→operate)? — NO.** Onboarding
-   shows only a thin **numeric** progress bar (`% = step/total`, `NovaIntakeChat.tsx:142,156-175`).
+   shows only a thin **numeric** progress bar (`% = step/total`, `ByldaIntakeChat.tsx:142,156-175`).
    There is no named stage spine. (Note: the *named* stage stepper exists — but only later, inside
    `MissionHero` on `/app/mission-control:532-571` — so the pattern is in the design system, just
    absent from onboarding.) *Smallest fix:* see §4-Fix.
@@ -68,7 +68,7 @@ All free-text questions are blank fields with only a placeholder, no suggested d
    *"Not sure yet"* chip, `:198`, but that's one question's option, not a global escape hatch, and
    the three text fields have no skip/do-it-for-me at all.) *Smallest fix:* see §6-Fix.
 
-**7. Voice input on every open-text field? — NO.** `TextInput` (`NovaIntakeChat.tsx:313-389`) is a
+**7. Voice input on every open-text field? — NO.** `TextInput` (`ByldaIntakeChat.tsx:313-389`) is a
    plain textarea + submit; no mic. (Voice/`SpeechRecognition` exists elsewhere in the app —
    `AiOperator.tsx`, `app.launchpad.$tool.tsx` — so there's a pattern to reuse, but it is not wired
    into intake.) *Smallest fix:* see §7-Fix.
@@ -84,12 +84,12 @@ All free-text questions are blank fields with only a placeholder, no suggested d
 
 ### Proposed smallest fixes (Part 1), none of which restructure the intake data model
 
-All fixes are additive props/branches on `NovaIntakeChat` + `onboarding-questions.ts`; answer keys,
+All fixes are additive props/branches on `ByldaIntakeChat` + `onboarding-questions.ts`; answer keys,
 `onboarding_sessions` shape, and `complete-onboarding` inputs stay identical.
 
 - **§1-Fix (draft-before-type):** add an optional `draftHint`/`suggested` to the three `text`
   questions. For `idea`/`business_description`, render a **"✨ Draft it for me"** button above the
-  textarea that pre-fills a Nova-written starter the user then edits (a light client stub now; a
+  textarea that pre-fills a Bylda-written starter the user then edits (a light client stub now; a
   `draft-intake-field` edge call later). The textarea still submits the same string key — zero model
   change. For `business_name`, offer 2–3 generated name chips + "type my own." *Layer: component +
   constants only.*
@@ -97,7 +97,7 @@ All fixes are additive props/branches on `NovaIntakeChat` + `onboarding-question
   (idea → validate → launch → operate) already implemented in `MissionHero`. Map intake `step` →
   stage bucket and highlight "you are here." Extract that stepper into a shared
   `StageSpine` component so onboarding and mission-control share one. *Layer: component (shared).*
-- **§6-Fix (idle fallback):** add a persistent, low-emphasis **"Not sure — let Nova pick a strong
+- **§6-Fix (idle fallback):** add a persistent, low-emphasis **"Not sure — let Bylda pick a strong
   default →"** link under every question that fills the recommended answer (chips: the modal/most
   common option; text: the drafted starter) and advances. Uses the existing `submitAnswer()` path.
   *Layer: component only.*
@@ -111,8 +111,8 @@ Item **8** is not a "small fix" — it is a schema + trigger decision covered in
 
 ## PART 2 — Launchpad Home UX (vs GHL / Salesforce / Shopify)
 
-Files: `src/routes/app.mission-control.tsx` (founder home), `src/routes/app.nova-home.tsx`
-(operator/nova home), `src/components/nova/*`, `src/components/app/dashboard/*`.
+Files: `src/routes/app.mission-control.tsx` (founder home), `src/routes/app.bylda-home.tsx`
+(operator/bylda home), `src/components/bylda/*`, `src/components/app/dashboard/*`.
 
 **1. Next-best-action inline on every screen, or in a separate panel? — INLINE on the homes;
    INCONSISTENT elsewhere.** `mission-control` computes one `hero` move (blocker → top rec →
@@ -125,8 +125,8 @@ Files: `src/routes/app.mission-control.tsx` (founder home), `src/routes/app.nova
 
 **2. One universal search across contacts / casefiles / mentor convos / tasks? — NO (siloed).**
    The cmdk primitive exists (`src/components/ui/command.tsx`) but is **not wired as a global
-   palette anywhere** — `nova-home`'s "Command hero" is just a heading, not search
-   (`nova-home.tsx:119`). Each module has its own local filter (contacts, companies, CRM). There is
+   palette anywhere** — `bylda-home`'s "Command hero" is just a heading, not search
+   (`bylda-home.tsx:119`). Each module has its own local filter (contacts, companies, CRM). There is
    no ⌘K. *Gap: no cross-entity search.*
 
 **3. Do AI outputs render as purpose-built layouts per type, or generic text? — PURPOSE-BUILT
@@ -158,7 +158,7 @@ Files: `src/routes/app.mission-control.tsx` (founder home), `src/routes/app.nova
 | NBA not on inner routes | Extract the `mission-control` hero logic into a shared `<NextBestAction/>` and drop it into inner route headers (reads `useProgressSpine` + `graph.blockers/recommendations`, which already exist) | Component (shared) | **Yes** — reads spine/graph, not raw CRM tables |
 | No universal search | Wire a ⌘K `CommandDialog` over the existing cmdk primitive; **phase 1** = casefiles (`tool_runs`), missions/steps, mentor routes (all non-CRM). Add contacts/tasks in phase 2 | Route/layout + component | **Phase 1 yes**; contacts/tasks results **CRM-dependent** → gate behind the write-path |
 | Advanced modules always visible | Add a `stageVisible(stage)` predicate to sidebar/nav items so Idea/Validate hide automation-builder & deep-CRM until Launch/Operate; reuse `useProgressSpine().stage` | Nav/layer config | **Yes** — hiding is stage-driven, no CRM reads |
-| Momentum not celebrated in the moment | Reuse `PostRunMomentum` beat on every `step.completed` (toast + XP tick + streak flash) | Component | **Yes** — driven by `nova_events`/spine |
+| Momentum not celebrated in the moment | Reuse `PostRunMomentum` beat on every `step.completed` (toast + XP tick + streak flash) | Component | **Yes** — driven by `bylda_events`/spine |
 | AI output layouts | none — already purpose-built | — | ✔ |
 
 ---
@@ -167,14 +167,14 @@ Files: `src/routes/app.mission-control.tsx` (founder home), `src/routes/app.nova
 
 ### Where Part 3 must plug in (extend, don't fork)
 
-Part 3's data model (`modules` / `module_steps` with `completion_event → nova_events`) is, field
+Part 3's data model (`modules` / `module_steps` with `completion_event → bylda_events`) is, field
 for field, the **mission spine that already exists**:
 
 | Part 3 asks for | Already exists as | Notes |
 |---|---|---|
 | `modules(title, mentor_owner, order_index, unlock_condition, generated_from_casefile_id, status)` | `missions(title, sort_order, status, workspace_id)` | Missing: `mentor_owner`, `generated_from_casefile_id`, explicit `unlock_condition`, `locked` status. **Add these columns to `missions`** rather than a new table. |
 | `module_steps(instruction, target_ui_ref, action_type, completion_event, status)` | `mission_steps(title, description, tool_key, status, sort_order)` + `step-execution-guidance.ts` (mentor-voice instruction keyed by `tool_key`) | Missing: `target_ui_ref`, `action_type`, explicit `completion_event`. **Add these columns to `mission_steps`.** |
-| "dual-writes to `nova_events` using the same pattern as `step.completed`/`mission.completed`" | **Already implemented** in `advance-mission/index.ts:284-299` (`step.completed`) and `:325-340` (`mission.completed`) | No parallel tracker needed — extend the existing dual-write. |
+| "dual-writes to `bylda_events` using the same pattern as `step.completed`/`mission.completed`" | **Already implemented** in `advance-mission/index.ts:284-299` (`step.completed`) and `:325-340` (`mission.completed`) | No parallel tracker needed — extend the existing dual-write. |
 | "Extend `useProgressSpine` to support nested module → step" | `useProgressSpine` returns the *current* mission + its steps | Needs one addition: expose the **ordered list of missions** (locked/active/complete) so a vertical course path can render, not just the active mission. |
 | mentor ownership (Maya=offer, Alex=GTM…) | `mentors` table + `MENTOR_ROSTER` + `assignMentor(stage, format)` in `mentors.ts` | Reuse verbatim to set `missions.mentor_owner`. |
 
@@ -210,7 +210,7 @@ because there is no approval state (Part 1, Q8). Minimal path:
    stepper (`mission-control.tsx:532-571`) already renders done/current/locked cells; needs to be
    generalized to a full-height course view reading the (new) ordered-missions list from the spine.
 2. **One step at a time, full-width, one instruction, one button; step 3 hidden until step 2
-   complete** — matches the `NovaIntakeChat` single-`step` pattern and James Rivera's "current step
+   complete** — matches the `ByldaIntakeChat` single-`step` pattern and James Rivera's "current step
    is the only step" voice; needs a `CourseStep` view gated on `mission_steps.status`.
 3. **Literal click guidance (spotlight/coachmark + auto-scroll)** — **does not exist yet.** This is
    the one genuinely new piece: a `Coachmark`/`Spotlight` component that reads `target_ui_ref`,

@@ -1,4 +1,4 @@
-# Nova Launchpad · Subagents
+# Bylda Launchpad · Subagents
 
 Six Claude-powered n8n subagents that power the Launchpad tool surface.
 All workflows are **self-contained**, plan-gate aware, and deduct credits
@@ -100,13 +100,13 @@ The frontend hits `${VITE_N8N_BASE_URL}/webhook/<path>`. Two routing options:
 
 ### Option A — direct (simplest)
 
-Set `VITE_N8N_BASE_URL=https://n8n.nova-ops.space` in Vercel, expose your
+Set `VITE_N8N_BASE_URL=https://n8n.usebylda.com` in Vercel, expose your
 n8n instance under that subdomain via a Cloudflare Tunnel.
 
 ```bash
 # Cloudflare Tunnel, on the box running n8n
-cloudflared tunnel route dns nova-n8n n8n.nova-ops.space
-cloudflared tunnel run nova-n8n   # forwards to localhost:5678
+cloudflared tunnel route dns bylda-n8n n8n.usebylda.com
+cloudflared tunnel run bylda-n8n   # forwards to localhost:5678
 ```
 
 ### Option B — proxy through your app (recommended for prod)
@@ -153,12 +153,12 @@ After each workflow is active, test directly:
 
 ```bash
 # Brand voice — should return brand_voice JSON
-curl -X POST https://n8n.nova-ops.space/webhook/brand-voice-subagent \
+curl -X POST https://n8n.usebylda.com/webhook/brand-voice-subagent \
   -H "Content-Type: application/json" \
   -d '{"user_id":"<real-uuid>","raw_intake":"We help med spas book more consults via AI follow-ups. Tone is confident, expert, no fluff."}'
 
 # Automation builder — expect 403 if user is on starter plan
-curl -X POST https://n8n.nova-ops.space/webhook/automation-builder-subagent \
+curl -X POST https://n8n.usebylda.com/webhook/automation-builder-subagent \
   -H "Content-Type: application/json" \
   -d '{"user_id":"<real-uuid>","process_description":"When a Typeform submission comes in, post to Slack and create a HubSpot deal","integrations":["typeform","slack","hubspot"]}'
 ```

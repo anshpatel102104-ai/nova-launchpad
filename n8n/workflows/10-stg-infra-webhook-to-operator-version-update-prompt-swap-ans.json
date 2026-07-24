@@ -50,7 +50,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-prompt-swap-stg"
+      "webhookId": "bylda-prompt-swap-stg"
     },
     {
       "id": "j0000002-0000-0000-0000-000000000002",

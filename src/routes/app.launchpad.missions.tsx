@@ -3,7 +3,7 @@
  *
  * Full-focus view of the active mission (master-build dream UI): plain-English
  * description, a vertical step list (active = violet accent + CTA, done = green
- * check, pending = muted, locked = dimmed), and a pinned Nova guidance card.
+ * check, pending = muted, locked = dimmed), and a pinned Bylda guidance card.
  * Reads the workspace's active mission + steps via currentMissionQuery.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check, Lock, ArrowRight, Sparkles, Circle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { currentMissionQuery } from "@/lib/queries";
-import { AiOriginCard } from "@/components/nova/AiOriginCard";
+import { AiOriginCard } from "@/components/bylda/AiOriginCard";
 
 export const Route = createFileRoute("/app/launchpad/missions")({ component: MissionDetail });
 
@@ -52,13 +52,13 @@ function MissionDetail() {
             <Sparkles className="mb-3 h-8 w-8 text-[--accent]" />
             <p className="mb-1 text-sm font-semibold text-[--foreground]">No active mission</p>
             <p className="mb-4 max-w-xs text-xs text-[--text-faint]">
-              Ask Nova to set your next mission based on where your business is right now.
+              Ask Bylda to set your next mission based on where your business is right now.
             </p>
             <Link
-              to="/app/launchpad/nova"
+              to="/app/launchpad/bylda"
               className="rounded-xl bg-[--accent] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[--primary-hover]"
             >
-              Ask Nova
+              Ask Bylda
             </Link>
           </div>
         ) : (
@@ -77,7 +77,7 @@ function MissionDetail() {
             <div className="space-y-3">
               {steps.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-[--border] px-4 py-8 text-center text-xs text-[--text-faint]">
-                  Nova is still sequencing the steps for this mission.
+                  Bylda is still sequencing the steps for this mission.
                 </p>
               ) : (
                 steps.map((s, i) => {
@@ -140,23 +140,23 @@ function MissionDetail() {
               )}
             </div>
 
-            {/* Pinned Nova guidance — shared AI-origin grammar */}
+            {/* Pinned Bylda guidance — shared AI-origin grammar */}
             <AiOriginCard
               className="mt-6"
-              label="Nova"
+              label="Bylda"
               action={
                 <Link
-                  to="/app/launchpad/nova"
+                  to="/app/launchpad/bylda"
                   className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
                   style={{ background: "var(--primary)" }}
                 >
-                  Ask Nova about this mission <ArrowRight className="h-4 w-4" />
+                  Ask Bylda about this mission <ArrowRight className="h-4 w-4" />
                 </Link>
               }
             >
               {activeIndex === -1
-                ? "Every step is done — ask Nova to set your next mission."
-                : "Focus on the highlighted step. When you finish it, come back and Nova will unlock the next move."}
+                ? "Every step is done — ask Bylda to set your next mission."
+                : "Focus on the highlighted step. When you finish it, come back and Bylda will unlock the next move."}
             </AiOriginCard>
           </>
         )}

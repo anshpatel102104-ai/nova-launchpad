@@ -34,8 +34,8 @@ import {
   type CasefileCore as Core,
   type NextAction,
 } from "@/lib/casefile";
-import { AiOriginCard } from "@/components/nova/AiOriginCard";
-import { MomentumRail, type MomentumLoop } from "@/components/nova/MomentumRail";
+import { AiOriginCard } from "@/components/bylda/AiOriginCard";
+import { MomentumRail, type MomentumLoop } from "@/components/bylda/MomentumRail";
 
 const STAGES = ["Clarify", "Validate", "Build", "Launch", "Operate", "Scale"];
 
@@ -72,10 +72,10 @@ function verdictTone(v: string) {
   return TONE_CLASSES[verdictCategory(v)];
 }
 
-/** Secondary "Nova's Take" block — the shared AI-origin grammar. */
-function NovaTake({ text, className = "" }: { text: string; className?: string }) {
+/** Secondary "Bylda's Take" block — the shared AI-origin grammar. */
+function ByldaTake({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <AiOriginCard label="Nova's Take" className={className}>
+    <AiOriginCard label="Bylda's Take" className={className}>
       <span className="whitespace-pre-wrap">{text}</span>
     </AiOriginCard>
   );
@@ -259,7 +259,7 @@ function CaseRail({ run, core }: { run: CasefileRun; core: Core }) {
         </p>
         <div className="flex items-center gap-2 text-sm text-[--muted-foreground]">
           <span className="h-2 w-2 rounded-full bg-[--success]" />
-          This output is indexed in your Nova memory.
+          This output is indexed in your Bylda memory.
         </div>
       </div>
     </div>
@@ -412,12 +412,12 @@ export function ScoreVerdictLayout({
       core={core}
       header={<CommandHeader run={run} core={core} showScoreBox={false} />}
     >
-      {/* Nova's Take — hero numeral */}
+      {/* Bylda's Take — hero numeral */}
       <div className="rounded-2xl border border-[--border] border-l-4 border-l-[--accent] bg-[--surface] p-6 shadow-sm sm:p-8">
         <div className="mb-2 flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-[--accent]" />
           <span className="text-xs font-semibold uppercase tracking-wider text-[--accent]">
-            Nova's Take
+            Bylda's Take
           </span>
         </div>
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
@@ -439,9 +439,9 @@ export function ScoreVerdictLayout({
             </span>
           )}
         </div>
-        {(core.novaTake || core.recommendation) && (
+        {(core.byldaTake || core.recommendation) && (
           <p className="mt-4 max-w-2xl whitespace-pre-wrap text-[15px] leading-relaxed text-[--foreground]">
-            {core.novaTake || core.recommendation}
+            {core.byldaTake || core.recommendation}
           </p>
         )}
       </div>
@@ -495,7 +495,7 @@ export function ReportLayout({
           </div>
         </div>
       )}
-      {core.novaTake && !core.fullReport && <NovaTake text={core.novaTake} />}
+      {core.byldaTake && !core.fullReport && <ByldaTake text={core.byldaTake} />}
       <RecommendedMove nextActions={core.nextActions} />
       {extra}
       <MentorBridge />
@@ -536,7 +536,7 @@ export function MemoLayout({
           )}
         </div>
       )}
-      {core.novaTake && <NovaTake text={core.novaTake} />}
+      {core.byldaTake && <ByldaTake text={core.byldaTake} />}
       {core.fullReport && (
         <div className="rounded-2xl border border-[--border] bg-[--surface] p-6 shadow-sm">
           <div className="prose-casefile whitespace-pre-wrap text-sm leading-relaxed text-[--foreground]">
@@ -749,7 +749,7 @@ export function PlanWithStepsLayout({
   const doneCount = steps.filter((s) => s.done).length;
   return (
     <FounderShell run={run} core={core} header={<CommandHeader run={run} core={core} />}>
-      {core.novaTake && <NovaTake text={core.novaTake} />}
+      {core.byldaTake && <ByldaTake text={core.byldaTake} />}
       {steps.length > 0 ? (
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -803,7 +803,7 @@ export function PipelineSnapshotLayout({ run, core }: { run: CasefileRun; core: 
     <div className="min-h-full bg-[--background] p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-4xl">
         <Link
-          to="/app/nova/crm"
+          to="/app/bylda/crm"
           className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-[--muted-foreground] hover:text-[--foreground]"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Pipeline
@@ -840,7 +840,7 @@ export function PipelineSnapshotLayout({ run, core }: { run: CasefileRun; core: 
             })}
           </div>
         </div>
-        {core.novaTake && <NovaTake text={core.novaTake} className="mt-4" />}
+        {core.byldaTake && <ByldaTake text={core.byldaTake} className="mt-4" />}
       </div>
     </div>
   );
@@ -891,9 +891,9 @@ export function SessionSummaryLayout({ run, core }: { run: CasefileRun; core: Co
       </div>
 
       <div className={`mx-auto max-w-3xl space-y-4 px-4 py-6 sm:px-6 lg:px-8 ${ENTRANCE}`}>
-        {core.novaTake && (
+        {core.byldaTake && (
           <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[--foreground]">
-            {core.novaTake}
+            {core.byldaTake}
           </p>
         )}
         {takeaways.length > 0 && (
@@ -935,7 +935,7 @@ export function SessionSummaryLayout({ run, core }: { run: CasefileRun; core: Co
             )}
           </div>
         )}
-        {takeaways.length === 0 && !nextAction && !core.novaTake && (
+        {takeaways.length === 0 && !nextAction && !core.byldaTake && (
           <div className="flex items-center gap-2 rounded-2xl border border-[--border] bg-[--surface] p-5 text-sm text-[--muted-foreground]">
             <CircleDashed className="h-4 w-4 text-[--text-faint]" />
             No summary was captured for this session yet.

@@ -29,7 +29,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/launchpad": "Workbench",
   "/app/playbook": "Playbook",
   "/app/mission-control": "Home",
-  "/app/nova-home": "Home",
+  "/app/bylda-home": "Home",
   "/app/research": "Research",
   "/app/memory": "Memory",
   "/app/automations": "Automations",
@@ -38,13 +38,13 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/integrations": "Integrations",
   "/app/settings": "Settings",
   "/app/billing": "Billing",
-  "/app/nova/reports": "Reports",
+  "/app/bylda/reports": "Reports",
   "/app/assets": "Assets",
   "/app/academy": "Academy",
   "/app/tutorials": "Tutorials",
-  "/app/mentor": "Ask Nova",
+  "/app/mentor": "Ask Bylda",
   "/app/admin": "Admin",
-  "/app/nova/crm": "Pipeline",
+  "/app/bylda/crm": "Pipeline",
   "/app/monitoring": "System Health",
   "/app/templates": "Templates",
   "/app/sop-library": "SOP Library",
@@ -54,16 +54,16 @@ const PAGE_TITLES: Record<string, string> = {
 const SECTION_LABELS: Record<string, string> = {
   "/app/playbook": "Execute",
   "/app/mission-control": "Execute",
-  "/app/nova-home": "Operate",
+  "/app/bylda-home": "Operate",
   "/app/launchpad": "Workbench",
   "/app/research": "Workbench",
-  "/app/nova/crm": "Operate",
+  "/app/bylda/crm": "Operate",
   "/app/contacts": "Operate",
   "/app/scale/campaigns": "Operate",
   "/app/automations": "Automate",
   "/app/builder": "Automate",
   "/app/integrations": "Automate",
-  "/app/nova/reports": "Intelligence",
+  "/app/bylda/reports": "Intelligence",
   "/app/mentor": "Intelligence",
   "/app/monitoring": "Intelligence",
   "/app/assets": "Resources",
@@ -291,11 +291,11 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
           {/* Divider */}
           <div className="h-5 w-px mx-1.5" style={{ background: "var(--border)" }} />
 
-          {/* Nova AI toggle */}
+          {/* Bylda AI toggle */}
           {onToggleRail && (
             <button
               onClick={onToggleRail}
-              title={railOpen ? "Close Nova AI" : "Open Nova AI"}
+              title={railOpen ? "Close Bylda AI" : "Open Bylda AI"}
               className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-semibold transition-all duration-150"
               style={
                 railOpen
@@ -316,7 +316,7 @@ export function AppTopbar({ onToggleRail, railOpen }: AppTopbarProps) {
               }}
             >
               <Zap className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Nova AI</span>
+              <span className="hidden sm:inline">Bylda AI</span>
             </button>
           )}
 

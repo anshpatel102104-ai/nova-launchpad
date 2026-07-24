@@ -80,10 +80,10 @@ Deno.serve(async (req) => {
 
   // ── Validate the minimum viable context per track ─────────────────────────
   if (mode === "create" && !str(a.idea)) {
-    return json({ error: "Tell Nova your business idea first.", code: "MISSING_IDEA" }, 400);
+    return json({ error: "Tell Bylda your business idea first.", code: "MISSING_IDEA" }, 400);
   }
   if (mode === "operate" && !str(a.business_name)) {
-    return json({ error: "Tell Nova your business name first.", code: "MISSING_NAME" }, 400);
+    return json({ error: "Tell Bylda your business name first.", code: "MISSING_NAME" }, 400);
   }
 
   // ── Normalize answers into a single shape ──────────────────────────────────

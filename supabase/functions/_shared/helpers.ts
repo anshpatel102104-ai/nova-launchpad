@@ -332,7 +332,7 @@ const CONTEXT_CONTRACT_PROMPT = `
 
 ## CONTEXT RULES
 - A FOUNDER CONTEXT block may precede the task input. Treat it as verified fact about THIS business. Reference its specifics (name, niche, stage, numbers) in your first two sentences.
-- If your recommendation contradicts a prior Nova output included in context, name the contradiction explicitly and justify the change.
+- If your recommendation contradicts a prior Bylda output included in context, name the contradiction explicitly and justify the change.
 - If context is missing a fact you need, state the single most important missing fact instead of generalizing.
 - Always populate context_used with the exact context facts you relied on, and recommended_next_actions with 1-3 ranked, concrete moves (use type "tool" + the tool key when a Launchpad tool is the right move).`;
 

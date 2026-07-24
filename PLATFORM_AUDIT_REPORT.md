@@ -1,8 +1,8 @@
-# Nova Launchpad Platform Audit Report
+# Bylda Launchpad Platform Audit Report
 ## Full Platform Audit & Implementation Status
 
 **Generated:** 2026-06-11  
-**Audit Scope:** Complete Nova Launchpad platform  
+**Audit Scope:** Complete Bylda Launchpad platform  
 **Branch:** claude/jolly-hamilton-mvepgp
 
 ---
@@ -69,38 +69,38 @@ Each tool now has guidance covering:
 
 **Workflow Categories:**
 1. **AI Tool Integration Workflows** (7 workflows)
-   - `nova_ops_ai_validate_idea_n8n.json` ✅
-   - `nova_ops_ai_kill_idea_n8n.json` ✅
-   - `nova_ops_ai_build_pitch_n8n.json` ✅
-   - `nova_ops_ai_generate_gtm_n8n.json` ✅
-   - `nova_ops_ai_build_offer_n8n.json` ✅
-   - `nova_ops_ai_first_customers_n8n.json` ✅
-   - `nova_ops_ai_profile_builder.json` ✅
+   - `bylda_ops_ai_validate_idea_n8n.json` ✅
+   - `bylda_ops_ai_kill_idea_n8n.json` ✅
+   - `bylda_ops_ai_build_pitch_n8n.json` ✅
+   - `bylda_ops_ai_generate_gtm_n8n.json` ✅
+   - `bylda_ops_ai_build_offer_n8n.json` ✅
+   - `bylda_ops_ai_first_customers_n8n.json` ✅
+   - `bylda_ops_ai_profile_builder.json` ✅
 
 2. **Billing & Payment Workflows** (5 workflows)
    - `stripe-plan-upgrade.json` ✅
    - `stripe-trial-warning-72hr.json` ✅
    - `stripe-invoice-generated-delivered.json` ✅
-   - `nova_ops_billing_plan_unlock.json` ✅
-   - `nova_ops_credit_deduction_per_tool_use.json` ✅
+   - `bylda_ops_billing_plan_unlock.json` ✅
+   - `bylda_ops_credit_deduction_per_tool_use.json` ✅
 
 3. **Onboarding & Activation Workflows** (6 workflows)
-   - `nova_ops_onboarding_intake_save.json` ✅
-   - `nova_ops_dashboard_auto_creation.json` ✅
-   - `nova_ops_first_tool_guided_activation.json` ✅
-   - `nova_ops_feature_flag_sync.json` ✅
-   - `nova_ops_operator_route_user.json` ✅
-   - `nova_ops_niche_tool_preconfig.json` ✅
+   - `bylda_ops_onboarding_intake_save.json` ✅
+   - `bylda_ops_dashboard_auto_creation.json` ✅
+   - `bylda_ops_first_tool_guided_activation.json` ✅
+   - `bylda_ops_feature_flag_sync.json` ✅
+   - `bylda_ops_operator_route_user.json` ✅
+   - `bylda_ops_niche_tool_preconfig.json` ✅
 
 4. **Operational Workflows** (10+ workflows)
-   - `nova_ops_mentor_agent_dispatch.json` ✅
-   - `nova_ops_daily_health_check.json` ✅
-   - `nova_ops_alerts_error_router.json` ✅
+   - `bylda_ops_mentor_agent_dispatch.json` ✅
+   - `bylda_ops_daily_health_check.json` ✅
+   - `bylda_ops_alerts_error_router.json` ✅
    - And 10+ more...
 
 **Integration Status:** ✅ All workflows properly connected
 
-### Automations API (`nova-automations-api`) Status
+### Automations API (`bylda-automations-api`) Status
 - ✅ JWT validation implemented
 - ✅ Plan gating (automations_allowed check)
 - ✅ Queue management via Cloudflare Queue
@@ -156,7 +156,7 @@ Reviewed key edge functions for:
 
 #### Issue #2: Silent Failures in Automation Logs
 **Severity:** Low  
-**Location:** `nova-automations-api/worker.ts`, line 176-179  
+**Location:** `bylda-automations-api/worker.ts`, line 176-179  
 **Problem:** If log insert fails, no warning is logged  
 **Current Code:**
 ```typescript
@@ -389,7 +389,7 @@ const withTimeout = (promise, ms) =>
 
 ## Conclusion
 
-The Nova Launchpad platform is **well-structured** with:
+The Bylda Launchpad platform is **well-structured** with:
 - ✅ Clear mission progression logic
 - ✅ Comprehensive automation infrastructure (N8N)
 - ✅ Solid API design (automations, tools)

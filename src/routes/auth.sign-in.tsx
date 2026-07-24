@@ -22,7 +22,7 @@ function SignIn() {
       toast.error(error.message);
       return;
     }
-    // /app resolves the mode-aware product home (Launchpad vs Nova).
+    // /app resolves the mode-aware product home (Launchpad vs Bylda).
     navigate({ to: "/app" });
   };
 
@@ -87,7 +87,7 @@ export function AuthShell({
             LN
           </div>
           <span className="font-display text-[15px] font-semibold tracking-tight">
-            LaunchpadNOVA
+            LaunchpadBYLDA
           </span>
         </div>
 
@@ -111,7 +111,7 @@ export function AuthShell({
         </div>
 
         <div className="text-[11px] text-muted-foreground">
-          © LaunchpadNOVA · Built for founders
+          © LaunchpadBYLDA · Built for founders
         </div>
       </div>
 
@@ -122,7 +122,7 @@ export function AuthShell({
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-primary text-white font-bold text-[13px]">
               LN
             </div>
-            <span className="font-display text-[15px] font-semibold">LaunchpadNOVA</span>
+            <span className="font-display text-[15px] font-semibold">LaunchpadBYLDA</span>
           </div>
           <h1 className="font-display text-[26px] font-semibold tracking-tight">{title}</h1>
           <p className="mt-1.5 text-[13.5px] text-muted-foreground">{subtitle}</p>

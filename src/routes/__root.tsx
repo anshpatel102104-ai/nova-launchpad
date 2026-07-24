@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Sentry } from "@/lib/observability";
 import appCss from "../styles.css?url";
 
-const themeBootScript = `(function(){try{var t=localStorage.getItem('nova-theme');var r=document.documentElement;r.classList.remove('light','dark');if(t==='light'){r.classList.add('light');r.style.colorScheme='light';}else{r.classList.add('dark');r.style.colorScheme='dark';}}catch(e){}})();`;
+const themeBootScript = `(function(){try{var t=localStorage.getItem('bylda-theme');var r=document.documentElement;r.classList.remove('light','dark');if(t==='dark'){r.classList.add('dark');r.style.colorScheme='dark';}else{r.style.colorScheme='light';}}catch(e){}})();`;
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -47,20 +47,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Launchpad Nova — AI Business OS" },
+      { title: "Bylda — Build your business in the clouds" },
       {
         name: "description",
-        content: "Build. Launch. Operate. The AI operating system for founders.",
+        content: "Build. Launch. Operate. The AI sky-island operating system for founders.",
       },
-      { property: "og:title", content: "Launchpad Nova — AI Business OS" },
-      { name: "twitter:title", content: "Launchpad Nova — AI Business OS" },
+      { property: "og:title", content: "Bylda — Build your business in the clouds" },
+      { name: "twitter:title", content: "Bylda — Build your business in the clouds" },
       {
         property: "og:description",
-        content: "Build. Launch. Operate. The AI operating system for founders.",
+        content: "Build. Launch. Operate. The AI sky-island operating system for founders.",
       },
       {
         name: "twitter:description",
-        content: "Build. Launch. Operate. The AI operating system for founders.",
+        content: "Build. Launch. Operate. The AI sky-island operating system for founders.",
       },
       {
         property: "og:image",

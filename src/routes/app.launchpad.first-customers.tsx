@@ -173,7 +173,7 @@ function FirstCustomersPage() {
           return (
             <div
               key={step.order}
-              className="nova-card rounded-xl p-5"
+              className="bylda-card rounded-xl p-5"
               style={{
                 opacity: isDone ? 0.65 : 1,
                 borderColor: isDone ? "rgba(52,211,153,0.2)" : undefined,

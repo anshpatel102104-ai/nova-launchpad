@@ -175,7 +175,7 @@ function MonitoringPage() {
             key={stat.label}
             onClick={() => setTab(stat.tab)}
             className={cn(
-              "rounded-xl p-4 nova-card text-left transition-all hover:ring-1",
+              "rounded-xl p-4 bylda-card text-left transition-all hover:ring-1",
               tab === stat.tab && "ring-1",
             )}
             style={
@@ -248,7 +248,7 @@ function AlertsTab({
       {alerts.map((alert) => {
         const sev = SEVERITY_STYLES[alert.severity] ?? SEVERITY_STYLES.low;
         return (
-          <div key={alert.id} className="nova-card rounded-xl p-4 space-y-2.5">
+          <div key={alert.id} className="bylda-card rounded-xl p-4 space-y-2.5">
             <div className="flex items-start gap-3">
               <span
                 className="mt-0.5 rounded-md px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider shrink-0"
@@ -318,7 +318,7 @@ function OutcomesTab({ outcomes }: { outcomes: ExpectedOutcome[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {outcomes.map((o) => (
-        <div key={o.id} className="nova-card rounded-xl p-4">
+        <div key={o.id} className="bylda-card rounded-xl p-4">
           <div className="text-[12.5px] font-medium truncate">{o.metric_name}</div>
           <div className="font-mono text-[20px] font-bold mt-1" style={{ color: "#7DD3FC" }}>
             {o.target_value}
@@ -367,7 +367,7 @@ function LoopsTab({ loops }: { loops: OpenLoop[] }) {
                 : "#7DD3FC";
         const isOpen = loop.status === "open" || loop.status === "in_progress";
         return (
-          <div key={loop.id} className="nova-card rounded-xl p-4 flex items-start gap-3">
+          <div key={loop.id} className="bylda-card rounded-xl p-4 flex items-start gap-3">
             {isOpen ? (
               <Circle className="h-4 w-4 shrink-0 mt-0.5" style={{ color }} />
             ) : (
@@ -425,7 +425,7 @@ function ExceptionsTab({
             Retry queue ({failedJobs.length})
           </div>
           {failedJobs.map((job) => (
-            <div key={job.id} className="nova-card rounded-xl p-4 flex items-center gap-3">
+            <div key={job.id} className="bylda-card rounded-xl p-4 flex items-center gap-3">
               <JobStatusIcon status={job.status} />
               <div className="flex-1 min-w-0">
                 <div className="text-[12.5px] font-medium truncate">{job.tool_slug}</div>
@@ -471,7 +471,7 @@ function ExceptionsTab({
             Workflow errors ({n8nErrors.length})
           </div>
           {n8nErrors.map((err) => (
-            <div key={err.id} className="nova-card rounded-xl p-4">
+            <div key={err.id} className="bylda-card rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Info className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span className="text-[12.5px] font-medium truncate">{err.workflow_name}</span>
@@ -537,7 +537,7 @@ function EmptyCard({
   message: string;
 }) {
   return (
-    <div className="nova-card rounded-xl p-12 text-center">
+    <div className="bylda-card rounded-xl p-12 text-center">
       <Icon className="h-8 w-8 mx-auto mb-3 opacity-25" />
       <p className="text-[13px]" style={{ color: "var(--muted-foreground)" }}>
         {message}

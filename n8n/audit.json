@@ -46,7 +46,7 @@
     "GLOBAL_ERROR_WEBHOOK_URL",
     "GLOBAL_SLACK_ALERT_CHANNEL",
     "N8N_WEBHOOK_BASE_URL",
-    "NOVA_OPS_ADMIN_TOKEN",
+    "BYLDA_OPS_ADMIN_TOKEN",
     "STRIPE_UPGRADE_URL"
   ],
   "credentials": {
@@ -197,13 +197,13 @@
         {
           "path": "ai-operator-router",
           "method": "POST",
-          "webhookId": "novaops-ai-operator-router-stg"
+          "webhookId": "bylda-ai-operator-router-stg"
         }
       ],
       "schedule": [],
       "http_urls": [
         "={{ $json.subagent_url }}",
-        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://api.anthropic.com/v1/messages"
       ],
@@ -264,7 +264,7 @@
         {
           "path": "ai-operator-context-loader",
           "method": "POST",
-          "webhookId": "novaops-context-loader-stg"
+          "webhookId": "bylda-context-loader-stg"
         }
       ],
       "schedule": [],
@@ -306,13 +306,13 @@
         {
           "path": "ai-operator-tool-dispatcher",
           "method": "POST",
-          "webhookId": "novaops-tool-dispatcher-stg"
+          "webhookId": "bylda-tool-dispatcher-stg"
         }
       ],
       "schedule": [],
       "http_urls": [
         "={{ $json.tool_url }}",
-        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/plan_entitlements"
       ],
@@ -354,7 +354,7 @@
         {
           "path": "ai-operator-response-formatter",
           "method": "POST",
-          "webhookId": "novaops-response-formatter-stg"
+          "webhookId": "bylda-response-formatter-stg"
         }
       ],
       "schedule": [],
@@ -403,7 +403,7 @@
         {
           "path": "operator-memory-write",
           "method": "POST",
-          "webhookId": "novaops-memory-write-stg"
+          "webhookId": "bylda-memory-write-stg"
         }
       ],
       "schedule": [],
@@ -442,7 +442,7 @@
         {
           "path": "operator-memory-read",
           "method": "POST",
-          "webhookId": "novaops-memory-read-stg"
+          "webhookId": "bylda-memory-read-stg"
         }
       ],
       "schedule": [],
@@ -485,7 +485,7 @@
         {
           "path": "operator-confidence-fallback",
           "method": "POST",
-          "webhookId": "novaops-confidence-fallback-stg"
+          "webhookId": "bylda-confidence-fallback-stg"
         }
       ],
       "schedule": [],
@@ -543,7 +543,7 @@
         {
           "path": "operator-escalation",
           "method": "POST",
-          "webhookId": "novaops-operator-escalation-stg"
+          "webhookId": "bylda-operator-escalation-stg"
         }
       ],
       "schedule": [],
@@ -626,7 +626,7 @@
       },
       "env_vars": [
         "GLOBAL_ERROR_WEBHOOK_URL",
-        "NOVA_OPS_ADMIN_TOKEN"
+        "BYLDA_OPS_ADMIN_TOKEN"
       ],
       "credentials": [
         {
@@ -639,7 +639,7 @@
         {
           "path": "operator-prompt-swap",
           "method": "POST",
-          "webhookId": "novaops-prompt-swap-stg"
+          "webhookId": "bylda-prompt-swap-stg"
         }
       ],
       "schedule": [],

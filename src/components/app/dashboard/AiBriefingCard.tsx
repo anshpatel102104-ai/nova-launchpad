@@ -1,5 +1,5 @@
 /**
- * AiBriefingCard — the Nova Home focus module.
+ * AiBriefingCard — the Bylda Home focus module.
  * Surfaces the AI-generated business briefing (ai_dashboards payload):
  * headline, north-star metric, and the top quick wins as concrete next
  * actions, with the rest of the briefing expandable in place. Owns its own
@@ -128,7 +128,7 @@ export function AiBriefingCard() {
               Your AI briefing isn't ready yet
             </div>
             <p className="mt-0.5 text-[12.5px]" style={{ color: "var(--muted-foreground)" }}>
-              Nova builds a personalized situation report, north-star metric, and quick wins from
+              Bylda builds a personalized situation report, north-star metric, and quick wins from
               your business context.
             </p>
           </div>
@@ -178,7 +178,7 @@ export function AiBriefingCard() {
               className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: "var(--primary)" }}
             >
-              <Sparkles className="h-3 w-3" /> Nova briefing
+              <Sparkles className="h-3 w-3" /> Bylda briefing
             </div>
             {payload.headline && (
               <h2 className="mt-1.5 font-display text-[17px] font-semibold leading-snug tracking-tight">

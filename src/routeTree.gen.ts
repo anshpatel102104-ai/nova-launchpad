@@ -34,9 +34,6 @@ import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
 import { Route as AppResearchRouteImport } from './routes/app.research'
 import { Route as AppReputationRouteImport } from './routes/app.reputation'
 import { Route as AppPlaybookRouteImport } from './routes/app.playbook'
-import { Route as AppNovaOsRouteImport } from './routes/app.nova-os'
-import { Route as AppNovaHomeRouteImport } from './routes/app.nova-home'
-import { Route as AppNovaFullRouteImport } from './routes/app.nova-full'
 import { Route as AppMonitoringRouteImport } from './routes/app.monitoring'
 import { Route as AppMissionControlRouteImport } from './routes/app.mission-control'
 import { Route as AppMissionBriefingRouteImport } from './routes/app.mission-briefing'
@@ -50,6 +47,9 @@ import { Route as AppGalaxyRouteImport } from './routes/app.galaxy'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppContactsRouteImport } from './routes/app.contacts'
 import { Route as AppCommandCenterRouteImport } from './routes/app.command-center'
+import { Route as AppByldaOsRouteImport } from './routes/app.bylda-os'
+import { Route as AppByldaHomeRouteImport } from './routes/app.bylda-home'
+import { Route as AppByldaFullRouteImport } from './routes/app.bylda-full'
 import { Route as AppBuilderRouteImport } from './routes/app.builder'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAutomationsRouteImport } from './routes/app.automations'
@@ -58,26 +58,20 @@ import { Route as AppAiDashboardRouteImport } from './routes/app.ai-dashboard'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppAcademyRouteImport } from './routes/app.academy'
-import { Route as AppNovaIndexRouteImport } from './routes/app.nova.index'
 import { Route as AppLaunchpadIndexRouteImport } from './routes/app.launchpad.index'
+import { Route as AppByldaIndexRouteImport } from './routes/app.bylda.index'
 import { Route as AppScaleTeamRouteImport } from './routes/app.scale.team'
 import { Route as AppScaleReportsRouteImport } from './routes/app.scale.reports'
 import { Route as AppScalePipelineRouteImport } from './routes/app.scale.pipeline'
 import { Route as AppScaleCampaignsRouteImport } from './routes/app.scale.campaigns'
 import { Route as AppScaleAutomationsRouteImport } from './routes/app.scale.automations'
 import { Route as AppOutcomesCategoryRouteImport } from './routes/app.outcomes.$category'
-import { Route as AppNovaWorkflowsRouteImport } from './routes/app.nova.workflows'
-import { Route as AppNovaReportsRouteImport } from './routes/app.nova.reports'
-import { Route as AppNovaLeadsRouteImport } from './routes/app.nova.leads'
-import { Route as AppNovaCrmRouteImport } from './routes/app.nova.crm'
-import { Route as AppNovaClientsRouteImport } from './routes/app.nova.clients'
-import { Route as AppNovaOsSlugRouteImport } from './routes/app.nova-os.$slug'
-import { Route as AppLaunchpadNovaRouteImport } from './routes/app.launchpad.nova'
 import { Route as AppLaunchpadMissionsRouteImport } from './routes/app.launchpad.missions'
 import { Route as AppLaunchpadMentorsRouteImport } from './routes/app.launchpad.mentors'
 import { Route as AppLaunchpadHistoryRouteImport } from './routes/app.launchpad.history'
 import { Route as AppLaunchpadFirstCustomersRouteImport } from './routes/app.launchpad.first-customers'
 import { Route as AppLaunchpadCourseRouteImport } from './routes/app.launchpad.course'
+import { Route as AppLaunchpadByldaRouteImport } from './routes/app.launchpad.bylda'
 import { Route as AppLaunchpadToolRouteImport } from './routes/app.launchpad.$tool'
 import { Route as AppCrmWaitlistRouteImport } from './routes/app.crm.waitlist'
 import { Route as AppCrmTasksRouteImport } from './routes/app.crm.tasks'
@@ -90,6 +84,12 @@ import { Route as AppCrmCallsRouteImport } from './routes/app.crm.calls'
 import { Route as AppCrmCalendarRouteImport } from './routes/app.crm.calendar'
 import { Route as AppCrmAutomationsRouteImport } from './routes/app.crm.automations'
 import { Route as AppCrmAccountsRouteImport } from './routes/app.crm.accounts'
+import { Route as AppByldaWorkflowsRouteImport } from './routes/app.bylda.workflows'
+import { Route as AppByldaReportsRouteImport } from './routes/app.bylda.reports'
+import { Route as AppByldaLeadsRouteImport } from './routes/app.bylda.leads'
+import { Route as AppByldaCrmRouteImport } from './routes/app.bylda.crm'
+import { Route as AppByldaClientsRouteImport } from './routes/app.bylda.clients'
+import { Route as AppByldaOsSlugRouteImport } from './routes/app.bylda-os.$slug'
 import { Route as AppBillingReturnRouteImport } from './routes/app.billing.return'
 import { Route as AppAcademyModuleRouteImport } from './routes/app.academy.$module'
 import { Route as AppLaunchpadOutputsIdRouteImport } from './routes/app.launchpad.outputs.$id'
@@ -219,21 +219,6 @@ const AppPlaybookRoute = AppPlaybookRouteImport.update({
   path: '/playbook',
   getParentRoute: () => AppRoute,
 } as any)
-const AppNovaOsRoute = AppNovaOsRouteImport.update({
-  id: '/nova-os',
-  path: '/nova-os',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaHomeRoute = AppNovaHomeRouteImport.update({
-  id: '/nova-home',
-  path: '/nova-home',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaFullRoute = AppNovaFullRouteImport.update({
-  id: '/nova-full',
-  path: '/nova-full',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppMonitoringRoute = AppMonitoringRouteImport.update({
   id: '/monitoring',
   path: '/monitoring',
@@ -299,6 +284,21 @@ const AppCommandCenterRoute = AppCommandCenterRouteImport.update({
   path: '/command-center',
   getParentRoute: () => AppRoute,
 } as any)
+const AppByldaOsRoute = AppByldaOsRouteImport.update({
+  id: '/bylda-os',
+  path: '/bylda-os',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaHomeRoute = AppByldaHomeRouteImport.update({
+  id: '/bylda-home',
+  path: '/bylda-home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaFullRoute = AppByldaFullRouteImport.update({
+  id: '/bylda-full',
+  path: '/bylda-full',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBuilderRoute = AppBuilderRouteImport.update({
   id: '/builder',
   path: '/builder',
@@ -339,14 +339,14 @@ const AppAcademyRoute = AppAcademyRouteImport.update({
   path: '/academy',
   getParentRoute: () => AppRoute,
 } as any)
-const AppNovaIndexRoute = AppNovaIndexRouteImport.update({
-  id: '/nova/',
-  path: '/nova/',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLaunchpadIndexRoute = AppLaunchpadIndexRouteImport.update({
   id: '/launchpad/',
   path: '/launchpad/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaIndexRoute = AppByldaIndexRouteImport.update({
+  id: '/bylda/',
+  path: '/bylda/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScaleTeamRoute = AppScaleTeamRouteImport.update({
@@ -379,41 +379,6 @@ const AppOutcomesCategoryRoute = AppOutcomesCategoryRouteImport.update({
   path: '/outcomes/$category',
   getParentRoute: () => AppRoute,
 } as any)
-const AppNovaWorkflowsRoute = AppNovaWorkflowsRouteImport.update({
-  id: '/nova/workflows',
-  path: '/nova/workflows',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaReportsRoute = AppNovaReportsRouteImport.update({
-  id: '/nova/reports',
-  path: '/nova/reports',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaLeadsRoute = AppNovaLeadsRouteImport.update({
-  id: '/nova/leads',
-  path: '/nova/leads',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaCrmRoute = AppNovaCrmRouteImport.update({
-  id: '/nova/crm',
-  path: '/nova/crm',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaClientsRoute = AppNovaClientsRouteImport.update({
-  id: '/nova/clients',
-  path: '/nova/clients',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNovaOsSlugRoute = AppNovaOsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => AppNovaOsRoute,
-} as any)
-const AppLaunchpadNovaRoute = AppLaunchpadNovaRouteImport.update({
-  id: '/launchpad/nova',
-  path: '/launchpad/nova',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLaunchpadMissionsRoute = AppLaunchpadMissionsRouteImport.update({
   id: '/launchpad/missions',
   path: '/launchpad/missions',
@@ -438,6 +403,11 @@ const AppLaunchpadFirstCustomersRoute =
 const AppLaunchpadCourseRoute = AppLaunchpadCourseRouteImport.update({
   id: '/launchpad/course',
   path: '/launchpad/course',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLaunchpadByldaRoute = AppLaunchpadByldaRouteImport.update({
+  id: '/launchpad/bylda',
+  path: '/launchpad/bylda',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLaunchpadToolRoute = AppLaunchpadToolRouteImport.update({
@@ -500,6 +470,36 @@ const AppCrmAccountsRoute = AppCrmAccountsRouteImport.update({
   path: '/crm/accounts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppByldaWorkflowsRoute = AppByldaWorkflowsRouteImport.update({
+  id: '/bylda/workflows',
+  path: '/bylda/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaReportsRoute = AppByldaReportsRouteImport.update({
+  id: '/bylda/reports',
+  path: '/bylda/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaLeadsRoute = AppByldaLeadsRouteImport.update({
+  id: '/bylda/leads',
+  path: '/bylda/leads',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaCrmRoute = AppByldaCrmRouteImport.update({
+  id: '/bylda/crm',
+  path: '/bylda/crm',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaClientsRoute = AppByldaClientsRouteImport.update({
+  id: '/bylda/clients',
+  path: '/bylda/clients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppByldaOsSlugRoute = AppByldaOsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppByldaOsRoute,
+} as any)
 const AppBillingReturnRoute = AppBillingReturnRouteImport.update({
   id: '/return',
   path: '/return',
@@ -532,6 +532,9 @@ export interface FileRoutesByFullPath {
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/builder': typeof AppBuilderRoute
+  '/app/bylda-full': typeof AppByldaFullRoute
+  '/app/bylda-home': typeof AppByldaHomeRoute
+  '/app/bylda-os': typeof AppByldaOsRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -545,9 +548,6 @@ export interface FileRoutesByFullPath {
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
-  '/app/nova-full': typeof AppNovaFullRoute
-  '/app/nova-home': typeof AppNovaHomeRoute
-  '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
@@ -568,6 +568,12 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/bylda-os/$slug': typeof AppByldaOsSlugRoute
+  '/app/bylda/clients': typeof AppByldaClientsRoute
+  '/app/bylda/crm': typeof AppByldaCrmRoute
+  '/app/bylda/leads': typeof AppByldaLeadsRoute
+  '/app/bylda/reports': typeof AppByldaReportsRoute
+  '/app/bylda/workflows': typeof AppByldaWorkflowsRoute
   '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
@@ -580,26 +586,20 @@ export interface FileRoutesByFullPath {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/bylda': typeof AppLaunchpadByldaRoute
   '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
   '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
-  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
-  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
-  '/app/nova/clients': typeof AppNovaClientsRoute
-  '/app/nova/crm': typeof AppNovaCrmRoute
-  '/app/nova/leads': typeof AppNovaLeadsRoute
-  '/app/nova/reports': typeof AppNovaReportsRoute
-  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
+  '/app/bylda/': typeof AppByldaIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
-  '/app/nova/': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesByTo {
@@ -617,6 +617,9 @@ export interface FileRoutesByTo {
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/builder': typeof AppBuilderRoute
+  '/app/bylda-full': typeof AppByldaFullRoute
+  '/app/bylda-home': typeof AppByldaHomeRoute
+  '/app/bylda-os': typeof AppByldaOsRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -630,9 +633,6 @@ export interface FileRoutesByTo {
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
-  '/app/nova-full': typeof AppNovaFullRoute
-  '/app/nova-home': typeof AppNovaHomeRoute
-  '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
@@ -653,6 +653,12 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/bylda-os/$slug': typeof AppByldaOsSlugRoute
+  '/app/bylda/clients': typeof AppByldaClientsRoute
+  '/app/bylda/crm': typeof AppByldaCrmRoute
+  '/app/bylda/leads': typeof AppByldaLeadsRoute
+  '/app/bylda/reports': typeof AppByldaReportsRoute
+  '/app/bylda/workflows': typeof AppByldaWorkflowsRoute
   '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
@@ -665,26 +671,20 @@ export interface FileRoutesByTo {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/bylda': typeof AppLaunchpadByldaRoute
   '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
   '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
-  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
-  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
-  '/app/nova/clients': typeof AppNovaClientsRoute
-  '/app/nova/crm': typeof AppNovaCrmRoute
-  '/app/nova/leads': typeof AppNovaLeadsRoute
-  '/app/nova/reports': typeof AppNovaReportsRoute
-  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
+  '/app/bylda': typeof AppByldaIndexRoute
   '/app/launchpad': typeof AppLaunchpadIndexRoute
-  '/app/nova': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRoutesById {
@@ -704,6 +704,9 @@ export interface FileRoutesById {
   '/app/automations': typeof AppAutomationsRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/builder': typeof AppBuilderRoute
+  '/app/bylda-full': typeof AppByldaFullRoute
+  '/app/bylda-home': typeof AppByldaHomeRoute
+  '/app/bylda-os': typeof AppByldaOsRouteWithChildren
   '/app/command-center': typeof AppCommandCenterRoute
   '/app/contacts': typeof AppContactsRoute
   '/app/dashboard': typeof AppDashboardRoute
@@ -717,9 +720,6 @@ export interface FileRoutesById {
   '/app/mission-briefing': typeof AppMissionBriefingRoute
   '/app/mission-control': typeof AppMissionControlRoute
   '/app/monitoring': typeof AppMonitoringRoute
-  '/app/nova-full': typeof AppNovaFullRoute
-  '/app/nova-home': typeof AppNovaHomeRoute
-  '/app/nova-os': typeof AppNovaOsRouteWithChildren
   '/app/playbook': typeof AppPlaybookRoute
   '/app/reputation': typeof AppReputationRoute
   '/app/research': typeof AppResearchRoute
@@ -740,6 +740,12 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/academy/$module': typeof AppAcademyModuleRoute
   '/app/billing/return': typeof AppBillingReturnRoute
+  '/app/bylda-os/$slug': typeof AppByldaOsSlugRoute
+  '/app/bylda/clients': typeof AppByldaClientsRoute
+  '/app/bylda/crm': typeof AppByldaCrmRoute
+  '/app/bylda/leads': typeof AppByldaLeadsRoute
+  '/app/bylda/reports': typeof AppByldaReportsRoute
+  '/app/bylda/workflows': typeof AppByldaWorkflowsRoute
   '/app/crm/accounts': typeof AppCrmAccountsRoute
   '/app/crm/automations': typeof AppCrmAutomationsRoute
   '/app/crm/calendar': typeof AppCrmCalendarRoute
@@ -752,26 +758,20 @@ export interface FileRoutesById {
   '/app/crm/tasks': typeof AppCrmTasksRoute
   '/app/crm/waitlist': typeof AppCrmWaitlistRoute
   '/app/launchpad/$tool': typeof AppLaunchpadToolRoute
+  '/app/launchpad/bylda': typeof AppLaunchpadByldaRoute
   '/app/launchpad/course': typeof AppLaunchpadCourseRoute
   '/app/launchpad/first-customers': typeof AppLaunchpadFirstCustomersRoute
   '/app/launchpad/history': typeof AppLaunchpadHistoryRoute
   '/app/launchpad/mentors': typeof AppLaunchpadMentorsRoute
   '/app/launchpad/missions': typeof AppLaunchpadMissionsRoute
-  '/app/launchpad/nova': typeof AppLaunchpadNovaRoute
-  '/app/nova-os/$slug': typeof AppNovaOsSlugRoute
-  '/app/nova/clients': typeof AppNovaClientsRoute
-  '/app/nova/crm': typeof AppNovaCrmRoute
-  '/app/nova/leads': typeof AppNovaLeadsRoute
-  '/app/nova/reports': typeof AppNovaReportsRoute
-  '/app/nova/workflows': typeof AppNovaWorkflowsRoute
   '/app/outcomes/$category': typeof AppOutcomesCategoryRoute
   '/app/scale/automations': typeof AppScaleAutomationsRoute
   '/app/scale/campaigns': typeof AppScaleCampaignsRoute
   '/app/scale/pipeline': typeof AppScalePipelineRoute
   '/app/scale/reports': typeof AppScaleReportsRoute
   '/app/scale/team': typeof AppScaleTeamRoute
+  '/app/bylda/': typeof AppByldaIndexRoute
   '/app/launchpad/': typeof AppLaunchpadIndexRoute
-  '/app/nova/': typeof AppNovaIndexRoute
   '/app/launchpad/outputs/$id': typeof AppLaunchpadOutputsIdRoute
 }
 export interface FileRouteTypes {
@@ -792,6 +792,9 @@ export interface FileRouteTypes {
     | '/app/automations'
     | '/app/billing'
     | '/app/builder'
+    | '/app/bylda-full'
+    | '/app/bylda-home'
+    | '/app/bylda-os'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -805,9 +808,6 @@ export interface FileRouteTypes {
     | '/app/mission-briefing'
     | '/app/mission-control'
     | '/app/monitoring'
-    | '/app/nova-full'
-    | '/app/nova-home'
-    | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
@@ -828,6 +828,12 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/bylda-os/$slug'
+    | '/app/bylda/clients'
+    | '/app/bylda/crm'
+    | '/app/bylda/leads'
+    | '/app/bylda/reports'
+    | '/app/bylda/workflows'
     | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
@@ -840,26 +846,20 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/bylda'
     | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
     | '/app/launchpad/missions'
-    | '/app/launchpad/nova'
-    | '/app/nova-os/$slug'
-    | '/app/nova/clients'
-    | '/app/nova/crm'
-    | '/app/nova/leads'
-    | '/app/nova/reports'
-    | '/app/nova/workflows'
     | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
+    | '/app/bylda/'
     | '/app/launchpad/'
-    | '/app/nova/'
     | '/app/launchpad/outputs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -877,6 +877,9 @@ export interface FileRouteTypes {
     | '/app/automations'
     | '/app/billing'
     | '/app/builder'
+    | '/app/bylda-full'
+    | '/app/bylda-home'
+    | '/app/bylda-os'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -890,9 +893,6 @@ export interface FileRouteTypes {
     | '/app/mission-briefing'
     | '/app/mission-control'
     | '/app/monitoring'
-    | '/app/nova-full'
-    | '/app/nova-home'
-    | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
@@ -913,6 +913,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/bylda-os/$slug'
+    | '/app/bylda/clients'
+    | '/app/bylda/crm'
+    | '/app/bylda/leads'
+    | '/app/bylda/reports'
+    | '/app/bylda/workflows'
     | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
@@ -925,26 +931,20 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/bylda'
     | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
     | '/app/launchpad/missions'
-    | '/app/launchpad/nova'
-    | '/app/nova-os/$slug'
-    | '/app/nova/clients'
-    | '/app/nova/crm'
-    | '/app/nova/leads'
-    | '/app/nova/reports'
-    | '/app/nova/workflows'
     | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
+    | '/app/bylda'
     | '/app/launchpad'
-    | '/app/nova'
     | '/app/launchpad/outputs/$id'
   id:
     | '__root__'
@@ -963,6 +963,9 @@ export interface FileRouteTypes {
     | '/app/automations'
     | '/app/billing'
     | '/app/builder'
+    | '/app/bylda-full'
+    | '/app/bylda-home'
+    | '/app/bylda-os'
     | '/app/command-center'
     | '/app/contacts'
     | '/app/dashboard'
@@ -976,9 +979,6 @@ export interface FileRouteTypes {
     | '/app/mission-briefing'
     | '/app/mission-control'
     | '/app/monitoring'
-    | '/app/nova-full'
-    | '/app/nova-home'
-    | '/app/nova-os'
     | '/app/playbook'
     | '/app/reputation'
     | '/app/research'
@@ -999,6 +999,12 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/academy/$module'
     | '/app/billing/return'
+    | '/app/bylda-os/$slug'
+    | '/app/bylda/clients'
+    | '/app/bylda/crm'
+    | '/app/bylda/leads'
+    | '/app/bylda/reports'
+    | '/app/bylda/workflows'
     | '/app/crm/accounts'
     | '/app/crm/automations'
     | '/app/crm/calendar'
@@ -1011,26 +1017,20 @@ export interface FileRouteTypes {
     | '/app/crm/tasks'
     | '/app/crm/waitlist'
     | '/app/launchpad/$tool'
+    | '/app/launchpad/bylda'
     | '/app/launchpad/course'
     | '/app/launchpad/first-customers'
     | '/app/launchpad/history'
     | '/app/launchpad/mentors'
     | '/app/launchpad/missions'
-    | '/app/launchpad/nova'
-    | '/app/nova-os/$slug'
-    | '/app/nova/clients'
-    | '/app/nova/crm'
-    | '/app/nova/leads'
-    | '/app/nova/reports'
-    | '/app/nova/workflows'
     | '/app/outcomes/$category'
     | '/app/scale/automations'
     | '/app/scale/campaigns'
     | '/app/scale/pipeline'
     | '/app/scale/reports'
     | '/app/scale/team'
+    | '/app/bylda/'
     | '/app/launchpad/'
-    | '/app/nova/'
     | '/app/launchpad/outputs/$id'
   fileRoutesById: FileRoutesById
 }
@@ -1228,27 +1228,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlaybookRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/nova-os': {
-      id: '/app/nova-os'
-      path: '/nova-os'
-      fullPath: '/app/nova-os'
-      preLoaderRoute: typeof AppNovaOsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova-home': {
-      id: '/app/nova-home'
-      path: '/nova-home'
-      fullPath: '/app/nova-home'
-      preLoaderRoute: typeof AppNovaHomeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova-full': {
-      id: '/app/nova-full'
-      path: '/nova-full'
-      fullPath: '/app/nova-full'
-      preLoaderRoute: typeof AppNovaFullRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/monitoring': {
       id: '/app/monitoring'
       path: '/monitoring'
@@ -1340,6 +1319,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommandCenterRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/bylda-os': {
+      id: '/app/bylda-os'
+      path: '/bylda-os'
+      fullPath: '/app/bylda-os'
+      preLoaderRoute: typeof AppByldaOsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda-home': {
+      id: '/app/bylda-home'
+      path: '/bylda-home'
+      fullPath: '/app/bylda-home'
+      preLoaderRoute: typeof AppByldaHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda-full': {
+      id: '/app/bylda-full'
+      path: '/bylda-full'
+      fullPath: '/app/bylda-full'
+      preLoaderRoute: typeof AppByldaFullRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/builder': {
       id: '/app/builder'
       path: '/builder'
@@ -1396,18 +1396,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAcademyRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/nova/': {
-      id: '/app/nova/'
-      path: '/nova'
-      fullPath: '/app/nova/'
-      preLoaderRoute: typeof AppNovaIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/launchpad/': {
       id: '/app/launchpad/'
       path: '/launchpad'
       fullPath: '/app/launchpad/'
       preLoaderRoute: typeof AppLaunchpadIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda/': {
+      id: '/app/bylda/'
+      path: '/bylda'
+      fullPath: '/app/bylda/'
+      preLoaderRoute: typeof AppByldaIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/scale/team': {
@@ -1452,55 +1452,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOutcomesCategoryRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/nova/workflows': {
-      id: '/app/nova/workflows'
-      path: '/nova/workflows'
-      fullPath: '/app/nova/workflows'
-      preLoaderRoute: typeof AppNovaWorkflowsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova/reports': {
-      id: '/app/nova/reports'
-      path: '/nova/reports'
-      fullPath: '/app/nova/reports'
-      preLoaderRoute: typeof AppNovaReportsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova/leads': {
-      id: '/app/nova/leads'
-      path: '/nova/leads'
-      fullPath: '/app/nova/leads'
-      preLoaderRoute: typeof AppNovaLeadsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova/crm': {
-      id: '/app/nova/crm'
-      path: '/nova/crm'
-      fullPath: '/app/nova/crm'
-      preLoaderRoute: typeof AppNovaCrmRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova/clients': {
-      id: '/app/nova/clients'
-      path: '/nova/clients'
-      fullPath: '/app/nova/clients'
-      preLoaderRoute: typeof AppNovaClientsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/nova-os/$slug': {
-      id: '/app/nova-os/$slug'
-      path: '/$slug'
-      fullPath: '/app/nova-os/$slug'
-      preLoaderRoute: typeof AppNovaOsSlugRouteImport
-      parentRoute: typeof AppNovaOsRoute
-    }
-    '/app/launchpad/nova': {
-      id: '/app/launchpad/nova'
-      path: '/launchpad/nova'
-      fullPath: '/app/launchpad/nova'
-      preLoaderRoute: typeof AppLaunchpadNovaRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/launchpad/missions': {
       id: '/app/launchpad/missions'
       path: '/launchpad/missions'
@@ -1534,6 +1485,13 @@ declare module '@tanstack/react-router' {
       path: '/launchpad/course'
       fullPath: '/app/launchpad/course'
       preLoaderRoute: typeof AppLaunchpadCourseRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/launchpad/bylda': {
+      id: '/app/launchpad/bylda'
+      path: '/launchpad/bylda'
+      fullPath: '/app/launchpad/bylda'
+      preLoaderRoute: typeof AppLaunchpadByldaRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/launchpad/$tool': {
@@ -1620,6 +1578,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmAccountsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/bylda/workflows': {
+      id: '/app/bylda/workflows'
+      path: '/bylda/workflows'
+      fullPath: '/app/bylda/workflows'
+      preLoaderRoute: typeof AppByldaWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda/reports': {
+      id: '/app/bylda/reports'
+      path: '/bylda/reports'
+      fullPath: '/app/bylda/reports'
+      preLoaderRoute: typeof AppByldaReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda/leads': {
+      id: '/app/bylda/leads'
+      path: '/bylda/leads'
+      fullPath: '/app/bylda/leads'
+      preLoaderRoute: typeof AppByldaLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda/crm': {
+      id: '/app/bylda/crm'
+      path: '/bylda/crm'
+      fullPath: '/app/bylda/crm'
+      preLoaderRoute: typeof AppByldaCrmRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda/clients': {
+      id: '/app/bylda/clients'
+      path: '/bylda/clients'
+      fullPath: '/app/bylda/clients'
+      preLoaderRoute: typeof AppByldaClientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bylda-os/$slug': {
+      id: '/app/bylda-os/$slug'
+      path: '/$slug'
+      fullPath: '/app/bylda-os/$slug'
+      preLoaderRoute: typeof AppByldaOsSlugRouteImport
+      parentRoute: typeof AppByldaOsRoute
+    }
     '/app/billing/return': {
       id: '/app/billing/return'
       path: '/return'
@@ -1668,16 +1668,16 @@ const AppBillingRouteWithChildren = AppBillingRoute._addFileChildren(
   AppBillingRouteChildren,
 )
 
-interface AppNovaOsRouteChildren {
-  AppNovaOsSlugRoute: typeof AppNovaOsSlugRoute
+interface AppByldaOsRouteChildren {
+  AppByldaOsSlugRoute: typeof AppByldaOsSlugRoute
 }
 
-const AppNovaOsRouteChildren: AppNovaOsRouteChildren = {
-  AppNovaOsSlugRoute: AppNovaOsSlugRoute,
+const AppByldaOsRouteChildren: AppByldaOsRouteChildren = {
+  AppByldaOsSlugRoute: AppByldaOsSlugRoute,
 }
 
-const AppNovaOsRouteWithChildren = AppNovaOsRoute._addFileChildren(
-  AppNovaOsRouteChildren,
+const AppByldaOsRouteWithChildren = AppByldaOsRoute._addFileChildren(
+  AppByldaOsRouteChildren,
 )
 
 interface AppScaleRouteChildren {
@@ -1709,6 +1709,9 @@ interface AppRouteChildren {
   AppAutomationsRoute: typeof AppAutomationsRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppBuilderRoute: typeof AppBuilderRoute
+  AppByldaFullRoute: typeof AppByldaFullRoute
+  AppByldaHomeRoute: typeof AppByldaHomeRoute
+  AppByldaOsRoute: typeof AppByldaOsRouteWithChildren
   AppCommandCenterRoute: typeof AppCommandCenterRoute
   AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -1722,9 +1725,6 @@ interface AppRouteChildren {
   AppMissionBriefingRoute: typeof AppMissionBriefingRoute
   AppMissionControlRoute: typeof AppMissionControlRoute
   AppMonitoringRoute: typeof AppMonitoringRoute
-  AppNovaFullRoute: typeof AppNovaFullRoute
-  AppNovaHomeRoute: typeof AppNovaHomeRoute
-  AppNovaOsRoute: typeof AppNovaOsRouteWithChildren
   AppPlaybookRoute: typeof AppPlaybookRoute
   AppReputationRoute: typeof AppReputationRoute
   AppResearchRoute: typeof AppResearchRoute
@@ -1736,6 +1736,11 @@ interface AppRouteChildren {
   AppTutorialsRoute: typeof AppTutorialsRoute
   AppWorkflowTemplatesRoute: typeof AppWorkflowTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppByldaClientsRoute: typeof AppByldaClientsRoute
+  AppByldaCrmRoute: typeof AppByldaCrmRoute
+  AppByldaLeadsRoute: typeof AppByldaLeadsRoute
+  AppByldaReportsRoute: typeof AppByldaReportsRoute
+  AppByldaWorkflowsRoute: typeof AppByldaWorkflowsRoute
   AppCrmAccountsRoute: typeof AppCrmAccountsRoute
   AppCrmAutomationsRoute: typeof AppCrmAutomationsRoute
   AppCrmCalendarRoute: typeof AppCrmCalendarRoute
@@ -1748,20 +1753,15 @@ interface AppRouteChildren {
   AppCrmTasksRoute: typeof AppCrmTasksRoute
   AppCrmWaitlistRoute: typeof AppCrmWaitlistRoute
   AppLaunchpadToolRoute: typeof AppLaunchpadToolRoute
+  AppLaunchpadByldaRoute: typeof AppLaunchpadByldaRoute
   AppLaunchpadCourseRoute: typeof AppLaunchpadCourseRoute
   AppLaunchpadFirstCustomersRoute: typeof AppLaunchpadFirstCustomersRoute
   AppLaunchpadHistoryRoute: typeof AppLaunchpadHistoryRoute
   AppLaunchpadMentorsRoute: typeof AppLaunchpadMentorsRoute
   AppLaunchpadMissionsRoute: typeof AppLaunchpadMissionsRoute
-  AppLaunchpadNovaRoute: typeof AppLaunchpadNovaRoute
-  AppNovaClientsRoute: typeof AppNovaClientsRoute
-  AppNovaCrmRoute: typeof AppNovaCrmRoute
-  AppNovaLeadsRoute: typeof AppNovaLeadsRoute
-  AppNovaReportsRoute: typeof AppNovaReportsRoute
-  AppNovaWorkflowsRoute: typeof AppNovaWorkflowsRoute
   AppOutcomesCategoryRoute: typeof AppOutcomesCategoryRoute
+  AppByldaIndexRoute: typeof AppByldaIndexRoute
   AppLaunchpadIndexRoute: typeof AppLaunchpadIndexRoute
-  AppNovaIndexRoute: typeof AppNovaIndexRoute
   AppLaunchpadOutputsIdRoute: typeof AppLaunchpadOutputsIdRoute
 }
 
@@ -1774,6 +1774,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppAutomationsRoute: AppAutomationsRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
   AppBuilderRoute: AppBuilderRoute,
+  AppByldaFullRoute: AppByldaFullRoute,
+  AppByldaHomeRoute: AppByldaHomeRoute,
+  AppByldaOsRoute: AppByldaOsRouteWithChildren,
   AppCommandCenterRoute: AppCommandCenterRoute,
   AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
@@ -1787,9 +1790,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppMissionBriefingRoute: AppMissionBriefingRoute,
   AppMissionControlRoute: AppMissionControlRoute,
   AppMonitoringRoute: AppMonitoringRoute,
-  AppNovaFullRoute: AppNovaFullRoute,
-  AppNovaHomeRoute: AppNovaHomeRoute,
-  AppNovaOsRoute: AppNovaOsRouteWithChildren,
   AppPlaybookRoute: AppPlaybookRoute,
   AppReputationRoute: AppReputationRoute,
   AppResearchRoute: AppResearchRoute,
@@ -1801,6 +1801,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppTutorialsRoute: AppTutorialsRoute,
   AppWorkflowTemplatesRoute: AppWorkflowTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
+  AppByldaClientsRoute: AppByldaClientsRoute,
+  AppByldaCrmRoute: AppByldaCrmRoute,
+  AppByldaLeadsRoute: AppByldaLeadsRoute,
+  AppByldaReportsRoute: AppByldaReportsRoute,
+  AppByldaWorkflowsRoute: AppByldaWorkflowsRoute,
   AppCrmAccountsRoute: AppCrmAccountsRoute,
   AppCrmAutomationsRoute: AppCrmAutomationsRoute,
   AppCrmCalendarRoute: AppCrmCalendarRoute,
@@ -1813,20 +1818,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppCrmTasksRoute: AppCrmTasksRoute,
   AppCrmWaitlistRoute: AppCrmWaitlistRoute,
   AppLaunchpadToolRoute: AppLaunchpadToolRoute,
+  AppLaunchpadByldaRoute: AppLaunchpadByldaRoute,
   AppLaunchpadCourseRoute: AppLaunchpadCourseRoute,
   AppLaunchpadFirstCustomersRoute: AppLaunchpadFirstCustomersRoute,
   AppLaunchpadHistoryRoute: AppLaunchpadHistoryRoute,
   AppLaunchpadMentorsRoute: AppLaunchpadMentorsRoute,
   AppLaunchpadMissionsRoute: AppLaunchpadMissionsRoute,
-  AppLaunchpadNovaRoute: AppLaunchpadNovaRoute,
-  AppNovaClientsRoute: AppNovaClientsRoute,
-  AppNovaCrmRoute: AppNovaCrmRoute,
-  AppNovaLeadsRoute: AppNovaLeadsRoute,
-  AppNovaReportsRoute: AppNovaReportsRoute,
-  AppNovaWorkflowsRoute: AppNovaWorkflowsRoute,
   AppOutcomesCategoryRoute: AppOutcomesCategoryRoute,
+  AppByldaIndexRoute: AppByldaIndexRoute,
   AppLaunchpadIndexRoute: AppLaunchpadIndexRoute,
-  AppNovaIndexRoute: AppNovaIndexRoute,
   AppLaunchpadOutputsIdRoute: AppLaunchpadOutputsIdRoute,
 }
 

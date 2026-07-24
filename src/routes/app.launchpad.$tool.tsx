@@ -12,7 +12,7 @@ import {
   History as HistoryIcon,
   RotateCcw,
 } from "lucide-react";
-import { NovaThinking } from "@/components/app/NovaThinking";
+import { ByldaThinking } from "@/components/app/ByldaThinking";
 import { ToolGuidePanel } from "@/components/app/ToolGuidePanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1507,7 +1507,7 @@ function ToolPage() {
       setOutput(result.output);
       if (result.run_id) setRunId(result.run_id);
       // Save relevant fields to workspace profile for future pre-fills, and
-      // surface what Nova just learned in the post-run receipt.
+      // surface what Bylda just learned in the post-run receipt.
       const facts = extractAndSaveProfileFromFields(fields);
       setLearnedFacts(facts);
       setWorkspaceProfile(loadWorkspaceProfile());
@@ -1604,7 +1604,7 @@ function ToolPage() {
     <div
       className="space-y-6"
       data-coach="tool-runner"
-      data-coach-label="Run this tool — Nova brought you here"
+      data-coach-label="Run this tool — Bylda brought you here"
     >
       <PaywallModal
         open={paywallOpen}
@@ -1761,7 +1761,7 @@ function ToolPage() {
               </div>
             </div>
 
-            {/* What Nova already knows — the context receipt before the run */}
+            {/* What Bylda already knows — the context receipt before the run */}
             {businessCtxQ.data &&
               (() => {
                 const block = (b: unknown) =>
@@ -1796,7 +1796,7 @@ function ToolPage() {
                       className="text-[10px] font-semibold uppercase tracking-[0.1em]"
                       style={{ color: "var(--primary)" }}
                     >
-                      Nova knows:
+                      Bylda knows:
                     </span>
                     {chips.map((c) => (
                       <span
@@ -1954,7 +1954,7 @@ function ToolPage() {
               </Section>
 
               {/* Per-tool fields — pre-briefed from the Business Context Graph.
-                  Fields Nova already knows render read-only in the "Nova knows"
+                  Fields Bylda already knows render read-only in the "Bylda knows"
                   panel (inline-editable on click); only genuinely unknown
                   fields render as inputs. Tools without a field config get a
                   synthesized generic context field, prefilled the same way. */}
@@ -2234,7 +2234,7 @@ function ToolPage() {
               )}
 
               {generating && (
-                <NovaThinking streamText={streamText} toolName={tool.name} toolKey={tool.key} />
+                <ByldaThinking streamText={streamText} toolName={tool.name} toolKey={tool.key} />
               )}
 
               {output && !generating && (
@@ -2278,7 +2278,7 @@ function ToolPage() {
                         className="text-[10px] font-semibold uppercase tracking-[0.12em]"
                         style={{ color: "var(--muted-foreground)" }}
                       >
-                        Nova recommends next
+                        Bylda recommends next
                       </div>
                       <div className="mt-2 space-y-2">
                         {nextActions.slice(0, 3).map((a, i) => {

@@ -1,4 +1,4 @@
-// crm-action — executes Nova AI CRM commands directly (stage updates, note
+// crm-action — executes Bylda AI CRM commands directly (stage updates, note
 // logging, task creation, and create-or-match of contacts, companies and leads).
 // create_lead wires the deal to a deduped contact + company and logs a 'created'
 // activity, so the CRM graph stays coherent from a single entry point. The
@@ -54,7 +54,7 @@ async function updateStage(
     userId,
     leadId,
     "stage_change",
-    `Nova moved this lead to ${stage}`,
+    `Bylda moved this lead to ${stage}`,
     {
       source: "crm_action",
     },
@@ -159,12 +159,12 @@ async function createContact(
       email,
       phone: p.phone,
       company: p.company,
-      source: p.source ?? "nova",
+      source: p.source ?? "bylda",
       tags: p.tags,
       company_id: companyId,
     });
     if (!contact) return { ok: false, error: "Provide at least a name or email" };
-    // nova_events "contact.created" is emitted by the AFTER INSERT trigger on
+    // bylda_events "contact.created" is emitted by the AFTER INSERT trigger on
     // public.contacts, which fires for the resolveContact insert path too.
     return {
       ok: true,
@@ -362,7 +362,7 @@ Deno.serve(async (req: Request) => {
   // Best-effort audit row for the supported enum actions.
   if (action === "update_stage" || action === "log_note") {
     await admin
-      .from("nova_actions")
+      .from("bylda_actions")
       .insert({
         organization_id: orgId,
         user_id: user.id,

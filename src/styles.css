@@ -41,7 +41,7 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
   --color-launchpad: var(--launchpad);
-  --color-nova: var(--nova);
+  --color-bylda: var(--bylda);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-surface-offset: var(--surface-offset);
@@ -75,7 +75,7 @@
   --color-domain-customers: var(--domain-customers);
   --color-domain-automate: var(--domain-automate);
   --color-domain-insights: var(--domain-insights);
-  --color-domain-nova: var(--domain-nova);
+  --color-domain-bylda: var(--domain-bylda);
 
   /* Chart palette — 6 data series */
   --color-chart-1: var(--chart-1);
@@ -162,24 +162,24 @@
   --popover: #14151f;
   --popover-foreground: var(--foreground);
 
-  /* ── Primary — Violet ── */
-  --primary: #8b5cf6;
-  --primary-foreground: #ffffff;
-  --primary-hover: #7c4ff5;
-  --primary-active: #6d28d9;
-  --primary-soft: rgba(139, 92, 246, 0.14);
-  --primary-glow: rgba(139, 92, 246, 0.4);
-  --primary-border: rgba(139, 92, 246, 0.3);
+  /* ── Primary — Sky azure (night sky above the clouds) ── */
+  --primary: #38bdf8;
+  --primary-foreground: #06263b;
+  --primary-hover: #22a7e8;
+  --primary-active: #0284c7;
+  --primary-soft: rgba(56, 189, 248, 0.14);
+  --primary-glow: rgba(56, 189, 248, 0.4);
+  --primary-border: rgba(56, 189, 248, 0.3);
 
-  /* ── Secondary — mission blue ── */
+  /* ── Secondary — sky blue ── */
   --secondary: var(--surface-2);
   --secondary-foreground: var(--foreground);
-  --secondary-accent: #60a5fa;
+  --secondary-accent: #7dd3fc;
 
-  /* ── Accent — violet ── */
-  --accent: #8b5cf6;
-  --accent-foreground: #ffffff;
-  --accent-glow: rgba(139, 92, 246, 0.32);
+  /* ── Accent — sky azure ── */
+  --accent: #38bdf8;
+  --accent-foreground: #06263b;
+  --accent-glow: rgba(56, 189, 248, 0.32);
 
   /* ── Orange — stage / ignition accent ── */
   --orange: #f97316;
@@ -203,11 +203,11 @@
   --border: rgba(255, 255, 255, 0.09);
   --divider: rgba(255, 255, 255, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(139, 92, 246, 0.4);
-  --border-neon: rgba(139, 92, 246, 0.6);
+  --border-strong: rgba(56, 189, 248, 0.4);
+  --border-neon: rgba(56, 189, 248, 0.6);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #8b5cf6;
-  --focus-ring: rgba(139, 92, 246, 0.55);
+  --ring: #38bdf8;
+  --focus-ring: rgba(56, 189, 248, 0.55);
 
   /* ── Mission accents ── */
   --mentor-accent: #34d399;
@@ -216,30 +216,30 @@
   --cyan: #22d3ee;
 
   /* ── Brand ── */
-  --launchpad: #8b5cf6;
-  --nova: #f472b6;
+  --launchpad: #38bdf8;
+  --bylda: #fbbf24;
 
   /* ── Charts — rainbow palette ── */
-  --chart-1: #8b5cf6;
-  --chart-2: #60a5fa;
+  --chart-1: #38bdf8;
+  --chart-2: #7dd3fc;
   --chart-3: #34d399;
   --chart-4: #f97316;
   --chart-5: #f472b6;
   --chart-6: #22d3ee;
 
   /* ── Gradient tokens ── */
-  --gradient-1: linear-gradient(135deg, #8b5cf6 0%, #60a5fa 100%);
+  --gradient-1: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%);
   --gradient-2: linear-gradient(135deg, #101119 0%, #191b26 100%);
 
   /* ── Sidebar — darker than the canvas for separation ── */
   --sidebar: #0a0b12;
   --sidebar-foreground: #f4f5fb;
-  --sidebar-primary: #8b5cf6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(139, 92, 246, 0.12);
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #06263b;
+  --sidebar-accent: rgba(56, 189, 248, 0.12);
   --sidebar-accent-foreground: #f4f5fb;
   --sidebar-border: rgba(255, 255, 255, 0.07);
-  --sidebar-ring: #8b5cf6;
+  --sidebar-ring: #38bdf8;
 
   /* ── Modal overlay ── */
   --modal-overlay: rgba(3, 4, 8, 0.82);
@@ -253,31 +253,31 @@
   --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
   --shadow-lifted: 0 20px 48px rgba(0, 0, 0, 0.65), 0 8px 16px rgba(0, 0, 0, 0.45);
   --shadow-glow-primary:
-    0 0 0 1px rgba(139, 92, 246, 0.32), 0 6px 28px rgba(139, 92, 246, 0.22),
-    0 0 60px rgba(139, 92, 246, 0.1);
-  --shadow-glow-secondary: 0 0 0 1px rgba(139, 92, 246, 0.24), 0 6px 28px rgba(139, 92, 246, 0.14);
+    0 0 0 1px rgba(56, 189, 248, 0.32), 0 6px 28px rgba(56, 189, 248, 0.22),
+    0 0 60px rgba(56, 189, 248, 0.1);
+  --shadow-glow-secondary: 0 0 0 1px rgba(56, 189, 248, 0.24), 0 6px 28px rgba(56, 189, 248, 0.14);
 }
 
 /* ─────────────────────────── Light theme (default): Clean White ─────────────────────────── */
 :root,
 .light {
-  /* ── Backgrounds — pure white base ── */
-  --background: #ffffff;
-  --bg-elevated: #f8f9fc;
-  --bg-panel: #f1f3f9;
+  /* ── Backgrounds — open daytime sky ── */
+  --background: #eef6ff;
+  --bg-elevated: #f7fbff;
+  --bg-panel: #e3f0fd;
 
-  /* ── Surfaces — clean card layers ── */
+  /* ── Surfaces — cloud-white layers floating over the sky ── */
   --surface: #ffffff;
-  --surface-2: #f8f9fc;
-  --surface-offset: #f1f3f9;
+  --surface-2: #f2f8ff;
+  --surface-offset: #e6f1fd;
   --surface-secondary: #ffffff;
-  --surface-tertiary: #edf0f7;
+  --surface-tertiary: #dbeafe;
 
-  /* ── Text — neutral near-black ── */
-  --foreground: #111827;
+  /* ── Text — deep sky navy ── */
+  --foreground: #0f2744;
   --text-inverse: #ffffff;
-  --muted-foreground: #6b7280;
-  --text-faint: #9ca3af;
+  --muted-foreground: #5978a0;
+  --text-faint: #93b3d4;
 
   /* ── Card / Popover ── */
   --card: var(--surface);
@@ -285,132 +285,132 @@
   --popover: #ffffff;
   --popover-foreground: var(--foreground);
 
-  /* ── Primary — Violet ── */
-  --primary: #7c3aed;
+  /* ── Primary — Sky azure ── */
+  --primary: #0284c7;
   --primary-foreground: #ffffff;
-  --primary-hover: #6d28d9;
-  --primary-active: #5b21b6;
-  --primary-soft: #f5f3ff;
-  --primary-glow: rgba(124, 58, 237, 0.16);
-  --primary-border: #ddd6fe;
+  --primary-hover: #0369a1;
+  --primary-active: #075985;
+  --primary-soft: #e0f2fe;
+  --primary-glow: rgba(2, 132, 199, 0.18);
+  --primary-border: #bae6fd;
 
   /* ── Secondary ── */
-  --secondary: #f3f4f6;
-  --secondary-foreground: #111827;
-  --secondary-accent: #3b82f6;
+  --secondary: #eaf3fc;
+  --secondary-foreground: #0f2744;
+  --secondary-accent: #38bdf8;
 
-  /* ── Accent — violet ── */
-  --accent: #7c3aed;
+  /* ── Accent — sky azure ── */
+  --accent: #0284c7;
   --accent-foreground: #ffffff;
-  --accent-glow: rgba(124, 58, 237, 0.14);
+  --accent-glow: rgba(2, 132, 199, 0.16);
 
-  /* ── Orange alias (amber) ── */
+  /* ── Orange alias — sun gold ── */
   --orange: #f59e0b;
   --orange-foreground: #ffffff;
-  --orange-glow: rgba(245, 158, 11, 0.14);
+  --orange-glow: rgba(245, 158, 11, 0.16);
 
   /* ── Muted ── */
-  --muted: #f3f4f6;
+  --muted: #eaf3fc;
 
   /* ── Status ── */
-  --success: #059669;
+  --success: #0d9488;
   --success-foreground: #ffffff;
   --warning: #d97706;
   --warning-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --info: #2563eb;
+  --info: #0284c7;
   --info-foreground: #ffffff;
 
-  /* ── Borders — clean structural ── */
-  --border: #e5e7eb;
-  --divider: #f3f4f6;
-  --border-subtle: #f3f4f6;
-  --border-strong: rgba(124, 58, 237, 0.25);
-  --border-neon: rgba(124, 58, 237, 0.45);
-  --input: #e5e7eb;
-  --ring: #7c3aed;
-  --focus-ring: rgba(124, 58, 237, 0.4);
+  /* ── Borders — soft cloud edges ── */
+  --border: #d3e6f8;
+  --divider: #e6f1fd;
+  --border-subtle: #eaf3fc;
+  --border-strong: rgba(2, 132, 199, 0.28);
+  --border-neon: rgba(56, 189, 248, 0.5);
+  --input: #d3e6f8;
+  --ring: #0284c7;
+  --focus-ring: rgba(2, 132, 199, 0.4);
 
-  /* ── Mission accents — rainbow ── */
-  --mentor-accent: #059669;
-  --orbit-accent: #2563eb;
+  /* ── Sky accents ── */
+  --mentor-accent: #0d9488;
+  --orbit-accent: #38bdf8;
   --launch-accent: #f59e0b;
-  --cyan: #0891b2;
+  --cyan: #06b6d4;
 
   /* ── Brand ── */
-  --launchpad: #7c3aed;
-  --nova: #ec4899;
+  --launchpad: #0284c7;
+  --bylda: #f59e0b;
 
   /* ── Domain accents (design system §9) ──
      One accent per product domain. Components must use these instead of
      raw hex so domain color stays governable in one place:
-       Build/Execute → violet · Customers → cyan · Automate → amber
-       Insights → blue · Nova (AI layer) → pink                       */
+       Build/Execute → sky · Customers → cyan · Automate → sun-gold
+       Insights → azure · Bylda (AI layer) → sun-gold                  */
   --domain-build: var(--primary);
   --domain-customers: var(--cyan);
   --domain-automate: var(--warning);
   --domain-insights: var(--info);
-  --domain-nova: var(--nova);
+  --domain-bylda: var(--bylda);
 
-  /* ── Charts — rainbow palette ── */
-  --chart-1: #7c3aed;
-  --chart-2: #2563eb;
-  --chart-3: #059669;
-  --chart-4: #d97706;
-  --chart-5: #ec4899;
-  --chart-6: #0891b2;
+  /* ── Charts — sky spectrum ── */
+  --chart-1: #0284c7;
+  --chart-2: #38bdf8;
+  --chart-3: #0d9488;
+  --chart-4: #f59e0b;
+  --chart-5: #6366f1;
+  --chart-6: #06b6d4;
 
   /* ── Gradient tokens ── */
-  --gradient-1: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
-  --gradient-2: linear-gradient(135deg, #f8f9fc 0%, #f1f3f9 100%);
+  --gradient-1: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  --gradient-2: linear-gradient(180deg, #eef6ff 0%, #dbeafe 100%);
 
-  /* ── Sidebar — clean white rail ── */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #7c3aed;
+  /* ── Sidebar — airy sky rail ── */
+  --sidebar: #f7fbff;
+  --sidebar-foreground: #0f2744;
+  --sidebar-primary: #0284c7;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(124, 58, 237, 0.06);
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #7c3aed;
+  --sidebar-accent: rgba(2, 132, 199, 0.08);
+  --sidebar-accent-foreground: #0f2744;
+  --sidebar-border: #dbeafe;
+  --sidebar-ring: #0284c7;
 
-  /* ── Modal overlay ── */
-  --modal-overlay: rgba(17, 24, 39, 0.5);
+  /* ── Modal overlay — hazy sky ── */
+  --modal-overlay: rgba(15, 39, 68, 0.42);
 }
 
-/* ───────────────── Product identity: Launchpad ↔ Nova ─────────────────
+/* ───────────────── Product identity: Launchpad ↔ Bylda ─────────────────
    One ecosystem, two products. Launchpad (create) keeps the default violet
-   accent; Nova (operate) re-accents the whole shell cyan by remapping the
-   semantic primary tokens under [data-product="nova"] — set on the app shell
+   accent; Bylda (operate) re-accents the whole shell cyan by remapping the
+   semantic primary tokens under [data-product="bylda"] — set on the app shell
    by the active workspace mode. Components keep using var(--primary) and
    inherit the right product identity for free. */
 :root,
 .light {
-  --nova-accent: #0e7490;
-  --nova-accent-foreground: #ffffff;
+  --bylda-accent: #0e7490;
+  --bylda-accent-foreground: #ffffff;
 }
 .dark {
-  --nova-accent: #22d3ee;
-  --nova-accent-foreground: #083344;
+  --bylda-accent: #22d3ee;
+  --bylda-accent-foreground: #083344;
 }
-[data-product="nova"] {
-  --primary: var(--nova-accent);
-  --primary-foreground: var(--nova-accent-foreground);
-  --primary-hover: color-mix(in oklab, var(--nova-accent) 86%, black);
-  --primary-active: color-mix(in oklab, var(--nova-accent) 74%, black);
-  --primary-soft: color-mix(in oklab, var(--nova-accent) 10%, var(--background));
-  --primary-border: color-mix(in oklab, var(--nova-accent) 32%, var(--background));
-  --primary-glow: color-mix(in oklab, var(--nova-accent) 30%, transparent);
-  --accent: var(--nova-accent);
-  --ring: var(--nova-accent);
-  --border-strong: color-mix(in oklab, var(--nova-accent) 35%, var(--background));
-  --sidebar-primary: var(--nova-accent);
-  --sidebar-accent: color-mix(in oklab, var(--nova-accent) 8%, var(--background));
-  --sidebar-ring: var(--nova-accent);
+[data-product="bylda"] {
+  --primary: var(--bylda-accent);
+  --primary-foreground: var(--bylda-accent-foreground);
+  --primary-hover: color-mix(in oklab, var(--bylda-accent) 86%, black);
+  --primary-active: color-mix(in oklab, var(--bylda-accent) 74%, black);
+  --primary-soft: color-mix(in oklab, var(--bylda-accent) 10%, var(--background));
+  --primary-border: color-mix(in oklab, var(--bylda-accent) 32%, var(--background));
+  --primary-glow: color-mix(in oklab, var(--bylda-accent) 30%, transparent);
+  --accent: var(--bylda-accent);
+  --ring: var(--bylda-accent);
+  --border-strong: color-mix(in oklab, var(--bylda-accent) 35%, var(--background));
+  --sidebar-primary: var(--bylda-accent);
+  --sidebar-accent: color-mix(in oklab, var(--bylda-accent) 8%, var(--background));
+  --sidebar-ring: var(--bylda-accent);
 }
 
-/* ───────────────── Nova GHL design-system tokens ─────────────────
+/* ───────────────── Bylda GHL design-system tokens ─────────────────
    Fixed brand surfaces for the Launchpad/CRM "GHL-native" UI (master build
    §System E). These are theme-independent on purpose: command surfaces are
    always dark, work surfaces always light, so the new screens render as
@@ -463,6 +463,15 @@
 
   body {
     background-color: var(--background);
+    /* Daytime-sky canvas: azure at the top, hazy horizon below, a couple of
+       soft sun-lit clouds. Fixed so the sky sits behind everything as you scroll. */
+    background-image:
+      radial-gradient(120% 60% at 78% -10%, rgba(56, 189, 248, 0.16) 0%, transparent 60%),
+      radial-gradient(90% 50% at 12% 0%, rgba(125, 211, 252, 0.14) 0%, transparent 55%),
+      radial-gradient(60% 40% at 50% 120%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #dff0ff 0%, var(--background) 42%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: var(--foreground);
     font-family: var(--font-body);
     font-size: 15px;
@@ -470,6 +479,14 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     height: 100%;
+  }
+
+  /* Night sky above the clouds — deep indigo with a moon-lit azure glow. */
+  :root.dark body {
+    background-image:
+      radial-gradient(120% 60% at 80% -10%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+      radial-gradient(90% 50% at 10% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
+      linear-gradient(180deg, #0a1224 0%, var(--background) 46%);
   }
 
   h1,
@@ -667,7 +684,7 @@
       0 8px 32px rgba(0, 0, 0, 0.04);
   }
 
-  /* ── Nova card system ── */
+  /* ── Bylda card system ── */
   .neon-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1208,14 +1225,14 @@
     }
   }
 
-  /* ── Nova bar ── */
-  .nova-bar {
+  /* ── Bylda bar ── */
+  .bylda-bar {
     background: var(--primary-soft);
     border-bottom: 1px solid var(--primary-border);
     position: relative;
     overflow: hidden;
   }
-  .nova-bar::after {
+  .bylda-bar::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -1229,9 +1246,9 @@
       color-mix(in oklab, var(--primary) 20%, transparent) 3px,
       color-mix(in oklab, var(--primary) 20%, transparent) 4px
     );
-    animation: nova-scan 8s linear infinite;
+    animation: bylda-scan 8s linear infinite;
   }
-  @keyframes nova-scan {
+  @keyframes bylda-scan {
     0% {
       background-position: 0 0;
     }
@@ -1240,7 +1257,7 @@
     }
   }
 
-  .nova-bar-cta {
+  .bylda-bar-cta {
     background: transparent;
     border: 1px solid var(--primary-border);
     color: var(--foreground);
@@ -1248,7 +1265,7 @@
       background-color 160ms,
       border-color 160ms;
   }
-  .nova-bar-cta:hover {
+  .bylda-bar-cta:hover {
     background: color-mix(in oklab, var(--primary) 8%, transparent);
     border-color: var(--primary);
     color: var(--primary);
@@ -1606,8 +1623,8 @@
   animation: signalAcquire 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ── Nova Avatar animations ── */
-@keyframes nova-outer-spin {
+/* ── Bylda Avatar animations ── */
+@keyframes bylda-outer-spin {
   from {
     transform: rotate(0deg);
   }
@@ -1615,7 +1632,7 @@
     transform: rotate(360deg);
   }
 }
-@keyframes nova-mid-pulse {
+@keyframes bylda-mid-pulse {
   0%,
   100% {
     transform: scale(1);
@@ -1624,7 +1641,7 @@
     transform: scale(1.04);
   }
 }
-@keyframes nova-blink {
+@keyframes bylda-blink {
   0%,
   90%,
   100% {
@@ -1635,7 +1652,7 @@
     transform: scaleY(0.08);
   }
 }
-@keyframes nova-mood-pulse {
+@keyframes bylda-mood-pulse {
   0%,
   100% {
     opacity: 1;
@@ -1646,7 +1663,7 @@
     transform: scale(1.4);
   }
 }
-@keyframes nova-mood-fast {
+@keyframes bylda-mood-fast {
   0%,
   100% {
     opacity: 1;
@@ -1669,7 +1686,7 @@
   }
 }
 
-/* ─────────────────────────── Nova OPS Design System ─────────────────────────── */
+/* ─────────────────────────── Bylda Design System ─────────────────────────── */
 
 :root {
   --surface-elevated: var(--surface-2);
@@ -1711,20 +1728,20 @@
 }
 
 @layer utilities {
-  /* ── Nova card system ── */
-  .nova-card {
+  /* ── Bylda card system ── */
+  .bylda-card {
     background-color: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
   }
-  .nova-card-hover {
+  .bylda-card-hover {
     transition:
       border-color 0.16s ease,
       background-color 0.16s ease,
       box-shadow 0.16s ease;
   }
-  .nova-card-hover:hover {
+  .bylda-card-hover:hover {
     border-color: var(--primary-border);
     background-color: var(--surface-2);
     box-shadow:
@@ -1732,8 +1749,8 @@
       0 0 0 1px color-mix(in oklab, var(--primary) 10%, transparent);
   }
 
-  /* ── Nova grid backgrounds ── */
-  .nova-grid-bg {
+  /* ── Bylda grid backgrounds ── */
+  .bylda-grid-bg {
     background-image:
       linear-gradient(
         to right,
@@ -1747,7 +1764,7 @@
       );
     background-size: 32px 32px;
   }
-  .nova-dot-bg {
+  .bylda-dot-bg {
     background-image: radial-gradient(
       circle at 1px 1px,
       color-mix(in oklab, var(--foreground) 8%, transparent) 1px,
@@ -1755,7 +1772,7 @@
     );
     background-size: 22px 22px;
   }
-  .nova-scanlines {
+  .bylda-scanlines {
     background-image: repeating-linear-gradient(
       to bottom,
       transparent 0px,
@@ -1764,7 +1781,7 @@
       color-mix(in oklab, var(--foreground) 2%, transparent) 3px
     );
   }
-  .nova-rainbow-bar {
+  .bylda-rainbow-bar {
     background-image: linear-gradient(
       90deg,
       #7c3aed 0%,
@@ -1777,22 +1794,22 @@
   }
 
   /* ── Glow effects ── */
-  .nova-glow {
+  .bylda-glow {
     box-shadow: 0 0 22px -8px color-mix(in oklab, var(--primary) 42%, transparent);
   }
-  .nova-glow-ignite {
+  .bylda-glow-ignite {
     box-shadow: 0 0 22px -6px color-mix(in oklab, var(--ignition) 52%, transparent);
   }
-  .nova-glow-mentor {
+  .bylda-glow-mentor {
     box-shadow: 0 0 22px -8px color-mix(in oklab, var(--meridian) 42%, transparent);
   }
 
   /* ── Orbit ring ── */
-  .nova-orbit-ring {
+  .bylda-orbit-ring {
     position: relative;
     overflow: visible;
   }
-  .nova-orbit-ring::before {
+  .bylda-orbit-ring::before {
     content: "";
     position: absolute;
     inset: -8px;
@@ -1802,11 +1819,11 @@
   }
 
   /* ── Corner bracket decorations — active card only ── */
-  .nova-bracket {
+  .bylda-bracket {
     position: relative;
   }
-  .nova-bracket::before,
-  .nova-bracket::after {
+  .bylda-bracket::before,
+  .bylda-bracket::after {
     content: "";
     position: absolute;
     width: 10px;
@@ -1815,13 +1832,13 @@
     pointer-events: none;
     opacity: 0.7;
   }
-  .nova-bracket::before {
+  .bylda-bracket::before {
     top: -1px;
     left: -1px;
     border-top: 1px solid;
     border-left: 1px solid;
   }
-  .nova-bracket::after {
+  .bylda-bracket::after {
     bottom: -1px;
     right: -1px;
     border-bottom: 1px solid;
@@ -1856,7 +1873,7 @@
   }
 
   /* ── Live pulsing dot ── */
-  @keyframes nova-pulse {
+  @keyframes bylda-pulse {
     0%,
     100% {
       opacity: 1;
@@ -1867,12 +1884,26 @@
       box-shadow: 0 0 0 5px color-mix(in oklab, currentColor 0%, transparent);
     }
   }
-  .nova-live-dot {
-    animation: nova-pulse 2s ease-in-out infinite;
+  .bylda-live-dot {
+    animation: bylda-pulse 2s ease-in-out infinite;
+  }
+
+  /* ── Sky-island logo mark ── */
+  .bylda-sky-mark {
+    background-image: linear-gradient(160deg, #7dd3fc 0%, #38bdf8 45%, #0ea5e9 100%);
+    color: #fff;
+  }
+  .bylda-sky-mark .bylda-sun {
+    fill: #fde68a;
+    filter: drop-shadow(0 0 3px rgba(253, 224, 138, 0.9));
+  }
+  .bylda-sky-mark .bylda-cloud {
+    fill: #ffffff;
+    opacity: 0.96;
   }
 
   /* ── Thrust animation ── */
-  @keyframes nova-thrust {
+  @keyframes bylda-thrust {
     0%,
     100% {
       opacity: 0.72;
@@ -1883,8 +1914,8 @@
       transform: scaleY(1.16);
     }
   }
-  .nova-thrust {
-    animation: nova-thrust 1.4s ease-in-out infinite;
+  .bylda-thrust {
+    animation: bylda-thrust 1.4s ease-in-out infinite;
     transform-origin: top;
   }
 

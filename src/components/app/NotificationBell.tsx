@@ -19,8 +19,8 @@ type Notif = {
 };
 
 const TYPE_LINK: Record<string, string> = {
-  new_lead: "/app/nova/crm",
-  deal_won: "/app/nova/crm",
+  new_lead: "/app/bylda/crm",
+  deal_won: "/app/bylda/crm",
   appointment_booked: "/app/crm/calendar",
   message_received: "/app/crm/conversations",
 };

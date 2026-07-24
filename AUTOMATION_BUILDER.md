@@ -83,7 +83,7 @@ Wait, Loop).
 
 Together with publishing, audience targeting, the recipe library, and the
 marketplace, this brings the platform to GHL-style **workflows + snapshots/recipes**
-and HubSpot-style **workflows/sequences + enrollment** on the Nova (operate) side.
+and HubSpot-style **workflows/sequences + enrollment** on the Bylda (operate) side.
 
 ---
 
@@ -109,7 +109,7 @@ The Builder is no longer write-only — workflows actually run.
 
 | Step | Status | Credential |
 | --- | --- | --- |
-| AI (generate / classify / score) | **LIVE now** | `ANTHROPIC_API_KEY` — already set (powers `nova-chat`) |
+| AI (generate / classify / score) | **LIVE now** | `ANTHROPIC_API_KEY` — already set (powers `bylda-chat`) |
 | Outbound webhook | **LIVE now** | none needed |
 | CRM writes (add/remove tag, move stage, set field, add note, memory) | **LIVE now** | service role |
 | If/Else, A/B split | **LIVE now** — the engine takes only the chosen lane (waits are recorded; real delays need the queue) | none |
@@ -186,7 +186,7 @@ Re-running migration `20260619000003` then schedules `automation-dispatch-1min`.
 
 - **Scheduled waits**: `logic_wait` / `logic_wait_until` are recorded but not yet
   suspended-and-resumed. Real delays should enqueue onto the existing
-  `nova-automation-queue` + consumer worker (which already has SendGrid/Twilio).
+  `bylda-automation-queue` + consumer worker (which already has SendGrid/Twilio).
 - **More event sources**: `contact.created` and `tag.added` fire today. `payment.received`
   is mapped and ready — wiring it just needs a one-line enqueue in `payments-webhook`.
   Form/stage/appointment triggers are next on the same pattern.

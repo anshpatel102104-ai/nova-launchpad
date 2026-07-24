@@ -24,7 +24,7 @@ export function MissionHeader({
     .replace(/^INTELLIGENCE\s*[—-]\s*/i, "")
     .replace(/^VAULT\s*[—-]\s*/i, "")
     .replace(/^OPERATIONS\s*[—-]\s*/i, "")
-    .replace(/^NOVA OS\s*[—-]\s*AUTOMATION COMMAND/i, "Nova OS")
+    .replace(/^BYLDA OS\s*[—-]\s*AUTOMATION COMMAND/i, "Bylda OS")
     .replace(/[—-]\s*AUTOMATION COMMAND$/i, "")
     .replace(/[—-]\s*LEAD TRACKER$/i, "")
     .replace(/[—-]\s*GENERATED ASSETS$/i, "")

@@ -1,14 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "nova-launchpad",
+  "name": "bylda-launchpad",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
 
-  // Primary app route on nova-ops.space
+  // Primary app route on usebylda.com
   "routes": [
-    { "pattern": "app.launchpad.nova-ops.space/*", "zone_name": "nova-ops.space" },
-    { "pattern": "nova-ops.space/*", "zone_name": "nova-ops.space" }
+    { "pattern": "app.usebylda.com/*", "zone_name": "usebylda.com" },
+    { "pattern": "usebylda.com/*", "zone_name": "usebylda.com" }
   ],
 
   "vars": {
@@ -62,11 +62,11 @@
   "queues": {
     "producers": [
       {
-        "queue": "nova-automation-queue",
+        "queue": "bylda-automation-queue",
         "binding": "AUTOMATION_QUEUE"
       }
     ]
-    // Consumer is in workers/nova-automation-consumer/ — deployed separately
+    // Consumer is in workers/bylda-automation-consumer/ — deployed separately
   },
 
   // ── Observability ─────────────────────────────────────────────────────────

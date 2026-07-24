@@ -1,6 +1,6 @@
 // Casefile — Launchpad Home's evidence block. Three questions, answered
 // from live signals, never self-reported:
-//   Nova's take   → one-line verdict on where the business actually stands
+//   Bylda's take   → one-line verdict on where the business actually stands
 //   Proven        → what the founder has already demonstrated
 //   Needs proof   → what's still an assumption, and where to prove it
 // Plus the memory strip: what the system has saved, visibly (closed loop).
@@ -8,7 +8,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, CircleDashed } from "lucide-react";
 import { ClosedLoopChip } from "@/components/app/ClosedLoopChip";
-import { AiOriginCard } from "@/components/nova/AiOriginCard";
+import { AiOriginCard } from "@/components/bylda/AiOriginCard";
 import type { BusinessGraph } from "@/hooks/use-business-graph";
 import type { LaunchpadProgress } from "@/lib/ecosystem";
 
@@ -16,7 +16,7 @@ import type { LaunchpadProgress } from "@/lib/ecosystem";
 function verdictFor(graph: BusinessGraph, progress: LaunchpadProgress): string {
   const s = graph.signals;
   const won = progress.stages.find((st) => st.id === "revenue")?.done;
-  if (won) return "This works. Run the loop in Nova and scale it.";
+  if (won) return "This works. Run the loop in Bylda and scale it.";
   if (s.leadCount > 0) return "You're in market. Push conversations to a first close.";
   if (s.hasGtm) return "The plan exists. Now it needs real people in it.";
   if (s.hasOffer) return "You can sell it. Next, decide where customers come from.";
@@ -33,8 +33,8 @@ export function CasefileSummary({
 }) {
   return (
     <div className="space-y-3.5">
-      {/* Nova's take — the verdict block (shared AI-origin grammar) */}
-      <AiOriginCard label="Nova's take" title={verdictFor(graph, progress)} />
+      {/* Bylda's take — the verdict block (shared AI-origin grammar) */}
+      <AiOriginCard label="Bylda's take" title={verdictFor(graph, progress)} />
 
       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
         {/* Proven */}
@@ -84,7 +84,7 @@ export function CasefileSummary({
           </div>
           {progress.needsProof.length === 0 ? (
             <div className="text-[12.5px]" style={{ color: "var(--text-faint)" }}>
-              Nothing — every claim in this casefile is backed. Ready for Nova.
+              Nothing — every claim in this casefile is backed. Ready for Bylda.
             </div>
           ) : (
             <ul className="space-y-1.5">

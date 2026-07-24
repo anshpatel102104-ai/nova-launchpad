@@ -46,7 +46,7 @@ function AboutPage() {
             className="font-display text-[13.5px] font-bold tracking-tight"
             style={{ color: "#f0f4ff" }}
           >
-            LaunchpadNOVA
+            LaunchpadBYLDA
           </span>
         </Link>
         <nav
@@ -107,9 +107,9 @@ function AboutPage() {
           className="mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed"
           style={{ color: "rgba(240,244,255,0.55)" }}
         >
-          LaunchpadNOVA is an AI-powered business OS that combines strategic intelligence, content
+          LaunchpadBYLDA is an AI-powered business OS that combines strategic intelligence, content
           generation, and operational automation — all in one place. From validating your first idea
-          to scaling your operations, Nova is the co-founder you never had.
+          to scaling your operations, Bylda is the co-founder you never had.
         </p>
       </section>
 
@@ -148,7 +148,7 @@ function AboutPage() {
                 style={{ color: "rgba(240,244,255,0.55)" }}
               >
                 Big companies have entire departments for strategy, marketing, and operations. Solo
-                founders and small teams don't. Nova changes that — giving every founder
+                founders and small teams don't. Bylda changes that — giving every founder
                 enterprise-grade AI intelligence at a fraction of the cost, without the complexity.
               </p>
             </div>
@@ -255,7 +255,7 @@ function AboutPage() {
                 className="mt-4 text-[14px] leading-relaxed"
                 style={{ color: "rgba(240,244,255,0.5)" }}
               >
-                Enter a topic or keyword and Nova crafts a full-length, SEO-structured blog post —
+                Enter a topic or keyword and Bylda crafts a full-length, SEO-structured blog post —
                 complete with meta description, suggested tags, and a readability score. No writer's
                 block. No agency fees.
               </p>
@@ -367,7 +367,7 @@ function AboutPage() {
             {
               icon: Sparkles,
               title: "AI-first, always",
-              desc: "We don't bolt AI on top — intelligence is baked into every workflow, output, and decision Nova helps you make.",
+              desc: "We don't bolt AI on top — intelligence is baked into every workflow, output, and decision Bylda helps you make.",
             },
             {
               icon: Mail,
@@ -418,7 +418,7 @@ function AboutPage() {
           className="mt-4 text-[14.5px] leading-relaxed"
           style={{ color: "rgba(240,244,255,0.5)" }}
         >
-          Join founders using Nova to validate ideas, create content, and grow their businesses —
+          Join founders using Bylda to validate ideas, create content, and grow their businesses —
           all with the power of AI working in their corner.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -461,7 +461,7 @@ function AboutPage() {
           color: "rgba(240,244,255,0.25)",
         }}
       >
-        © {new Date().getFullYear()} LaunchpadNOVA. All rights reserved.
+        © {new Date().getFullYear()} LaunchpadBYLDA. All rights reserved.
         <span className="mx-2">·</span>
         <Link to="/pricing" className="transition-colors hover:text-white/60">
           Pricing
@@ -492,7 +492,7 @@ const FEATURES = [
   {
     icon: FileText,
     color: "#f97316",
-    title: "Nova OS",
+    title: "Bylda OS",
     desc: "CRM pipeline, lead capture, client onboarding, automation workflows, and reporting — a complete ops layer.",
   },
 ];

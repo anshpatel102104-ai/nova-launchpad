@@ -547,7 +547,7 @@ function OrgTab() {
   return (
     <Section
       title="Organization"
-      description="Help Nova personalize tool outputs to your business."
+      description="Help Bylda personalize tool outputs to your business."
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Business name">

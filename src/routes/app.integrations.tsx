@@ -469,7 +469,7 @@ function IntegrationCard({
 }) {
   return (
     <div
-      className="nova-card flex flex-col p-4 cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+      className="bylda-card flex flex-col p-4 cursor-pointer transition-all duration-200 hover:scale-[1.01]"
       style={{
         border: isConnected
           ? "1px solid color-mix(in oklab, var(--success) 30%, transparent)"
@@ -731,7 +731,7 @@ function IntegrationsPage() {
 
             {/* Custom integration add card */}
             <div
-              className="nova-card flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200 hover:scale-[1.01] text-center"
+              className="bylda-card flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200 hover:scale-[1.01] text-center"
               style={{
                 border: "1px dashed color-mix(in oklab, var(--border) 80%, transparent)",
               }}

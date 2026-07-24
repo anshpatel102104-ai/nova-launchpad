@@ -1,7 +1,7 @@
-# Nova Launchpad — Gap Analysis & Roadmap
+# Bylda Launchpad — Gap Analysis & Roadmap
 
 _What's missing to operate like HubSpot on the CRM side, and to create & scale users — plus
-the two-view (Launchpad / NOVA) restructure that ships alongside this document._
+the two-view (Launchpad / BYLDA) restructure that ships alongside this document._
 
 Last updated: 2026-06-15
 
@@ -11,7 +11,7 @@ Last updated: 2026-06-15
 
 Two questions drove this analysis:
 
-1. **CRM:** what's missing for Nova to operate like HubSpot?
+1. **CRM:** what's missing for Bylda to operate like HubSpot?
 2. **Create & scale users:** what delivery/infrastructure details are missing to onboard and
    grow many users?
 
@@ -20,13 +20,13 @@ resumable two-track onboarding, 28 edge functions, 8 Cloudflare Workers, 78 tabl
 are specific, not foundational. This doc inventories them, ordered by impact, and lays out a
 phased roadmap that **interleaves CRM depth and scaling work** so neither axis stalls.
 
-It also documents the **two-view restructure** (Launchpad vs NOVA) built in this same change.
+It also documents the **two-view restructure** (Launchpad vs BYLDA) built in this same change.
 
 ---
 
 ## What already works (do not rebuild)
 
-- **CRM:** `leads` pipeline with Kanban/table/list/forecast (`src/routes/app.nova.crm.tsx`),
+- **CRM:** `leads` pipeline with Kanban/table/list/forecast (`src/routes/app.bylda.crm.tsx`),
   scoring, win-probability, weighted forecast, tags/priority, `crm_activities` timeline,
   `contact_notes`, n8n automations.
 - **SaaS plumbing:** Supabase Auth, multi-tenant `organizations` + `organization_members`
@@ -42,7 +42,7 @@ It also documents the **two-view restructure** (Launchpad vs NOVA) built in this
 
 | #   | Gap                                 | Evidence / Notes                                                                                                                                                          | Priority      |
 | --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| 1   | **No Contacts object**              | `contacts` table is absent from all 43 migrations, yet `src/routes/app.contacts.tsx` and `workers/nova-contacts-api/` query it. Contacts is **broken at the data layer**. | P0 (blocking) |
+| 1   | **No Contacts object**              | `contacts` table is absent from all 43 migrations, yet `src/routes/app.contacts.tsx` and `workers/bylda-contacts-api/` query it. Contacts is **broken at the data layer**. | P0 (blocking) |
 | 2   | **No Companies / Accounts object**  | No company records, no contact↔company link. HubSpot's core is Contacts + Companies + Deals + Tickets.                                                                    | P0            |
 | 3   | **Objects not linked**              | No Deal↔Contact↔Company associations — the relationship graph HubSpot is built on.                                                                                        | P1            |
 | 4   | **Email**                           | No 2-way sync, send-from-CRM, open/click tracking, or logging. `email` activity type is a stub.                                                                           | P1            |
@@ -75,7 +75,7 @@ It also documents the **two-view restructure** (Launchpad vs NOVA) built in this
 
 ---
 
-## C. Two-view architecture (Launchpad / NOVA) — shipped with this doc
+## C. Two-view architecture (Launchpad / BYLDA) — shipped with this doc
 
 **Problem:** one shell showed every feature to everyone — confusing for both new founders and
 running operators.
@@ -85,7 +85,7 @@ running operators.
 
 - **Launchpad** (create & launch, orange) — Journey, Workbench, Customers, Library;
   primary nav = Build / Launch / Grow.
-- **NOVA** (operate & scale, cyan) — Customers/CRM, Automate, Insights, Library;
+- **BYLDA** (operate & scale, cyan) — Customers/CRM, Automate, Insights, Library;
   primary nav = Automate / Optimize / Scale.
 
 **How it works:**
@@ -94,13 +94,13 @@ running operators.
   `workspaces_update_owner`), optimistic cache update; guests persist to `sessionStorage`.
 - `src/components/app/ViewSwitcher.tsx` — two-segment toggle in the sidebar header.
 - `src/components/app/AppSidebar.tsx` — filters the Toolbox to each view's groups
-  (`LAUNCHPAD_GROUP_IDS` / `NOVA_GROUP_IDS`) and swaps the primary nav.
+  (`LAUNCHPAD_GROUP_IDS` / `BYLDA_GROUP_IDS`) and swaps the primary nav.
 
-**NOVA = explained for a total beginner.** NOVA's operate mission (`buildOperatorBaseline`
+**BYLDA = explained for a total beginner.** BYLDA's operate mission (`buildOperatorBaseline`
 in `supabase/functions/_shared/missionSeeds.ts`) was already seeded but its tools had **no
 guidance entries**, so steps fell back to generic copy. We added 5th-grade guidance for the
 operate/scale tools (`kpi-dashboard`, `seo-audit`, `launch-checklist`, `email-sequence`,
-`ad-copy`) in `src/lib/step-execution-guidance.ts`, so NOVA now gets the same
+`ad-copy`) in `src/lib/step-execution-guidance.ts`, so BYLDA now gets the same
 "what / why / 3 small steps / done-when" hand-holding Launchpad has — in `StepExecutionGuide`,
 `NextStepHero`, `MissionChecklist`, and `ToolGuidePanel`.
 
@@ -111,8 +111,8 @@ operate/scale tools (`kpi-dashboard`, `seo-audit`, `launch-checklist`, `email-se
 ### Phase 0 — Unblock (days)
 
 - Create `contacts` + `companies` tables (migration + RLS), wire to existing
-  `workers/nova-contacts-api/`, fix the broken `app.contacts.tsx`. **[CRM A1, A2]**
-- Two-view split + NOVA 5th-grade guidance. **[C — done in this change]**
+  `workers/bylda-contacts-api/`, fix the broken `app.contacts.tsx`. **[CRM A1, A2]**
+- Two-view split + BYLDA 5th-grade guidance. **[C — done in this change]**
 
 ### Phase 1 — CRM core + safety net (weeks 1–4)
 
@@ -145,7 +145,7 @@ operate/scale tools (`kpi-dashboard`, `seo-audit`, `launch-checklist`, `email-se
 Built, type-checked, unit-tested, and (for migrations) applied to the live DB and validated
 with the security advisor:
 
-- **Two-view split (Launchpad / NOVA) + NOVA 5th-grade guidance.** [C]
+- **Two-view split (Launchpad / BYLDA) + BYLDA 5th-grade guidance.** [C]
 - **CRM data model** — `companies` table (new) + `contacts` codified into a migration. Note:
   `contacts` already existed in **production via schema drift** (never in a migration), so a
   fresh DB lacked it; `supabase/migrations/20260615000001_crm_contacts_companies.sql` now
@@ -187,5 +187,5 @@ verified from the repo. Each is a clean follow-up:
 - Migrations applied to the live project and confirmed: `companies` exists, `contacts.company_id`
   - `updated_at` trigger present, `contact_notes` FK created, `leads` associations + search
     vectors in place; security advisor shows no new issues.
-- Manual smoke (post-deploy): ViewSwitcher flips Launchpad↔NOVA and persists; Contacts page
+- Manual smoke (post-deploy): ViewSwitcher flips Launchpad↔BYLDA and persists; Contacts page
   loads, CSV import/export + recompute work; Team tab lists members and invites send.

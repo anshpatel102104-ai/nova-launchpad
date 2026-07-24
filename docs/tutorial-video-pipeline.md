@@ -6,7 +6,7 @@ How the `/app/tutorials` videos are produced. There are two kinds of asset:
    the app (create a deal, drag the kanban, build an automation, connect Slack,
    generate real AI content), one per row in `public.tutorials`.
 2. **1 cinematic brand film** — the hero promo at the top of the tutorials page
-   (`tutorial-videos/promo/nova-brand-film.mp4`). See `docs/promo-film-brief.md`.
+   (`tutorial-videos/promo/bylda-brand-film.mp4`). See `docs/promo-film-brief.md`.
 
 ## Tutorials — real screen recordings (`scripts/tutorial-videos/`)
 
@@ -39,7 +39,7 @@ then `node scripts/tutorial-videos/record.mjs all` and
 - Sign in as a seeded confirmed demo user, then navigate client-side
   (`history.pushState` + `popstate`) — full-page `goto` loses the localStorage
   session and redirects to sign-in.
-- Pre-set `localStorage["nova-rail-open"] = "0"` so the Nova AI rail doesn't
+- Pre-set `localStorage["bylda-rail-open"] = "0"` so the Bylda AI rail doesn't
   cover the page; use `ignoreHTTPSErrors` for the sandbox TLS proxy.
 
 ## Schema

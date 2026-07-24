@@ -1,4 +1,4 @@
-# Nova Launchpad Implementation Guide
+# Bylda Launchpad Implementation Guide
 ## Step Execution Guidance System & Platform Improvements
 
 **Last Updated:** 2026-06-11  
@@ -180,7 +180,7 @@ const TOOL_ALIASES: Record<string, string> = {
 
 ### Fix 2: Queue Error Handling
 
-**File:** `workers/nova-automations-api/worker.ts`
+**File:** `workers/bylda-automations-api/worker.ts`
 
 **Problem:** Automation queue failures were silent - users never knew if their automation failed
 
@@ -237,7 +237,7 @@ All mission descriptions have been reviewed for clarity:
 
 The operator baseline mission (for existing business owners) now:
 - Uses concrete software names (Stripe, HubSpot, Slack)
-- References specific page locations in Nova
+- References specific page locations in Bylda
 - Provides clear success criteria (e.g., "integration shows 'connected' and is syncing data")
 - Breaks multi-step processes into clear sub-steps
 
@@ -475,7 +475,7 @@ If users report confusion:
 
 ## 10. Conclusion
 
-This implementation provides Nova users with:
+This implementation provides Bylda users with:
 
 ✅ **Clear Execution Guidance** - Every step has a dropdown showing multiple ways to execute  
 ✅ **Better UX** - Reduced friction through clear navigation and success criteria  

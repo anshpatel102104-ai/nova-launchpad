@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "nova-owner-mode";
-const EVENT = "nova:owner-mode-change";
+const STORAGE_KEY = "bylda-owner-mode";
+const EVENT = "bylda:owner-mode-change";
 
 export function getOwnerMode(): boolean {
   try {

@@ -7,7 +7,7 @@
 //   module step = mission_step    (each points at a real, clickable tool route)
 //
 // Completion flows through the existing advance-mission function, which already
-// dual-writes step.completed / mission.completed to nova_events. This function
+// dual-writes step.completed / mission.completed to bylda_events. This function
 // only generates the structure and flips the casefile to 'approved'.
 //
 // The lesson spine + mentor delegation is reused verbatim from
@@ -232,9 +232,9 @@ Deno.serve(async (req) => {
     .eq("id", casefile.id);
 
   // Announce the course build on the event ledger (same best-effort pattern as
-  // advance-mission's nova_events dual-writes).
+  // advance-mission's bylda_events dual-writes).
   await admin
-    .from("nova_events")
+    .from("bylda_events")
     .insert({
       organization_id: casefile.organization_id,
       source: "course",

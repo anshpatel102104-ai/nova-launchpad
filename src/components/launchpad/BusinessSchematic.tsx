@@ -4,7 +4,7 @@
  * stroke style is a truthful readout of real data —
  *
  *   sealed      solid outline + tint   ≥1 succeeded tool run in the area
- *   drafting    dashed marching ants   a run is in-flight or Nova's next
+ *   drafting    dashed marching ants   a run is in-flight or Bylda's next
  *                                      recommended move targets the area
  *   not-built   dotted ghost           nothing has touched the area yet
  *
@@ -43,7 +43,7 @@ interface ToolRunLite {
 export interface SchematicInput {
   toolRuns: ToolRunLite[];
   leadsCount: number;
-  /** Nova's current top recommendation (reused from recommendTools — not refetched) */
+  /** Bylda's current top recommendation (reused from recommendTools — not refetched) */
   nextMove?: { slug: string; reason: string } | null;
 }
 
@@ -350,7 +350,7 @@ export function BusinessSchematic({
             );
           })}
 
-          {/* Nova annotation — quotes the real next-recommended move */}
+          {/* Bylda annotation — quotes the real next-recommended move */}
           {nextMove && draftingArea && BLOCKS[draftingArea.id] && (
             <g aria-hidden="true">
               {(() => {
@@ -382,7 +382,7 @@ export function BusinessSchematic({
                 fill="var(--color-blueprint-brass)"
                 letterSpacing="0.1em"
               >
-                NOVA — NEXT ON THE BOARD
+                BYLDA — NEXT ON THE BOARD
               </text>
               <text x={28} y={386} className="font-bp-mono" fontSize={9.5} fill="var(--color-ink)">
                 {nextMove.reason.length > 62 ? `${nextMove.reason.slice(0, 62)}…` : nextMove.reason}

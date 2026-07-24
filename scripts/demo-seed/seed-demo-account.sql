@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- Nova Launchpad · Demo data seed for a single account (client showcase)
+-- Bylda Launchpad · Demo data seed for a single account (client showcase)
 -- ════════════════════════════════════════════════════════════════════════════
 --
 -- WHAT THIS DOES
@@ -162,14 +162,14 @@ begin
       'description','Technical founders doing $15k–$80k MRR who need a repeatable growth motion without hiring a full team.',
       'personas', jsonb_build_array('Solo technical founder','Head of Growth at a 10–40 person SaaS')),
     jsonb_build_object('stage','Scale','lane','Systems','revenue_band','$80k–$120k MRR','team_size','6–10'),
-    jsonb_build_object('monetization','Monthly retainer + performance bonus','price_point','$6k–$12k / mo','fulfillment','Pods of 2 + Nova automations'),
+    jsonb_build_object('monetization','Monthly retainer + performance bonus','price_point','$6k–$12k / mo','fulfillment','Pods of 2 + Bylda automations'),
     jsonb_build_object('goal_90d','Add 6 retained clients and cut reporting time 80%','scale_goal','$120k MRR, 25 clients','timeline','Q3'),
     jsonb_build_object('time','~50 hrs/wk','budget','Reinvesting ~20% of revenue','experience','8 yrs agency + RevOps','assets', jsonb_build_array('Referral network','Proven outbound playbook')),
     jsonb_build_object('validator_score',82,'validator_verdict','Strong, proven demand','risks', jsonb_build_array('Founder-led sales bottleneck','Delivery capacity'),'funding_readiness','Bootstrapped — not raising'),
     jsonb_build_object('channels', jsonb_build_array('Outbound email','LinkedIn','Referrals','Webinars'),
       'sales_maturity','Repeatable, documented','bottlenecks', jsonb_build_array('Manual follow-up','Client reporting'),
-      'tool_stack', jsonb_build_array('Nova','Slack','Stripe','Notion'),'reporting_gaps', jsonb_build_array('Per-client ROI rollups')),
-    jsonb_build_object('onboarded_at', v_now, 'summary','Scaling agency wiring its delivery onto Nova OS.')
+      'tool_stack', jsonb_build_array('Bylda','Slack','Stripe','Notion'),'reporting_gaps', jsonb_build_array('Per-client ROI rollups')),
+    jsonb_build_object('onboarded_at', v_now, 'summary','Scaling agency wiring its delivery onto Bylda OS.')
   )
   on conflict (organization_id) do update
     set workspace_id = excluded.workspace_id,

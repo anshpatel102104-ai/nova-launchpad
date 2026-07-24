@@ -1,5 +1,5 @@
 // Pick your next goal — the goal-first page for each category.
-// One recommended goal up top (Nova picked it), everything else in a quiet
+// One recommended goal up top (Bylda picked it), everything else in a quiet
 // list: done, open, or locked. Plain words, sharp corners, zero guessing.
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -58,7 +58,7 @@ function GoalsPage() {
           className="mt-1.5 text-[14px] leading-relaxed"
           style={{ color: "var(--muted-foreground)" }}
         >
-          {meta.tagline}. Pick one goal — Nova walks you through it, one small step at a time. You
+          {meta.tagline}. Pick one goal — Bylda walks you through it, one small step at a time. You
           never have to guess what to do next.
         </p>
       </div>
@@ -122,7 +122,7 @@ function GoalsPage() {
                 style={{ color: "var(--muted-foreground)" }}
               >
                 The {recommended.steps.length} step{recommended.steps.length === 1 ? "" : "s"} —
-                Nova guides you through each one:
+                Bylda guides you through each one:
               </div>
               <div
                 className="overflow-hidden rounded-[4px] border"

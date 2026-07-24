@@ -1,6 +1,6 @@
-# Nova OPS · n8n Workflows — Operator Stack
+# Bylda · n8n Workflows — Operator Stack
 
-10 staging workflows for the Nova OPS AI operator system. Pasted source split into per-workflow JSON, plus the Supabase schema they expect.
+10 staging workflows for the Bylda AI operator system. Pasted source split into per-workflow JSON, plus the Supabase schema they expect.
 
 ## 📁 Folder layout
 ```
@@ -70,16 +70,16 @@ This creates:
 ### 3. n8n — set environment variables (Settings → Variables)
 | Variable | Example | Used in |
 |----------|---------|---------|
-| `GLOBAL_APP_URL_STG`         | `https://stg.nova-ops.space`            | router, dispatcher |
-| `GLOBAL_APP_URL_PROD`        | `https://nova-ops.space`                | escalation email |
+| `GLOBAL_APP_URL_STG`         | `https://stg.usebylda.com`            | router, dispatcher |
+| `GLOBAL_APP_URL_PROD`        | `https://usebylda.com`                | escalation email |
 | `GLOBAL_AI_MODEL_DEFAULT`    | `claude-sonnet-4-6`                     | every Claude call |
 | `GLOBAL_ERROR_WEBHOOK_URL`   | `https://hook.n8n.cloud/.../err-router` | every Error Trigger |
-| `GLOBAL_SLACK_ALERT_CHANNEL` | `#nova-ops-alerts`                      | escalation, health |
+| `GLOBAL_SLACK_ALERT_CHANNEL` | `#bylda-ops-alerts`                      | escalation, health |
 | `N8N_WEBHOOK_BASE_URL`       | `https://launchpad-novaops.app.n8n.cloud/webhook` | inter-workflow calls |
-| `NOVA_OPS_ADMIN_TOKEN`       | (32+ char random secret)                | guards prompt-swap |
+| `BYLDA_OPS_ADMIN_TOKEN`       | (32+ char random secret)                | guards prompt-swap |
 | `STRIPE_UPGRADE_URL`         | `https://billing.stripe.com/p/login/...`| insufficient-credit response |
 
-> Generate `NOVA_OPS_ADMIN_TOKEN` once: `openssl rand -hex 32`
+> Generate `BYLDA_OPS_ADMIN_TOKEN` once: `openssl rand -hex 32`
 
 ### 4. n8n — your platform must expose these endpoints
 The workflows call these on `GLOBAL_APP_URL_STG`. Build them in your Platform repo (Vercel/Next.js):
@@ -108,7 +108,7 @@ config / environment.
 curl -X POST https://launchpad-novaops.app.n8n.cloud/webhook/operator-prompt-swap \
   -H "Content-Type: application/json" \
   -d '{
-    "admin_token":     "'"$NOVA_OPS_ADMIN_TOKEN"'",
+    "admin_token":     "'"$BYLDA_OPS_ADMIN_TOKEN"'",
     "component":       "lead_gen",
     "new_system_prompt": "You are a senior B2B lead-gen strategist…",
     "version_label":   "v2-2026-04-29"
@@ -142,10 +142,10 @@ duplicate them.
 
 | Workflow | Status | Reason |
 |---|---|---|
-| `nova_ops_provision_workspace_setup.json` | **deprecated** | Duplicates the `provision-workspace` edge function (now superseded by `complete-onboarding` + `provision_workspace_tx`). Two implementations drifted. |
-| `nova_ops_onboarding_intake_capture.json` | **deprecated** | Legacy intake schema (`business_name`, `monthly_revenue_range`, `website_url`) that no longer matches the two-track onboarding; writes to a `users` table that does not exist. |
-| `nova_ops_onboarding_completion_operator_handoff.json` | **broken** | References non-existent tables (`users`, `user_entitlements`, `user_credits`). |
-| `nova_ops_dashboard_auto_creation.json` | **broken** | References `user_profiles` / `user_entitlements` / `user_credits` — none exist in the schema. |
+| `bylda_ops_provision_workspace_setup.json` | **deprecated** | Duplicates the `provision-workspace` edge function (now superseded by `complete-onboarding` + `provision_workspace_tx`). Two implementations drifted. |
+| `bylda_ops_onboarding_intake_capture.json` | **deprecated** | Legacy intake schema (`business_name`, `monthly_revenue_range`, `website_url`) that no longer matches the two-track onboarding; writes to a `users` table that does not exist. |
+| `bylda_ops_onboarding_completion_operator_handoff.json` | **broken** | References non-existent tables (`users`, `user_entitlements`, `user_credits`). |
+| `bylda_ops_dashboard_auto_creation.json` | **broken** | References `user_profiles` / `user_entitlements` / `user_credits` — none exist in the schema. |
 
 Mission seed content has a single source of truth:
 `supabase/functions/_shared/missionSeeds.ts`. If mission copy changes, change

@@ -1,7 +1,7 @@
 // Ecosystem model — one intelligence layer, two products.
 //
 //   Launchpad creates the business.  (guided, staged, mission-based)
-//   Nova runs the business.          (operational, modular, command center)
+//   Bylda runs the business.          (operational, modular, command center)
 //
 // They share account, memory, business context, and intelligence — but never
 // navigation, home screens, or shell. This file is the single source of truth
@@ -10,7 +10,7 @@
 
 import type { BusinessGraph } from "@/hooks/use-business-graph";
 
-export type ProductId = "launchpad" | "nova";
+export type ProductId = "launchpad" | "bylda";
 
 /* ─── Launchpad stage model ─────────────────────────────────────────────
  * Six stages, strictly linear: Idea → Validate → Offer → Build → Launch → Revenue.
@@ -87,8 +87,8 @@ export interface LaunchpadProgress {
   stages: LaunchpadStageState[];
   currentIndex: number;
   current: LaunchpadStageState;
-  /** Everything before Revenue is proven — the business can operate in Nova */
-  readyForNova: boolean;
+  /** Everything before Revenue is proven — the business can operate in Bylda */
+  readyForBylda: boolean;
   /** Proof the founder has already produced (for the casefile) */
   proven: string[];
   /** What still needs proof, with where to get it */
@@ -152,7 +152,7 @@ export function deriveLaunchpadProgress(graph: BusinessGraph): LaunchpadProgress
     stages,
     currentIndex,
     current: stages[currentIndex],
-    readyForNova: doneById.build && doneById.launch,
+    readyForBylda: doneById.build && doneById.launch,
     proven,
     needsProof: needsProof.slice(0, 3),
   };
@@ -183,9 +183,9 @@ export const LAUNCHPAD_SUPPORT_NAV: EcosystemNavItem[] = [
   { id: "memory", label: "Memory", to: "/app/memory", match: (p) => p.startsWith("/app/memory") },
 ];
 
-/** Nova primary nav — the operating system layer. */
-export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
-  { id: "home", label: "Home", to: "/app/nova-home", match: (p) => p === "/app/nova-home" },
+/** Bylda primary nav — the operating system layer. */
+export const BYLDA_PRIMARY_NAV: EcosystemNavItem[] = [
+  { id: "home", label: "Home", to: "/app/bylda-home", match: (p) => p === "/app/bylda-home" },
   {
     id: "crm",
     label: "CRM",
@@ -195,8 +195,8 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
   {
     id: "pipeline",
     label: "Pipeline",
-    to: "/app/nova/crm",
-    match: (p) => p === "/app/nova/crm" || p === "/app/nova",
+    to: "/app/bylda/crm",
+    match: (p) => p === "/app/bylda/crm" || p === "/app/bylda",
   },
   {
     id: "automations",
@@ -208,8 +208,8 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
   {
     id: "clients",
     label: "Clients",
-    to: "/app/nova/clients",
-    match: (p) => p === "/app/nova/clients",
+    to: "/app/bylda/clients",
+    match: (p) => p === "/app/bylda/clients",
   },
   {
     id: "tasks",
@@ -220,13 +220,13 @@ export const NOVA_PRIMARY_NAV: EcosystemNavItem[] = [
   {
     id: "reporting",
     label: "Reporting",
-    to: "/app/nova/reports",
-    match: (p) => p === "/app/nova/reports",
+    to: "/app/bylda/reports",
+    match: (p) => p === "/app/bylda/reports",
   },
 ];
 
-/** Nova support areas — operational depth, collapsed by default. */
-export const NOVA_SUPPORT_NAV: EcosystemNavItem[] = [
+/** Bylda support areas — operational depth, collapsed by default. */
+export const BYLDA_SUPPORT_NAV: EcosystemNavItem[] = [
   { id: "roadmap", label: "Roadmap", to: "/app/roadmap", match: (p) => p === "/app/roadmap" },
   {
     id: "inbox",
@@ -270,10 +270,10 @@ export const NOVA_SUPPORT_NAV: EcosystemNavItem[] = [
 
 export const PRODUCT_HOME: Record<ProductId, string> = {
   launchpad: "/app/mission-control",
-  nova: "/app/nova-home",
+  bylda: "/app/bylda-home",
 };
 
 /** Post-onboarding landing — never a generic dashboard. */
 export function resolveLandingPath(mode: "create" | "operate" | null | undefined): string {
-  return mode === "operate" ? PRODUCT_HOME.nova : PRODUCT_HOME.launchpad;
+  return mode === "operate" ? PRODUCT_HOME.bylda : PRODUCT_HOME.launchpad;
 }

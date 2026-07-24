@@ -12,7 +12,7 @@ import { useProgressSpine } from "@/hooks/use-progress-spine";
 import { nextBestMove } from "@/lib/next-move";
 
 // Screens that already answer "what's next" prominently — no bar needed.
-const HIDE_ON = new Set(["/app/mission-control", "/app/nova-home", "/app/launchpad/course"]);
+const HIDE_ON = new Set(["/app/mission-control", "/app/bylda-home", "/app/launchpad/course"]);
 
 const DISMISS_KEY = "nba-dismissed-title";
 

@@ -50,7 +50,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-tool-dispatcher-stg"
+      "webhookId": "bylda-tool-dispatcher-stg"
     },
     {
       "id": "c3000002-0000-0000-0000-000000000002",
@@ -155,7 +155,7 @@
       ],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: false, allowed: false, tool_id: $json.tool_id, reason: $json.reason || 'tool_not_in_plan', upgrade_url: $vars.STRIPE_UPGRADE_URL || 'https://nova-ops.space/upgrade' }) }}",
+        "responseBody": "={{ JSON.stringify({ success: false, allowed: false, tool_id: $json.tool_id, reason: $json.reason || 'tool_not_in_plan', upgrade_url: $vars.STRIPE_UPGRADE_URL || 'https://usebylda.com/upgrade' }) }}",
         "options": {
           "responseCode": 403
         }
@@ -172,7 +172,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "url": "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -206,7 +206,7 @@
         240
       ],
       "parameters": {
-        "jsCode": "const ctx    = $('Code - Check Tool Entitlement').first().json;\\nconst credit = $input.first().json;  // credit deduction response\\n\\nconst toolId = ctx.tool_id;\\nconst base   = $vars.GLOBAL_APP_URL_STG || 'https://stg.nova-ops.space';\\n\\n// Lookup map: tool_id \u2192 Launchpad webhook URL\\nconst toolMap = {\\n  lead_gen:            `${base}/api/webhooks/tools/lead-gen`,\\n  copywriting:         `${base}/api/webhooks/tools/copywriting`,\\n  offer_building:      `${base}/api/webhooks/tools/offer-building`,\\n  funnel_mapping:      `${base}/api/webhooks/tools/funnel-mapping`,\\n  content_calendar:    `${base}/api/webhooks/tools/content-calendar`,\\n  ad_strategy:         `${base}/api/webhooks/tools/ad-strategy`,\\n  email_sequence:      `${base}/api/webhooks/tools/email-sequence`,\\n  seo_brief:           `${base}/api/webhooks/tools/seo-brief`,\\n  competitor_research: `${base}/api/webhooks/tools/competitor-research`,\\n  social_planning:     `${base}/api/webhooks/tools/social-planning`,\\n  sales_script:        `${base}/api/webhooks/tools/sales-script`,\\n  brand_voice:         `${base}/api/webhooks/tools/brand-voice`,\\n  analytics:           `${base}/api/webhooks/tools/analytics`,\\n  automation_build:    `${base}/api/webhooks/tools/automation-build`,\\n  client_reporting:    `${base}/api/webhooks/tools/client-reporting`,\\n  general_question:    `${base}/api/webhooks/tools/general-question`\\n};\\n\\nconst toolUrl = toolMap[toolId];\\nif (!toolUrl) {\\n  throw new Error(`Unknown tool_id: '${toolId}'. Add it to the dispatch map.`);\\n}\\n\\nreturn [{\\n  json: {\\n    tool_url:    toolUrl,\\n    tool_id:     toolId,\\n    user_id:     ctx.user_id,\\n    params:      ctx.params,\\n    credit_cost: ctx.credit_cost,\\n    credit_ok:   credit.allowed !== false\\n  }\\n}];"
+        "jsCode": "const ctx    = $('Code - Check Tool Entitlement').first().json;\\nconst credit = $input.first().json;  // credit deduction response\\n\\nconst toolId = ctx.tool_id;\\nconst base   = $vars.GLOBAL_APP_URL_STG || 'https://stg.usebylda.com';\\n\\n// Lookup map: tool_id \u2192 Launchpad webhook URL\\nconst toolMap = {\\n  lead_gen:            `${base}/api/webhooks/tools/lead-gen`,\\n  copywriting:         `${base}/api/webhooks/tools/copywriting`,\\n  offer_building:      `${base}/api/webhooks/tools/offer-building`,\\n  funnel_mapping:      `${base}/api/webhooks/tools/funnel-mapping`,\\n  content_calendar:    `${base}/api/webhooks/tools/content-calendar`,\\n  ad_strategy:         `${base}/api/webhooks/tools/ad-strategy`,\\n  email_sequence:      `${base}/api/webhooks/tools/email-sequence`,\\n  seo_brief:           `${base}/api/webhooks/tools/seo-brief`,\\n  competitor_research: `${base}/api/webhooks/tools/competitor-research`,\\n  social_planning:     `${base}/api/webhooks/tools/social-planning`,\\n  sales_script:        `${base}/api/webhooks/tools/sales-script`,\\n  brand_voice:         `${base}/api/webhooks/tools/brand-voice`,\\n  analytics:           `${base}/api/webhooks/tools/analytics`,\\n  automation_build:    `${base}/api/webhooks/tools/automation-build`,\\n  client_reporting:    `${base}/api/webhooks/tools/client-reporting`,\\n  general_question:    `${base}/api/webhooks/tools/general-question`\\n};\\n\\nconst toolUrl = toolMap[toolId];\\nif (!toolUrl) {\\n  throw new Error(`Unknown tool_id: '${toolId}'. Add it to the dispatch map.`);\\n}\\n\\nreturn [{\\n  json: {\\n    tool_url:    toolUrl,\\n    tool_id:     toolId,\\n    user_id:     ctx.user_id,\\n    params:      ctx.params,\\n    credit_cost: ctx.credit_cost,\\n    credit_ok:   credit.allowed !== false\\n  }\\n}];"
       }
     },
     {

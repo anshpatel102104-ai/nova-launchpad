@@ -48,7 +48,7 @@ export function GuestGateModal() {
           </h2>
           <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
             {gateReason ??
-              "You're exploring Nova OPS in demo mode. Create a free account to run AI tools, save assets, and track real leads."}
+              "You're exploring Bylda in demo mode. Create a free account to run AI tools, save assets, and track real leads."}
           </p>
 
           <div className="mt-6 flex flex-col gap-2">

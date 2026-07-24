@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     let pageResp: Response;
     try {
       pageResp = await fetch(url, {
-        headers: { "User-Agent": "Launchpad-Nova-Analyzer/1.0" },
+        headers: { "User-Agent": "Launchpad-Bylda-Analyzer/1.0" },
         signal: fetchAbort.signal,
         redirect: "follow",
       });

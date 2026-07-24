@@ -7,7 +7,7 @@ import { PLANS, PLAN_ORDER } from "@/lib/plan";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Nova OPS" },
+      { title: "Pricing — Bylda" },
       {
         name: "description",
         content: "Simple plans that scale with you. Free, $49, $149, and $299/month.",
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/pricing")({
 
 const COMPARE = [
   { label: "LaunchPad tools", values: ["2", "All 10", "All 10", "All 10"] },
-  { label: "Nova OS systems", values: ["—", "1", "4", "All 6"] },
+  { label: "Bylda OS systems", values: ["—", "1", "4", "All 6"] },
   { label: "Tool runs / mo", values: ["10", "200", "1,500", "Unlimited"] },
   { label: "Integrations", values: ["—", "Basic", "Full", "Full + custom"] },
   { label: "Support", values: ["Community", "Email", "Priority", "Dedicated"] },
@@ -62,7 +62,7 @@ function PricingPage() {
               return (
                 <div
                   key={p}
-                  className={`nova-card p-6 flex flex-col ${featured ? "border-primary/50 nova-glow" : ""}`}
+                  className={`bylda-card p-6 flex flex-col ${featured ? "border-primary/50 bylda-glow" : ""}`}
                 >
                   {featured && (
                     <div className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary text-[10px] font-medium px-2 py-0.5 mb-3 self-start">
@@ -97,7 +97,7 @@ function PricingPage() {
             })}
           </div>
 
-          <div className="mt-16 nova-card overflow-hidden">
+          <div className="mt-16 bylda-card overflow-hidden">
             <div className="p-5 border-b border-border">
               <h2 className="text-sm font-semibold">Compare features</h2>
             </div>

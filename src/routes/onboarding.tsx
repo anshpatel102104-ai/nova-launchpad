@@ -11,7 +11,7 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NeuralCanvas } from "@/components/app/NeuralCanvas";
-import { NovaIntakeChat, type IntakeAnswers } from "@/components/app/NovaIntakeChat";
+import { ByldaIntakeChat, type IntakeAnswers } from "@/components/app/ByldaIntakeChat";
 import {
   DETECT_QUESTIONS,
   FOUNDER_QUESTIONS,
@@ -211,7 +211,7 @@ function Onboarding() {
           justifyContent: "center",
         }}
       >
-        {/* Nova wordmark */}
+        {/* Bylda wordmark */}
         <div style={{ marginBottom: 28, display: "flex", alignItems: "center", gap: 8 }}>
           <div
             style={{
@@ -240,7 +240,7 @@ function Onboarding() {
               color: "rgba(247,240,232,0.7)",
             }}
           >
-            Nova
+            Bylda
           </span>
         </div>
 
@@ -251,7 +251,7 @@ function Onboarding() {
         )}
 
         {phase === "detect" && (
-          <NovaIntakeChat
+          <ByldaIntakeChat
             key="detect"
             questions={DETECT_QUESTIONS}
             accent={DETECT_ACCENT}
@@ -261,7 +261,7 @@ function Onboarding() {
         )}
 
         {phase === "chat" && (
-          <NovaIntakeChat
+          <ByldaIntakeChat
             key={mode}
             questions={mode === "operate" ? OPERATOR_QUESTIONS : FOUNDER_QUESTIONS}
             accent={accent}
@@ -410,7 +410,7 @@ function ProvisioningScreen({
               {error}
             </p>
             <p style={{ fontSize: 12, color: "rgba(247,240,232,0.4)", lineHeight: 1.6 }}>
-              Your answers are saved — nothing is lost. Retry now, or come back later and Nova will
+              Your answers are saved — nothing is lost. Retry now, or come back later and Bylda will
               pick up where you left off.
             </p>
             <button
@@ -440,7 +440,7 @@ function ProvisioningScreen({
 // ── Welcome / boot screen ─────────────────────────────────────────────────────
 
 const BOOT_LINES = [
-  "nova_os://init — kernel loaded",
+  "bylda_os://init — kernel loaded",
   "analysing your business context…",
   "calibrating AI tools for your stage…",
   "building your command center…",
@@ -560,7 +560,7 @@ function WelcomeScreen({ mode, onSkip }: { mode: Mode; onSkip: () => void }) {
                 textShadow: "0 0 60px rgba(249,115,22,0.2)",
               }}
             >
-              Nova is ready.
+              Bylda is ready.
             </h1>
 
             <div

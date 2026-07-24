@@ -1,7 +1,7 @@
 // NextStepHero — the one big "do this now" card on Home.
 // Shows the current mission's next open step with full hand-holding:
 // what it is, why it matters, 3 numbered moves, "you are done when",
-// and one purple button. Nova holds your hand; you never guess.
+// and one purple button. Bylda holds your hand; you never guess.
 // All progress data comes from useProgressSpine — no local derivation.
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,7 +48,7 @@ export function NextStepHero({ userId }: Props) {
           style={{ color: "var(--muted-foreground)" }}
         >
           If you just signed up, your first step may still be loading — check again in a moment. Or
-          pick a goal and Nova will build your steps.
+          pick a goal and Bylda will build your steps.
         </div>
         <div className="mt-4 flex justify-center gap-2.5">
           <button
@@ -90,7 +90,7 @@ export function NextStepHero({ userId }: Props) {
           You finished "{mission.title}". Great work!
         </div>
         <div className="mt-1 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-          Every step is done. Nova has your next goal ready.
+          Every step is done. Bylda has your next goal ready.
         </div>
         <Link
           to="/app/outcomes/$category"

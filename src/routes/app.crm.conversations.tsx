@@ -2,7 +2,7 @@
  * UNIFIED INBOX — /app/crm/conversations
  *
  * All inbound/outbound messages across channels (conversations table, Phase 1).
- * Split layout: thread list (grouped by contact) + message view. "Nova Draft"
+ * Split layout: thread list (grouped by contact) + message view. "Bylda Draft"
  * calls the conversation-ai edge function (Phase 2) to draft a reply.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -247,7 +247,7 @@ function ConversationsPage() {
               <MessageSquare className="mb-3 h-9 w-9 text-[--text-muted]" />
               <p className="text-sm font-semibold text-[--text-primary]">Select a conversation</p>
               <p className="mt-1 max-w-xs text-xs text-[--text-muted]">
-                Pick a thread on the left to read it and reply with help from Nova.
+                Pick a thread on the left to read it and reply with help from Bylda.
               </p>
             </div>
           )}
@@ -280,7 +280,7 @@ function ThreadView({
     [thread.messages],
   );
 
-  async function novaDraft() {
+  async function byldaDraft() {
     if (!lastInbound) return;
     setDrafting(true);
     try {
@@ -355,12 +355,12 @@ function ThreadView({
       <div className="border-t border-[--border] bg-[--bg-surface] p-3">
         <div className="mb-2 flex items-center justify-between">
           <button
-            onClick={novaDraft}
+            onClick={byldaDraft}
             disabled={drafting || !lastInbound}
             className="flex items-center gap-1.5 rounded-lg border border-[--border] px-3 py-1.5 text-xs font-semibold text-[--accent] transition-colors hover:border-[--border-strong] disabled:opacity-50"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {drafting ? "Drafting…" : "Nova Draft"}
+            {drafting ? "Drafting…" : "Bylda Draft"}
           </button>
         </div>
         <div className="flex items-end gap-2">

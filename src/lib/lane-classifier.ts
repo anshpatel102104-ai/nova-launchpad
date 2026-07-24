@@ -52,25 +52,25 @@ export const LANE_META: Record<Lane, { label: string; description: string; color
   Idea: {
     label: "Idea Explorer",
     description:
-      "You're shaping a concept. Nova will help you validate, stress-test, and sharpen your idea into something real.",
+      "You're shaping a concept. Bylda will help you validate, stress-test, and sharpen your idea into something real.",
     color: "#8b5cf6",
   },
   Offer: {
     label: "Offer Builder",
     description:
-      "You're defining what you sell. Nova will help you package, price, and position your core offer.",
+      "You're defining what you sell. Bylda will help you package, price, and position your core offer.",
     color: "#3b82f6",
   },
   Customer: {
     label: "Customer Hunter",
     description:
-      "You're ready to acquire. Nova will help you land your first customers and build repeatable outreach.",
+      "You're ready to acquire. Bylda will help you land your first customers and build repeatable outreach.",
     color: "#06b6d4",
   },
   Systems: {
     label: "Systems Operator",
     description:
-      "You're scaling what works. Nova will help you automate, delegate, and build leverage.",
+      "You're scaling what works. Bylda will help you automate, delegate, and build leverage.",
     color: "#22c55e",
   },
 };

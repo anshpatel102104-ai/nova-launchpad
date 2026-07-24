@@ -1,6 +1,6 @@
 // Business Roadmap — /app/roadmap. A six-stage business-maturity view
 // (Foundation → Build → Launch → Grow → Scale → Exit) that spans both
-// Launchpad and Nova, plus the gamified Business Progress & Levels section:
+// Launchpad and Bylda, plus the gamified Business Progress & Levels section:
 // Level, Health Score, Milestones, and Recent Wins. Every number here is
 // derived from real signals — see src/lib/business-roadmap.ts.
 

@@ -50,7 +50,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-ai-operator-router-stg"
+      "webhookId": "bylda-ai-operator-router-stg"
     },
     {
       "id": "a1000002-0000-0000-0000-000000000002",
@@ -63,7 +63,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "url": "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -315,7 +315,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: $vars.GLOBAL_AI_MODEL_DEFAULT || 'claude-sonnet-4-6', max_tokens: 512, system: 'You are the Nova OPS AI operator router. Given the user message and their business context, classify the intent into one of: [lead_gen, copywriting, offer_building, funnel_mapping, content_calendar, ad_strategy, email_sequence, seo_brief, competitor_research, social_planning, sales_script, brand_voice, analytics, automation_build, client_reporting, general_question]. Return JSON only: {\"intent\": string, \"confidence\": float, \"subagent\": string, \"params\": object}.', messages: [{ role: 'user', content: 'User message: ' + $json.message + ' | Business context: ' + JSON.stringify({ config: $json.operator_config, entitlements: $json.entitlements, recent_sessions: $json.session_history }) }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $vars.GLOBAL_AI_MODEL_DEFAULT || 'claude-sonnet-4-6', max_tokens: 512, system: 'You are the Bylda AI operator router. Given the user message and their business context, classify the intent into one of: [lead_gen, copywriting, offer_building, funnel_mapping, content_calendar, ad_strategy, email_sequence, seo_brief, competitor_research, social_planning, sales_script, brand_voice, analytics, automation_build, client_reporting, general_question]. Return JSON only: {\"intent\": string, \"confidence\": float, \"subagent\": string, \"params\": object}.', messages: [{ role: 'user', content: 'User message: ' + $json.message + ' | Business context: ' + JSON.stringify({ config: $json.operator_config, entitlements: $json.entitlements, recent_sessions: $json.session_history }) }] }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -342,7 +342,7 @@
         240
       ],
       "parameters": {
-        "jsCode": "const content = $input.first().json.content;\\nconst text = Array.isArray(content) ? content[0].text : String(content);\\n\\nlet parsed;\\ntry {\\n  parsed = JSON.parse(text);\\n} catch (_) {\\n  const m = text.match(/\\\\{[\\\\s\\\\S]*\\\\}/);\\n  try { parsed = m ? JSON.parse(m[0]) : null; } catch (_) { parsed = null; }\\n}\\n\\nif (!parsed || !parsed.intent) {\\n  parsed = { intent: 'general_question', confidence: 0.5, subagent: 'general-question', params: {} };\\n}\\n\\nconst slugMap = {\\n  lead_gen: 'lead-gen',\\n  copywriting: 'copywriting',\\n  offer_building: 'offer-building',\\n  funnel_mapping: 'funnel-mapping',\\n  content_calendar: 'content-calendar',\\n  ad_strategy: 'ad-strategy',\\n  email_sequence: 'email-sequence',\\n  seo_brief: 'seo-brief',\\n  competitor_research: 'competitor-research',\\n  social_planning: 'social-planning',\\n  sales_script: 'sales-script',\\n  brand_voice: 'brand-voice',\\n  analytics: 'analytics',\\n  automation_build: 'automation-build',\\n  client_reporting: 'client-reporting',\\n  general_question: 'general-question'\\n};\\n\\nconst slug = slugMap[parsed.intent] || 'general-question';\\nconst baseUrl = $vars.GLOBAL_APP_URL_STG || 'https://stg.nova-ops.space';\\nconst ctx = $('Set - Build Claude Context').first().json;\\n\\nreturn [{\\n  json: {\\n    intent: parsed.intent,\\n    confidence: parsed.confidence || 0.5,\\n    subagent: parsed.subagent || slug,\\n    params: parsed.params || {},\\n    subagent_url: `${baseUrl}/api/webhooks/subagents/${slug}`,\\n    user_id: ctx.user_id,\\n    session_id: ctx.session_id,\\n    message: ctx.message\\n  }\\n}];"
+        "jsCode": "const content = $input.first().json.content;\\nconst text = Array.isArray(content) ? content[0].text : String(content);\\n\\nlet parsed;\\ntry {\\n  parsed = JSON.parse(text);\\n} catch (_) {\\n  const m = text.match(/\\\\{[\\\\s\\\\S]*\\\\}/);\\n  try { parsed = m ? JSON.parse(m[0]) : null; } catch (_) { parsed = null; }\\n}\\n\\nif (!parsed || !parsed.intent) {\\n  parsed = { intent: 'general_question', confidence: 0.5, subagent: 'general-question', params: {} };\\n}\\n\\nconst slugMap = {\\n  lead_gen: 'lead-gen',\\n  copywriting: 'copywriting',\\n  offer_building: 'offer-building',\\n  funnel_mapping: 'funnel-mapping',\\n  content_calendar: 'content-calendar',\\n  ad_strategy: 'ad-strategy',\\n  email_sequence: 'email-sequence',\\n  seo_brief: 'seo-brief',\\n  competitor_research: 'competitor-research',\\n  social_planning: 'social-planning',\\n  sales_script: 'sales-script',\\n  brand_voice: 'brand-voice',\\n  analytics: 'analytics',\\n  automation_build: 'automation-build',\\n  client_reporting: 'client-reporting',\\n  general_question: 'general-question'\\n};\\n\\nconst slug = slugMap[parsed.intent] || 'general-question';\\nconst baseUrl = $vars.GLOBAL_APP_URL_STG || 'https://stg.usebylda.com';\\nconst ctx = $('Set - Build Claude Context').first().json;\\n\\nreturn [{\\n  json: {\\n    intent: parsed.intent,\\n    confidence: parsed.confidence || 0.5,\\n    subagent: parsed.subagent || slug,\\n    params: parsed.params || {},\\n    subagent_url: `${baseUrl}/api/webhooks/subagents/${slug}`,\\n    user_id: ctx.user_id,\\n    session_id: ctx.session_id,\\n    message: ctx.message\\n  }\\n}];"
       }
     },
     {

@@ -1,4 +1,4 @@
-# Nova Launchpad — AI Operator Architecture
+# Bylda Launchpad — AI Operator Architecture
 **Version:** 2.0  
 **Status:** Implementation-Ready
 
@@ -28,10 +28,10 @@ Strategy work is scattered across 10 launchpad tools (ICP builder, offer builder
 Every subagent and launchpad tool writes directly to the database and sends the raw output to the user. There is no validation pass. Malformed JSON, off-brand content, and hallucinated metrics reach users without any checkpoint.
 
 **5. No Intake Agent exists as a formal role.**  
-The `nova_ops_ai_profile_builder.json` workflow does something onboarding-like, but there is no dedicated agent whose job is to extract clean structured data from raw founder input and populate `ai_operator_configs` and `user_ai_config`. Currently, downstream agents pull from these tables and silently fail when fields are missing.
+The `bylda_ops_ai_profile_builder.json` workflow does something onboarding-like, but there is no dedicated agent whose job is to extract clean structured data from raw founder input and populate `ai_operator_configs` and `user_ai_config`. Currently, downstream agents pull from these tables and silently fail when fields are missing.
 
 **6. The main_router prompt is operationally useless.**  
-`"You are the Nova OPS AI operator router. Classify the user message intent and return JSON."` — no intent list, no output schema, no confidence scoring rules, no escalation logic. The router cannot make reliable routing decisions with this prompt.
+`"You are the Bylda AI operator router. Classify the user message intent and return JSON."` — no intent list, no output schema, no confidence scoring rules, no escalation logic. The router cannot make reliable routing decisions with this prompt.
 
 **7. Credit deduction is per-subagent with no centralized pre-check.**  
 Each subagent checks and deducts credits independently. If a subagent crashes mid-execution after deducting credits, the user loses credits with no output. There is no atomic debit-on-success pattern.
@@ -199,9 +199,9 @@ The `n8n_error_log` table exists, but there is no retry queue, no partial output
 ## SECTION 3 — OPERATOR SYSTEM PROMPT
 
 ```
-You are the Nova OPS Master Operator.
+You are the Bylda Master Operator.
 
-You are the central intelligence for Launchpad Nova — an AI founder execution platform. You read user intent, assemble the right context, and route work to the correct specialist agent. You do not do specialist work yourself. You think like an elite business operator: clear priorities, no wasted moves, no improvised decisions.
+You are the central intelligence for Launchpad Bylda — an AI founder execution platform. You read user intent, assemble the right context, and route work to the correct specialist agent. You do not do specialist work yourself. You think like an elite business operator: clear priorities, no wasted moves, no improvised decisions.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROUTING RULES
@@ -319,7 +319,7 @@ Never return raw Claude output directly. Never expose internal error messages to
 ### Intake Agent System Prompt
 
 ```
-You are the Nova OPS Intake Agent.
+You are the Bylda Intake Agent.
 
 Your only job is to extract structured founder data from raw input and return a clean JSON profile object. You do not write content. You do not make strategy recommendations. You extract and structure.
 
@@ -376,7 +376,7 @@ RULES
 ### Strategy Agent System Prompt
 
 ```
-You are the Nova OPS Strategy Agent.
+You are the Bylda Strategy Agent.
 
 Your job is to connect founder profile data into a coherent, actionable GTM strategy. You produce one integrated strategy object. You do not write content. You do not build automations. You build the strategic foundation that every downstream agent depends on.
 
@@ -441,7 +441,7 @@ RULES
 ### Content Agent System Prompt
 
 ```
-You are the Nova OPS Content Agent.
+You are the Bylda Content Agent.
 
 Your job is to produce one content piece per call, exactly matching the requested content type, fully on-brand, and ready to publish or use with minimal editing.
 
@@ -591,7 +591,7 @@ Platform char limits for social (truncate to fit):
 ### Automation Agent System Prompt
 
 ```
-You are the Nova OPS Automation Agent — a senior n8n workflow engineer.
+You are the Bylda Automation Agent — a senior n8n workflow engineer.
 
 Your job is to convert a plain-English process description into a complete, importable n8n workflow JSON. One call, one workflow.
 
@@ -653,7 +653,7 @@ RULES
 ### QA Agent System Prompt
 
 ```
-You are the Nova OPS QA Agent.
+You are the Bylda QA Agent.
 
 Your only job is to validate specialist outputs before they reach the user. You do not rewrite. You do not create. You inspect and score.
 

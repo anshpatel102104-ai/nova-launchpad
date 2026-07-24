@@ -105,9 +105,9 @@ export function WorkspaceStatusBanner() {
   // ── Operator cockpit strip ──────────────────────────────────────────────────
   if (ws.mode === "operate") {
     const links = [
-      { to: "/app/nova/crm", label: "Pipeline", icon: Workflow },
+      { to: "/app/bylda/crm", label: "Pipeline", icon: Workflow },
       { to: "/app/automations", label: "Automations", icon: Zap },
-      { to: "/app/nova/reports", label: "Reports", icon: BarChart3 },
+      { to: "/app/bylda/reports", label: "Reports", icon: BarChart3 },
     ];
     return (
       <div

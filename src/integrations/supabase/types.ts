@@ -2804,7 +2804,7 @@ export type Database = {
         };
         Relationships: [];
       };
-      nova_actions: {
+      bylda_actions: {
         Row: {
           action_type: string;
           confirmation_required: boolean;
@@ -2852,7 +2852,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "nova_actions_organization_id_fkey";
+            foreignKeyName: "bylda_actions_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -2860,7 +2860,7 @@ export type Database = {
           },
         ];
       };
-      nova_conversations: {
+      bylda_conversations: {
         Row: {
           context_snapshot: Json | null;
           created_at: string;
@@ -2890,7 +2890,7 @@ export type Database = {
         };
         Relationships: [];
       };
-      nova_events: {
+      bylda_events: {
         Row: {
           created_at: string;
           event_type: string;
@@ -2923,7 +2923,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "nova_events_organization_id_fkey";
+            foreignKeyName: "bylda_events_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -3402,7 +3402,7 @@ export type Database = {
           created_at: string;
           exports_enabled: boolean;
           mentor_access: boolean;
-          nova_ai_enabled: boolean;
+          bylda_ai_enabled: boolean;
           plan_tier: string;
           tool_slugs_allowed: string[];
         };
@@ -3412,7 +3412,7 @@ export type Database = {
           created_at?: string;
           exports_enabled?: boolean;
           mentor_access?: boolean;
-          nova_ai_enabled?: boolean;
+          bylda_ai_enabled?: boolean;
           plan_tier: string;
           tool_slugs_allowed?: string[];
         };
@@ -3422,7 +3422,7 @@ export type Database = {
           created_at?: string;
           exports_enabled?: boolean;
           mentor_access?: boolean;
-          nova_ai_enabled?: boolean;
+          bylda_ai_enabled?: boolean;
           plan_tier?: string;
           tool_slugs_allowed?: string[];
         };
@@ -5049,12 +5049,12 @@ export type Database = {
           launchpad_tool_7: boolean | null;
           launchpad_tool_8: boolean | null;
           launchpad_tool_9: boolean | null;
-          nova_os_booking: boolean | null;
-          nova_os_followup: boolean | null;
-          nova_os_lead_capture: boolean | null;
-          nova_os_nurture: boolean | null;
-          nova_os_reporting: boolean | null;
-          nova_os_sales: boolean | null;
+          bylda_os_booking: boolean | null;
+          bylda_os_followup: boolean | null;
+          bylda_os_lead_capture: boolean | null;
+          bylda_os_nurture: boolean | null;
+          bylda_os_reporting: boolean | null;
+          bylda_os_sales: boolean | null;
           subagent_access: boolean | null;
           user_id: string | null;
         };
@@ -5384,7 +5384,7 @@ export type Database = {
       step_status: "pending" | "in_progress" | "completed" | "skipped";
       subscription_status: "trialing" | "active" | "past_due" | "canceled" | "incomplete";
       tool_run_status: "queued" | "running" | "succeeded" | "failed";
-      tool_surface: "launchpad" | "nova";
+      tool_surface: "launchpad" | "bylda";
       workspace_lane: "Idea" | "Offer" | "Customer" | "Systems";
     };
     CompositeTypes: {
@@ -5533,7 +5533,7 @@ export const Constants = {
       step_status: ["pending", "in_progress", "completed", "skipped"],
       subscription_status: ["trialing", "active", "past_due", "canceled", "incomplete"],
       tool_run_status: ["queued", "running", "succeeded", "failed"],
-      tool_surface: ["launchpad", "nova"],
+      tool_surface: ["launchpad", "bylda"],
       workspace_lane: ["Idea", "Offer", "Customer", "Systems"],
     },
   },

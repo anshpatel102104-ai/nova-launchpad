@@ -60,7 +60,7 @@ serve(async (req) => {
       if (!sub?.stripe_customer_id) {
         return json({ error: "No Stripe customer found for this organization" }, 404);
       }
-      const origin = req.headers.get("origin") || "https://app.novaops.ai";
+      const origin = req.headers.get("origin") || "https://app.bylda.ai";
       const session = await stripe.billingPortal.sessions.create({
         customer: sub.stripe_customer_id,
         return_url: returnUrl || `${origin}/app/billing`,

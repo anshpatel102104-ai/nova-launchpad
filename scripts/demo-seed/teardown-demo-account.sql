@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- Nova Launchpad · Remove the demo data seeded by seed-demo-account.sql
+-- Bylda Launchpad · Remove the demo data seeded by seed-demo-account.sql
 -- ════════════════════════════════════════════════════════════════════════════
 --
 -- Deletes ONLY the marked demo rows (custom_fields.seed='demo', metadata.seed='demo',
