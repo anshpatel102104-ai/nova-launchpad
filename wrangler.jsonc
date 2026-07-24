@@ -1,6 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "bylda-launchpad",
+  // The deployed Cloudflare Worker service is still named "nova-launchpad" and
+  // owns the usebylda.com routes (a Workers Build Git-integration is pinned to
+  // it). Renaming the service requires manual Cloudflare steps — create
+  // bylda-launchpad, reassign routes, repoint the integration — so the config
+  // keeps the existing service name to deploy cleanly. User-facing brand +
+  // domain (usebylda.com) are already Bylda.
+  "name": "nova-launchpad",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
