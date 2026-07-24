@@ -5,7 +5,7 @@ import { AppTopbar } from "@/components/app/AppTopbar";
 import { MobileTabBar } from "@/components/app/MobileTabBar";
 import { IntelligenceRail } from "@/components/app/IntelligenceRail";
 import { GuestGateModal } from "@/components/app/GuestGateModal";
-import { NovaBar } from "@/components/nova/NovaBar";
+import { ByldaBar } from "@/components/bylda/ByldaBar";
 import { NextBestActionBar } from "@/components/app/NextBestActionBar";
 import { CoachmarkListener } from "@/components/launchpad/Coachmark";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,13 +83,13 @@ function ImpersonationBanner() {
 function AppLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   // Product identity: the shell is either Launchpad (create, violet) or
-  // Nova (operate, cyan). data-product remaps the semantic accent tokens
+  // Bylda (operate, cyan). data-product remaps the semantic accent tokens
   // (styles.css) so the whole shell re-skins with the active product.
   const { isOperate } = useWorkspaceMode();
 
   const [railOpen, setRailOpen] = useState(() => {
     try {
-      return localStorage.getItem("nova-rail-open") !== "0";
+      return localStorage.getItem("bylda-rail-open") !== "0";
     } catch {
       return false;
     }
@@ -103,7 +103,7 @@ function AppLayout() {
     setRailOpen((o) => {
       const next = !o;
       try {
-        localStorage.setItem("nova-rail-open", next ? "1" : "0");
+        localStorage.setItem("bylda-rail-open", next ? "1" : "0");
       } catch {
         /* */
       }
@@ -113,7 +113,7 @@ function AppLayout() {
 
   return (
     <div
-      data-product={isOperate ? "nova" : "launchpad"}
+      data-product={isOperate ? "bylda" : "launchpad"}
       className="flex h-screen overflow-hidden bg-background text-foreground"
     >
       <AppSidebar onOpenRail={() => setRailOpen(true)} />
@@ -121,7 +121,7 @@ function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <ImpersonationBanner />
         <AppTopbar onToggleRail={toggleRail} railOpen={railOpen} />
-        <NovaBar />
+        <ByldaBar />
 
         <div className="flex flex-1 overflow-hidden">
           <main

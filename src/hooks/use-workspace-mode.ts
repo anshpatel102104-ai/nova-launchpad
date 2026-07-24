@@ -1,5 +1,5 @@
 // useWorkspaceMode — the single source of truth for the active "view":
-//   Launchpad (create & launch)  ↔  NOVA (operate & scale).
+//   Launchpad (create & launch)  ↔  BYLDA (operate & scale).
 //
 // The view is backed by workspaces.mode ('create' | 'operate'), the same
 // column the onboarding fork sets. Switching the view writes the new mode
@@ -15,9 +15,9 @@ import { useGuest } from "@/lib/guest";
 import { workspaceStatusQuery } from "@/lib/queries";
 
 export type WorkspaceMode = "create" | "operate";
-export type WorkspaceView = "launchpad" | "nova";
+export type WorkspaceView = "launchpad" | "bylda";
 
-const GUEST_VIEW_KEY = "nova-view-mode";
+const GUEST_VIEW_KEY = "bylda-view-mode";
 
 function readGuestMode(): WorkspaceMode {
   if (typeof window === "undefined") return "create";
@@ -94,7 +94,7 @@ export function useWorkspaceMode() {
 
   return {
     mode,
-    view: (mode === "operate" ? "nova" : "launchpad") as WorkspaceView,
+    view: (mode === "operate" ? "bylda" : "launchpad") as WorkspaceView,
     isOperate: mode === "operate",
     setMode,
     toggle: () => setMode(mode === "operate" ? "create" : "operate"),

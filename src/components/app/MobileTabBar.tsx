@@ -1,6 +1,6 @@
 // Mobile nav — one bar per product, mirroring each product's sidebar.
 //   Launchpad: Home · Missions · Research · Memory · Ask
-//   Nova:      Home · CRM · Pipeline · Tasks · Ask
+//   Bylda:      Home · CRM · Pipeline · Tasks · Ask
 // Same rule as desktop: the two products never share navigation.
 
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -57,12 +57,12 @@ const LAUNCHPAD_TABS: Tab[] = [
   },
 ];
 
-const NOVA_TABS: Tab[] = [
+const BYLDA_TABS: Tab[] = [
   {
-    to: "/app/nova-home",
+    to: "/app/bylda-home",
     label: "Home",
     icon: Home,
-    match: (p) => p === "/app/nova-home" || p === "/app/",
+    match: (p) => p === "/app/bylda-home" || p === "/app/",
   },
   {
     to: "/app/contacts",
@@ -71,10 +71,10 @@ const NOVA_TABS: Tab[] = [
     match: (p) => p === "/app/contacts" || p === "/app/leads" || p === "/app/crm/companies",
   },
   {
-    to: "/app/nova/crm",
+    to: "/app/bylda/crm",
     label: "Pipeline",
     icon: Workflow,
-    match: (p) => p === "/app/nova/crm" || p === "/app/nova",
+    match: (p) => p === "/app/bylda/crm" || p === "/app/bylda",
   },
   {
     to: "/app/crm/tasks",
@@ -93,7 +93,7 @@ const NOVA_TABS: Tab[] = [
 export function MobileTabBar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { isOperate } = useWorkspaceMode();
-  const tabs = isOperate ? NOVA_TABS : LAUNCHPAD_TABS;
+  const tabs = isOperate ? BYLDA_TABS : LAUNCHPAD_TABS;
 
   return (
     <nav

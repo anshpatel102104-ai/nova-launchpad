@@ -281,7 +281,7 @@
   "staticData": null,
   "tags": [
     {
-      "name": "nova-ops",
+      "name": "bylda-ops",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
     },
@@ -293,5 +293,5 @@
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-29T00:00:00.000Z",
-  "id": "nova-ops-brand-voice-subagent-v2"
+  "id": "bylda-ops-brand-voice-subagent-v2"
 }

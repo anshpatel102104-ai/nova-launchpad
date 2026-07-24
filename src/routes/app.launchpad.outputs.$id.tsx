@@ -160,7 +160,7 @@ function CasefilePage() {
 
 type CasefileRunWithApproval = CasefileRun & { casefile_status?: string | null };
 
-// The one primary action on the Founder Casefile: approve it, and Nova builds
+// The one primary action on the Founder Casefile: approve it, and Bylda builds
 // the personalized course. Once approved it becomes a link into the course.
 function ApproveCasefileCard({ run }: { run: CasefileRunWithApproval }) {
   const navigate = useNavigate();
@@ -190,7 +190,7 @@ function ApproveCasefileCard({ run }: { run: CasefileRunWithApproval }) {
       <div>
         <p className="text-sm font-bold text-[--foreground]">Approve this casefile</p>
         <p className="text-xs text-[--text-faint]">
-          Nova turns it into a step-by-step course built around this exact business.
+          Bylda turns it into a step-by-step course built around this exact business.
         </p>
         {state === "error" && (
           <p className="mt-1 text-xs font-semibold text-[--destructive]">
@@ -237,7 +237,10 @@ function CreateDealCard({
         </p>
       </div>
       {dealState === "done" ? (
-        <Link to="/app/nova/crm" className="text-sm font-semibold text-[--success] hover:underline">
+        <Link
+          to="/app/bylda/crm"
+          className="text-sm font-semibold text-[--success] hover:underline"
+        >
           Deal created — view pipeline →
         </Link>
       ) : (

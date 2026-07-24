@@ -10,7 +10,7 @@ const IN_TOOL_DIRECTIONS = [
   { action: "Fill in the boxes on the left.", detail: "Use simple words. Short answers are fine." },
   {
     action: 'Click the "Generate with AI" button.',
-    detail: "Nova does the writing — it takes about a minute.",
+    detail: "Bylda does the writing — it takes about a minute.",
   },
   {
     action: "Read the result on the right.",
@@ -42,7 +42,7 @@ export function ToolGuidePanel({ toolKey }: { toolKey: string }) {
           className="text-[11.5px] font-extrabold uppercase tracking-[0.08em]"
           style={{ color: "var(--primary)" }}
         >
-          Nova guides you — here's how this works
+          Bylda guides you — here's how this works
         </span>
         <span
           className="inline-flex items-center gap-1.5 text-[12px] font-semibold"

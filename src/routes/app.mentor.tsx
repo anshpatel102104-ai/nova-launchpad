@@ -1,9 +1,9 @@
 /**
- * ASK NOVA — full-page AI chat
+ * ASK BYLDA — full-page AI chat
  * Route: /app/mentor
  *
- * A straightforward chat with Nova, your AI chief of staff. Streams
- * responses from the nova-chat edge function, with workspace context
+ * A straightforward chat with Bylda, your AI chief of staff. Streams
+ * responses from the bylda-chat edge function, with workspace context
  * (idea, stage, recent tool runs) baked into every request and inline
  * action chips / links for jumping straight into a recommended tool.
  */
@@ -14,7 +14,7 @@ import { Sparkles, Send, RotateCcw, ArrowUpRight, Zap } from "lucide-react";
 import { invokeEdgeStream } from "@/lib/invokeEdge";
 import { useAuth } from "@/lib/auth";
 import { buildAgentContext } from "@/lib/agent-context";
-import { NovaAvatar } from "@/components/nova/NovaAvatar";
+import { ByldaAvatar } from "@/components/bylda/ByldaAvatar";
 import { useCurriculum } from "@/hooks/use-curriculum";
 import { mentorById } from "@/lib/mentors";
 import { MentorAvatar } from "@/components/app/MentorAvatar";
@@ -217,7 +217,7 @@ function MentorPage() {
       // With an active lesson, the founder talks to that lesson's mentor —
       // persona, memory, and voice — not a generic assistant.
       const resp = await invokeEdgeStream(
-        activeMentor ? "mentor-chat" : "nova-chat",
+        activeMentor ? "mentor-chat" : "bylda-chat",
         activeMentor
           ? {
               agent_id: activeMentor.id,
@@ -270,7 +270,7 @@ function MentorPage() {
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            // mentor-chat streams {text}; nova-chat streams raw Anthropic deltas.
+            // mentor-chat streams {text}; bylda-chat streams raw Anthropic deltas.
             const delta =
               typeof parsed.text === "string"
                 ? parsed.text
@@ -345,7 +345,7 @@ function MentorPage() {
                 lineHeight: 1.1,
               }}
             >
-              {activeMentor ? activeMentor.name : "Ask Nova"}
+              {activeMentor ? activeMentor.name : "Ask Bylda"}
             </h1>
             <p
               className="mt-1"
@@ -420,7 +420,7 @@ function MentorPage() {
               >
                 {msg.role === "assistant" && (
                   <div className="shrink-0 mt-0.5">
-                    <NovaAvatar size="sm" mood={msg.pending ? "thinking" : "active"} />
+                    <ByldaAvatar size="sm" mood={msg.pending ? "thinking" : "active"} />
                   </div>
                 )}
                 <div
@@ -440,11 +440,11 @@ function MentorPage() {
                       className="inline-flex items-center gap-1"
                       style={{ color: "var(--primary)" }}
                     >
-                      <span style={{ animation: "nova-pulse 1.4s ease-in-out infinite" }}>●</span>
-                      <span style={{ animation: "nova-pulse 1.4s ease-in-out 0.2s infinite" }}>
+                      <span style={{ animation: "bylda-pulse 1.4s ease-in-out infinite" }}>●</span>
+                      <span style={{ animation: "bylda-pulse 1.4s ease-in-out 0.2s infinite" }}>
                         ●
                       </span>
-                      <span style={{ animation: "nova-pulse 1.4s ease-in-out 0.4s infinite" }}>
+                      <span style={{ animation: "bylda-pulse 1.4s ease-in-out 0.4s infinite" }}>
                         ●
                       </span>
                     </span>
@@ -482,7 +482,7 @@ function MentorPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Nova anything… Enter to send, Shift+Enter for newline"
+              placeholder="Ask Bylda anything… Enter to send, Shift+Enter for newline"
               rows={1}
               disabled={streaming}
               className="flex-1 resize-none bg-transparent outline-none"
@@ -523,13 +523,13 @@ function MentorPage() {
             className="mt-2 text-center"
             style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-faint)" }}
           >
-            Nova is AI-generated — always verify critical decisions.
+            Bylda is AI-generated — always verify critical decisions.
           </p>
         </div>
       </div>
 
       <style>{`
-        @keyframes nova-pulse {
+        @keyframes bylda-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
         }
@@ -557,7 +557,7 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 px-4 text-center">
-      <NovaAvatar size="lg" mood="active" />
+      <ByldaAvatar size="lg" mood="active" />
 
       <div>
         <p

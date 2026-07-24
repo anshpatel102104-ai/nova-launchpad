@@ -100,7 +100,7 @@ async function generateForOrg(admin: SupabaseClient, orgId: string): Promise<boo
   }));
 
   const output = await callClaude(
-    "You are Nova, the AI operating system for this business. Write their weekly operating review. " +
+    "You are Bylda, the AI operating system for this business. Write their weekly operating review. " +
       "Be specific to THEIR business and THEIR actual week — reference real numbers from the activity " +
       "summary and real facts from context. Blunt about stalls, concrete about next week. No filler.",
     `${assembled.block}\n\n## THIS WEEK'S ACTUAL ACTIVITY\n` +

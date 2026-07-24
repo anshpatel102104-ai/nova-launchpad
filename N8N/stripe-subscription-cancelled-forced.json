@@ -12,10 +12,7 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-subscription-cancelled-forced"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse Forced Cancellation Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Should Skip?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
+      "position": [680, 300]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return 200 Skipped",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        900,
-        480
-      ]
+      "position": [900, 480]
     },
     {
       "parameters": {
@@ -106,10 +94,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        900,
-        300
-      ],
+      "position": [900, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -125,10 +110,7 @@
       "name": "Merge User Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
+      "position": [1120, 300]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "Suspend User in Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -213,7 +192,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"plan_tier\": \"free\",\n  \"launchpad_access\": false,\n  \"nova_os_access\": false,\n  \"ai_tools_limit\": 0,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
+        "jsonBody": "={\n  \"plan_tier\": \"free\",\n  \"launchpad_access\": false,\n  \"bylda_os_access\": false,\n  \"ai_tools_limit\": 0,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
         "options": {
           "response": {
             "response": {
@@ -229,10 +208,7 @@
       "name": "Kill All Feature Flags",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ],
+      "position": [1560, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -259,7 +235,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"\ud83d\udd34 Your Nova OPS account has been suspended\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><div style='background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px 20px; border-radius: 4px; margin-bottom: 28px;'><p style='margin: 0; font-size: 15px; color: #b91c1c; font-weight: 600;'>\ud83d\udd34 Account suspended due to non-payment. Immediate action required.</p></div><h1 style='font-size: 24px; margin-top: 0;'>Hi {{ $('Merge User Data').first().json.firstName }}, your account has been suspended.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>After multiple failed payment attempts, your Nova OPS <strong>{{ $('Merge User Data').first().json.planDisplay }}</strong> subscription has been cancelled and your account suspended.</p><div style='background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #854d0e; text-transform: uppercase; letter-spacing: 0.05em;'>Account Status</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #713f12; line-height: 2;'><li>Outstanding balance: <strong>{{ $('Merge User Data').first().json.amountOwedDisplay }}</strong></li><li>All automations: <strong>Offline</strong></li><li>All AI tools: <strong>Disabled</strong></li><li>Your data: <strong>Preserved for 30 days</strong></li></ul></div><p style='font-size: 16px; color: #444;'>To restore your account immediately, update your payment method in the billing portal. Your automations will come back online within minutes.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.STRIPE_CUSTOMER_PORTAL_URL }}' style='background: #ef4444; color: white; padding: 16px 36px; border-radius: 8px; text-decoration: none; font-size: 17px; font-weight: 700; display: inline-block;'>Update Payment & Restore Access</a><p style='font-size: 12px; color: #94a3b8; margin-top: 10px;'>Secure link \u2014 restores access instantly</p></div><p style='font-size: 14px; color: #64748b;'>If you believe this is an error or want to discuss your account, reply to this email immediately.</p><p style='font-size: 14px; color: #555;'>\u2014 The Nova OPS Team</p></div>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"\ud83d\udd34 Your Bylda account has been suspended\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><div style='background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px 20px; border-radius: 4px; margin-bottom: 28px;'><p style='margin: 0; font-size: 15px; color: #b91c1c; font-weight: 600;'>\ud83d\udd34 Account suspended due to non-payment. Immediate action required.</p></div><h1 style='font-size: 24px; margin-top: 0;'>Hi {{ $('Merge User Data').first().json.firstName }}, your account has been suspended.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>After multiple failed payment attempts, your Bylda <strong>{{ $('Merge User Data').first().json.planDisplay }}</strong> subscription has been cancelled and your account suspended.</p><div style='background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #854d0e; text-transform: uppercase; letter-spacing: 0.05em;'>Account Status</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #713f12; line-height: 2;'><li>Outstanding balance: <strong>{{ $('Merge User Data').first().json.amountOwedDisplay }}</strong></li><li>All automations: <strong>Offline</strong></li><li>All AI tools: <strong>Disabled</strong></li><li>Your data: <strong>Preserved for 30 days</strong></li></ul></div><p style='font-size: 16px; color: #444;'>To restore your account immediately, update your payment method in the billing portal. Your automations will come back online within minutes.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.STRIPE_CUSTOMER_PORTAL_URL }}' style='background: #ef4444; color: white; padding: 16px 36px; border-radius: 8px; text-decoration: none; font-size: 17px; font-weight: 700; display: inline-block;'>Update Payment & Restore Access</a><p style='font-size: 12px; color: #94a3b8; margin-top: 10px;'>Secure link \u2014 restores access instantly</p></div><p style='font-size: 14px; color: #64748b;'>If you believe this is an error or want to discuss your account, reply to this email immediately.</p><p style='font-size: 14px; color: #555;'>\u2014 The Bylda Team</p></div>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -272,10 +248,7 @@
       "name": "Send Suspension Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        300
-      ]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -305,10 +278,7 @@
       "name": "Log to billing_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2000,
-        300
-      ],
+      "position": [2000, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -336,10 +306,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        2220,
-        300
-      ]
+      "position": [2220, 300]
     }
   ],
   "connections": {
@@ -458,15 +425,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "cancellation",
-    "forced",
-    "billing",
-    "suspended"
-  ],
+  "tags": ["bylda-ops", "stripe", "cancellation", "forced", "billing", "suspended"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-cancelled-forced-v1"
+  "versionId": "bylda-ops-cancelled-forced-v1"
 }

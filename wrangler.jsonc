@@ -1,14 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "nova-launchpad",
+  "name": "bylda-launchpad",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
 
-  // Primary app route on nova-ops.space
+  // Primary app route on usebylda.com
   "routes": [
-    { "pattern": "app.launchpad.nova-ops.space/*", "zone_name": "nova-ops.space" },
-    { "pattern": "nova-ops.space/*", "zone_name": "nova-ops.space" }
+    { "pattern": "app.usebylda.com/*", "zone_name": "usebylda.com" },
+    { "pattern": "usebylda.com/*", "zone_name": "usebylda.com" },
   ],
 
   "vars": {
@@ -17,7 +17,7 @@
     "SUPABASE_PROJECT_ID": "ipidfqwlszuhjgjygbvx",
     "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaWRmcXdsc3p1aGpnanlnYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MzU4OTUsImV4cCI6MjA5MjQxMTg5NX0.4F3q4epd_H8xn2JB5-RtSSy81U9zJBS7HO2KahD4HIc",
     "VITE_SUPABASE_URL": "https://ipidfqwlszuhjgjygbvx.supabase.co",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaWRmcXdsc3p1aGpnanlnYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MzU4OTUsImV4cCI6MjA5MjQxMTg5NX0.4F3q4epd_H8xn2JB5-RtSSy81U9zJBS7HO2KahD4HIc"
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaWRmcXdsc3p1aGpnanlnYnZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4MzU4OTUsImV4cCI6MjA5MjQxMTg5NX0.4F3q4epd_H8xn2JB5-RtSSy81U9zJBS7HO2KahD4HIc",
   },
 
   // ── Secrets (set via: npx wrangler secret put <NAME>) ─────────────────────
@@ -62,11 +62,11 @@
   "queues": {
     "producers": [
       {
-        "queue": "nova-automation-queue",
-        "binding": "AUTOMATION_QUEUE"
-      }
-    ]
-    // Consumer is in workers/nova-automation-consumer/ — deployed separately
+        "queue": "bylda-automation-queue",
+        "binding": "AUTOMATION_QUEUE",
+      },
+    ],
+    // Consumer is in workers/bylda-automation-consumer/ — deployed separately
   },
 
   // ── Observability ─────────────────────────────────────────────────────────
@@ -77,12 +77,12 @@
       "enabled": true,
       "head_sampling_rate": 1,
       "persist": true,
-      "invocation_logs": true
+      "invocation_logs": true,
     },
     "traces": {
       "enabled": true,
       "persist": true,
-      "head_sampling_rate": 1
-    }
-  }
+      "head_sampling_rate": 1,
+    },
+  },
 }

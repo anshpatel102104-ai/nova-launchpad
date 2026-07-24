@@ -57,15 +57,15 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
     { to: "/app/launchpad/pitch-generator", toolKey: "pitch-generator", label: "Generate pitch" },
   ],
   "first-10-customers": [
-    { to: "/app/nova/leads", toolKey: "leads", label: "Capture leads in Nova" },
-    { to: "/app/nova/crm", toolKey: "crm", label: "Open pipeline" },
+    { to: "/app/bylda/leads", toolKey: "leads", label: "Capture leads in Bylda" },
+    { to: "/app/bylda/crm", toolKey: "crm", label: "Open pipeline" },
   ],
-  "landing-page": [{ to: "/app/nova/leads", toolKey: "leads", label: "Wire to Lead Capture" }],
+  "landing-page": [{ to: "/app/bylda/leads", toolKey: "leads", label: "Wire to Lead Capture" }],
   "ops-plan": [
-    { to: "/app/nova/workflows", toolKey: "workflows", label: "Configure automations" },
-    { to: "/app/nova/clients", toolKey: "clients", label: "Open client onboarding" },
+    { to: "/app/bylda/workflows", toolKey: "workflows", label: "Configure automations" },
+    { to: "/app/bylda/clients", toolKey: "clients", label: "Open client onboarding" },
   ],
-  followup: [{ to: "/app/nova/workflows", toolKey: "workflows", label: "Run as automation" }],
+  followup: [{ to: "/app/bylda/workflows", toolKey: "workflows", label: "Run as automation" }],
   "website-audit": [
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Rebuild landing page" },
   ],
@@ -148,6 +148,6 @@ export const HANDOFFS: Record<string, { to: string; toolKey: string; label: stri
     { to: "/app/launchpad/email-sequence", toolKey: "email-sequence", label: "Build email funnel" },
     { to: "/app/launchpad/landing-page", toolKey: "landing-page", label: "Generate landing page" },
   ],
-  automation: [{ to: "/app/nova/workflows", toolKey: "workflows", label: "Configure in Nova" }],
-  "client-report": [{ to: "/app/nova/clients", toolKey: "clients", label: "View client list" }],
+  automation: [{ to: "/app/bylda/workflows", toolKey: "workflows", label: "Configure in Bylda" }],
+  "client-report": [{ to: "/app/bylda/clients", toolKey: "clients", label: "View client list" }],
 };

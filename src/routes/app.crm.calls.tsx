@@ -85,7 +85,7 @@ function CallsPage() {
         <div className="mb-6">
           <h1 className="text-[22px] font-bold tracking-[-0.025em] text-[--text-primary]">Calls</h1>
           <p className="mt-1 text-sm text-[--text-secondary]">
-            {rows.length} transcript{rows.length === 1 ? "" : "s"} · run Nova on any call for
+            {rows.length} transcript{rows.length === 1 ? "" : "s"} · run Bylda on any call for
             objections, competitors, and sentiment
           </p>
         </div>
@@ -104,7 +104,7 @@ function CallsPage() {
             </p>
             <p className="max-w-xs text-xs text-[--text-muted]">
               Connect a telephony or transcription integration and your recorded calls will appear
-              here, ready for Nova to analyze.
+              here, ready for Bylda to analyze.
             </p>
           </div>
         ) : (

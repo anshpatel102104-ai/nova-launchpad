@@ -6,7 +6,7 @@ import { Rocket, Cpu, Zap, ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/demo")({
   head: () => ({
     meta: [
-      { title: "How Nova OPS works" },
+      { title: "How Bylda works" },
       { name: "description", content: "From signup to activation in three steps." },
     ],
   }),
@@ -18,7 +18,7 @@ const STEPS = [
     n: 1,
     icon: Rocket,
     title: "Tell us about your business",
-    body: "2-minute onboarding — we tailor LaunchPad and Nova OS to your offer, ICP, and goals.",
+    body: "2-minute onboarding — we tailor LaunchPad and Bylda OS to your offer, ICP, and goals.",
   },
   {
     n: 2,
@@ -29,7 +29,7 @@ const STEPS = [
   {
     n: 3,
     icon: Cpu,
-    title: "Activate a Nova OS system",
+    title: "Activate a Bylda OS system",
     body: "Connect your inbox, calendar, and CRM. Your business runs itself in the background.",
   },
 ];
@@ -62,7 +62,7 @@ function DemoPage() {
           </div>
           <div className="space-y-4">
             {STEPS.map((s) => (
-              <div key={s.n} className="nova-card p-6 flex gap-5">
+              <div key={s.n} className="bylda-card p-6 flex gap-5">
                 <div className="h-10 w-10 rounded-md border border-border bg-surface-elevated grid place-items-center shrink-0">
                   <s.icon className="h-5 w-5 text-primary" />
                 </div>

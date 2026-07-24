@@ -30,7 +30,7 @@ a stale npm lockfile that breaks `npm ci`, and 226 design-token lint warnings.
 | `vitest run`                              | ✅ 57/57 tests pass (7 files)                           |
 | `eslint .`                                | ⚠️ 0 errors, **226 warnings** (see §4.4)                |
 | `vite build` (production)                 | ✅ builds in ~20s                                       |
-| Live app `app.launchpad.nova-ops.space`   | ✅ HTTP 200                                             |
+| Live app `app.usebylda.com`               | ✅ HTTP 200                                             |
 | Live edge fn `track-event` (public pixel) | ✅ HTTP 200                                             |
 | `npm ci`                                  | ❌ **fails** — package-lock.json out of sync (see §2.2) |
 
@@ -79,7 +79,7 @@ text `bun.lock`), and add a CI step that runs a frozen-lockfile install.
 
 ## 3. HIGH — routing bugs that defeat the ecosystem split
 
-PR #81 split the shell into two products (Launchpad = build, Nova = run) with
+PR #81 split the shell into two products (Launchpad = build, Bylda = run) with
 mode-aware landing via `/app` → `resolveLandingPath()` (`app.index.tsx` does
 this correctly). But three entry points still hardcode **pre-split targets**:
 
@@ -106,23 +106,23 @@ the product bypasses the entire new IA. One-line fixes each.
   `app.blog.$id.tsx` (796 lines), `app.approvals.tsx` (282 lines — the
   Automations nav _matcher_ highlights for it but nothing links to it).
 - **Legacy redirect stubs (intentional, fine):** `app.command-center`,
-  `app.nova-os`, `app.nova-os.$slug`, `app.nova-full`, `app.launch-control`
+  `app.bylda-os`, `app.bylda-os.$slug`, `app.bylda-full`, `app.launch-control`
   — but note `app.command-center` redirects to `/app/dashboard`, i.e. a
   legacy route redirecting to another legacy route.
 - **Legacy-but-still-linked:** `app.dashboard.tsx` (1,338 lines, 6 inbound
   links — see §3), `app.galaxy.tsx` (443 lines, 1 link).
-- **Near-duplicate CRM surfaces:** `app.nova.crm.tsx` (3,215 lines — the
+- **Near-duplicate CRM surfaces:** `app.bylda.crm.tsx` (3,215 lines — the
   largest file in the app), plus `app.leads.tsx`, `app.contacts.tsx`
   (1,657), `app.crm.companies.tsx`, `app.scale.pipeline.tsx` all render
   overlapping lead/contact/pipeline views.
 
 **Improvement:** delete the dead pages, retarget the legacy links per §3,
 then schedule the `app.dashboard` retirement. Consider splitting
-`app.nova.crm.tsx` — 3,215 lines in one route file is where regressions hide.
+`app.bylda.crm.tsx` — 3,215 lines in one route file is where regressions hide.
 
 ### 4.2 Monolithic route files
 
-Top offenders: `app.nova.crm.tsx` 3,215 · `app.launchpad.$tool.tsx` 2,397 ·
+Top offenders: `app.bylda.crm.tsx` 3,215 · `app.launchpad.$tool.tsx` 2,397 ·
 `app.builder.tsx` 1,818 · `app.contacts.tsx` 1,657 · `app.admin.tsx` 1,593.
 None have file-level tests; the 57 passing tests cover only 7 lib modules
 (booking, casefile, lead-scoring, automation-tree, guidance, catalog,
@@ -181,12 +181,12 @@ From AUDIT_FIXES_SUMMARY.md / SESSION_STATUS.md, verified still true today:
    in `src/lib/step-execution-guidance.ts`. A tool-key rename must be made
    in three files or the UI and backend drift (this exact class of bug —
    tool-key mismatch 404s — was the critical bug of the June audit).
-2. **Deeper Ask Nova goal-oriented redesign** (NOVA_OS_REDESIGN Part 6
+2. **Deeper Ask Bylda goal-oriented redesign** (BYLDA_OS_REDESIGN Part 6
    Screen 3) — still not built; `/app/mentor` remains the stand-in.
 3. **Outcome completion tracking** — `isOutcomeDone` derives from tool_runs
    only; no persisted outcome state.
 4. **PHASE10 "Wired" checklist** — the 8 interactive verifications (drag
-   deal across pipeline, inbox Nova Draft, public `/book/[slug]` submit,
+   deal across pipeline, inbox Bylda Draft, public `/book/[slug]` submit,
    builder activate/test, campaign Send Now, casefile from real run, mobile
    drawers) have still never been ticked. These need one logged-in QA pass.
 5. **Operator toggles** — live email/SMS still requires setting
@@ -201,7 +201,7 @@ From AUDIT_FIXES_SUMMARY.md / SESSION_STATUS.md, verified still true today:
 gates every sensitive function (JWT required), so this is not an open door,
 but it removes the browser-origin layer of defense and lets any website
 script your endpoints with a stolen token. The Cloudflare workers already do
-this right (locked to `https://app.launchpad.nova-ops.space`).
+this right (locked to `https://app.usebylda.com`).
 
 **Improvement:** move edge functions to the same origin-check helper the
 workers use.
@@ -222,7 +222,7 @@ still open).
   assembly → run persistence → memory indexing → verdict capture, with
   non-fatal paths clearly marked. The June audit's critical items
   (tool-key aliases, silent queue failures) are genuinely fixed —
-  `nova-automations-api` now marks logs `failed` and returns 500 on
+  `bylda-automations-api` now marks logs `failed` and returns 500 on
   queue errors.
 - All 7 Cloudflare workers validate JWTs against Supabase auth and lock
   CORS to the production origin.

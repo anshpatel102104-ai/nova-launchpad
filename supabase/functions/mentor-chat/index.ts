@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
     : [];
 
   const systemPrompt =
-    `${mentor.persona}\n\nYou are ${mentor.name}, ${mentor.title}, advising this founder inside Nova. ` +
+    `${mentor.persona}\n\nYou are ${mentor.name}, ${mentor.title}, advising this founder inside Bylda. ` +
     `Keep replies tight and operational — short paragraphs or bullets, high signal, no motivational fluff. ` +
     `End with one specific next action.${contextBlock(bc as Record<string, unknown> | null)}`;
 
@@ -275,7 +275,7 @@ Deno.serve(async (req: Request) => {
 
       // Cross-system Connection 3: Mentor → memory. Fold this mentor's advice into
       // the Business Context Graph so it surfaces in Recent Memory and is queryable
-      // by Nova and the tools. One rolling artifact per session (keyed by
+      // by Bylda and the tools. One rolling artifact per session (keyed by
       // session_key) keeps memory high-signal instead of one row per turn. Only
       // log substantive advice; skip trivial one-liners.
       if (fullText.trim().length > 80) {

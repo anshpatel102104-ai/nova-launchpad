@@ -555,7 +555,7 @@ function CompletenessScore({ entries }: { entries: MemoryEntry[] }) {
           </div>
           <div className="text-[12px] text-muted-foreground mt-0.5">
             {score >= 80
-              ? "Great! Nova has strong context about your business."
+              ? "Great! Bylda has strong context about your business."
               : "The more you add, the smarter every AI output gets."}
           </div>
         </div>
@@ -649,7 +649,7 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
             What business memory does
           </div>
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
-            Every entry you add here is remembered by Nova and used automatically in your Launchpad
+            Every entry you add here is remembered by Bylda and used automatically in your Launchpad
             tools, research, and strategy outputs. The more context you give, the more personalized
             every AI output becomes.
           </p>
@@ -785,7 +785,7 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
             Your business memory is empty
           </div>
           <div className="text-[13px] text-muted-foreground max-w-sm mx-auto mb-4">
-            Start by adding your company profile. This gives Nova the context it needs to
+            Start by adding your company profile. This gives Bylda the context it needs to
             personalize every output.
           </div>
           <button
@@ -805,7 +805,7 @@ export function BusinessMemory({ userId, orgId }: { userId: string; orgId: strin
             Did something important happen outside this platform?
           </div>
           <p className="text-[12px] text-muted-foreground">
-            Closed a deal, ran a campaign, got a customer insight? Log it here so Nova remembers it
+            Closed a deal, ran a campaign, got a customer insight? Log it here so Bylda remembers it
             and uses it in your strategy.
           </p>
           <div className="flex gap-2 mt-2">

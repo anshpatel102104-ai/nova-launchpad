@@ -4,7 +4,7 @@
 // carrying generated_from_casefile_id, steps are their `mission_steps`. This is
 // the nested module → step view useProgressSpine (deliberately the single
 // "current mission" read model) doesn't expose. Completion still flows through
-// advance-mission → nova_events; this hook has no write path.
+// advance-mission → bylda_events; this hook has no write path.
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

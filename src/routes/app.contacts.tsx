@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { guestStore, GUEST_CONTACTS } from "@/lib/guest";
 import { computeLeadScore } from "@/lib/lead-scoring";
 import { nudgeAutomationDispatch } from "@/lib/automation-run";
-import { MomentumRail } from "@/components/nova/MomentumRail";
+import { MomentumRail } from "@/components/bylda/MomentumRail";
 import { toast } from "sonner";
 import {
   Users,

@@ -12,7 +12,7 @@ export type ImpersonationState = {
   label: string | null;
 };
 
-const STORAGE_KEY = "nova-impersonation";
+const STORAGE_KEY = "bylda-impersonation";
 const EMPTY: ImpersonationState = { active: false, userId: null, orgId: null, label: null };
 
 function load(): ImpersonationState {

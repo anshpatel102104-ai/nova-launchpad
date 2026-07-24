@@ -1,43 +1,17 @@
 {
   "supabase_tables": {
-    "ai_operator_config": [
-      "op:getAll",
-      "op:rest"
-    ],
-    "plan_entitlements": [
-      "op:getAll",
-      "op:rest"
-    ],
-    "tool_runs": [
-      "op:getAll"
-    ],
-    "profiles": [
-      "op:rest"
-    ],
-    "operator_sessions": [
-      "op:rest"
-    ],
-    "onboarding_responses": [
-      "op:rest"
-    ],
-    "tool_outputs": [
-      "op:rest"
-    ],
-    "notifications": [
-      "op:rest"
-    ],
-    "operator_memory": [
-      "op:rest"
-    ],
-    "support_tickets": [
-      "op:rest"
-    ],
-    "health_checks": [
-      "op:rest"
-    ],
-    "operator_prompts": [
-      "op:rest"
-    ]
+    "ai_operator_config": ["op:getAll", "op:rest"],
+    "plan_entitlements": ["op:getAll", "op:rest"],
+    "tool_runs": ["op:getAll"],
+    "profiles": ["op:rest"],
+    "operator_sessions": ["op:rest"],
+    "onboarding_responses": ["op:rest"],
+    "tool_outputs": ["op:rest"],
+    "notifications": ["op:rest"],
+    "operator_memory": ["op:rest"],
+    "support_tickets": ["op:rest"],
+    "health_checks": ["op:rest"],
+    "operator_prompts": ["op:rest"]
   },
   "env_vars": [
     "GLOBAL_AI_MODEL_DEFAULT",
@@ -46,22 +20,14 @@
     "GLOBAL_ERROR_WEBHOOK_URL",
     "GLOBAL_SLACK_ALERT_CHANNEL",
     "N8N_WEBHOOK_BASE_URL",
-    "NOVA_OPS_ADMIN_TOKEN",
+    "BYLDA_OPS_ADMIN_TOKEN",
     "STRIPE_UPGRADE_URL"
   ],
   "credentials": {
-    "supabaseApi": [
-      "SUPABASE_PROD_SERVICE_ROLE"
-    ],
-    "httpHeaderAuth": [
-      "ANTHROPIC_PROD_API"
-    ],
-    "slackApi": [
-      "SLACK_PROD_INTERNAL_ALERTS"
-    ],
-    "gmailOAuth2": [
-      "GMAIL_PROD_TRANSACTIONAL"
-    ]
+    "supabaseApi": ["SUPABASE_PROD_SERVICE_ROLE"],
+    "httpHeaderAuth": ["ANTHROPIC_PROD_API"],
+    "slackApi": ["SLACK_PROD_INTERNAL_ALERTS"],
+    "gmailOAuth2": ["GMAIL_PROD_TRANSACTIONAL"]
   },
   "webhook_paths": {
     "ai-operator-router": "STG \u00b7 AI \u00b7 Webhook \u2192 AI Operator Main Router \u00b7 DHR",
@@ -156,21 +122,11 @@
     "01-stg-ai-webhook-to-ai-operator-main-router-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 AI Operator Main Router \u00b7 DHR",
       "supabase_tables": {
-        "ai_operator_config": [
-          "op:getAll"
-        ],
-        "plan_entitlements": [
-          "op:getAll"
-        ],
-        "tool_runs": [
-          "op:getAll"
-        ]
+        "ai_operator_config": ["op:getAll"],
+        "plan_entitlements": ["op:getAll"],
+        "tool_runs": ["op:getAll"]
       },
-      "env_vars": [
-        "GLOBAL_AI_MODEL_DEFAULT",
-        "GLOBAL_APP_URL_STG",
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_AI_MODEL_DEFAULT", "GLOBAL_APP_URL_STG", "GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -197,13 +153,13 @@
         {
           "path": "ai-operator-router",
           "method": "POST",
-          "webhookId": "novaops-ai-operator-router-stg"
+          "webhookId": "bylda-ai-operator-router-stg"
         }
       ],
       "schedule": [],
       "http_urls": [
         "={{ $json.subagent_url }}",
-        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://api.anthropic.com/v1/messages"
       ],
@@ -222,22 +178,12 @@
     "02-stg-ai-webhook-to-ai-operator-context-loader-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 AI Operator Context Loader \u00b7 DHR",
       "supabase_tables": {
-        "profiles": [
-          "op:rest"
-        ],
-        "ai_operator_config": [
-          "op:rest"
-        ],
-        "operator_sessions": [
-          "op:rest"
-        ],
-        "onboarding_responses": [
-          "op:rest"
-        ]
+        "profiles": ["op:rest"],
+        "ai_operator_config": ["op:rest"],
+        "operator_sessions": ["op:rest"],
+        "onboarding_responses": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -264,7 +210,7 @@
         {
           "path": "ai-operator-context-loader",
           "method": "POST",
-          "webhookId": "novaops-context-loader-stg"
+          "webhookId": "bylda-context-loader-stg"
         }
       ],
       "schedule": [],
@@ -286,15 +232,9 @@
     "03-stg-ai-webhook-to-ai-operator-tool-dispatcher-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 AI Operator Tool Dispatcher \u00b7 DHR",
       "supabase_tables": {
-        "plan_entitlements": [
-          "op:rest"
-        ]
+        "plan_entitlements": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_APP_URL_STG",
-        "GLOBAL_ERROR_WEBHOOK_URL",
-        "STRIPE_UPGRADE_URL"
-      ],
+      "env_vars": ["GLOBAL_APP_URL_STG", "GLOBAL_ERROR_WEBHOOK_URL", "STRIPE_UPGRADE_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -306,13 +246,13 @@
         {
           "path": "ai-operator-tool-dispatcher",
           "method": "POST",
-          "webhookId": "novaops-tool-dispatcher-stg"
+          "webhookId": "bylda-tool-dispatcher-stg"
         }
       ],
       "schedule": [],
       "http_urls": [
         "={{ $json.tool_url }}",
-        "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",
         "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/plan_entitlements"
       ],
@@ -328,16 +268,10 @@
     "04-stg-ai-webhook-to-ai-operator-response-formatter-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 AI Operator Response Formatter \u00b7 DHR",
       "supabase_tables": {
-        "tool_outputs": [
-          "op:rest"
-        ],
-        "notifications": [
-          "op:rest"
-        ]
+        "tool_outputs": ["op:rest"],
+        "notifications": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -354,7 +288,7 @@
         {
           "path": "ai-operator-response-formatter",
           "method": "POST",
-          "webhookId": "novaops-response-formatter-stg"
+          "webhookId": "bylda-response-formatter-stg"
         }
       ],
       "schedule": [],
@@ -375,13 +309,9 @@
     "05-stg-ai-webhook-to-operator-memory-write-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 Operator Memory Write \u00b7 DHR",
       "supabase_tables": {
-        "operator_memory": [
-          "op:rest"
-        ]
+        "operator_memory": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -403,7 +333,7 @@
         {
           "path": "operator-memory-write",
           "method": "POST",
-          "webhookId": "novaops-memory-write-stg"
+          "webhookId": "bylda-memory-write-stg"
         }
       ],
       "schedule": [],
@@ -424,13 +354,9 @@
     "06-stg-ai-webhook-to-operator-memory-read-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 Operator Memory Read \u00b7 DHR",
       "supabase_tables": {
-        "operator_memory": [
-          "op:rest"
-        ]
+        "operator_memory": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -442,7 +368,7 @@
         {
           "path": "operator-memory-read",
           "method": "POST",
-          "webhookId": "novaops-memory-read-stg"
+          "webhookId": "bylda-memory-read-stg"
         }
       ],
       "schedule": [],
@@ -461,14 +387,9 @@
     "07-stg-ai-webhook-to-operator-confidence-fallback-handler-dhr.json": {
       "name": "STG \u00b7 AI \u00b7 Webhook \u2192 Operator Confidence Fallback Handler \u00b7 DHR",
       "supabase_tables": {
-        "operator_sessions": [
-          "op:rest"
-        ]
+        "operator_sessions": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_AI_MODEL_DEFAULT",
-        "GLOBAL_ERROR_WEBHOOK_URL"
-      ],
+      "env_vars": ["GLOBAL_AI_MODEL_DEFAULT", "GLOBAL_ERROR_WEBHOOK_URL"],
       "credentials": [
         {
           "type": "httpHeaderAuth",
@@ -485,7 +406,7 @@
         {
           "path": "operator-confidence-fallback",
           "method": "POST",
-          "webhookId": "novaops-confidence-fallback-stg"
+          "webhookId": "bylda-confidence-fallback-stg"
         }
       ],
       "schedule": [],
@@ -505,18 +426,10 @@
     "08-stg-ops-webhook-to-operator-escalation-to-human-admin-ans.json": {
       "name": "STG \u00b7 OPS \u00b7 Webhook \u2192 Operator Escalation to Human Admin \u00b7 ANS",
       "supabase_tables": {
-        "support_tickets": [
-          "op:rest"
-        ],
-        "profiles": [
-          "op:rest"
-        ]
+        "support_tickets": ["op:rest"],
+        "profiles": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_APP_URL_PROD",
-        "GLOBAL_ERROR_WEBHOOK_URL",
-        "GLOBAL_SLACK_ALERT_CHANNEL"
-      ],
+      "env_vars": ["GLOBAL_APP_URL_PROD", "GLOBAL_ERROR_WEBHOOK_URL", "GLOBAL_SLACK_ALERT_CHANNEL"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -543,7 +456,7 @@
         {
           "path": "operator-escalation",
           "method": "POST",
-          "webhookId": "novaops-operator-escalation-stg"
+          "webhookId": "bylda-operator-escalation-stg"
         }
       ],
       "schedule": [],
@@ -566,9 +479,7 @@
     "09-stg-infra-schedule-to-operator-health-check-self-test-ping-ans.json": {
       "name": "STG \u00b7 INFRA \u00b7 Schedule \u2192 Operator Health Check Self Test Ping \u00b7 ANS",
       "supabase_tables": {
-        "health_checks": [
-          "op:rest"
-        ]
+        "health_checks": ["op:rest"]
       },
       "env_vars": [
         "GLOBAL_APP_URL_STG",
@@ -620,14 +531,9 @@
     "10-stg-infra-webhook-to-operator-version-update-prompt-swap-ans.json": {
       "name": "STG \u00b7 INFRA \u00b7 Webhook \u2192 Operator Version Update Prompt Swap \u00b7 ANS",
       "supabase_tables": {
-        "operator_prompts": [
-          "op:rest"
-        ]
+        "operator_prompts": ["op:rest"]
       },
-      "env_vars": [
-        "GLOBAL_ERROR_WEBHOOK_URL",
-        "NOVA_OPS_ADMIN_TOKEN"
-      ],
+      "env_vars": ["GLOBAL_ERROR_WEBHOOK_URL", "BYLDA_OPS_ADMIN_TOKEN"],
       "credentials": [
         {
           "type": "supabaseApi",
@@ -639,7 +545,7 @@
         {
           "path": "operator-prompt-swap",
           "method": "POST",
-          "webhookId": "novaops-prompt-swap-stg"
+          "webhookId": "bylda-prompt-swap-stg"
         }
       ],
       "schedule": [],

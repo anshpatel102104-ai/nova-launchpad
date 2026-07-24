@@ -12,7 +12,7 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "nova-theme";
+const STORAGE_KEY = "bylda-theme";
 
 function systemPref(): ResolvedTheme {
   if (typeof window === "undefined" || !window.matchMedia) return "light";
@@ -29,13 +29,13 @@ function applyTheme(t: ResolvedTheme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Mission Control is a dark-first product — dark is the default surface.
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  // Bylda is a sky-first product — bright daytime sky is the default surface.
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   // Initial sync from localStorage (client only)
   useEffect(() => {
-    let initial: Theme = "dark";
+    let initial: Theme = "light";
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === "light" || stored === "dark" || stored === "system") initial = stored;

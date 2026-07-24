@@ -12,24 +12,18 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-plan-downgrade"
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body;\nconst event = body;\nconst subscription = event?.data?.object || {};\nconst previousAttributes = event?.data?.previous_attributes || {};\n\nconst customerId = subscription.customer || '';\nconst subscriptionId = subscription.id || '';\nconst newPriceId = subscription.items?.data?.[0]?.price?.id || '';\nconst oldPriceId = previousAttributes.items?.data?.[0]?.price?.id || '';\n\nconst tierRank = { free: 0, starter: 1, pro: 2, scale: 3 };\n\nconst priceToTier = (priceId) => {\n  if (!priceId) return 'free';\n  if (priceId.includes('scale')) return 'scale';\n  if (priceId.includes('pro')) return 'pro';\n  if (priceId.includes('starter')) return 'starter';\n  const map = {\n    'price_free': 'free',\n    'price_starter': 'starter',\n    'price_pro': 'pro',\n    'price_scale': 'scale'\n  };\n  return map[priceId] || 'free';\n};\n\nconst oldTier = priceToTier(oldPriceId);\nconst newTier = priceToTier(newPriceId);\nconst isDowngrade = tierRank[newTier] < tierRank[oldTier];\n\nconst featureFlags = {\n  free: { launchpad_access: true, nova_os_access: false, ai_tools_limit: 3, automation_systems: 0, priority_support: false, white_label: false },\n  starter: { launchpad_access: true, nova_os_access: false, ai_tools_limit: 10, automation_systems: 2, priority_support: false, white_label: false },\n  pro: { launchpad_access: true, nova_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: false },\n  scale: { launchpad_access: true, nova_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: true }\n};\n\nconst oldFlags = featureFlags[oldTier] || featureFlags['free'];\nconst newFlags = featureFlags[newTier] || featureFlags['free'];\n\n// Features being REVOKED\nconst revokedFeatures = [];\nif (oldFlags.nova_os_access && !newFlags.nova_os_access) revokedFeatures.push('Nova OS Access');\nif (oldFlags.priority_support && !newFlags.priority_support) revokedFeatures.push('Priority Support');\nif (oldFlags.white_label && !newFlags.white_label) revokedFeatures.push('White Label');\nif (oldFlags.automation_systems > newFlags.automation_systems) revokedFeatures.push(`Reduced to ${newFlags.automation_systems} Automation Systems`);\nif (oldFlags.ai_tools_limit > newFlags.ai_tools_limit) revokedFeatures.push(`Reduced to ${newFlags.ai_tools_limit} AI Tools`);\n\nconst planDisplayNames = { free: 'Free', starter: 'Starter ($49/mo)', pro: 'Pro ($149/mo)', scale: 'Scale ($299/mo)' };\n\nreturn [{ json: {\n  customerId,\n  subscriptionId,\n  oldPriceId,\n  newPriceId,\n  oldTier,\n  newTier,\n  isDowngrade,\n  newFlags,\n  revokedFeatures,\n  oldPlanDisplayName: planDisplayNames[oldTier] || oldTier,\n  newPlanDisplayName: planDisplayNames[newTier] || newTier,\n  updatedAt: new Date().toISOString(),\n  rawPayload: JSON.stringify(body)\n} }];"
+        "jsCode": "const body = $input.first().json.body;\nconst event = body;\nconst subscription = event?.data?.object || {};\nconst previousAttributes = event?.data?.previous_attributes || {};\n\nconst customerId = subscription.customer || '';\nconst subscriptionId = subscription.id || '';\nconst newPriceId = subscription.items?.data?.[0]?.price?.id || '';\nconst oldPriceId = previousAttributes.items?.data?.[0]?.price?.id || '';\n\nconst tierRank = { free: 0, starter: 1, pro: 2, scale: 3 };\n\nconst priceToTier = (priceId) => {\n  if (!priceId) return 'free';\n  if (priceId.includes('scale')) return 'scale';\n  if (priceId.includes('pro')) return 'pro';\n  if (priceId.includes('starter')) return 'starter';\n  const map = {\n    'price_free': 'free',\n    'price_starter': 'starter',\n    'price_pro': 'pro',\n    'price_scale': 'scale'\n  };\n  return map[priceId] || 'free';\n};\n\nconst oldTier = priceToTier(oldPriceId);\nconst newTier = priceToTier(newPriceId);\nconst isDowngrade = tierRank[newTier] < tierRank[oldTier];\n\nconst featureFlags = {\n  free: { launchpad_access: true, bylda_os_access: false, ai_tools_limit: 3, automation_systems: 0, priority_support: false, white_label: false },\n  starter: { launchpad_access: true, bylda_os_access: false, ai_tools_limit: 10, automation_systems: 2, priority_support: false, white_label: false },\n  pro: { launchpad_access: true, bylda_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: false },\n  scale: { launchpad_access: true, bylda_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: true }\n};\n\nconst oldFlags = featureFlags[oldTier] || featureFlags['free'];\nconst newFlags = featureFlags[newTier] || featureFlags['free'];\n\n// Features being REVOKED\nconst revokedFeatures = [];\nif (oldFlags.bylda_os_access && !newFlags.bylda_os_access) revokedFeatures.push('Bylda OS Access');\nif (oldFlags.priority_support && !newFlags.priority_support) revokedFeatures.push('Priority Support');\nif (oldFlags.white_label && !newFlags.white_label) revokedFeatures.push('White Label');\nif (oldFlags.automation_systems > newFlags.automation_systems) revokedFeatures.push(`Reduced to ${newFlags.automation_systems} Automation Systems`);\nif (oldFlags.ai_tools_limit > newFlags.ai_tools_limit) revokedFeatures.push(`Reduced to ${newFlags.ai_tools_limit} AI Tools`);\n\nconst planDisplayNames = { free: 'Free', starter: 'Starter ($49/mo)', pro: 'Pro ($149/mo)', scale: 'Scale ($299/mo)' };\n\nreturn [{ json: {\n  customerId,\n  subscriptionId,\n  oldPriceId,\n  newPriceId,\n  oldTier,\n  newTier,\n  isDowngrade,\n  newFlags,\n  revokedFeatures,\n  oldPlanDisplayName: planDisplayNames[oldTier] || oldTier,\n  newPlanDisplayName: planDisplayNames[newTier] || newTier,\n  updatedAt: new Date().toISOString(),\n  rawPayload: JSON.stringify(body)\n} }];"
       },
       "id": "c3d4e5f6-0002-0002-0002-000000000002",
       "name": "Parse Downgrade Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Is Downgrade?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
+      "position": [680, 300]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return 200 Not Downgrade",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        900,
-        480
-      ]
+      "position": [900, 480]
     },
     {
       "parameters": {
@@ -106,10 +94,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        900,
-        300
-      ],
+      "position": [900, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -125,10 +110,7 @@
       "name": "Merge User Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
+      "position": [1120, 300]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "Update User Plan Tier",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -213,7 +192,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"plan_tier\": \"{{ $('Merge User Data').first().json.newTier }}\",\n  \"launchpad_access\": {{ $('Merge User Data').first().json.newFlags.launchpad_access }},\n  \"nova_os_access\": {{ $('Merge User Data').first().json.newFlags.nova_os_access }},\n  \"ai_tools_limit\": {{ $('Merge User Data').first().json.newFlags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Merge User Data').first().json.newFlags.automation_systems }},\n  \"priority_support\": {{ $('Merge User Data').first().json.newFlags.priority_support }},\n  \"white_label\": {{ $('Merge User Data').first().json.newFlags.white_label }},\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
+        "jsonBody": "={\n  \"plan_tier\": \"{{ $('Merge User Data').first().json.newTier }}\",\n  \"launchpad_access\": {{ $('Merge User Data').first().json.newFlags.launchpad_access }},\n  \"bylda_os_access\": {{ $('Merge User Data').first().json.newFlags.bylda_os_access }},\n  \"ai_tools_limit\": {{ $('Merge User Data').first().json.newFlags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Merge User Data').first().json.newFlags.automation_systems }},\n  \"priority_support\": {{ $('Merge User Data').first().json.newFlags.priority_support }},\n  \"white_label\": {{ $('Merge User Data').first().json.newFlags.white_label }},\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
         "options": {
           "response": {
             "response": {
@@ -229,10 +208,7 @@
       "name": "Revoke Feature Flags",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ],
+      "position": [1560, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -259,7 +235,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your plan has changed to {{ $('Merge User Data').first().json.newPlanDisplayName }}\",\n  \"html\": \"<h1>Hi {{ $('Merge User Data').first().json.firstName }},</h1><p>Your Nova OPS plan has been updated from <strong>{{ $('Merge User Data').first().json.oldPlanDisplayName }}</strong> to <strong>{{ $('Merge User Data').first().json.newPlanDisplayName }}</strong>.</p><p>The following features are no longer available on your current plan:</p><ul>{{ $('Merge User Data').first().json.revokedFeatures.map(f => '<li>' + f + '</li>').join('') }}</ul><p>Want to get them back? <a href='https://nova-ops.space/upgrade'>Upgrade your plan anytime.</a></p><p>\u2014 The Nova OPS Team</p>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your plan has changed to {{ $('Merge User Data').first().json.newPlanDisplayName }}\",\n  \"html\": \"<h1>Hi {{ $('Merge User Data').first().json.firstName }},</h1><p>Your Bylda plan has been updated from <strong>{{ $('Merge User Data').first().json.oldPlanDisplayName }}</strong> to <strong>{{ $('Merge User Data').first().json.newPlanDisplayName }}</strong>.</p><p>The following features are no longer available on your current plan:</p><ul>{{ $('Merge User Data').first().json.revokedFeatures.map(f => '<li>' + f + '</li>').join('') }}</ul><p>Want to get them back? <a href='https://usebylda.com/upgrade'>Upgrade your plan anytime.</a></p><p>\u2014 The Bylda Team</p>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -272,10 +248,7 @@
       "name": "Send Downgrade Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        300
-      ]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -305,10 +278,7 @@
       "name": "Log Plan Change",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2000,
-        300
-      ],
+      "position": [2000, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -336,10 +306,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        2220,
-        300
-      ]
+      "position": [2220, 300]
     }
   ],
   "connections": {
@@ -458,13 +425,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "downgrade",
-    "billing"
-  ],
+  "tags": ["bylda-ops", "stripe", "downgrade", "billing"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-downgrade-v1"
+  "versionId": "bylda-ops-downgrade-v1"
 }

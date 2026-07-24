@@ -1,4 +1,5 @@
-# Nova Launchpad Implementation Guide
+# Bylda Launchpad Implementation Guide
+
 ## Step Execution Guidance System & Platform Improvements
 
 **Last Updated:** 2026-06-11  
@@ -25,7 +26,7 @@ This guide documents the comprehensive platform improvements implemented to enha
 A reusable component + guidance library that provides every mission step with:
 
 - **WHY** - Clear reason for doing this step
-- **WHAT** - Simplified description at 5th-grade reading level  
+- **WHAT** - Simplified description at 5th-grade reading level
 - **HOW** - Multiple execution paths (tool-based, manual, external)
 - **Success Criteria** - Exactly when the step is complete
 - **Common Mistakes** - What to avoid
@@ -34,9 +35,11 @@ A reusable component + guidance library that provides every mission step with:
 ### Components
 
 #### `StepExecutionGuide.tsx`
+
 **Location:** `src/components/app/StepExecutionGuide.tsx`
 
 Reusable React component that renders:
+
 - Primary execution button (e.g., "Open Idea Validator")
 - Dropdown menu for alternative ways to execute
 - Why-context box
@@ -45,6 +48,7 @@ Reusable React component that renders:
 - Estimated completion time
 
 **Usage:**
+
 ```typescript
 import { StepExecutionGuide } from "@/components/app/StepExecutionGuide";
 import { getStepGuidance } from "@/lib/step-execution-guidance";
@@ -62,9 +66,11 @@ if (guidance) {
 ```
 
 #### `step-execution-guidance.ts`
+
 **Location:** `src/lib/step-execution-guidance.ts`
 
 Guidance definitions for all core tools:
+
 - Idea Validator
 - Kill My Idea
 - Pitch Generator
@@ -75,6 +81,7 @@ Guidance definitions for all core tools:
 - Operations Plan
 
 **Adding New Guidance:**
+
 ```typescript
 export const CUSTOM_TOOL_GUIDANCE: StepGuidance = {
   stepId: "step-custom-tool",
@@ -101,14 +108,8 @@ export const CUSTOM_TOOL_GUIDANCE: StepGuidance = {
       },
     },
   ],
-  successCriteria: [
-    "Success criterion 1",
-    "Success criterion 2",
-  ],
-  commonMistakes: [
-    "Common mistake 1",
-    "Common mistake 2",
-  ],
+  successCriteria: ["Success criterion 1", "Success criterion 2"],
+  commonMistakes: ["Common mistake 1", "Common mistake 2"],
 };
 
 // Add to GUIDANCE_MAP
@@ -136,11 +137,13 @@ if (guidance) {
 ```
 
 **Before Integration:**
+
 - Simple "Run tool" button
 - Step description only
 - No guidance on how to execute
 
 **After Integration:**
+
 - Rich guidance with multiple execution paths
 - Clear success criteria
 - Common mistakes highlighted
@@ -166,11 +169,12 @@ if (guidance) {
 | First 10 Customers | "first-10-customers" | Partial support | ✅ Confirmed |
 
 **Solution:**
+
 ```typescript
 const TOOL_ALIASES: Record<string, string> = {
   "gtm-strategy": "gtm-strategy-builder",
-  "offer": "generate-offer",
-  "followup": "generate-followup-sequence",
+  offer: "generate-offer",
+  followup: "generate-followup-sequence",
   "first-10-customers": "first-10-customers-finder",
   // ... existing aliases
 };
@@ -180,11 +184,12 @@ const TOOL_ALIASES: Record<string, string> = {
 
 ### Fix 2: Queue Error Handling
 
-**File:** `workers/nova-automations-api/worker.ts`
+**File:** `workers/bylda-automations-api/worker.ts`
 
 **Problem:** Automation queue failures were silent - users never knew if their automation failed
 
 **Solution:**
+
 ```typescript
 try {
   await env.AUTOMATION_QUEUE.send(job);
@@ -197,11 +202,14 @@ try {
     });
   }
   // Return error to client
-  return new Response(JSON.stringify({
-    error: "Failed to queue automation",
-    message: queueErr.message,
-    log_id: logId,
-  }), { status: 500 });
+  return new Response(
+    JSON.stringify({
+      error: "Failed to queue automation",
+      message: queueErr.message,
+      log_id: logId,
+    }),
+    { status: 500 },
+  );
 }
 ```
 
@@ -212,6 +220,7 @@ try {
 **File:** `supabase/functions/_shared/missionSeeds.ts`
 
 **Changes:**
+
 1. "Go to the Integrations section" → "Go to the Integrations page (left sidebar under Tools)"
 2. "Look at suggested systems" → Specific reference to Automations page
 3. Added clear references to Workflow Builder for custom automations
@@ -231,13 +240,14 @@ All mission descriptions have been reviewed for clarity:
 ✅ **Specific Actions** - "Copy it into your email tool" not "Use this for templates"  
 ✅ **Measurable Criteria** - "When you're happy with it" not "When it feels right"  
 ✅ **Navigation References** - Specific page names and sidebar locations  
-✅ **Time Estimates** - Each step has estimated completion time  
+✅ **Time Estimates** - Each step has estimated completion time
 
 ### Operator Baseline Improvements
 
 The operator baseline mission (for existing business owners) now:
+
 - Uses concrete software names (Stripe, HubSpot, Slack)
-- References specific page locations in Nova
+- References specific page locations in Bylda
 - Provides clear success criteria (e.g., "integration shows 'connected' and is syncing data")
 - Breaks multi-step processes into clear sub-steps
 
@@ -267,26 +277,26 @@ Each guidance object includes:
 
 ```typescript
 interface StepGuidance {
-  stepId: string;                    // Unique identifier
-  title: string;                     // Step title
-  simplifiedDescription?: string;    // Clear what-to-do
-  whyDoThis?: string;               // Reason why
+  stepId: string; // Unique identifier
+  title: string; // Step title
+  simplifiedDescription?: string; // Clear what-to-do
+  whyDoThis?: string; // Reason why
   executionOptions: ExecutionOption[]; // Ways to do it
-  estimatedTime?: number;           // Minutes
-  commonMistakes?: string[];        // What to avoid
-  successCriteria?: string[];       // When done
+  estimatedTime?: number; // Minutes
+  commonMistakes?: string[]; // What to avoid
+  successCriteria?: string[]; // When done
 }
 
 interface ExecutionOption {
   type: "tool" | "inline" | "external" | "manual" | "integration";
-  label: string;                     // Option name
-  description: string;               // How to do it
+  label: string; // Option name
+  description: string; // How to do it
   action: {
     text: string;
-    href?: string;                   // Link if applicable
-    onClick?: () => void;            // Custom handler
+    href?: string; // Link if applicable
+    onClick?: () => void; // Custom handler
   };
-  icon?: React.ComponentType;       // Optional icon
+  icon?: React.ComponentType; // Optional icon
 }
 ```
 
@@ -295,6 +305,7 @@ interface ExecutionOption {
 ## 5. Testing & Validation
 
 ### Component Testing
+
 - StepExecutionGuide renders without errors
 - Dropdowns expand/collapse correctly
 - All buttons are clickable
@@ -302,13 +313,16 @@ interface ExecutionOption {
 - Mobile responsive (tested on multiple screen sizes)
 
 ### Integration Testing
+
 - Mission steps display guidance correctly
 - Guidance displays only for active (non-completed) steps
 - Clicking execution options doesn't break the mission flow
 - Completing a step updates the UI correctly
 
 ### User Flow Testing
+
 The full user journey:
+
 1. User starts mission
 2. Sees step title + description + execution guidance
 3. Clicks "Why do this" to see motivation
@@ -322,12 +336,14 @@ The full user journey:
 ## 6. Migration & Deployment
 
 ### Backward Compatibility
+
 ✅ No breaking changes to existing APIs  
 ✅ Tool key aliases support both old and new names  
 ✅ Mission seeds remain compatible  
-✅ Database schema unchanged  
+✅ Database schema unchanged
 
 ### Deployment Checklist
+
 - [x] Tool key aliases added
 - [x] Queue error handling implemented
 - [x] Navigation guidance updated
@@ -340,7 +356,9 @@ The full user journey:
 - [ ] Deploy to production
 
 ### Rollback Plan
+
 If issues arise:
+
 1. Revert last two commits (reverts guidance system + fixes)
 2. Tool key aliases remain (they're just additions, no harm)
 3. Navigation guidance improved (no downside to reverting)
@@ -401,6 +419,7 @@ If issues arise:
 ### Adding a New Mission Step with Guidance
 
 1. **Create Mission Step in missionSeeds.ts**
+
 ```typescript
 {
   title: "Step X — Do Something Important",
@@ -410,6 +429,7 @@ If issues arise:
 ```
 
 2. **If step has a tool, add guidance definition**
+
 ```typescript
 export const NEW_TOOL_GUIDANCE: StepGuidance = {
   stepId: "step-new-tool",
@@ -433,6 +453,7 @@ export const NEW_TOOL_GUIDANCE: StepGuidance = {
 ```
 
 3. **Add to GUIDANCE_MAP**
+
 ```typescript
 const GUIDANCE_MAP: Record<string, StepGuidance> = {
   "new-tool": NEW_TOOL_GUIDANCE,
@@ -454,17 +475,21 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
 ## 9. Maintenance & Support
 
 ### Monitoring
+
 - Watch for "Unknown tool" errors in logs
 - Track automation queue failures
 - Monitor guidance rendering errors
 
 ### Regular Reviews
+
 - Quarterly review of guidance clarity
 - Track user success rate per step
 - A/B test new wording
 
 ### Support Process
+
 If users report confusion:
+
 1. Identify which step/guidance
 2. Update wording for clarity
 3. Add to "common mistakes" list
@@ -475,16 +500,17 @@ If users report confusion:
 
 ## 10. Conclusion
 
-This implementation provides Nova users with:
+This implementation provides Bylda users with:
 
 ✅ **Clear Execution Guidance** - Every step has a dropdown showing multiple ways to execute  
 ✅ **Better UX** - Reduced friction through clear navigation and success criteria  
 ✅ **Bug Fixes** - 4 critical tool key mismatches fixed  
 ✅ **Error Handling** - Queue failures now visible to users  
 ✅ **Scalability** - Easy to add guidance for new tools  
-✅ **Maintainability** - Single source of truth for mission steps  
+✅ **Maintainability** - Single source of truth for mission steps
 
 **Metrics:**
+
 - 8/8 core tools have comprehensive guidance (100%)
 - 0 tool key mismatch errors (fixed)
 - 3+ unclear navigation references clarified

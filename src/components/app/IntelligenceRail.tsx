@@ -14,18 +14,18 @@ type Message = {
   actionId?: string;
 };
 
-type NovaActionStatus = "pending" | "working" | "executed" | "failed" | "skipped";
+type ByldaActionStatus = "pending" | "working" | "executed" | "failed" | "skipped";
 
-type NovaProposedAction = {
+type ByldaProposedAction = {
   id: string;
   action_type: string;
   payload: Record<string, unknown>;
   plain_english: string;
-  status: NovaActionStatus;
+  status: ByldaActionStatus;
   error?: string;
 };
 
-// Page-context greetings Nova sends on first open
+// Page-context greetings Bylda sends on first open
 const PAGE_GREETINGS: Record<string, string> = {
   "/app/mission-control":
     "Hey — looking at your command center. What stage are you focused on today, and what's the highest-leverage thing I can help you move forward?",
@@ -163,7 +163,7 @@ function renderContent(text: string, onNavigate: (path: string) => void): React.
 }
 
 function renderActionCard(
-  action: NovaProposedAction,
+  action: ByldaProposedAction,
   onDecision: (actionId: string, decision: "approve" | "skip") => void,
 ): React.ReactNode {
   const isPending = action.status === "pending";
@@ -255,7 +255,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [actions, setActions] = useState<Record<string, NovaProposedAction>>({});
+  const [actions, setActions] = useState<Record<string, ByldaProposedAction>>({});
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
@@ -273,7 +273,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
     buildAgentContext(user.id).then((ctx) => setContext(ctx as unknown as Record<string, unknown>));
   }, [user?.id]);
 
-  // Send Nova's opening greeting when rail first opens
+  // Send Bylda's opening greeting when rail first opens
   useEffect(() => {
     if (!open || greeted) return;
     setGreeted(true);
@@ -346,7 +346,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
       abortRef.current = abort;
 
       const resp = await invokeEdgeStream(
-        "nova-chat",
+        "bylda-chat",
         {
           message: trimmed,
           conversation_history: history
@@ -434,11 +434,11 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
       [actionId]: { ...prev[actionId], status: decision === "skip" ? "skipped" : "working" },
     }));
     if (decision === "skip") {
-      await invokeEdge("nova-action", { action_id: actionId, decision: "skip" }).catch(() => {});
+      await invokeEdge("bylda-action", { action_id: actionId, decision: "skip" }).catch(() => {});
       return;
     }
     try {
-      await invokeEdge("nova-action", { action_id: actionId, decision: "approve" });
+      await invokeEdge("bylda-action", { action_id: actionId, decision: "approve" });
       setActions((prev) => ({ ...prev, [actionId]: { ...prev[actionId], status: "executed" } }));
     } catch (err) {
       setActions((prev) => ({
@@ -535,7 +535,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                 <Zap className="h-3.5 w-3.5 text-white" />
               </div>
               <span className="text-[13.5px] font-semibold" style={{ color: "var(--foreground)" }}>
-                Nova AI
+                Bylda AI
               </span>
               {streaming && (
                 <span
@@ -721,7 +721,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Nova anything about your business…"
+                placeholder="Ask Bylda anything about your business…"
                 rows={1}
                 disabled={streaming}
                 className="flex-1 bg-transparent text-[13px] outline-none resize-none"
@@ -759,7 +759,7 @@ export function IntelligenceRail({ open, onClose }: IntelligenceRailProps) {
               className="mt-1.5 text-center text-[10px]"
               style={{ color: "var(--muted-foreground)" }}
             >
-              Nova AI · verify critical decisions
+              Bylda AI · verify critical decisions
             </p>
           </div>
         </div>

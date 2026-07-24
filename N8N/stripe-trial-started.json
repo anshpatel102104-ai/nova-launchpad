@@ -12,10 +12,7 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-trial-started"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse Trial Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Should Skip?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
+      "position": [680, 300]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return 200 Skipped",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        900,
-        480
-      ]
+      "position": [900, 480]
     },
     {
       "parameters": {
@@ -106,10 +94,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        900,
-        300
-      ],
+      "position": [900, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -125,10 +110,7 @@
       "name": "Merge User Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
+      "position": [1120, 300]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "Update User Trial Status",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -204,7 +183,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your Nova OPS trial has started \ud83d\ude80\",\n  \"html\": \"<h1>Welcome to Nova OPS, {{ $('Merge User Data').first().json.firstName }}!</h1><p>Your free trial is now active and runs until <strong>{{ $('Merge User Data').first().json.trialEndDisplay }}</strong>.</p><h2>Here's what to explore during your trial:</h2><ul><li><strong>Launchpad</strong> \u2014 10 AI founder tools to build, validate and launch faster</li><li><strong>Nova OS</strong> \u2014 6 business automation systems that run your ops on autopilot</li><li><strong>Lead Gen Automation</strong> \u2014 Set up your first automated pipeline</li><li><strong>Client Onboarding System</strong> \u2014 Deliver a world-class client experience from day one</li></ul><p><a href='https://nova-ops.space/dashboard'>\ud83d\udc49 Log in and start exploring</a></p><p>Reply to this email anytime if you have questions \u2014 we respond fast.</p><p>\u2014 The Nova OPS Team</p>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your Bylda trial has started \ud83d\ude80\",\n  \"html\": \"<h1>Welcome to Bylda, {{ $('Merge User Data').first().json.firstName }}!</h1><p>Your free trial is now active and runs until <strong>{{ $('Merge User Data').first().json.trialEndDisplay }}</strong>.</p><h2>Here's what to explore during your trial:</h2><ul><li><strong>Launchpad</strong> \u2014 10 AI founder tools to build, validate and launch faster</li><li><strong>Bylda OS</strong> \u2014 6 business automation systems that run your ops on autopilot</li><li><strong>Lead Gen Automation</strong> \u2014 Set up your first automated pipeline</li><li><strong>Client Onboarding System</strong> \u2014 Deliver a world-class client experience from day one</li></ul><p><a href='https://usebylda.com/dashboard'>\ud83d\udc49 Log in and start exploring</a></p><p>Reply to this email anytime if you have questions \u2014 we respond fast.</p><p>\u2014 The Bylda Team</p>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -217,10 +196,7 @@
       "name": "Send Trial Welcome Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ]
+      "position": [1560, 300]
     },
     {
       "parameters": {
@@ -242,10 +218,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        1780,
-        300
-      ]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -256,10 +229,7 @@
       "name": "Wait Until 72hr Before End",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [
-        1560,
-        520
-      ],
+      "position": [1560, 520],
       "webhookId": "wait-72hr"
     },
     {
@@ -290,10 +260,7 @@
       "name": "Trigger 72hr Warning Webhook",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        520
-      ]
+      "position": [1780, 520]
     },
     {
       "parameters": {
@@ -304,10 +271,7 @@
       "name": "Wait Until 24hr Before End",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [
-        2000,
-        520
-      ],
+      "position": [2000, 520],
       "webhookId": "wait-24hr"
     },
     {
@@ -338,10 +302,7 @@
       "name": "Trigger 24hr Warning Webhook",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2220,
-        520
-      ]
+      "position": [2220, 520]
     }
   ],
   "connections": {
@@ -476,13 +437,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "trial",
-    "billing"
-  ],
+  "tags": ["bylda-ops", "stripe", "trial", "billing"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-trial-v1"
+  "versionId": "bylda-ops-trial-v1"
 }

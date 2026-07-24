@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
   const html = body.html || `<div>${text.replace(/\n/g, "<br>")}</div>`;
 
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  const FROM = Deno.env.get("EMAIL_FROM") || "Nova <onboarding@resend.dev>";
+  const FROM = Deno.env.get("EMAIL_FROM") || "Bylda <onboarding@resend.dev>";
   if (!RESEND_API_KEY) {
     // Provider not configured — succeed as a no-op so flows don't break.
     return json({ sent: false, reason: "no_provider", to });

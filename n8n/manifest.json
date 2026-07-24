@@ -125,14 +125,7 @@
     "parses_strict": true,
     "parse_error": null,
     "node_count": 10,
-    "tags": [
-      "env:stg",
-      "owner:ansh",
-      "cat:ops",
-      "review:pending",
-      "p1:high",
-      "claude-generated"
-    ]
+    "tags": ["env:stg", "owner:ansh", "cat:ops", "review:pending", "p1:high", "claude-generated"]
   },
   {
     "index": 9,
@@ -141,14 +134,7 @@
     "parses_strict": true,
     "parse_error": null,
     "node_count": 13,
-    "tags": [
-      "env:stg",
-      "owner:ansh",
-      "cat:infra",
-      "review:pending",
-      "p1:high",
-      "claude-generated"
-    ]
+    "tags": ["env:stg", "owner:ansh", "cat:infra", "review:pending", "p1:high", "claude-generated"]
   },
   {
     "index": 10,

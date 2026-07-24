@@ -1,4 +1,4 @@
-// Nova Launchpad · Product Flow Specification
+// Bylda Launchpad · Product Flow Specification
 // TASK-001 v1 activation event
 // TASK-002 v2 activation event
 // TASK-003 core value loop
@@ -27,10 +27,10 @@ export const V1_ACTIVATION_EVENT = "first_tool_run" as const;
 export const V2_ACTIVATION_EVENT = "first_mission_completed" as const;
 
 // ── TASK-003 · Core Value Loop ────────────────────────────────────────
-// "Founders enter their idea → Nova assigns a mission →
+// "Founders enter their idea → Bylda assigns a mission →
 //  they complete it with AI tools → measurable business progress repeats."
 export const CORE_VALUE_LOOP =
-  "Founders enter their idea, Nova assigns a mission, they complete it with AI, and see measurable business progress every week.";
+  "Founders enter their idea, Bylda assigns a mission, they complete it with AI, and see measurable business progress every week.";
 
 // ── TASK-004 · Four Primary User Lanes ───────────────────────────────
 export const USER_LANES: Record<Lane, { label: string; goal: string; firstMission: string }> = {
@@ -59,13 +59,13 @@ export const USER_LANES: Record<Lane, { label: string; goal: string; firstMissio
 // ── TASK-005 · Stage Map ──────────────────────────────────────────────
 // Full journey from awareness to weekly growth loop.
 export const STAGE_MAP = [
-  { stage: "Awareness", action: "User discovers Nova via content / referral" },
+  { stage: "Awareness", action: "User discovers Bylda via content / referral" },
   { stage: "Sign-up", action: "User creates account (email/OAuth)" },
   { stage: "Onboard", action: "User completes 3-step wizard → lane assigned" },
-  { stage: "First Mission", action: "Nova assigns mission; user starts Step 1" },
+  { stage: "First Mission", action: "Bylda assigns mission; user starts Step 1" },
   { stage: "First AI Output", action: "User runs first tool → sees generated result" },
   { stage: "Mission Done", action: "User completes all mission steps (V2 event)" },
-  { stage: "Next Mission", action: "Nova assigns next mission; loop continues" },
+  { stage: "Next Mission", action: "Bylda assigns next mission; loop continues" },
   { stage: "Weekly Loop", action: "User returns weekly, completes missions, upgrades plan" },
 ] as const;
 

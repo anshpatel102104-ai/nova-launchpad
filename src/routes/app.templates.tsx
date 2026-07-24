@@ -625,7 +625,7 @@ function TemplatePreviewModal({
                       to: "/app/launchpad",
                     },
                     { icon: Zap, text: "Enable your first automation", to: "/app/automations" },
-                    { icon: Target, text: "Set up your CRM pipeline", to: "/app/nova/crm" },
+                    { icon: Target, text: "Set up your CRM pipeline", to: "/app/bylda/crm" },
                   ].map((item, i) => (
                     <Link
                       key={i}
@@ -676,7 +676,7 @@ function TemplateCard({
   return (
     <div
       className={cn(
-        "nova-card rounded-2xl p-5 flex flex-col gap-4 cursor-pointer hover:border-primary/30 transition-all group",
+        "bylda-card rounded-2xl p-5 flex flex-col gap-4 cursor-pointer hover:border-primary/30 transition-all group",
         isApplied && "border-emerald-300 dark:border-emerald-700",
       )}
       onClick={() => onPreview(template)}

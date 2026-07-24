@@ -12,10 +12,7 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-subscription-cancelled"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse Cancellation Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -58,10 +52,7 @@
       "name": "Should Skip?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        300
-      ]
+      "position": [680, 300]
     },
     {
       "parameters": {
@@ -75,10 +66,7 @@
       "name": "Return 200 Skipped",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        900,
-        480
-      ]
+      "position": [900, 480]
     },
     {
       "parameters": {
@@ -106,10 +94,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        900,
-        300
-      ],
+      "position": [900, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -125,10 +110,7 @@
       "name": "Merge User Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1120,
-        300
-      ]
+      "position": [1120, 300]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "Update User Cancelled",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -213,7 +192,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"plan_tier\": \"free\",\n  \"launchpad_access\": true,\n  \"nova_os_access\": false,\n  \"ai_tools_limit\": 3,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
+        "jsonBody": "={\n  \"plan_tier\": \"free\",\n  \"launchpad_access\": true,\n  \"bylda_os_access\": false,\n  \"ai_tools_limit\": 3,\n  \"automation_systems\": 0,\n  \"priority_support\": false,\n  \"white_label\": false,\n  \"updated_at\": \"{{ $('Merge User Data').first().json.updatedAt }}\"\n}",
         "options": {
           "response": {
             "response": {
@@ -229,10 +208,7 @@
       "name": "Revoke Paid Feature Flags",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ],
+      "position": [1560, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -259,7 +235,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your Nova OPS subscription has been cancelled\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><h1 style='font-size: 24px;'>We've cancelled your subscription, {{ $('Merge User Data').first().json.firstName }}.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>Your <strong>{{ $('Merge User Data').first().json.planDisplay }}</strong> plan has been cancelled as requested. No further charges will be made.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>What happens next</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'><li>Access continues until: <strong>{{ $('Merge User Data').first().json.accessEndDisplay }}</strong></li><li>After that, your account moves to the Free tier (3 AI tools)</li><li>Your data is saved \u2014 nothing is deleted</li></ul></div><p style='font-size: 16px; color: #444;'>Changed your mind? You can reactivate anytime and pick up exactly where you left off.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.REACTIVATION_URL }}' style='background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Reactivate My Account</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>If there was something we could have done better, reply to this email and tell us \u2014 we read every response.</p><p style='font-size: 14px; color: #555;'>\u2014 The Nova OPS Team</p></div>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Your Bylda subscription has been cancelled\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><h1 style='font-size: 24px;'>We've cancelled your subscription, {{ $('Merge User Data').first().json.firstName }}.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>Your <strong>{{ $('Merge User Data').first().json.planDisplay }}</strong> plan has been cancelled as requested. No further charges will be made.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>What happens next</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'><li>Access continues until: <strong>{{ $('Merge User Data').first().json.accessEndDisplay }}</strong></li><li>After that, your account moves to the Free tier (3 AI tools)</li><li>Your data is saved \u2014 nothing is deleted</li></ul></div><p style='font-size: 16px; color: #444;'>Changed your mind? You can reactivate anytime and pick up exactly where you left off.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.REACTIVATION_URL }}' style='background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Reactivate My Account</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>If there was something we could have done better, reply to this email and tell us \u2014 we read every response.</p><p style='font-size: 14px; color: #555;'>\u2014 The Bylda Team</p></div>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -272,10 +248,7 @@
       "name": "Send Cancellation Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        300
-      ]
+      "position": [1780, 300]
     },
     {
       "parameters": {
@@ -305,10 +278,7 @@
       "name": "Log to billing_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2000,
-        300
-      ],
+      "position": [2000, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -336,10 +306,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        2220,
-        300
-      ]
+      "position": [2220, 300]
     },
     {
       "parameters": {
@@ -350,10 +317,7 @@
       "name": "Wait 7 Days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [
-        2000,
-        520
-      ],
+      "position": [2000, 520],
       "webhookId": "wait-7-day-winback"
     },
     {
@@ -375,7 +339,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Still thinking it over, {{ $('Merge User Data').first().json.firstName }}?\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><h1 style='font-size: 24px;'>Hey {{ $('Merge User Data').first().json.firstName }} \u2014 we've been thinking about you.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>It's been a week since you cancelled your Nova OPS subscription. We wanted to check in and see if there's anything we can do to help.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #1a1a1a;'>Here's what you're missing out on:</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'><li>\ud83e\udd16 Automated lead generation running 24/7</li><li>\u26a1 Client onboarding on autopilot</li><li>\ud83d\udee0 AI tools that save 10+ hours per week</li><li>\ud83d\udcca Business systems that scale without you</li></ul></div><p style='font-size: 16px; color: #444;'>If cost was the issue \u2014 reply to this email. We'll work something out.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.REACTIVATION_URL }}' style='background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Come Back to Nova OPS</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>No pressure \u2014 just wanted you to know the door is always open.</p><p style='font-size: 14px; color: #555;'>\u2014 The Nova OPS Team</p></div>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User Data').first().json.email }}\"],\n  \"subject\": \"Still thinking it over, {{ $('Merge User Data').first().json.firstName }}?\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><h1 style='font-size: 24px;'>Hey {{ $('Merge User Data').first().json.firstName }} \u2014 we've been thinking about you.</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>It's been a week since you cancelled your Bylda subscription. We wanted to check in and see if there's anything we can do to help.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #1a1a1a;'>Here's what you're missing out on:</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'><li>\ud83e\udd16 Automated lead generation running 24/7</li><li>\u26a1 Client onboarding on autopilot</li><li>\ud83d\udee0 AI tools that save 10+ hours per week</li><li>\ud83d\udcca Business systems that scale without you</li></ul></div><p style='font-size: 16px; color: #444;'>If cost was the issue \u2014 reply to this email. We'll work something out.</p><div style='text-align: center; margin: 32px 0;'><a href='{{ $env.REACTIVATION_URL }}' style='background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Come Back to Bylda</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>No pressure \u2014 just wanted you to know the door is always open.</p><p style='font-size: 14px; color: #555;'>\u2014 The Bylda Team</p></div>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -388,10 +352,7 @@
       "name": "Send Win-Back Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        2220,
-        520
-      ]
+      "position": [2220, 520]
     }
   ],
   "connections": {
@@ -526,14 +487,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "cancellation",
-    "win-back",
-    "billing"
-  ],
+  "tags": ["bylda-ops", "stripe", "cancellation", "win-back", "billing"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-cancelled-voluntary-v1"
+  "versionId": "bylda-ops-cancelled-voluntary-v1"
 }

@@ -3,7 +3,7 @@
  *
  * Stage and active-mission status already live in the redesigned Home
  * (/app/mission-control), so this only surfaces what isn't shown there:
- * Nova's stage-and-industry guidance, a Pipeline Snapshot, and Recent Memory.
+ * Bylda's stage-and-industry guidance, a Pipeline Snapshot, and Recent Memory.
  */
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
@@ -101,18 +101,18 @@ export function FounderHome({ orgId, userId: _userId }: { orgId: string; userId:
 
   return (
     <div className="mb-8 grid grid-cols-1 gap-3.5 md:grid-cols-3">
-      {/* Nova Guidance — stage- and industry-aware */}
+      {/* Bylda Guidance — stage- and industry-aware */}
       <div
         className="rounded-2xl p-5 text-[--primary-foreground] shadow-sm"
         style={{ background: "linear-gradient(135deg, var(--primary), var(--accent))" }}
       >
         <div className="mb-2 flex items-center gap-2">
           <Sparkles className="h-4 w-4" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Nova Guidance</span>
+          <span className="text-xs font-semibold uppercase tracking-wider">Bylda Guidance</span>
         </div>
         <p className="text-sm leading-relaxed opacity-90">{guidancePrompt}</p>
         <Link
-          to="/app/launchpad/nova"
+          to="/app/launchpad/bylda"
           className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15"
         >
           {guidance.cta} <ArrowRight className="h-4 w-4" />
@@ -126,7 +126,7 @@ export function FounderHome({ orgId, userId: _userId }: { orgId: string; userId:
             Pipeline
           </span>
           <Link
-            to="/app/nova/crm"
+            to="/app/bylda/crm"
             className="text-xs font-semibold text-[--accent] hover:underline"
           >
             View Pipeline →
@@ -163,7 +163,7 @@ export function FounderHome({ orgId, userId: _userId }: { orgId: string; userId:
             ))}
           </div>
         ) : (memory.data ?? []).length === 0 ? (
-          <p className="py-3 text-xs text-[--text-faint]">Outputs Nova saves will appear here.</p>
+          <p className="py-3 text-xs text-[--text-faint]">Outputs Bylda saves will appear here.</p>
         ) : (
           <div className="space-y-2">
             {(memory.data ?? []).slice(0, 3).map((m) => (

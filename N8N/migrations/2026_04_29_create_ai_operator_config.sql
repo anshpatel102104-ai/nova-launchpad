@@ -1,9 +1,9 @@
 -- Migration: create ai_operator_config table
 -- Run on Supabase project: ipidfqwlszuhjgjygbvx
 -- Referenced by workflows:
---   nova_ops_ai_profile_builder, nova_ops_niche_tool_preconfig,
---   nova_ops_onboarding_completion_operator_handoff,
---   nova_ops_first_tool_guided_activation
+--   bylda_ops_ai_profile_builder, bylda_ops_niche_tool_preconfig,
+--   bylda_ops_onboarding_completion_operator_handoff,
+--   bylda_ops_first_tool_guided_activation
 --
 -- Endpoints expected by the workflows (REST via PostgREST):
 --   GET/POST /rest/v1/ai_operator_configs

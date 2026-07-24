@@ -10,7 +10,7 @@ export type IntakeQuestion =
   | {
       key: string;
       type: "text";
-      novaText: string;
+      byldaText: string;
       placeholder: string;
       optional?: boolean;
       /**
@@ -25,18 +25,18 @@ export type IntakeQuestion =
   | {
       key: string;
       type: "chips";
-      novaText: string;
+      byldaText: string;
       options: IntakeChipOption[];
-      /** Idle-user fallback: option id Nova picks when the user taps "not sure". */
+      /** Idle-user fallback: option id Bylda picks when the user taps "not sure". */
       recommend?: string;
     }
   | {
       key: string;
       type: "multi";
-      novaText: string;
+      byldaText: string;
       options: IntakeChipOption[];
       max?: number;
-      /** Idle-user fallback: option ids Nova picks when the user taps "not sure". */
+      /** Idle-user fallback: option ids Bylda picks when the user taps "not sure". */
       recommend?: string[];
     };
 
@@ -49,7 +49,7 @@ export const DETECT_QUESTIONS: IntakeQuestion[] = [
   {
     key: "has_revenue",
     type: "chips",
-    novaText: "Before we dive in — where's the business today?",
+    byldaText: "Before we dive in — where's the business today?",
     options: [
       { id: "none", label: "Not making money yet", desc: "Pre-revenue", emoji: "🌱" },
       { id: "some", label: "Some revenue", desc: "A little coming in", emoji: "🟡" },
@@ -59,7 +59,7 @@ export const DETECT_QUESTIONS: IntakeQuestion[] = [
   {
     key: "team_size_detect",
     type: "chips",
-    novaText: "How big is the team right now?",
+    byldaText: "How big is the team right now?",
     options: [
       { id: "solo", label: "Just me", desc: "Solo", emoji: "🧍" },
       { id: "team", label: "2 or more people", desc: "There's a team", emoji: "👥" },
@@ -68,7 +68,7 @@ export const DETECT_QUESTIONS: IntakeQuestion[] = [
   {
     key: "has_clients",
     type: "chips",
-    novaText: "Do you have active paying clients or customers today?",
+    byldaText: "Do you have active paying clients or customers today?",
     options: [
       { id: "no", label: "Not yet", desc: "No active clients", emoji: "⬜" },
       {
@@ -97,7 +97,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "idea",
     type: "text",
-    novaText:
+    byldaText:
       "Let's build this business.\n\nI'll set up a workspace tuned to exactly where you are. Takes about two minutes.\n\nFirst: what's the business you want to build?",
     placeholder: "Describe your idea in a sentence or two…",
     suggestion:
@@ -106,7 +106,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "industry",
     type: "chips",
-    novaText: "Got it.\n\nWhich of these is closest to what you're building?",
+    byldaText: "Got it.\n\nWhich of these is closest to what you're building?",
     options: [
       {
         id: "SaaS / software",
@@ -144,7 +144,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "target_customer",
     type: "chips",
-    novaText: "Who are you building this for?",
+    byldaText: "Who are you building this for?",
     options: [
       {
         id: "Small businesses",
@@ -170,7 +170,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "stage",
     type: "chips",
-    novaText: "Where are you at with it right now?",
+    byldaText: "Where are you at with it right now?",
     options: [
       { id: "Idea", label: "Just an idea", desc: "Haven't started building yet", emoji: "💡" },
       {
@@ -185,7 +185,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "assets",
     type: "multi",
-    novaText: "What do you already have? Pick everything that's true.",
+    byldaText: "What do you already have? Pick everything that's true.",
     max: 6,
     options: [
       { id: "nothing", label: "Nothing yet", desc: "Starting from zero", emoji: "⬜" },
@@ -199,7 +199,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "monetization",
     type: "chips",
-    novaText: "How do you plan to make money?",
+    byldaText: "How do you plan to make money?",
     recommend: "Not sure yet",
     options: [
       { id: "Subscription", label: "Subscription", desc: "Recurring monthly revenue", emoji: "🔁" },
@@ -210,13 +210,18 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
         desc: "Billed for work",
         emoji: "🧾",
       },
-      { id: "Not sure yet", label: "Not sure yet", desc: "Nova will help you decide", emoji: "🤔" },
+      {
+        id: "Not sure yet",
+        label: "Not sure yet",
+        desc: "Bylda will help you decide",
+        emoji: "🤔",
+      },
     ],
   },
   {
     key: "goal",
     type: "chips",
-    novaText: "What's your number one goal for the next 90 days?",
+    byldaText: "What's your number one goal for the next 90 days?",
     options: [
       {
         id: "Get first customers",
@@ -247,7 +252,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "challenge",
     type: "chips",
-    novaText: "What's your biggest blocker right now?",
+    byldaText: "What's your biggest blocker right now?",
     options: [
       {
         id: "Finding customers",
@@ -268,7 +273,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "time_constraint",
     type: "chips",
-    novaText: "How much time can you actually give this?",
+    byldaText: "How much time can you actually give this?",
     options: [
       { id: "Side project", label: "Nights & weekends", desc: "Around a day job", emoji: "🌙" },
       { id: "Part-time", label: "Part-time", desc: "A few days a week", emoji: "⏳" },
@@ -278,7 +283,7 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
   {
     key: "experience",
     type: "chips",
-    novaText: "Last one — have you built a business before?",
+    byldaText: "Last one — have you built a business before?",
     options: [
       { id: "First business", label: "First business", desc: "This is the first one", emoji: "🌱" },
       {
@@ -303,14 +308,14 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "business_name",
     type: "text",
-    novaText:
+    byldaText:
       "Let's get your operation on the grid.\n\nI'll map how your business runs today — model, motion, bottlenecks — and build your ops cockpit from it. About three minutes.\n\nFirst: what's the business called?",
     placeholder: "Business name…",
   },
   {
     key: "business_description",
     type: "text",
-    novaText: "And in one or two sentences — what does it do, and for whom?",
+    byldaText: "And in one or two sentences — what does it do, and for whom?",
     placeholder: "e.g. We run paid ads for dental clinics in Texas…",
     suggestion:
       "We help [who it's for] with [what you do], so they can [the outcome]. We're different because [what sets you apart].",
@@ -318,7 +323,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "company_type",
     type: "chips",
-    novaText: "Which best describes the business?",
+    byldaText: "Which best describes the business?",
     options: [
       {
         id: "Agency / services",
@@ -351,7 +356,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "service_model",
     type: "chips",
-    novaText: "What do you actually sell?",
+    byldaText: "What do you actually sell?",
     options: [
       {
         id: "Productized service",
@@ -372,7 +377,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "revenue_band",
     type: "chips",
-    novaText: "Roughly where is monthly revenue today?",
+    byldaText: "Roughly where is monthly revenue today?",
     options: [
       { id: "$0-5k", label: "$0 – $5k / mo", desc: "Finding repeatability", emoji: "🟡" },
       { id: "$5-20k", label: "$5k – $20k / mo", desc: "Working, needs systems", emoji: "🟠" },
@@ -383,7 +388,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "team_size",
     type: "chips",
-    novaText: "How big is the team?",
+    byldaText: "How big is the team?",
     options: [
       { id: "Solo", label: "Just me", desc: "Solo operator", emoji: "🧍" },
       { id: "2-5", label: "2 – 5 people", desc: "Small core team", emoji: "👥" },
@@ -394,7 +399,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "tool_stack",
     type: "multi",
-    novaText: "Which tools does the business already run on? Pick all that apply.",
+    byldaText: "Which tools does the business already run on? Pick all that apply.",
     max: 9,
     options: [
       { id: "Stripe", label: "Stripe", desc: "Payments", emoji: "💳" },
@@ -411,7 +416,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "bottlenecks",
     type: "multi",
-    novaText: "Where does the business slow down most? Pick up to 3.",
+    byldaText: "Where does the business slow down most? Pick up to 3.",
     max: 3,
     options: [
       { id: "Lead flow", label: "Lead flow", desc: "Not enough prospects", emoji: "🔍" },
@@ -441,7 +446,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "channels",
     type: "multi",
-    novaText: "How do new customers find you today? Pick all that apply.",
+    byldaText: "How do new customers find you today? Pick all that apply.",
     max: 6,
     options: [
       { id: "Referrals", label: "Referrals", desc: "Word of mouth", emoji: "🗣️" },
@@ -465,7 +470,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "sales_maturity",
     type: "chips",
-    novaText: "How developed is your sales process?",
+    byldaText: "How developed is your sales process?",
     options: [
       {
         id: "No defined process",
@@ -481,7 +486,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "reporting_gaps",
     type: "multi",
-    novaText: "Which numbers do you NOT see clearly every week?",
+    byldaText: "Which numbers do you NOT see clearly every week?",
     max: 6,
     options: [
       { id: "Revenue", label: "Revenue", desc: "True monthly picture", emoji: "💵" },
@@ -495,7 +500,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "automation_appetite",
     type: "chips",
-    novaText: "How do you feel about automation?",
+    byldaText: "How do you feel about automation?",
     options: [
       {
         id: "Already automate",
@@ -515,7 +520,7 @@ export const OPERATOR_QUESTIONS: IntakeQuestion[] = [
   {
     key: "scale_goal",
     type: "chips",
-    novaText: "Last one — what does winning look like in 12 months?",
+    byldaText: "Last one — what does winning look like in 12 months?",
     options: [
       { id: "2x revenue", label: "2x revenue", desc: "Grow the top line", emoji: "📈" },
       {

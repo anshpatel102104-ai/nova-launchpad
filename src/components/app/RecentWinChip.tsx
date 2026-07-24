@@ -1,5 +1,5 @@
 // RecentWinChip — momentum, celebrated in the moment. Reads the most recent
-// positive nova_event and surfaces it on the home with a warm, animated beat,
+// positive bylda_event and surfaces it on the home with a warm, animated beat,
 // instead of leaving wins buried in a collapsed rail (audit Part 2 Q5).
 //
 // One shared event ledger drives it, so a completed course step, a finished

@@ -1,7 +1,7 @@
 /**
  * WAITLIST — /app/crm/waitlist  (platform admins only)
  *
- * Signups from the public nova-ops.space/waitlist form, with all five
+ * Signups from the public usebylda.com/waitlist form, with all five
  * qualifying answers. Rows flip to 'joined' automatically (auth.users
  * trigger) when the person creates a platform account; admins can also
  * remove/restore entries manually. Reads waitlist_signups via is_admin RLS.
@@ -101,7 +101,7 @@ function WaitlistPage() {
           Admins only
         </p>
         <p className="max-w-xs text-[13px]" style={{ color: "var(--muted-foreground)" }}>
-          The platform waitlist is only visible to NovaOps administrators.
+          The platform waitlist is only visible to Bylda administrators.
         </p>
       </div>
     );
@@ -168,7 +168,7 @@ function WaitlistPage() {
               {filter === "Waiting" ? "No one is waiting right now" : "Nothing here yet"}
             </p>
             <p className="max-w-sm text-xs" style={{ color: "var(--muted-foreground)" }}>
-              Signups from nova-ops.space/waitlist land here with their answers, and move to Joined
+              Signups from usebylda.com/waitlist land here with their answers, and move to Joined
               automatically when they create an account.
             </p>
           </div>

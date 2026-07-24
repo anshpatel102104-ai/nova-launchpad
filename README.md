@@ -1,9 +1,9 @@
-# Nova Launchpad
+# Bylda Launchpad
 
 An AI-native business operating system. Two modes share one platform:
 
 - **Launchpad** — create & launch: validate an idea, build the offer, land first customers.
-- **NOVA** — operate & scale: automate, optimize, and grow an existing business.
+- **BYLDA** — operate & scale: automate, optimize, and grow an existing business.
 
 The active mode is backed by `workspaces.mode` and switchable in the sidebar
 (`src/components/app/ViewSwitcher.tsx`).
@@ -24,8 +24,8 @@ The active mode is backed by `workspaces.mode` and switchable in the sidebar
 | `src/lib/`             | Client logic: `queries.ts`, `catalog.ts`, `lead-scoring.ts`, guidance, auth |
 | `src/hooks/`           | React hooks (`use-workspace-mode.ts`)                                       |
 | `supabase/migrations/` | SQL schema (RLS-first; idempotent)                                          |
-| `supabase/functions/`  | Edge Functions (`run-tool`, `nova-chat`, `complete-onboarding`, …)          |
-| `workers/`             | Cloudflare Workers (`nova-contacts-api`, `nova-stripe-api`, …)              |
+| `supabase/functions/`  | Edge Functions (`run-tool`, `bylda-chat`, `complete-onboarding`, …)         |
+| `workers/`             | Cloudflare Workers (`bylda-contacts-api`, `bylda-stripe-api`, …)            |
 | `n8n/`                 | Automation workflow definitions                                             |
 | `GAP_ANALYSIS.md`      | CRM-vs-HubSpot + scale roadmap (built vs deferred)                          |
 

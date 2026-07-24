@@ -1,11 +1,11 @@
-# Launchpad Nova — Phase 10 Audit
+# Launchpad Bylda — Phase 10 Audit
 
 Status of the master-build audit checklist. **Verified** = confirmed
 programmatically (DB / deployed function / build / tests). **Wired** = code
 path is in place and type-checks/builds, but final confirmation needs an
 interactive logged-in session.
 
-Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/nova-master-build-rqm60r`
+Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/bylda-master-build-rqm60r`
 
 ## Verified
 
@@ -22,7 +22,7 @@ Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/nova-master-build-rqm60r`
 - ✅ **Edge functions** (22 ACTIVE): mentor-chat, crm-action, conversation-ai,
   workflow-engine, book-appointment, send-email, send-sms, send-campaign,
   process-reminders, receive-message, get-inbound-url, track-event (+ existing).
-- ✅ **Delivery graceful-degrade**: send-* no-op cleanly without provider keys;
+- ✅ **Delivery graceful-degrade**: send-\* no-op cleanly without provider keys;
   receive-message returns 503 without INBOUND_WEBHOOK_SECRET; track-event pixel
   (200 image/gif) + click (302) verified live.
 - ✅ **Realtime**: conversations, leads, notifications in the publication;
@@ -35,7 +35,7 @@ Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/nova-master-build-rqm60r`
 
 - ⏳ Drag deal to a new column updates `leads.stage` (mutation + realtime wired).
 - ⏳ Contact create / drawer tabs render (Deal & Contact drawers built).
-- ⏳ Unified inbox Nova Draft button (conversation-ai wired).
+- ⏳ Unified inbox Bylda Draft button (conversation-ai wired).
 - ⏳ New appointment saves; public `/book/[slug]` submits (book-appointment live).
 - ⏳ Workflow builder create/activate/test; form builder + public `/f/[id]`.
 - ⏳ Campaign draft + Send Now + Report; reputation request send.

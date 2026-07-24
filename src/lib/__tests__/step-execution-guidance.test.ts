@@ -15,7 +15,7 @@ describe("getStepGuidance", () => {
     );
   });
 
-  it("now has guidance for the NOVA (operate/scale) tools", () => {
+  it("now has guidance for the BYLDA (operate/scale) tools", () => {
     for (const key of [
       "kpi-dashboard",
       "seo-audit",

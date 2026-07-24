@@ -1,17 +1,17 @@
-# Nova Launchpad · Subagents
+# Bylda Launchpad · Subagents
 
 Six Claude-powered n8n subagents that power the Launchpad tool surface.
 All workflows are **self-contained**, plan-gate aware, and deduct credits
 after a successful run.
 
-| #   | Workflow                          | Webhook path                  | Plan gate   | Credit cost | Tables touched                                    |
-| --- | --------------------------------- | ----------------------------- | ----------- | ----------- | ------------------------------------------------- |
-| 1   | Brand Voice                       | `brand-voice-subagent`        | All paid    | 15          | `users`, `operator_prompts`, `user_ai_config`     |
-| 2   | Blog Content                      | `content-subagent-blog`       | All paid    | 10          | `users`, `user_ai_config`, `content_outputs`      |
-| 3   | Social                            | `social-subagent`             | All paid    | 5 / post    | `users`, `user_ai_config`, `content_outputs`      |
-| 4   | Sales Script                      | `sales-script-subagent`       | All paid    | 8           | `users`, `user_ai_config`, `content_outputs`      |
-| 5   | Client Reporting                  | `client-reporting-subagent`   | All paid    | 20          | `users`, `client_kpi_metrics`, `client_reports`   |
-| 6   | Automation Builder                | `automation-builder-subagent` | **$149+**   | 25          | `users`, `automation_drafts`                      |
+| #   | Workflow           | Webhook path                  | Plan gate | Credit cost | Tables touched                                  |
+| --- | ------------------ | ----------------------------- | --------- | ----------- | ----------------------------------------------- |
+| 1   | Brand Voice        | `brand-voice-subagent`        | All paid  | 15          | `users`, `operator_prompts`, `user_ai_config`   |
+| 2   | Blog Content       | `content-subagent-blog`       | All paid  | 10          | `users`, `user_ai_config`, `content_outputs`    |
+| 3   | Social             | `social-subagent`             | All paid  | 5 / post    | `users`, `user_ai_config`, `content_outputs`    |
+| 4   | Sales Script       | `sales-script-subagent`       | All paid  | 8           | `users`, `user_ai_config`, `content_outputs`    |
+| 5   | Client Reporting   | `client-reporting-subagent`   | All paid  | 20          | `users`, `client_kpi_metrics`, `client_reports` |
+| 6   | Automation Builder | `automation-builder-subagent` | **$149+** | 25          | `users`, `automation_drafts`                    |
 
 > The `users` view (added in `supabase/migrations/20260429220000_subagent_schema.sql`)
 > projects `profiles + subscriptions + plan_entitlements` into `(user_id, plan_tier, email)`
@@ -47,10 +47,10 @@ supabase db push
 
 In n8n → **Credentials**, create exactly these (names must match the JSON):
 
-| Credential name        | Type                                  | Notes                                                                                |
-| ---------------------- | ------------------------------------- | ------------------------------------------------------------------------------------ |
-| `Supabase Postgres`    | Postgres                              | Host: `db.ipidfqwlszuhjgjygbvx.supabase.co`, port 5432, db `postgres`, user `postgres`, password = Supabase service role pwd |
-| `Anthropic API Key`    | Header Auth                           | Header name: `x-api-key` · Value: your `ANTHROPIC_API_KEY`                           |
+| Credential name     | Type        | Notes                                                                                                                        |
+| ------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `Supabase Postgres` | Postgres    | Host: `db.ipidfqwlszuhjgjygbvx.supabase.co`, port 5432, db `postgres`, user `postgres`, password = Supabase service role pwd |
+| `Anthropic API Key` | Header Auth | Header name: `x-api-key` · Value: your `ANTHROPIC_API_KEY`                                                                   |
 
 After importing the JSONs, n8n will flag missing credential refs — bind each
 node to the credentials above. Placeholder IDs in the JSON
@@ -100,13 +100,13 @@ The frontend hits `${VITE_N8N_BASE_URL}/webhook/<path>`. Two routing options:
 
 ### Option A — direct (simplest)
 
-Set `VITE_N8N_BASE_URL=https://n8n.nova-ops.space` in Vercel, expose your
+Set `VITE_N8N_BASE_URL=https://n8n.usebylda.com` in Vercel, expose your
 n8n instance under that subdomain via a Cloudflare Tunnel.
 
 ```bash
 # Cloudflare Tunnel, on the box running n8n
-cloudflared tunnel route dns nova-n8n n8n.nova-ops.space
-cloudflared tunnel run nova-n8n   # forwards to localhost:5678
+cloudflared tunnel route dns bylda-n8n n8n.usebylda.com
+cloudflared tunnel run bylda-n8n   # forwards to localhost:5678
 ```
 
 ### Option B — proxy through your app (recommended for prod)
@@ -125,12 +125,14 @@ add when ready).
 ## 6 · Frontend usage
 
 ```ts
-import { callBrandVoice, isPlanGateBlock, getUpgradeUrl } from '@/lib/subagents';
-import { supabase } from '@/integrations/supabase/client';
+import { callBrandVoice, isPlanGateBlock, getUpgradeUrl } from "@/lib/subagents";
+import { supabase } from "@/integrations/supabase/client";
 
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 const result = await callBrandVoice(
-  { user_id: session!.user.id, raw_intake: '...' },
+  { user_id: session!.user.id, raw_intake: "..." },
   session?.access_token,
 );
 
@@ -153,12 +155,12 @@ After each workflow is active, test directly:
 
 ```bash
 # Brand voice — should return brand_voice JSON
-curl -X POST https://n8n.nova-ops.space/webhook/brand-voice-subagent \
+curl -X POST https://n8n.usebylda.com/webhook/brand-voice-subagent \
   -H "Content-Type: application/json" \
   -d '{"user_id":"<real-uuid>","raw_intake":"We help med spas book more consults via AI follow-ups. Tone is confident, expert, no fluff."}'
 
 # Automation builder — expect 403 if user is on starter plan
-curl -X POST https://n8n.nova-ops.space/webhook/automation-builder-subagent \
+curl -X POST https://n8n.usebylda.com/webhook/automation-builder-subagent \
   -H "Content-Type: application/json" \
   -d '{"user_id":"<real-uuid>","process_description":"When a Typeform submission comes in, post to Slack and create a HubSpot deal","integrations":["typeform","slack","hubspot"]}'
 ```

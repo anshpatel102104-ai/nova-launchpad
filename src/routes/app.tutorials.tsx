@@ -70,9 +70,9 @@ const TUTORIALS: Tutorial[] = [
   // Getting Started
   {
     id: "welcome",
-    title: "Welcome to Nova — Platform Overview",
+    title: "Welcome to Bylda — Platform Overview",
     description:
-      "Get a complete tour of the Nova AI Operating System and learn what each section does.",
+      "Get a complete tour of the Bylda AI Operating System and learn what each section does.",
     category: "Getting Started",
     duration: "5:00",
     difficulty: "Beginner",
@@ -100,7 +100,7 @@ const TUTORIALS: Tutorial[] = [
   {
     id: "onboarding-wizard",
     title: "Completing Your Onboarding",
-    description: "Walk through the onboarding wizard to personalize your Nova experience.",
+    description: "Walk through the onboarding wizard to personalize your Bylda experience.",
     category: "Getting Started",
     duration: "6:00",
     difficulty: "Beginner",
@@ -310,9 +310,9 @@ const TUTORIALS: Tutorial[] = [
     youtubeId: "",
   },
   {
-    id: "nova-memory",
-    title: "Nova Memory & Personalization",
-    description: "Configure Nova AI's memory system so it learns your business context over time.",
+    id: "bylda-memory",
+    title: "Bylda Memory & Personalization",
+    description: "Configure Bylda AI's memory system so it learns your business context over time.",
     category: "Settings & Admin",
     duration: "5:00",
     difficulty: "Intermediate",
@@ -383,7 +383,7 @@ function TutorialsPage() {
   }, [videosQ.data]);
   const [watched, setWatched] = useState<Set<string>>(() => {
     try {
-      const raw = localStorage.getItem("nova-tutorials-watched");
+      const raw = localStorage.getItem("bylda-tutorials-watched");
       return raw ? new Set(JSON.parse(raw)) : new Set();
     } catch {
       return new Set();
@@ -395,7 +395,7 @@ function TutorialsPage() {
       const next = new Set(prev);
       next.add(id);
       try {
-        localStorage.setItem("nova-tutorials-watched", JSON.stringify(Array.from(next)));
+        localStorage.setItem("bylda-tutorials-watched", JSON.stringify(Array.from(next)));
       } catch {
         /* */
       }
@@ -440,7 +440,7 @@ function TutorialsPage() {
                 Platform Tutorials
               </h1>
               <p className="text-[14px] max-w-lg" style={{ color: "var(--primary)", opacity: 0.8 }}>
-                Step-by-step video guides showing you exactly how to use every feature in Nova.
+                Step-by-step video guides showing you exactly how to use every feature in Bylda.
                 Master the platform at your own pace.
               </p>
             </div>
@@ -498,8 +498,8 @@ function TutorialsPage() {
           <video
             className="w-full block"
             style={{ aspectRatio: "16 / 9", objectFit: "cover" }}
-            src={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/nova-brand-film.mp4`}
-            poster={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/nova-brand-film.jpg`}
+            src={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/bylda-brand-film.mp4`}
+            poster={`${SUPABASE_PUBLIC_BASE}/tutorial-videos/promo/bylda-brand-film.jpg`}
             controls
             playsInline
             preload="none"
@@ -512,7 +512,7 @@ function TutorialsPage() {
               THE FILM
             </span>
             <span className="text-[12px] font-medium text-white/90">
-              Launchpad Nova — From idea → scale
+              Launchpad Bylda — From idea → scale
             </span>
           </div>
         </div>

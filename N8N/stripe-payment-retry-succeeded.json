@@ -12,10 +12,7 @@
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        240,
-        300
-      ],
+      "position": [240, 300],
       "webhookId": "stripe-payment-retry-succeeded"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse Payment Succeeded Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        300
-      ]
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -57,10 +51,7 @@
       "name": "Get User from Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        680,
-        300
-      ],
+      "position": [680, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -70,16 +61,13 @@
     },
     {
       "parameters": {
-        "jsCode": "const users = $input.first().json;\nconst user = Array.isArray(users) ? users[0] : users;\nconst parsed = $('Parse Payment Succeeded Payload').first().json;\n\n// Only proceed if user was past_due\nconst wasPastDue = user?.payment_status === 'past_due';\nconst planTier = user?.plan_tier || 'starter';\n\nconst featureFlags = {\n  free: { launchpad_access: true, nova_os_access: false, ai_tools_limit: 3, automation_systems: 0, priority_support: false, white_label: false },\n  starter: { launchpad_access: true, nova_os_access: false, ai_tools_limit: 10, automation_systems: 2, priority_support: false, white_label: false },\n  pro: { launchpad_access: true, nova_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: false },\n  scale: { launchpad_access: true, nova_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: true }\n};\n\nconst flags = featureFlags[planTier] || featureFlags['starter'];\n\nconst planDisplayNames = { free: 'Free', starter: 'Starter ($49/mo)', pro: 'Pro ($149/mo)', scale: 'Scale ($299/mo)' };\nconst planDisplay = planDisplayNames[planTier] || planTier;\n\nconst planFeatureSummary = {\n  free: ['3 AI Tools via Launchpad', 'Basic access only'],\n  starter: ['All 10 Launchpad AI Tools', '2 Nova OS Automation Systems', 'Standard support'],\n  pro: ['All 10 Launchpad AI Tools', 'All 6 Nova OS Automation Systems', 'Priority Support', 'Nova OS Access'],\n  scale: ['All 10 Launchpad AI Tools', 'All 6 Nova OS Automation Systems', 'Priority Support', 'White Label', 'Nova OS Access']\n};\n\nconst featureSummary = planFeatureSummary[planTier] || planFeatureSummary['starter'];\n\nreturn [{ json: {\n  ...parsed,\n  email: user?.email || '',\n  firstName: user?.first_name || 'there',\n  planTier,\n  planDisplay,\n  flags,\n  featureSummary,\n  wasPastDue\n} }];"
+        "jsCode": "const users = $input.first().json;\nconst user = Array.isArray(users) ? users[0] : users;\nconst parsed = $('Parse Payment Succeeded Payload').first().json;\n\n// Only proceed if user was past_due\nconst wasPastDue = user?.payment_status === 'past_due';\nconst planTier = user?.plan_tier || 'starter';\n\nconst featureFlags = {\n  free: { launchpad_access: true, bylda_os_access: false, ai_tools_limit: 3, automation_systems: 0, priority_support: false, white_label: false },\n  starter: { launchpad_access: true, bylda_os_access: false, ai_tools_limit: 10, automation_systems: 2, priority_support: false, white_label: false },\n  pro: { launchpad_access: true, bylda_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: false },\n  scale: { launchpad_access: true, bylda_os_access: true, ai_tools_limit: 10, automation_systems: 6, priority_support: true, white_label: true }\n};\n\nconst flags = featureFlags[planTier] || featureFlags['starter'];\n\nconst planDisplayNames = { free: 'Free', starter: 'Starter ($49/mo)', pro: 'Pro ($149/mo)', scale: 'Scale ($299/mo)' };\nconst planDisplay = planDisplayNames[planTier] || planTier;\n\nconst planFeatureSummary = {\n  free: ['3 AI Tools via Launchpad', 'Basic access only'],\n  starter: ['All 10 Launchpad AI Tools', '2 Bylda OS Automation Systems', 'Standard support'],\n  pro: ['All 10 Launchpad AI Tools', 'All 6 Bylda OS Automation Systems', 'Priority Support', 'Bylda OS Access'],\n  scale: ['All 10 Launchpad AI Tools', 'All 6 Bylda OS Automation Systems', 'Priority Support', 'White Label', 'Bylda OS Access']\n};\n\nconst featureSummary = planFeatureSummary[planTier] || planFeatureSummary['starter'];\n\nreturn [{ json: {\n  ...parsed,\n  email: user?.email || '',\n  firstName: user?.first_name || 'there',\n  planTier,\n  planDisplay,\n  flags,\n  featureSummary,\n  wasPastDue\n} }];"
       },
       "id": "b8c9d0e1-0004-0004-0004-000000000004",
       "name": "Merge User + Plan Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        900,
-        300
-      ]
+      "position": [900, 300]
     },
     {
       "parameters": {
@@ -125,10 +113,7 @@
       "name": "Restore User Status",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1120,
-        300
-      ],
+      "position": [1120, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -164,7 +149,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"plan_tier\": \"{{ $('Merge User + Plan Data').first().json.planTier }}\",\n  \"launchpad_access\": {{ $('Merge User + Plan Data').first().json.flags.launchpad_access }},\n  \"nova_os_access\": {{ $('Merge User + Plan Data').first().json.flags.nova_os_access }},\n  \"ai_tools_limit\": {{ $('Merge User + Plan Data').first().json.flags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Merge User + Plan Data').first().json.flags.automation_systems }},\n  \"priority_support\": {{ $('Merge User + Plan Data').first().json.flags.priority_support }},\n  \"white_label\": {{ $('Merge User + Plan Data').first().json.flags.white_label }},\n  \"updated_at\": \"{{ $('Merge User + Plan Data').first().json.updatedAt }}\"\n}",
+        "jsonBody": "={\n  \"plan_tier\": \"{{ $('Merge User + Plan Data').first().json.planTier }}\",\n  \"launchpad_access\": {{ $('Merge User + Plan Data').first().json.flags.launchpad_access }},\n  \"bylda_os_access\": {{ $('Merge User + Plan Data').first().json.flags.bylda_os_access }},\n  \"ai_tools_limit\": {{ $('Merge User + Plan Data').first().json.flags.ai_tools_limit }},\n  \"automation_systems\": {{ $('Merge User + Plan Data').first().json.flags.automation_systems }},\n  \"priority_support\": {{ $('Merge User + Plan Data').first().json.flags.priority_support }},\n  \"white_label\": {{ $('Merge User + Plan Data').first().json.flags.white_label }},\n  \"updated_at\": \"{{ $('Merge User + Plan Data').first().json.updatedAt }}\"\n}",
         "options": {
           "response": {
             "response": {
@@ -180,10 +165,7 @@
       "name": "Re-enable Feature Flags",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1340,
-        300
-      ],
+      "position": [1340, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -210,7 +192,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Nova OPS <hello@nova-ops.space>\",\n  \"to\": [\"{{ $('Merge User + Plan Data').first().json.email }}\"],\n  \"subject\": \"\u2705 Your account is back \u2014 welcome back!\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><div style='background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px 20px; border-radius: 4px; margin-bottom: 28px;'><p style='margin: 0; font-size: 15px; color: #15803d; font-weight: 600;'>\u2705 Payment processed \u2014 your account is fully restored.</p></div><h1 style='font-size: 24px; margin-top: 0;'>Welcome back, {{ $('Merge User + Plan Data').first().json.firstName }}!</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>Your payment of <strong>{{ $('Merge User + Plan Data').first().json.amountDisplay }}</strong> was successfully processed. Everything is back online and running.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;'>Your {{ $('Merge User + Plan Data').first().json.planDisplay }} plan includes:</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'>{{ $('Merge User + Plan Data').first().json.featureSummary.map(f => '<li>' + f + '</li>').join('') }}</ul></div><div style='text-align: center; margin: 32px 0;'><a href='https://nova-ops.space/dashboard' style='background: #22c55e; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Go to My Dashboard</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>To avoid future interruptions, make sure your payment method is up to date in your <a href='{{ $env.STRIPE_CUSTOMER_PORTAL_URL }}' style='color:#6366f1;'>billing portal</a>.</p><p style='font-size: 14px; color: #555;'>\u2014 The Nova OPS Team</p></div>\"\n}",
+        "jsonBody": "={\n  \"from\": \"Bylda <hello@usebylda.com>\",\n  \"to\": [\"{{ $('Merge User + Plan Data').first().json.email }}\"],\n  \"subject\": \"\u2705 Your account is back \u2014 welcome back!\",\n  \"html\": \"<div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;'><div style='background: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px 20px; border-radius: 4px; margin-bottom: 28px;'><p style='margin: 0; font-size: 15px; color: #15803d; font-weight: 600;'>\u2705 Payment processed \u2014 your account is fully restored.</p></div><h1 style='font-size: 24px; margin-top: 0;'>Welcome back, {{ $('Merge User + Plan Data').first().json.firstName }}!</h1><p style='font-size: 16px; color: #444; line-height: 1.7;'>Your payment of <strong>{{ $('Merge User + Plan Data').first().json.amountDisplay }}</strong> was successfully processed. Everything is back online and running.</p><div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px 24px; margin: 28px 0;'><p style='margin: 0 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;'>Your {{ $('Merge User + Plan Data').first().json.planDisplay }} plan includes:</p><ul style='margin: 0; padding-left: 20px; font-size: 15px; color: #334155; line-height: 2;'>{{ $('Merge User + Plan Data').first().json.featureSummary.map(f => '<li>' + f + '</li>').join('') }}</ul></div><div style='text-align: center; margin: 32px 0;'><a href='https://usebylda.com/dashboard' style='background: #22c55e; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 700; display: inline-block;'>Go to My Dashboard</a></div><p style='font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px;'>To avoid future interruptions, make sure your payment method is up to date in your <a href='{{ $env.STRIPE_CUSTOMER_PORTAL_URL }}' style='color:#6366f1;'>billing portal</a>.</p><p style='font-size: 14px; color: #555;'>\u2014 The Bylda Team</p></div>\"\n}",
         "options": {
           "response": {
             "response": {
@@ -223,10 +205,7 @@
       "name": "Send Reactivation Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1560,
-        300
-      ]
+      "position": [1560, 300]
     },
     {
       "parameters": {
@@ -256,10 +235,7 @@
       "name": "Log to billing_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [
-        1780,
-        300
-      ],
+      "position": [1780, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -287,10 +263,7 @@
       "name": "Return 200 OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        2000,
-        300
-      ]
+      "position": [2000, 300]
     }
   ],
   "connections": {
@@ -391,13 +364,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [
-    "nova-ops",
-    "stripe",
-    "billing",
-    "reactivation"
-  ],
+  "tags": ["bylda-ops", "stripe", "billing", "reactivation"],
   "triggerCount": 1,
   "updatedAt": "2024-01-01T00:00:00.000Z",
-  "versionId": "nova-ops-payment-retry-v1"
+  "versionId": "bylda-ops-payment-retry-v1"
 }

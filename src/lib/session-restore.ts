@@ -1,6 +1,6 @@
 // TASK-051 · Session restore — persists and retrieves the user's last meaningful app path.
 
-const STORAGE_KEY = "nova:last-app-path";
+const STORAGE_KEY = "bylda:last-app-path";
 
 const EXCLUDED_PREFIXES = ["/onboarding", "/auth"];
 

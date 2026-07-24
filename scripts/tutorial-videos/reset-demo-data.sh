@@ -23,7 +23,7 @@ curl -s -X DELETE "$URL/user_dashboards?user_id=eq.bfae05b7-f5db-4973-b319-d8777
 # restore deals moved by bulk-actions
 curl -s -X PATCH "$URL/leads?name=eq.Hannah%20Cole" "${H[@]}" -d '{"stage":"Won"}' -o /dev/null
 curl -s -X PATCH "$URL/leads?name=eq.Emma%20Larsson" "${H[@]}" -d '{"stage":"Qualified"}' -o /dev/null
-# memory artifacts logged by nova-memory tutorial
+# memory artifacts logged by bylda-memory tutorial
 curl -s -X DELETE "$URL/memory_artifacts?title=ilike.*5K%20enterprise*" "${H[@]}" -o /dev/null
 # tool runs + generated assets from campaign tutorials (org had zero originally)
 ORG="1a13f93b-0004-45d8-bbde-10f619d1ec84"

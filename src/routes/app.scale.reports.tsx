@@ -4,6 +4,6 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/scale/reports")({
   beforeLoad: () => {
-    throw redirect({ to: "/app/nova/reports", replace: true });
+    throw redirect({ to: "/app/bylda/reports", replace: true });
   },
 });

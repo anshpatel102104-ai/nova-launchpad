@@ -6,7 +6,7 @@
 // is marked complete. Each step points at a real, clickable in-product action;
 // "Start this step" navigates there and a coachmark spotlights the exact
 // control. Completion flows through advance-mission (which dual-writes to
-// nova_events and unlocks the next module) and is celebrated in the moment.
+// bylda_events and unlocks the next module) and is celebrated in the moment.
 
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -40,8 +40,8 @@ function CoursePage() {
     // Course view + the mission spine (useProgressSpine → currentMissionQuery).
     qc.invalidateQueries({ queryKey: ["founder-course"] });
     qc.invalidateQueries({ queryKey: ["current-mission"] });
-    // nova_events-derived surfaces (momentum, graph signals) pick up the new event.
-    qc.invalidateQueries({ queryKey: ["business-graph-nova-events"] });
+    // bylda_events-derived surfaces (momentum, graph signals) pick up the new event.
+    qc.invalidateQueries({ queryKey: ["business-graph-bylda-events"] });
   };
 
   async function completeStep(step: CourseStep, module: CourseModule, mentor: Mentor | null) {
@@ -61,7 +61,7 @@ function CoursePage() {
           icon: "🎉",
         });
       } else {
-        const who = mentor?.first ?? "Nova";
+        const who = mentor?.first ?? "Bylda";
         toast.success("Step complete", {
           description: `Nice work. ${who} has your next move ready.`,
           icon: "✓",
@@ -104,7 +104,7 @@ function CoursePage() {
             Your course
           </h1>
           <p className="mt-0.5 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
-            Built from your casefile. One module at a time — Nova points at exactly what to click.
+            Built from your casefile. One module at a time — Bylda points at exactly what to click.
           </p>
         </div>
       </div>
@@ -387,7 +387,7 @@ function EmptyCourse() {
         Your course isn't built yet
       </h1>
       <p className="text-[14px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-        The moment you approve your Founder Casefile, Nova turns it into a personalized,
+        The moment you approve your Founder Casefile, Bylda turns it into a personalized,
         step-by-step course — built around your exact business, not a generic curriculum.
       </p>
       <button

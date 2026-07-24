@@ -1,4 +1,4 @@
-// Profile sync — writes what Nova learned from a tool run into the org's
+// Profile sync — writes what Bylda learned from a tool run into the org's
 // Business Context Graph (business_context), so learning survives devices and
 // feeds every AI call, not just this browser's localStorage.
 //

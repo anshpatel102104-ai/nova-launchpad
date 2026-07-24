@@ -1,10 +1,30 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { toolRunsQuery } from "@/lib/queries";
 import { ACADEMY_MODULES, getModuleState } from "@/lib/academy-modules";
 import { organizationQuery } from "@/lib/queries";
-import { CheckCircle2, Lock, ArrowRight, Zap, BookOpen, Play, ExternalLink } from "lucide-react";
+import { loadWorkspaceProfile } from "@/lib/workspaceProfile";
+import {
+  inferBusinessArchetype,
+  getModuleBrief,
+  getBuildSteps,
+  ARCHETYPE_LABELS,
+  type BusinessArchetype,
+} from "@/lib/module-briefs";
+import {
+  CheckCircle2,
+  Lock,
+  ArrowRight,
+  Zap,
+  BookOpen,
+  Play,
+  ExternalLink,
+  Compass,
+  ListChecks,
+  Circle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/academy/$module")({
@@ -32,6 +52,38 @@ function ModuleWorkspace() {
   const { module: moduleId } = Route.useParams();
   const { currentOrgId } = useAuth();
   const navigate = useNavigate();
+
+  // Infer the founder's business archetype (client-only — reads localStorage).
+  const [archetype, setArchetype] = useState<BusinessArchetype>("general");
+  useEffect(() => {
+    setArchetype(inferBusinessArchetype(loadWorkspaceProfile()));
+  }, []);
+
+  // Locally-checkable build steps, persisted per module so progress sticks.
+  const stepsKey = `bylda-module-steps-${moduleId}`;
+  const [doneSteps, setDoneSteps] = useState<Set<number>>(new Set());
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(stepsKey);
+      if (raw) setDoneSteps(new Set(JSON.parse(raw) as number[]));
+      else setDoneSteps(new Set());
+    } catch {
+      setDoneSteps(new Set());
+    }
+  }, [stepsKey]);
+  const toggleStep = (i: number) => {
+    setDoneSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      try {
+        localStorage.setItem(stepsKey, JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   const runsQ = useQuery({ ...toolRunsQuery(currentOrgId ?? "", 500), enabled: !!currentOrgId });
   const orgQ = useQuery({ ...organizationQuery(currentOrgId ?? ""), enabled: !!currentOrgId });
@@ -73,6 +125,10 @@ function ModuleWorkspace() {
   const completedTools = module.tools.filter((t) => completedSlugs.has(t));
   const moduleIndex = ACADEMY_MODULES.findIndex((m) => m.id === moduleId);
   const nextModule = ACADEMY_MODULES[moduleIndex + 1];
+
+  const brief = getModuleBrief(module.id, archetype);
+  const buildSteps = getBuildSteps(module.id, archetype);
+  const businessLabel = ARCHETYPE_LABELS[archetype];
 
   if (state === "locked") {
     return (
@@ -194,7 +250,7 @@ function ModuleWorkspace() {
         {/* LEFT: Learn content */}
         <div className="lg:col-span-2 space-y-5">
           {/* Lesson */}
-          <div className="rounded-xl p-5 nova-card">
+          <div className="rounded-xl p-5 bylda-card">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-4 w-4" style={{ color: "var(--primary)" }} />
               <span
@@ -208,6 +264,112 @@ function ModuleWorkspace() {
               {module.learnContent}
             </p>
           </div>
+
+          {/* Tailored brief — why this matters for THEIR business + how to nail it */}
+          {brief && (
+            <div
+              className="rounded-xl p-5"
+              style={{
+                background: "color-mix(in oklab, var(--primary) 6%, var(--surface))",
+                border: "1px solid color-mix(in oklab, var(--primary) 22%, var(--border))",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Compass className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                <span
+                  className="text-[11px] font-bold uppercase tracking-widest"
+                  style={{ color: "var(--primary)" }}
+                >
+                  Why this matters for your {businessLabel}
+                </span>
+              </div>
+              <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>
+                {brief.why}
+              </p>
+              <div
+                className="mt-3 rounded-lg p-3 text-[12.5px] leading-relaxed"
+                style={{
+                  background: "color-mix(in oklab, var(--launch-accent) 10%, transparent)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <span className="font-semibold" style={{ color: "var(--launch-accent)" }}>
+                  How to make it effective:{" "}
+                </span>
+                {brief.how}
+              </div>
+            </div>
+          )}
+
+          {/* Build steps — the concrete, do-it-now checklist */}
+          {buildSteps.length > 0 && (
+            <div className="rounded-xl p-5 bylda-card">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ListChecks className="h-4 w-4" style={{ color: "var(--primary)" }} />
+                  <span
+                    className="text-[11px] font-bold uppercase tracking-widest"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Build steps
+                  </span>
+                </div>
+                <span
+                  className="text-[10px] font-mono"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  {doneSteps.size}/{buildSteps.length} done
+                </span>
+              </div>
+              <ol className="space-y-2.5">
+                {buildSteps.map((step, i) => {
+                  const done = doneSteps.has(i);
+                  return (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => toggleStep(i)}
+                        className="flex w-full items-start gap-3 rounded-xl p-3 text-left transition-all bylda-card-hover"
+                        style={{
+                          background: done
+                            ? "color-mix(in oklab, var(--success) 6%, var(--surface))"
+                            : "var(--surface)",
+                          border: done
+                            ? "1px solid color-mix(in oklab, var(--success) 28%, var(--border))"
+                            : "1px solid var(--border)",
+                        }}
+                      >
+                        <span className="mt-0.5 shrink-0">
+                          {done ? (
+                            <CheckCircle2 className="h-4 w-4" style={{ color: "var(--success)" }} />
+                          ) : (
+                            <Circle className="h-4 w-4" style={{ color: "var(--text-faint)" }} />
+                          )}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span
+                            className="block text-[13px] font-semibold"
+                            style={{
+                              color: done ? "var(--muted-foreground)" : "var(--foreground)",
+                              textDecoration: done ? "line-through" : "none",
+                            }}
+                          >
+                            {i + 1}. {step.title}
+                          </span>
+                          <span
+                            className="block text-[12px] mt-0.5 leading-relaxed"
+                            style={{ color: "var(--muted-foreground)" }}
+                          >
+                            {step.detail}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          )}
 
           {/* Execute tasks */}
           <div>
@@ -227,7 +389,7 @@ function ModuleWorkspace() {
                 return (
                   <div
                     key={toolKey}
-                    className="flex items-center gap-3 rounded-xl p-4 nova-card transition-all"
+                    className="flex items-center gap-3 rounded-xl p-4 bylda-card transition-all"
                     style={{
                       borderColor: isDone
                         ? "color-mix(in oklab, #34D399 28%, var(--border))"
@@ -268,7 +430,7 @@ function ModuleWorkspace() {
                       params={{ tool: toolKey }}
                       className={cn(
                         "flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-semibold transition-all shrink-0",
-                        isDone ? "nova-card nova-card-hover" : "btn-execute",
+                        isDone ? "bylda-card bylda-card-hover" : "btn-execute",
                       )}
                     >
                       {isDone ? (
@@ -293,7 +455,7 @@ function ModuleWorkspace() {
         {/* RIGHT: Progress panel */}
         <div className="space-y-4">
           {/* Completion summary */}
-          <div className="rounded-xl p-4 nova-card">
+          <div className="rounded-xl p-4 bylda-card">
             <div
               className="text-[10px] font-bold uppercase tracking-widest mb-3"
               style={{ color: "var(--muted-foreground)" }}
@@ -398,7 +560,7 @@ function ModuleWorkspace() {
           {/* Academy nav */}
           <Link
             to="/app/academy"
-            className="flex items-center gap-2 rounded-xl p-3 nova-card nova-card-hover text-[12px] font-medium"
+            className="flex items-center gap-2 rounded-xl p-3 bylda-card bylda-card-hover text-[12px] font-medium"
             style={{ color: "var(--muted-foreground)" }}
           >
             <BookOpen className="h-3.5 w-3.5" />

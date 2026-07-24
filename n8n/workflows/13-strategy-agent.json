@@ -186,8 +186,12 @@
     "Load Profile": { "main": [[{ "node": "Fetch System Prompt", "type": "main", "index": 0 }]] },
     "Fetch System Prompt": { "main": [[{ "node": "Call Claude", "type": "main", "index": 0 }]] },
     "Call Claude": { "main": [[{ "node": "Parse Claude Response", "type": "main", "index": 0 }]] },
-    "Parse Claude Response": { "main": [[{ "node": "Write GTM Summary", "type": "main", "index": 0 }]] },
-    "Write GTM Summary": { "main": [[{ "node": "Write Tool Output", "type": "main", "index": 0 }]] },
+    "Parse Claude Response": {
+      "main": [[{ "node": "Write GTM Summary", "type": "main", "index": 0 }]]
+    },
+    "Write GTM Summary": {
+      "main": [[{ "node": "Write Tool Output", "type": "main", "index": 0 }]]
+    },
     "Write Tool Output": { "main": [[{ "node": "Return Response", "type": "main", "index": 0 }]] },
     "Error Trigger": { "main": [[{ "node": "Log Error", "type": "main", "index": 0 }]] },
     "Log Error": { "main": [[{ "node": "Error Response", "type": "main", "index": 0 }]] }
@@ -200,8 +204,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [{ "name": "nova-ops" }, { "name": "strategy-agent" }],
+  "tags": [{ "name": "bylda-ops" }, { "name": "strategy-agent" }],
   "triggerCount": 1,
   "updatedAt": "2026-05-14T00:00:00.000Z",
-  "id": "nova-ops-strategy-agent-v1"
+  "id": "bylda-ops-strategy-agent-v1"
 }

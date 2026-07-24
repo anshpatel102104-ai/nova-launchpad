@@ -132,7 +132,7 @@ export type CasefileCore = {
   strengths: string[];
   proof: string[];
   nextActions: NextAction[];
-  novaTake: string;
+  byldaTake: string;
   recommendation: string;
   fullReport: string;
 };
@@ -166,7 +166,7 @@ export function readCore(run: CasefileRun): CasefileCore {
     nextActions: (Array.isArray(out.recommended_next_actions)
       ? out.recommended_next_actions
       : []) as NextAction[],
-    novaTake: String(
+    byldaTake: String(
       out.rationale ?? out.recommendation ?? out.fatal_flaw ?? out.summary ?? "",
     ).slice(0, 1200),
     recommendation: String(out.recommendation ?? out.next_step ?? "").slice(0, 400),

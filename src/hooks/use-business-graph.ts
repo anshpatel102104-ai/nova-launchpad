@@ -1,10 +1,10 @@
-// Business Graph — the underlying intelligence layer of Nova OS.
+// Business Graph — the underlying intelligence layer of Bylda OS.
 // Aggregates business state from existing queries into a single graph that
 // every page reads from: metrics that matter, blockers in the way, and
 // AI-recommended next moves. Users never see the graph directly — they feel
-// it through Mission Control, Outcome Engines, and Nova recommendations.
+// it through Mission Control, Outcome Engines, and Bylda recommendations.
 //
-// NOVA_OS_REDESIGN.md · Part 5 — pure frontend aggregation, no backend changes.
+// BYLDA_OS_REDESIGN.md · Part 5 — pure frontend aggregation, no backend changes.
 
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
@@ -87,9 +87,9 @@ export interface BusinessGraph {
     missionProgress: number; // 0–1
     /** tool_keys with at least one succeeded run */
     succeededToolKeys: string[];
-    /** A "track.graduated" nova_event fired in the last 14 days */
+    /** A "track.graduated" bylda_event fired in the last 14 days */
     recentlyGraduated: boolean;
-    /** Days since the most recent "step.completed" nova_event, or null if none yet */
+    /** Days since the most recent "step.completed" bylda_event, or null if none yet */
     daysSinceLastStepCompleted: number | null;
   };
 }
@@ -124,14 +124,14 @@ export function useBusinessGraph(): BusinessGraph {
     staleTime: 60_000,
   });
 
-  // Recent nova_events (last 14 days), scoped to just what the graduation and
+  // Recent bylda_events (last 14 days), scoped to just what the graduation and
   // resume-momentum signals need — event_type + created_at, newest first.
   const eventsQ = useQuery({
-    queryKey: ["business-graph-nova-events", orgId],
+    queryKey: ["business-graph-bylda-events", orgId],
     queryFn: async () => {
       const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString();
       const { data } = await db
-        .from("nova_events")
+        .from("bylda_events")
         .select("event_type, created_at")
         .eq("organization_id", orgId)
         .gte("created_at", fourteenDaysAgo)
@@ -178,10 +178,10 @@ export function useBusinessGraph(): BusinessGraph {
     (s) => s.status === "completed" || s.status === "skipped",
   ).length;
 
-  // nova_events-derived signals (events are ordered newest-first from the query).
-  const novaEvents = eventsQ.data ?? [];
-  const recentlyGraduated = novaEvents.some((e) => e.event_type === "track.graduated");
-  const lastStepCompleted = novaEvents.find((e) => e.event_type === "step.completed");
+  // bylda_events-derived signals (events are ordered newest-first from the query).
+  const byldaEvents = eventsQ.data ?? [];
+  const recentlyGraduated = byldaEvents.some((e) => e.event_type === "track.graduated");
+  const lastStepCompleted = byldaEvents.find((e) => e.event_type === "step.completed");
   // null (not 0) when a step has never been completed — a brand-new org is not
   // "stalled", so it shouldn't get a re-engagement nudge.
   const daysSinceLastStepCompleted = lastStepCompleted
@@ -216,7 +216,7 @@ export function useBusinessGraph(): BusinessGraph {
             value: pipelineValue > 0 ? `$${(pipelineValue / 1000).toFixed(1)}k` : "$0",
             target: "First revenue",
             status: pipelineValue > 0 ? "on-track" : "neutral",
-            actionTo: "/app/nova/crm",
+            actionTo: "/app/bylda/crm",
             actionLabel: "View pipeline",
           },
           {
@@ -244,7 +244,7 @@ export function useBusinessGraph(): BusinessGraph {
             label: "Pipeline",
             value: pipelineValue > 0 ? `$${(pipelineValue / 1000).toFixed(1)}k` : "$0",
             status: pipelineValue > 0 ? "on-track" : "neutral",
-            actionTo: "/app/nova/crm",
+            actionTo: "/app/bylda/crm",
             actionLabel: "View pipeline",
           },
           {
@@ -297,7 +297,7 @@ export function useBusinessGraph(): BusinessGraph {
         id: "no-leads",
         severity: "high",
         title: "No leads saved yet",
-        why: "You need people to talk to. Nova will help you find your first 10.",
+        why: "You need people to talk to. Bylda will help you find your first 10.",
         resolveTo: "/app/outcomes/launch",
         resolveLabel: "Find my first customers",
         estimatedMinutes: 15,
@@ -346,9 +346,9 @@ export function useBusinessGraph(): BusinessGraph {
     recommendations.push({
       id: "explore-operator-tools",
       title: "Your business has grown — explore Operator tools",
-      impact: "Nova unlocked pipeline and team tools now that you have real clients",
+      impact: "Bylda unlocked pipeline and team tools now that you have real clients",
       estimatedMinutes: 5,
-      to: "/app/nova/crm",
+      to: "/app/bylda/crm",
     });
   }
   if (signals.missionActive && signals.missionProgress < 1) {
@@ -382,7 +382,7 @@ export function useBusinessGraph(): BusinessGraph {
     recommendations.push({
       id: "automate",
       title: "Turn on your first automation",
-      impact: "Stop doing by hand what Nova can run for you",
+      impact: "Stop doing by hand what Bylda can run for you",
       estimatedMinutes: 15,
       to: "/app/automations",
     });
@@ -402,9 +402,9 @@ export function useBusinessGraph(): BusinessGraph {
   }
   if (recommendations.length === 0) {
     recommendations.push({
-      id: "ask-nova",
-      title: "Ask Nova what to do next",
-      impact: "Nova looks at your business and picks your next move",
+      id: "ask-bylda",
+      title: "Ask Bylda what to do next",
+      impact: "Bylda looks at your business and picks your next move",
       estimatedMinutes: 2,
       to: "/app/mentor",
     });

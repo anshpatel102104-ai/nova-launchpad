@@ -1,7 +1,7 @@
 // Shared CRM object resolution — the Phase 0 foundation.
 //
 // One place that knows how to create-or-match the core CRM records so every
-// entry point (crm-action, nova-action, workflows) produces the same coherent
+// entry point (crm-action, bylda-action, workflows) produces the same coherent
 // graph: a lead is linked to a contact, a contact is linked to a company, and
 // companies/contacts are deduped instead of piling up duplicates.
 //
@@ -168,7 +168,7 @@ export async function resolveContact(
       phone: input.phone ? String(input.phone) : null,
       company: input.company ? String(input.company) : null,
       company_id: input.company_id ?? null,
-      source: input.source ? String(input.source) : "nova",
+      source: input.source ? String(input.source) : "bylda",
       tags: Array.isArray(input.tags) ? (input.tags as string[]) : [],
     })
     .select("id")

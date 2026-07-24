@@ -22,11 +22,11 @@ import { NextStepHero } from "@/components/app/dashboard/NextStepHero";
 import { MentorChatCard } from "@/components/app/dashboard/MentorChatCard";
 import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatusBanner";
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
-import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
+import { ByldaHandoffCard } from "@/components/launchpad/ByldaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
 import { StageSpine } from "@/components/launchpad/StageSpine";
 import { nextBestMove, type NextMove } from "@/lib/next-move";
-import { MomentumRail } from "@/components/nova/MomentumRail";
+import { MomentumRail } from "@/components/bylda/MomentumRail";
 import { RecentWinChip } from "@/components/app/RecentWinChip";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
@@ -105,7 +105,7 @@ function HomePage() {
             Welcome back, {name}
           </h1>
           <p className="mt-1 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
-            {graph.businessName} · you have one clear next move. Nova will guide you.
+            {graph.businessName} · you have one clear next move. Bylda will guide you.
           </p>
           <div className="mt-2.5">
             <RecentWinChip />
@@ -130,8 +130,8 @@ function HomePage() {
         }}
       />
 
-      {/* ── Nova handoff — the build is proven, take it live ── */}
-      {progress.readyForNova && <NovaHandoffCard graph={graph} />}
+      {/* ── Bylda handoff — the build is proven, take it live ── */}
+      {progress.readyForBylda && <ByldaHandoffCard graph={graph} />}
 
       {/* ══ 1 · CURRENT MISSION — the dominant element ══ */}
       <MissionHero
@@ -155,7 +155,7 @@ function HomePage() {
               className="px-5 py-6 text-center text-[13px]"
               style={{ color: "var(--text-faint)" }}
             >
-              Finish the mission above and Nova will line up what's next.
+              Finish the mission above and Bylda will line up what's next.
             </div>
           ) : (
             queue.map((r, i) => (
@@ -448,7 +448,7 @@ function MissionHero({
             style={{ color: fix ? "var(--warning)" : "var(--success)" }}
           >
             <span
-              className="nova-live-dot h-1.5 w-1.5 rounded-full"
+              className="bylda-live-dot h-1.5 w-1.5 rounded-full"
               style={{ background: "currentColor" }}
             />
             {hero.eyebrow}
@@ -529,7 +529,7 @@ const SUPPORT_TOOLS = [
   { label: "Research", to: "/app/research", icon: FlaskConical },
   { label: "Assets", to: "/app/assets", icon: FileText },
   { label: "Automations", to: "/app/automations", icon: Zap },
-  { label: "Ask Nova", to: "/app/mentor", icon: Bot },
+  { label: "Ask Bylda", to: "/app/mentor", icon: Bot },
 ] as const;
 
 /* ─── Small pieces ──────────────────────────────────────────── */

@@ -111,7 +111,7 @@ function TemplateCard({
 }) {
   const steps = Array.isArray(template.blocks) ? template.blocks.length : 0;
   return (
-    <div className="nova-card rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/30 transition-all">
+    <div className="bylda-card rounded-2xl p-4 flex flex-col gap-3 hover:border-primary/30 transition-all">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -446,7 +446,7 @@ function WorkflowTemplatesPage() {
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="nova-card rounded-2xl h-44 animate-pulse bg-surface-2/40" />
+            <div key={i} className="bylda-card rounded-2xl h-44 animate-pulse bg-surface-2/40" />
           ))}
         </div>
       ) : filtered.length === 0 ? (

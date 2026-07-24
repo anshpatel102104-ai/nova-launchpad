@@ -104,7 +104,7 @@ function ScaleCampaigns() {
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <div
               key={n}
-              className="rounded-xl p-5 nova-card animate-pulse"
+              className="rounded-xl p-5 bylda-card animate-pulse"
               style={{ minHeight: 120 }}
             >
               <div
@@ -158,7 +158,7 @@ function ScaleCampaigns() {
                 key={item.tool}
                 to="/app/launchpad/$tool"
                 params={{ tool: item.tool }}
-                className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-semibold nova-card nova-card-hover"
+                className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-semibold bylda-card bylda-card-hover"
               >
                 <ArrowRight className="h-3.5 w-3.5" style={{ color: "#7DD3FC" }} />
                 {item.label}
@@ -180,7 +180,7 @@ function ScaleCampaigns() {
             return (
               <div
                 key={asset.id}
-                className="rounded-xl p-4 nova-card nova-card-hover group flex flex-col"
+                className="rounded-xl p-4 bylda-card bylda-card-hover group flex flex-col"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div

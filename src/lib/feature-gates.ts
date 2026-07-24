@@ -16,7 +16,7 @@ export type FeatureKey =
   | "investor_emails"
   | "kill_my_idea"
   | "idea_vs_idea"
-  | "nova_systems"
+  | "bylda_systems"
   | "crm_pipeline"
   | "lead_capture"
   | "automation_workflows"
@@ -91,10 +91,10 @@ const FEATURE_GATES: Record<FeatureKey, FeatureConfig> = {
     label: "Idea vs Idea",
     upsell: "Upgrade to Launch to compare ideas side by side.",
   },
-  nova_systems: {
+  bylda_systems: {
     plans: ["starter", "launch", "operate", "scale"],
-    label: "Nova OS",
-    upsell: "Upgrade to access Nova OS systems.",
+    label: "Bylda OS",
+    upsell: "Upgrade to access Bylda OS systems.",
   },
   crm_pipeline: {
     plans: ["starter", "launch", "operate", "scale"],

@@ -405,7 +405,7 @@
   "staticData": null,
   "tags": [
     {
-      "name": "nova-ops",
+      "name": "bylda-ops",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
     },
@@ -417,5 +417,5 @@
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-29T00:00:00.000Z",
-  "id": "nova-ops-client-reporting-subagent-v1"
+  "id": "bylda-ops-client-reporting-subagent-v1"
 }

@@ -38,7 +38,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `Click the "Run Tool" button to open the Idea Validator. ` +
               `In the text box, describe your business idea${ideaContext} as clearly as you can — ` +
               `who it's for, what problem it solves, and how you plan to make money. ` +
-              `Nova will give your idea a score from 0 to 100, plus a list of its strengths (the good parts), ` +
+              `Bylda will give your idea a score from 0 to 100, plus a list of its strengths (the good parts), ` +
               `weaknesses (things to fix), and risks (things that could go wrong). ` +
               `READ every piece of feedback carefully — this is your roadmap for what to improve before you launch.`,
             tool_key: "idea-validator",
@@ -46,10 +46,10 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
           {
             title: "Step 2 — Pressure-Test It with Kill My Idea",
             description:
-              `Now let Nova play devil's advocate. Open the "Kill My Idea" tool and paste in your idea${ideaContext} again. ` +
-              `Nova will argue AGAINST your idea as hard as it can — like a skeptical investor who doesn't want to give you money. ` +
+              `Now let Bylda play devil's advocate. Open the "Kill My Idea" tool and paste in your idea${ideaContext} again. ` +
+              `Bylda will argue AGAINST your idea as hard as it can — like a skeptical investor who doesn't want to give you money. ` +
               `This is NOT meant to make you feel bad. It's meant to surface every possible objection BEFORE a real customer sees it. ` +
-              `After reading Nova's counter-arguments, write down the top 3 objections and your answers to them. ` +
+              `After reading Bylda's counter-arguments, write down the top 3 objections and your answers to them. ` +
               `If your answers are solid, your idea is strong. If you can't answer an objection, that's your homework.`,
             tool_key: "kill-my-idea",
           },
@@ -83,7 +83,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `(2) What exact result do you deliver? Example: "a 5-page website live within 7 days." ` +
               `(3) How much will you charge? ` +
               `(4) What do they get for that price? List every deliverable. ` +
-              `Nova will take all of this and write a professional offer description you can put on your website and send to prospects. ` +
+              `Bylda will take all of this and write a professional offer description you can put on your website and send to prospects. ` +
               `Copy the output into a Google Doc titled "My Core Offer" — you'll update this as you learn more from real customers.`,
             tool_key: "offer",
           },
@@ -92,7 +92,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
             description:
               `Now that you know WHAT you're selling, you need a plan for HOW you'll sell it. ` +
               `Open the GTM Strategy tool and enter your offer details${ideaContext}. ` +
-              `Nova will build you a 90-day plan that covers: ` +
+              `Bylda will build you a 90-day plan that covers: ` +
               `(1) Which type of customer to go after first (your "target segment"), ` +
               `(2) WHERE to find them — social media, cold email, networking, etc., ` +
               `(3) WHAT to say to get their attention (your "messaging"), ` +
@@ -128,7 +128,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
             title: "Step 1 — Generate Your First 10 Customers Blueprint",
             description:
               `Open the "First 10 Customers" tool. Describe your business${ideaContext}, your target customer, and your price point. ` +
-              `Nova will give you a personalized list of strategies to get 10 customers in 30 days or less. ` +
+              `Bylda will give you a personalized list of strategies to get 10 customers in 30 days or less. ` +
               `The strategies will be specific to YOUR type of business — not generic advice. ` +
               `IMPORTANT: After reading the output, pick the TOP 2 strategies that feel most realistic for you right now. ` +
               `Write them down. Your only job this week is to execute on those 2 strategies. ` +
@@ -140,7 +140,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
             description:
               `Most sales don't happen on the first contact. Studies show it takes 5-8 touchpoints before someone buys. ` +
               `Open the Follow-Up Sequence tool. Enter your business${ideaContext} and your target customer type. ` +
-              `Nova will write 5 ready-to-send emails that follow up with a prospect over 2 weeks. ` +
+              `Bylda will write 5 ready-to-send emails that follow up with a prospect over 2 weeks. ` +
               `Each email has a different job: introduce, provide value, handle objection, share proof, and ask for the sale. ` +
               `Copy these emails into your email tool (Gmail, Outlook, etc.) as TEMPLATES. ` +
               `Every time you reach out to a prospect, start the sequence. ` +
@@ -158,7 +158,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `Would you be open to a quick 15-minute call this week to see if I can help you?" ` +
               `Send the message. Right now. Not tomorrow. Not after you fix your website. NOW. ` +
               `Come back and mark this step complete after you've sent it. ` +
-              `Add their name to your Leads board in Nova so you can track what happens next.`,
+              `Add their name to your Leads board in Bylda so you can track what happens next.`,
             tool_key: null,
           },
         ],
@@ -177,7 +177,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
             title: "Step 1 — Create a Full Go-To-Market Strategy Your Team Can Run",
             description:
               `Open the GTM Strategy tool. Enter your business details${ideaContext} including your current revenue, customer type, and team size. ` +
-              `Ask Nova to build a GTM strategy that can be executed by a team member, not just you. ` +
+              `Ask Bylda to build a GTM strategy that can be executed by a team member, not just you. ` +
               `The output will include: target segments to go after, channels to use, messaging scripts, and a 90-day calendar. ` +
               `AFTER you get the output, do this: for each step in the plan, write the name of WHO on your team (or a future hire) is responsible. ` +
               `If every step says "Me," that means you need to hire or delegate before you can scale. ` +
@@ -190,7 +190,7 @@ export function buildMissionSeed(lane: Lane, idea: string): MissionSeed {
               `An operations plan is like the instruction manual for your business. ` +
               `Open the Operations Plan tool and describe how your business currently works${ideaContext}. ` +
               `Include: how you get customers, how you deliver your product or service, how you get paid, and how you handle problems. ` +
-              `Nova will output a structured operations plan covering your team roles, key processes, tools to use, and automation opportunities. ` +
+              `Bylda will output a structured operations plan covering your team roles, key processes, tools to use, and automation opportunities. ` +
               `Focus especially on the "automation opportunities" section — these are tasks that can be done by software so you don't have to do them manually. ` +
               `Circle the top 3 tasks you personally do every week that take the most time. Those are your first automation targets.`,
             tool_key: "generate-ops-plan",
@@ -229,7 +229,7 @@ export function buildOperatorBaseline(
   return {
     title: "Set Up Your Operating Baseline",
     description:
-      `Before Nova can help you scale ${name}, it needs to see how the machine runs today. ` +
+      `Before Bylda can help you scale ${name}, it needs to see how the machine runs today. ` +
       `This baseline wires up your numbers, your systems, and your first automation — ` +
       `so every recommendation after this is based on YOUR real operation, not guesses. ` +
       `Most operators finish this in under an hour.`,
@@ -237,9 +237,9 @@ export function buildOperatorBaseline(
       {
         title: "Step 1 — Confirm Your KPI Set",
         description:
-          `You told Nova you don't currently see these numbers weekly: ${gaps}. ` +
+          `You told Bylda you don't currently see these numbers weekly: ${gaps}. ` +
           `Open the KPI Dashboard tool and describe ${name} — your business model, stage, and team size. ` +
-          `Nova will propose the 10 numbers that matter most for a business like yours, with benchmarks and red-flag thresholds. ` +
+          `Bylda will propose the 10 numbers that matter most for a business like yours, with benchmarks and red-flag thresholds. ` +
           `Pick the 5 you'll commit to reviewing every week. Write them down where you plan — this becomes your weekly scorecard.`,
         tool_key: "kpi-dashboard",
       },
@@ -249,7 +249,7 @@ export function buildOperatorBaseline(
           `Open the Operations Plan tool and describe how ${name} actually works today: ` +
           `how customers come in, how you deliver, how you get paid, and where things pile up. ` +
           `Be honest about the messy parts — that's where the leverage is. ` +
-          `Nova will return a structured ops plan with team roles, key processes, and a ranked list of automation opportunities. ` +
+          `Bylda will return a structured ops plan with team roles, key processes, and a ranked list of automation opportunities. ` +
           `Keep the output open for Step 3.`,
         tool_key: "generate-ops-plan",
       },
@@ -257,7 +257,7 @@ export function buildOperatorBaseline(
         title: `Step 3 — Attack Your #1 Bottleneck: ${topBottleneck}`,
         description:
           `You named "${topBottleneck}" as the thing slowing you down most. ` +
-          `Nova has built a list of automations specifically designed to solve your bottleneck. ` +
+          `Bylda has built a list of automations specifically designed to solve your bottleneck. ` +
           `Go to the Automations page (in the left sidebar) and look for the workflows that target "${topBottleneck}". ` +
           `Deploy the one that matches your workflow best. ` +
           `If none fit exactly, go to the Workflow Builder and sketch the trigger → action chain for the task you do most often. ` +
@@ -267,9 +267,9 @@ export function buildOperatorBaseline(
       {
         title: "Step 4 — Connect Your First Integration",
         description:
-          `Nova works best plugged into your real data. ` +
+          `Bylda works best plugged into your real data. ` +
           `Go to the Integrations page (in the left sidebar under Tools) and connect the tool you rely on most for data: Stripe (payments), HubSpot (CRM), Slack (team comms), or Google Calendar. ` +
-          `Once connected, Nova automatically pulls your real numbers — no more manual data entry. ` +
+          `Once connected, Bylda automatically pulls your real numbers — no more manual data entry. ` +
           `Mark complete when at least one integration shows "connected" and is syncing data.`,
         tool_key: null,
       },

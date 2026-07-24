@@ -1,6 +1,6 @@
 // Post-onboarding routing — never a generic app home. The landing follows
 // the active product: builders land in Launchpad's mission control, operators
-// land in Nova's command center. Guests carry their choice in sessionStorage.
+// land in Bylda's command center. Guests carry their choice in sessionStorage.
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { guestStore } from "@/lib/guest";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/app/")({
 
     if (guestStore.get().isGuest) {
       try {
-        if (sessionStorage.getItem("nova-view-mode") === "operate") mode = "operate";
+        if (sessionStorage.getItem("bylda-view-mode") === "operate") mode = "operate";
       } catch {
         /* default to create */
       }

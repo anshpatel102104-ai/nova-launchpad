@@ -40,27 +40,21 @@
       "name": "Webhook - Receive Request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "path": "ai-operator-tool-dispatcher",
         "httpMethod": "POST",
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-tool-dispatcher-stg"
+      "webhookId": "bylda-tool-dispatcher-stg"
     },
     {
       "id": "c3000002-0000-0000-0000-000000000002",
       "name": "HTTP - Get Entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "method": "GET",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/plan_entitlements",
@@ -104,10 +98,7 @@
       "name": "Code - Check Tool Entitlement",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        680,
-        380
-      ],
+      "position": [680, 380],
       "parameters": {
         "jsCode": "const body    = $('Webhook - Receive Request').first().json.body;\\nconst toolId  = (body.tool_id || '').trim();\\nconst userId  = body.user_id;\\nconst params  = body.params || {};\\n\\nif (!toolId) {\\n  return [{ json: { user_id: userId, tool_id: toolId, params, entitled: false, credit_cost: 0, reason: 'missing_tool_id' } }];\\n}\\n\\nconst raw = $input.first().json;\\nconst rows = Array.isArray(raw) ? raw : (raw ? [raw] : []);\\n\\nlet entitled  = false;\\nlet creditCost = 1;\\nlet reason    = 'tool_not_in_plan';\\n\\nif (rows.length > 0) {\\n  const firstRow = rows[0];\\n\\n  // Schema A: each row is { tool_id: string, enabled: bool, credit_cost: int }\\n  if (firstRow.tool_id !== undefined) {\\n    const entry = rows.find(r => r.tool_id === toolId);\\n    if (entry) {\\n      entitled   = entry.enabled === true;\\n      creditCost = entry.credit_cost || 1;\\n      reason     = entitled ? null : 'tool_not_in_plan';\\n    }\\n  }\\n  // Schema B: single row with boolean flag per tool_id and optional credit_costs JSONB\\n  else if (typeof firstRow[toolId] !== 'undefined') {\\n    entitled = firstRow[toolId] === true;\\n    const costs = firstRow.credit_costs || {};\\n    creditCost = (typeof costs === 'object' && costs[toolId]) ? costs[toolId] : 1;\\n    reason = entitled ? null : 'tool_not_in_plan';\\n  }\\n  // Schema C: single row with plan_features JSONB array\\n  else if (Array.isArray(firstRow.plan_features)) {\\n    entitled = firstRow.plan_features.includes(toolId);\\n    const costs = firstRow.credit_costs || {};\\n    creditCost = costs[toolId] || 1;\\n    reason = entitled ? null : 'tool_not_in_plan';\\n  }\\n}\\n\\nreturn [{\\n  json: { user_id: userId, tool_id: toolId, params, entitled, credit_cost: creditCost, reason }\\n}];"
       }
@@ -117,10 +108,7 @@
       "name": "IF - Is Tool Entitled",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        900,
-        380
-      ],
+      "position": [900, 380],
       "parameters": {
         "conditions": {
           "options": {
@@ -149,13 +137,10 @@
       "name": "Respond - Tool Not Allowed",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1120,
-        560
-      ],
+      "position": [1120, 560],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: false, allowed: false, tool_id: $json.tool_id, reason: $json.reason || 'tool_not_in_plan', upgrade_url: $vars.STRIPE_UPGRADE_URL || 'https://nova-ops.space/upgrade' }) }}",
+        "responseBody": "={{ JSON.stringify({ success: false, allowed: false, tool_id: $json.tool_id, reason: $json.reason || 'tool_not_in_plan', upgrade_url: $vars.STRIPE_UPGRADE_URL || 'https://usebylda.com/upgrade' }) }}",
         "options": {
           "responseCode": 403
         }
@@ -166,13 +151,10 @@
       "name": "HTTP - Deduct Credit",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1120,
-        240
-      ],
+      "position": [1120, 240],
       "parameters": {
         "method": "POST",
-        "url": "https://stg.nova-ops.space/api/webhooks/credit-deduct",
+        "url": "https://stg.usebylda.com/api/webhooks/credit-deduct",
         "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
@@ -201,12 +183,9 @@
       "name": "Code - Build Dispatch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1340,
-        240
-      ],
+      "position": [1340, 240],
       "parameters": {
-        "jsCode": "const ctx    = $('Code - Check Tool Entitlement').first().json;\\nconst credit = $input.first().json;  // credit deduction response\\n\\nconst toolId = ctx.tool_id;\\nconst base   = $vars.GLOBAL_APP_URL_STG || 'https://stg.nova-ops.space';\\n\\n// Lookup map: tool_id \u2192 Launchpad webhook URL\\nconst toolMap = {\\n  lead_gen:            `${base}/api/webhooks/tools/lead-gen`,\\n  copywriting:         `${base}/api/webhooks/tools/copywriting`,\\n  offer_building:      `${base}/api/webhooks/tools/offer-building`,\\n  funnel_mapping:      `${base}/api/webhooks/tools/funnel-mapping`,\\n  content_calendar:    `${base}/api/webhooks/tools/content-calendar`,\\n  ad_strategy:         `${base}/api/webhooks/tools/ad-strategy`,\\n  email_sequence:      `${base}/api/webhooks/tools/email-sequence`,\\n  seo_brief:           `${base}/api/webhooks/tools/seo-brief`,\\n  competitor_research: `${base}/api/webhooks/tools/competitor-research`,\\n  social_planning:     `${base}/api/webhooks/tools/social-planning`,\\n  sales_script:        `${base}/api/webhooks/tools/sales-script`,\\n  brand_voice:         `${base}/api/webhooks/tools/brand-voice`,\\n  analytics:           `${base}/api/webhooks/tools/analytics`,\\n  automation_build:    `${base}/api/webhooks/tools/automation-build`,\\n  client_reporting:    `${base}/api/webhooks/tools/client-reporting`,\\n  general_question:    `${base}/api/webhooks/tools/general-question`\\n};\\n\\nconst toolUrl = toolMap[toolId];\\nif (!toolUrl) {\\n  throw new Error(`Unknown tool_id: '${toolId}'. Add it to the dispatch map.`);\\n}\\n\\nreturn [{\\n  json: {\\n    tool_url:    toolUrl,\\n    tool_id:     toolId,\\n    user_id:     ctx.user_id,\\n    params:      ctx.params,\\n    credit_cost: ctx.credit_cost,\\n    credit_ok:   credit.allowed !== false\\n  }\\n}];"
+        "jsCode": "const ctx    = $('Code - Check Tool Entitlement').first().json;\\nconst credit = $input.first().json;  // credit deduction response\\n\\nconst toolId = ctx.tool_id;\\nconst base   = $vars.GLOBAL_APP_URL_STG || 'https://stg.usebylda.com';\\n\\n// Lookup map: tool_id \u2192 Launchpad webhook URL\\nconst toolMap = {\\n  lead_gen:            `${base}/api/webhooks/tools/lead-gen`,\\n  copywriting:         `${base}/api/webhooks/tools/copywriting`,\\n  offer_building:      `${base}/api/webhooks/tools/offer-building`,\\n  funnel_mapping:      `${base}/api/webhooks/tools/funnel-mapping`,\\n  content_calendar:    `${base}/api/webhooks/tools/content-calendar`,\\n  ad_strategy:         `${base}/api/webhooks/tools/ad-strategy`,\\n  email_sequence:      `${base}/api/webhooks/tools/email-sequence`,\\n  seo_brief:           `${base}/api/webhooks/tools/seo-brief`,\\n  competitor_research: `${base}/api/webhooks/tools/competitor-research`,\\n  social_planning:     `${base}/api/webhooks/tools/social-planning`,\\n  sales_script:        `${base}/api/webhooks/tools/sales-script`,\\n  brand_voice:         `${base}/api/webhooks/tools/brand-voice`,\\n  analytics:           `${base}/api/webhooks/tools/analytics`,\\n  automation_build:    `${base}/api/webhooks/tools/automation-build`,\\n  client_reporting:    `${base}/api/webhooks/tools/client-reporting`,\\n  general_question:    `${base}/api/webhooks/tools/general-question`\\n};\\n\\nconst toolUrl = toolMap[toolId];\\nif (!toolUrl) {\\n  throw new Error(`Unknown tool_id: '${toolId}'. Add it to the dispatch map.`);\\n}\\n\\nreturn [{\\n  json: {\\n    tool_url:    toolUrl,\\n    tool_id:     toolId,\\n    user_id:     ctx.user_id,\\n    params:      ctx.params,\\n    credit_cost: ctx.credit_cost,\\n    credit_ok:   credit.allowed !== false\\n  }\\n}];"
       }
     },
     {
@@ -214,10 +193,7 @@
       "name": "HTTP - Dispatch to Tool",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1560,
-        240
-      ],
+      "position": [1560, 240],
       "parameters": {
         "method": "POST",
         "url": "={{ $json.tool_url }}",
@@ -249,10 +225,7 @@
       "name": "Respond - Return Tool Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1780,
-        240
-      ],
+      "position": [1780, 240],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ success: true, tool_id: $('Code - Build Dispatch').first().json.tool_id, result: $json }) }}",
@@ -266,20 +239,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        660
-      ]
+      "position": [240, 660]
     },
     {
       "id": "c3000011-0000-0000-0000-000000000011",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        660
-      ],
+      "position": [460, 660],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

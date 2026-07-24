@@ -143,7 +143,7 @@ function OutcomePanel({
         tags: [slug, trend, "automation_result"],
         pruned: false,
       });
-      toast.success("Outcome saved — Nova will remember this");
+      toast.success("Outcome saved — Bylda will remember this");
       qc.invalidateQueries({ queryKey: ["automation_outcomes", orgId, slug] });
       setMetricValue("");
       setNote("");
@@ -159,7 +159,7 @@ function OutcomePanel({
     setOptimizeSuggestion(null);
     try {
       const history = (outcomesQ.data ?? []).map((d) => d.content).join("\n\n");
-      const { data, error } = await supabase.functions.invoke("nova-chat", {
+      const { data, error } = await supabase.functions.invoke("bylda-chat", {
         body: {
           messages: [
             {
@@ -292,7 +292,7 @@ function OutcomePanel({
               <div className="text-[13px] font-bold text-foreground">Re-optimize with AI</div>
             </div>
             <div className="text-[12.5px] text-muted-foreground mb-3">
-              Nova will review your history and suggest specific improvements to this automation.
+              Bylda will review your history and suggest specific improvements to this automation.
             </div>
 
             {optimizeSuggestion ? (
@@ -671,8 +671,8 @@ function AutomationsPage() {
           </div>
           <p className="text-[12.5px] text-muted-foreground">
             After enabling an automation, use the <strong>Track outcome</strong> button on each card
-            to log results. Nova remembers your results and suggests specific improvements each time
-            you check.
+            to log results. Bylda remembers your results and suggests specific improvements each
+            time you check.
           </p>
         </div>
       </div>

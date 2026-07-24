@@ -1,5 +1,5 @@
 /**
- * Nova OPS · Operator Client
+ * Bylda · Operator Client
  * All tool invocations and chat route through Supabase Edge Functions.
  * All AI runs via Claude through Supabase Edge Functions.
  */

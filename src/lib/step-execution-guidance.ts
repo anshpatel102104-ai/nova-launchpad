@@ -46,7 +46,7 @@ export const TOOL_ROUTES: Record<string, string> = {
   "first-10-customers": "/app/launchpad/first-10-customers",
   followup: "/app/launchpad/followup",
   "generate-ops-plan": "/app/launchpad/ops-plan",
-  // NOVA (operate & scale) tools
+  // BYLDA (operate & scale) tools
   "kpi-dashboard": "/app/launchpad/kpi-dashboard",
   "seo-audit": "/app/launchpad/seo-audit",
   "launch-checklist": "/app/launchpad/launch-checklist",
@@ -80,13 +80,13 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
   "kill-my-idea": {
     stepId: "step-kill-my-idea",
     title: "Stress-test your idea",
-    plainWhat: "Nova argues against your idea, like a tough customer would.",
+    plainWhat: "Bylda argues against your idea, like a tough customer would.",
     why: "It is better to hear the hard questions now than in a real sales call.",
     directions: [
       { action: "Click the purple button below.", detail: "It opens Kill My Idea." },
       {
-        action: "Paste your idea and read Nova's objections.",
-        detail: "Nova lists the reasons people might say no.",
+        action: "Paste your idea and read Bylda's objections.",
+        detail: "Bylda lists the reasons people might say no.",
       },
       {
         action: "Write one answer for each objection.",
@@ -108,7 +108,7 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
       { action: "Click the purple button below.", detail: "It opens the Pitch Writer." },
       {
         action: "Answer the short questions about your business.",
-        detail: "Nova writes the pitch for you.",
+        detail: "Bylda writes the pitch for you.",
       },
       {
         action: "Say the pitch out loud 5 times.",
@@ -132,8 +132,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Plan Builder." },
       {
-        action: "Tell Nova about your business and your customer.",
-        detail: "Use simple words. Nova builds a 90-day plan.",
+        action: "Tell Bylda about your business and your customer.",
+        detail: "Use simple words. Bylda builds a 90-day plan.",
       },
       {
         action: "Read the plan and pick ONE channel to start.",
@@ -163,10 +163,10 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
       { action: "Click the purple button below.", detail: "It opens the Offer Builder." },
       {
         action: "Answer 4 short questions.",
-        detail: "Use simple words. Nova turns your answers into a full offer.",
+        detail: "Use simple words. Bylda turns your answers into a full offer.",
       },
       {
-        action: "Read what Nova wrote, then click Save.",
+        action: "Read what Bylda wrote, then click Save.",
         detail: "Fix anything that sounds wrong first.",
       },
     ],
@@ -194,8 +194,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
         detail: "It opens the First 10 Customers planner.",
       },
       {
-        action: "Tell Nova your offer, your customer, and your price.",
-        detail: "Nova builds a day-by-day plan just for you.",
+        action: "Tell Bylda your offer, your customer, and your price.",
+        detail: "Bylda builds a day-by-day plan just for you.",
       },
       {
         action: "Message one real person today.",
@@ -223,8 +223,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Follow-Up Writer." },
       {
-        action: "Tell Nova about your business and customer.",
-        detail: "Nova writes all 5 emails for you.",
+        action: "Tell Bylda about your business and customer.",
+        detail: "Bylda writes all 5 emails for you.",
       },
       {
         action: "Read each email and make it sound like you.",
@@ -245,7 +245,7 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     stepId: "step-operations-plan",
     title: "Write down how your business runs",
     plainWhat: "A simple map of how you get customers, do the work, and get paid.",
-    why: "When it is written down, you can hand work to other people — or to Nova.",
+    why: "When it is written down, you can hand work to other people — or to Bylda.",
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Operations Planner." },
       {
@@ -263,7 +263,7 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     buttonLabel: "Start: open the Operations Planner",
   },
 
-  // ── NOVA (operate & scale) tools — same plain, 5th-grade hand-holding ──
+  // ── BYLDA (operate & scale) tools — same plain, 5th-grade hand-holding ──
   "kpi-dashboard": {
     stepId: "step-kpi-dashboard",
     title: "Pick the numbers you'll watch",
@@ -272,8 +272,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     directions: [
       { action: "Click the purple button below.", detail: "It opens the KPI Dashboard Builder." },
       {
-        action: "Tell Nova your business type and size.",
-        detail: "Use simple words. Nova picks the 10 numbers that matter most for you.",
+        action: "Tell Bylda your business type and size.",
+        detail: "Use simple words. Bylda picks the 10 numbers that matter most for you.",
       },
       {
         action: "Choose the 5 you'll check every week.",
@@ -305,7 +305,7 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
         detail: "The keyword is what a customer would type to find you.",
       },
       {
-        action: "Do the top 3 fixes Nova lists first.",
+        action: "Do the top 3 fixes Bylda lists first.",
         detail: "Start at the top — those matter the most.",
       },
     ],
@@ -323,8 +323,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Launch Checklist." },
       {
-        action: "Tell Nova what you're launching and when.",
-        detail: "Nova builds a 30, 14, 7, and 1-day to-do list for you.",
+        action: "Tell Bylda what you're launching and when.",
+        detail: "Bylda builds a 30, 14, 7, and 1-day to-do list for you.",
       },
       {
         action: "Do today's tasks, then check them off.",
@@ -345,8 +345,8 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Email Sequence Writer." },
       {
-        action: "Tell Nova your business and who you're emailing.",
-        detail: "Nova writes all the emails for you.",
+        action: "Tell Bylda your business and who you're emailing.",
+        detail: "Bylda writes all the emails for you.",
       },
       {
         action: "Read each email and make it sound like you.",
@@ -367,12 +367,12 @@ const GUIDANCE_MAP: Record<string, StepGuidance> = {
     stepId: "step-ad-copy",
     title: "Write ads that get clicks",
     plainWhat: "Ready-to-use ad text for Facebook, Google, or other platforms.",
-    why: "Good ad words bring in customers for less money. Nova writes them in seconds.",
+    why: "Good ad words bring in customers for less money. Bylda writes them in seconds.",
     directions: [
       { action: "Click the purple button below.", detail: "It opens the Ad Copy Generator." },
       {
-        action: "Tell Nova your product, your customer, and the platform.",
-        detail: "Nova writes 5 different versions to try.",
+        action: "Tell Bylda your product, your customer, and the platform.",
+        detail: "Bylda writes 5 different versions to try.",
       },
       {
         action: "Pick your 2 favorites to run first.",
@@ -426,9 +426,9 @@ export function makeFallbackGuidance(
             action: "Do it now, in the real world.",
             detail: "Small and done beats big and planned.",
           },
-          { action: "Come back and mark it done.", detail: "Nova will show your next step." },
+          { action: "Come back and mark it done.", detail: "Bylda will show your next step." },
         ],
-    doneWhen: ["You did the step.", "You marked it done so Nova can give you the next one."],
+    doneWhen: ["You did the step.", "You marked it done so Bylda can give you the next one."],
     minutes: 10,
     toolRoute: route,
     buttonLabel: route ? "Start this step" : "I did it — mark it done",

@@ -110,7 +110,7 @@ export function TitleBlock({
           </span>
         </Cell>
         <Cell label="Drafted by">
-          <span className="font-bp-mono text-[11px] uppercase">NOVA + {founderName}</span>
+          <span className="font-bp-mono text-[11px] uppercase">BYLDA + {founderName}</span>
         </Cell>
       </div>
     </div>

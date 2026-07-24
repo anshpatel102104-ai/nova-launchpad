@@ -41,7 +41,7 @@ export const SECTIONS = {
     tabs: [
       { to: "/app/contacts", label: "People", icon: Users },
       { to: "/app/crm/companies", label: "Companies", icon: Building2 },
-      { to: "/app/nova/crm", label: "Pipeline", icon: Workflow },
+      { to: "/app/bylda/crm", label: "Pipeline", icon: Workflow },
       { to: "/app/crm/accounts", label: "Health", icon: HeartPulse },
       { to: "/app/crm/calls", label: "Calls", icon: PhoneCall },
       { to: "/app/crm/conversations", label: "Inbox", icon: MessageSquare },
@@ -55,7 +55,7 @@ export const SECTIONS = {
   insights: {
     accent: "var(--domain-insights)",
     tabs: [
-      { to: "/app/nova/reports", label: "Reports", icon: TrendingUp },
+      { to: "/app/bylda/reports", label: "Reports", icon: TrendingUp },
       { to: "/app/monitoring", label: "System Health", icon: Activity },
     ],
   },

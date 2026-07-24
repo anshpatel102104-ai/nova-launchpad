@@ -211,7 +211,7 @@ function TasksPage() {
             <CheckSquare className="mb-3 h-8 w-8 text-[--accent]" />
             <p className="mb-1 text-sm font-semibold text-[--text-primary]">No tasks yet</p>
             <p className="mb-4 max-w-xs text-xs text-[--text-muted]">
-              Create your first task, or let Nova add follow-ups from the CRM.
+              Create your first task, or let Bylda add follow-ups from the CRM.
             </p>
             <button
               onClick={() => setShowAdd(true)}

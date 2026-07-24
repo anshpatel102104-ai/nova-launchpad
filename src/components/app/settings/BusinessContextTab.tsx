@@ -1,7 +1,7 @@
 /**
  * BusinessContextTab — the human-readable, editable view of the Business
  * Context Graph (business_context table). This is what every AI call reads;
- * editing here is how a business "tells Nova it changed". Saving bumps the
+ * editing here is how a business "tells Bylda it changed". Saving bumps the
  * context version (DB trigger) and kicks a briefing regeneration.
  */
 
@@ -94,7 +94,7 @@ export function BusinessContextTab() {
       <EmptyState
         icon={Brain}
         title="No business context yet"
-        description="Nova builds this from onboarding. Run through it once and every AI output becomes specific to your business."
+        description="Bylda builds this from onboarding. Run through it once and every AI output becomes specific to your business."
         action={
           <Link to="/onboarding">
             <Button size="sm">Set up your context</Button>
@@ -148,7 +148,7 @@ export function BusinessContextTab() {
         })
         .eq("organization_id", currentOrgId);
       if (error) throw error;
-      toast.success("Business context updated — Nova will use this from now on");
+      toast.success("Business context updated — Bylda will use this from now on");
       qc.invalidateQueries({ queryKey: ["business_context", currentOrgId] });
       // Context changed → refresh the AI briefing in the background.
       generateAiDashboard({ organization_id: currentOrgId })
@@ -174,7 +174,7 @@ export function BusinessContextTab() {
       >
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
         <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-          This is what Nova knows about your business — every tool, briefing, and recommendation
+          This is what Bylda knows about your business — every tool, briefing, and recommendation
           reads from it. Keep it current and outputs stay specific.{" "}
           <span className="font-mono text-[11px]">context v{version}</span>
         </p>

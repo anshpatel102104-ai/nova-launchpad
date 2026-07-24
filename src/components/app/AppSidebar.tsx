@@ -1,8 +1,8 @@
-// One product, one rail. Launchpad Nova is a single mission-driven operating
+// One product, one rail. Launchpad Bylda is a single mission-driven operating
 // system with one flat nav (Home, Roadmap, AI Mentors, CRM, Projects,
 // Marketing, Automations, Finances, Team, Knowledge, Reports, Settings).
 // Exactly one "home" item leads the rail, following the workspace mode:
-// Mission Control (create) or Nova Home (operate). The three operational
+// Mission Control (create) or Bylda Home (operate). The three operational
 // items that need a proven build (Marketing, Automations, Reports) show
 // locked until the roadmap says the business is ready — same "unlock"
 // language as the rest of the game layer, just inline instead of hidden
@@ -50,12 +50,12 @@ import { useFounderStreak } from "@/hooks/use-founder-streak";
 import { useWorkspaceMode } from "@/hooks/use-workspace-mode";
 import { deriveLaunchpadProgress } from "@/lib/ecosystem";
 
-const STORAGE = "nova-sidebar-collapsed";
+const STORAGE = "bylda-sidebar-collapsed";
 
 /* ─── The unified nav model ──────────────────────────────────
  * A flat list, no product split. `gated` items stay reachable in principle
  * but are visually locked (and non-navigable) until the business has proven
- * itself — deriveLaunchpadProgress().readyForNova. */
+ * itself — deriveLaunchpadProgress().readyForBylda. */
 interface NavItem {
   id: string;
   label: string;
@@ -67,7 +67,7 @@ interface NavItem {
 }
 
 /* Exactly one home per mode: builders live in Mission Control, operators in
- * Nova Home. The rest of the rail is shared. */
+ * Bylda Home. The rest of the rail is shared. */
 const HOME_CREATE: NavItem = {
   id: "home",
   label: "Mission Control",
@@ -78,10 +78,10 @@ const HOME_CREATE: NavItem = {
 
 const HOME_OPERATE: NavItem = {
   id: "home",
-  label: "Nova Home",
-  to: "/app/nova-home",
+  label: "Bylda Home",
+  to: "/app/bylda-home",
   icon: Home,
-  match: (p) => p === "/app/nova-home",
+  match: (p) => p === "/app/bylda-home",
 };
 
 const PRIMARY_NAV: NavItem[] = [
@@ -154,9 +154,9 @@ const PRIMARY_NAV: NavItem[] = [
   {
     id: "reports",
     label: "Reports",
-    to: "/app/nova/reports",
+    to: "/app/bylda/reports",
     icon: BarChart3,
-    match: (p) => p === "/app/nova/reports",
+    match: (p) => p === "/app/bylda/reports",
     gated: true,
   },
   {
@@ -198,13 +198,13 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
   const search = useRouterState({ select: (s) => s.location.searchStr });
   const graph = useBusinessGraph();
   const progress = deriveLaunchpadProgress(graph);
-  const unlocked = progress.readyForNova;
+  const unlocked = progress.readyForBylda;
   const { isOperate } = useWorkspaceMode();
   const nav = [isOperate ? HOME_OPERATE : HOME_CREATE, ...PRIMARY_NAV];
 
   return (
     <SidebarChrome
-      brand="Launchpad Nova"
+      brand="Launchpad Bylda"
       tagline="Your business operating system"
       brandIcon={Rocket}
     >

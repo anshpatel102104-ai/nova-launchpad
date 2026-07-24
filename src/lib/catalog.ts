@@ -910,9 +910,9 @@ export const AUTOMATION_SYSTEMS: AutomationSystem[] = [
   },
 ];
 
-// ─── Nova OS systems (automation systems with display icons) ────────────────
+// ─── Bylda OS systems (automation systems with display icons) ────────────────
 
-export interface NovaSystem {
+export interface ByldaSystem {
   slug: string;
   name: string;
   description: string;
@@ -922,7 +922,7 @@ export interface NovaSystem {
   icon: LucideIcon;
 }
 
-const NOVA_SYSTEM_ICONS: Record<string, LucideIcon> = {
+const BYLDA_SYSTEM_ICONS: Record<string, LucideIcon> = {
   "ai-appointment-setting": Calendar,
   "crm-automation": Workflow,
   "ai-followup-sequences": Mail,
@@ -931,14 +931,14 @@ const NOVA_SYSTEM_ICONS: Record<string, LucideIcon> = {
   "voice-ai": Phone,
 };
 
-export const NOVA_SYSTEMS: NovaSystem[] = AUTOMATION_SYSTEMS.map((sys) => ({
+export const BYLDA_SYSTEMS: ByldaSystem[] = AUTOMATION_SYSTEMS.map((sys) => ({
   slug: sys.slug,
   name: sys.name,
   description: sys.description,
   trigger: sys.trigger,
   action: sys.action,
   output: sys.output,
-  icon: NOVA_SYSTEM_ICONS[sys.slug] ?? Workflow,
+  icon: BYLDA_SYSTEM_ICONS[sys.slug] ?? Workflow,
 }));
 
 // ─── Mentor specs ──────────────────────────────────────────────────────────

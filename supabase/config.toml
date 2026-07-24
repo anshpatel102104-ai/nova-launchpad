@@ -20,10 +20,10 @@ verify_jwt = true
 [functions.generate-ai-dashboard]
 verify_jwt = true
 
-[functions.nova-chat]
+[functions.bylda-chat]
 verify_jwt = true
 
-[functions.nova-action]
+[functions.bylda-action]
 verify_jwt = true
 
 [functions.manage-subscription]
@@ -68,7 +68,7 @@ verify_jwt = true
 [functions.mentor-chat]
 verify_jwt = true
 
-# Nova CRM commands — stage updates, note logging, task/contact creation.
+# Bylda CRM commands — stage updates, note logging, task/contact creation.
 [functions.crm-action]
 verify_jwt = true
 

@@ -1,6 +1,6 @@
 // Business Roadmap — the zoomed-out Foundation → Build → Launch → Grow →
 // Scale → Exit view shown on /app/roadmap, spanning both Launchpad (create)
-// and Nova (operate).
+// and Bylda (operate).
 //
 // Stage position is NOT computed here. The canonical stage is
 // deriveLaunchpadProgress (src/lib/ecosystem.ts) — the same computation the
@@ -293,7 +293,7 @@ export interface RoadmapProgress {
 /** Display mapping from the canonical Launchpad stage (deriveLaunchpadProgress)
  *  to this roadmap's zoomed-out vocabulary. Scale is reached once every
  *  Launchpad stage through Revenue is proven; Exit has no automatic
- *  advancement yet (it's Nova-side, beyond first revenue). */
+ *  advancement yet (it's Bylda-side, beyond first revenue). */
 const LAUNCHPAD_TO_ROADMAP: Record<LaunchpadStageId, RoadmapStageId> = {
   idea: "foundation",
   validate: "foundation",

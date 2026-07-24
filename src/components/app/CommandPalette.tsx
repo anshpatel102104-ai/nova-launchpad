@@ -21,15 +21,15 @@ type Item = { id: string; label: string; path: string; tag: ItemTag; sublabel?: 
 
 const NAV_ITEMS: Item[] = [
   { id: "home", label: "Home", path: "/app/mission-control", tag: "page" },
-  { id: "nova-home", label: "Nova Home (Operate)", path: "/app/nova-home", tag: "page" },
+  { id: "bylda-home", label: "Bylda Home (Operate)", path: "/app/bylda-home", tag: "page" },
   { id: "course", label: "Your Course", path: "/app/launchpad/course", tag: "page" },
   { id: "workbench", label: "Workbench (Tools)", path: "/app/launchpad/", tag: "page" },
   { id: "contacts", label: "Customers · Contacts", path: "/app/contacts", tag: "page" },
-  { id: "pipeline", label: "Customers · Pipeline", path: "/app/nova/crm", tag: "page" },
+  { id: "pipeline", label: "Customers · Pipeline", path: "/app/bylda/crm", tag: "page" },
   { id: "automations", label: "Automations", path: "/app/automations", tag: "page" },
   { id: "builder", label: "Automation Builder", path: "/app/builder", tag: "page" },
   { id: "integrations", label: "Integrations", path: "/app/integrations", tag: "page" },
-  { id: "reports", label: "Insights · Reports", path: "/app/nova/reports", tag: "page" },
+  { id: "reports", label: "Insights · Reports", path: "/app/bylda/reports", tag: "page" },
   { id: "assets", label: "Library · Assets", path: "/app/assets", tag: "page" },
   { id: "memory", label: "Library · Memory", path: "/app/memory", tag: "page" },
   { id: "settings", label: "Settings", path: "/app/settings", tag: "page" },
@@ -37,7 +37,7 @@ const NAV_ITEMS: Item[] = [
 ];
 
 const ACTION_ITEMS: Item[] = [
-  { id: "act-briefing", label: "Generate AI briefing", path: "/app/nova-home", tag: "action" },
+  { id: "act-briefing", label: "Generate AI briefing", path: "/app/bylda-home", tag: "action" },
   {
     id: "act-context",
     label: "Update business context",
@@ -47,7 +47,7 @@ const ACTION_ITEMS: Item[] = [
   {
     id: "act-review",
     label: "Generate weekly review",
-    path: "/app/nova/reports",
+    path: "/app/bylda/reports",
     tag: "action",
   },
   { id: "act-automation", label: "Deploy an automation", path: "/app/automations", tag: "action" },

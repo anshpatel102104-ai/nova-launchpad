@@ -40,27 +40,21 @@
       "name": "Webhook - Receive Request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "path": "operator-prompt-swap",
         "httpMethod": "POST",
         "responseMode": "responseNode",
         "options": {}
       },
-      "webhookId": "novaops-prompt-swap-stg"
+      "webhookId": "bylda-prompt-swap-stg"
     },
     {
       "id": "j0000002-0000-0000-0000-000000000002",
       "name": "Code - Validate and Sanitize",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "jsCode": "// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\\n// RUNTIME PROMPT FETCH PATTERN \u2014 read this before building Claude workflows\\n// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\\n//\\n// Every workflow that calls Claude MUST fetch its system prompt from\\n// the operator_prompts table at runtime instead of hardcoding it.\\n// This workflow (Prompt Swap) writes to that table. Claude workflows\\n// just read from it \u2014 no redeployment needed to change behaviour.\\n//\\n// \u2500\u2500 Fetch pattern (add these nodes before your Claude API call) \u2500\u2500\\n//\\n//   Node A \u2014 HTTP Request (GET, supabaseApi credential):\\n//     URL: https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_prompts\\n//     Query params:\\n//       component = eq.{your_component_name}   e.g. eq.main_router\\n//       select    = system_prompt,version\\n//       limit     = 1\\n//\\n//   Node B \u2014 Set / Code node (build Claude body):\\n//     const promptRow = $('Node A').first().json;\\n//     const rows = Array.isArray(promptRow) ? promptRow : [promptRow];\\n//     const systemPrompt = rows[0]?.system_prompt || DEFAULT_SYSTEM_PROMPT;\\n//     // then pass systemPrompt into the Claude messages API body\\n//\\n// \u2500\u2500 Component name registry \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n//   Core workflows:   main_router \u00b7 context_loader \u00b7 tool_dispatcher\\n//                     memory_read \u00b7 response_formatter \u00b7 confidence_fallback\\n//   Subagents:        lead_gen \u00b7 copywriting \u00b7 offer_building \u00b7 funnel_mapping\\n//                     content_calendar \u00b7 ad_strategy \u00b7 email_sequence \u00b7 seo_brief\\n//                     competitor_research \u00b7 social_planning \u00b7 sales_script\\n//                     brand_voice \u00b7 analytics \u00b7 automation_build\\n//                     client_reporting \u00b7 general_question\\n// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\\n\\nconst body           = $input.first().json.body;\\nconst adminToken     = (body.admin_token      || '').trim();\\nconst component      = (body.component        || '').trim();\\nconst newPrompt      = (body.new_system_prompt || '').trim();\\nconst versionLabel   = (body.version_label    || '').trim();\\n\\n// \u2500\u2500 Token validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n// Constant-time string comparison to prevent timing-based enumeration.\\nconst expectedToken  = '295fd9ca65b57938105feed61aaf6189' || '';\\nconst tokenValid     =\\n  adminToken.length > 0 &&\\n  expectedToken.length > 0 &&\\n  adminToken.length === expectedToken.length &&\\n  adminToken === expectedToken;\\n\\n// \u2500\u2500 Field validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nlet reason = null;\\nif      (!tokenValid)    reason = 'invalid_admin_token';\\nelse if (!component)     reason = 'missing_component';\\nelse if (!newPrompt)     reason = 'missing_new_system_prompt';\\nelse if (!versionLabel)  reason = 'missing_version_label';\\n\\nconst isValid = reason === null;\\n\\n// \u2500\u2500 Known-component check (soft warning, not a blocker) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst KNOWN_COMPONENTS = [\\n  'main_router','context_loader','tool_dispatcher','memory_read',\\n  'response_formatter','confidence_fallback',\\n  'lead_gen','copywriting','offer_building','funnel_mapping',\\n  'content_calendar','ad_strategy','email_sequence','seo_brief',\\n  'competitor_research','social_planning','sales_script','brand_voice',\\n  'analytics','automation_build','client_reporting','general_question'\\n];\\n\\nreturn [{\\n  json: {\\n    is_valid:            isValid,\\n    reason,\\n    component,\\n    new_system_prompt:   newPrompt,\\n    version_label:       versionLabel,\\n    is_known_component:  KNOWN_COMPONENTS.includes(component),\\n    updated_at:          new Date().toISOString()\\n  }\\n}];"
       }
@@ -70,10 +64,7 @@
       "name": "IF - Is Valid",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        680,
-        380
-      ],
+      "position": [680, 380],
       "parameters": {
         "conditions": {
           "options": {
@@ -102,10 +93,7 @@
       "name": "Respond - Unauthorized",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        900,
-        540
-      ],
+      "position": [900, 540],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ success: false, error: 'Unauthorized', reason: $json.reason }) }}",
@@ -119,10 +107,7 @@
       "name": "HTTP - Upsert Prompt to Supabase",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        900,
-        240
-      ],
+      "position": [900, 240],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_prompts",
@@ -165,10 +150,7 @@
       "name": "Respond - Return Updated",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1120,
-        240
-      ],
+      "position": [1120, 240],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ updated: true, component: $('Code - Validate and Sanitize').first().json.component, version_label: $('Code - Validate and Sanitize').first().json.version_label, is_known_component: $('Code - Validate and Sanitize').first().json.is_known_component, updated_at: $('Code - Validate and Sanitize').first().json.updated_at }) }}",
@@ -182,20 +164,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        660
-      ]
+      "position": [240, 660]
     },
     {
       "id": "j0000008-0000-0000-0000-000000000008",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        660
-      ],
+      "position": [460, 660],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

@@ -1,6 +1,6 @@
 // Post-run momentum panel — the after-action receipt. One glance answers the
 // three closed-loop questions: what changed (step complete, mission progress),
-// what Nova learned (facts saved to memory), and what happens next (the next
+// what Bylda learned (facts saved to memory), and what happens next (the next
 // step, unlocked, with one CTA). Rendered under the tool output.
 
 import { Link } from "@tanstack/react-router";
@@ -70,7 +70,7 @@ export function PostRunMomentum({ momentum, facts }: Props) {
         </div>
       )}
 
-      {/* What Nova learned */}
+      {/* What Bylda learned */}
       {facts.length > 0 && (
         <div
           className="px-4 py-3"
@@ -86,7 +86,7 @@ export function PostRunMomentum({ momentum, facts }: Props) {
               className="text-[10px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: "var(--muted-foreground)" }}
             >
-              Nova learned from this run
+              Bylda learned from this run
             </span>
             <ClosedLoopChip kind="memory" />
           </div>
@@ -115,7 +115,7 @@ export function PostRunMomentum({ momentum, facts }: Props) {
           <div className="flex items-center gap-2">
             <Trophy className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
             <span className="text-[13px] font-bold" style={{ color: "var(--foreground)" }}>
-              Mission complete — Nova is preparing your next goal.
+              Mission complete — Bylda is preparing your next goal.
             </span>
           </div>
           <Link

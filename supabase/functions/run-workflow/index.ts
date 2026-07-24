@@ -128,7 +128,7 @@ async function sendEmail(c: Creds, to: string, subject: string, text: string): P
     headers: { Authorization: `Bearer ${c.sendgridKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       personalizations: [{ to: [{ email: to }] }],
-      from: { email: c.sendgridFrom, name: "Nova" },
+      from: { email: c.sendgridFrom, name: "Bylda" },
       subject: subject || "(no subject)",
       content: [{ type: "text/plain", value: text || " " }],
     }),
@@ -326,7 +326,7 @@ Deno.serve(async (req: Request) => {
     sendgridFrom:
       (await byo("sendgrid_from")) ??
       Deno.env.get("SENDGRID_FROM_EMAIL") ??
-      "nova@launchpad.nova-ops.space",
+      "bylda@launchpad.usebylda.com",
     twilioSid: (await byo("twilio_sid")) ?? Deno.env.get("TWILIO_ACCOUNT_SID") ?? undefined,
     twilioToken: (await byo("twilio")) ?? Deno.env.get("TWILIO_AUTH_TOKEN") ?? undefined,
     twilioFrom: (await byo("twilio_from")) ?? Deno.env.get("TWILIO_FROM_NUMBER") ?? undefined,

@@ -68,7 +68,7 @@ const SCALE_MODES = [
   {
     id: "operators",
     label: "AI Operators",
-    desc: "Nova mentor & AI coaching",
+    desc: "Bylda mentor & AI coaching",
     icon: Bot,
     color: "#FF6B1A",
     to: "/app/mentor",
@@ -199,8 +199,8 @@ function ScaleIndex({ orgStage, stageIdx }: { orgStage: string; stageIdx: number
               key={mode.id}
               to={mode.to}
               className={cn(
-                "rounded-xl p-5 nova-card transition-all group relative",
-                isLocked ? "pointer-events-none opacity-50" : "nova-card-hover",
+                "rounded-xl p-5 bylda-card transition-all group relative",
+                isLocked ? "pointer-events-none opacity-50" : "bylda-card-hover",
               )}
             >
               {isLocked && (

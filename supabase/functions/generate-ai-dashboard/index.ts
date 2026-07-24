@@ -98,7 +98,7 @@ const DASHBOARD_SCHEMA = {
   },
 };
 
-const SYSTEM_PROMPT = `You are Nova — the AI operator running inside a startup launchpad platform.
+const SYSTEM_PROMPT = `You are Bylda — the AI operator running inside a startup launchpad platform.
 
 Your role: take a founder's business context and generate a personalized intelligence dashboard that acts as their strategic command center inside the platform.
 

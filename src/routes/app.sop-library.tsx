@@ -153,7 +153,7 @@ function SopLibraryPage() {
       {sopQ.isLoading ? (
         <div className="text-center text-[13px] text-muted-foreground py-8">Loading…</div>
       ) : visible.length === 0 ? (
-        <div className="nova-card rounded-xl p-12 text-center">
+        <div className="bylda-card rounded-xl p-12 text-center">
           <FileText className="h-8 w-8 mx-auto mb-3 opacity-25" />
           <p className="text-[13px] text-muted-foreground mb-4">
             {filter === "all"
@@ -181,7 +181,7 @@ function SopLibraryPage() {
             const st = STATUS_STYLES[doc.status];
             const isExp = expanded.has(doc.id);
             return (
-              <div key={doc.id} className="nova-card rounded-xl overflow-hidden">
+              <div key={doc.id} className="bylda-card rounded-xl overflow-hidden">
                 {/* Row header */}
                 <div
                   className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/10 transition-colors"

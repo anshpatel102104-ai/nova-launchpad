@@ -11,11 +11,11 @@ const RAW = process.env.RAW_DIR || "/tmp/tut/raw";
 const FFMPEG = process.env.FFMPEG || "ffmpeg";
 const FFPROBE = process.env.FFPROBE || "ffprobe";
 const USER = {
-  email: process.env.TUTORIAL_EMAIL || "tutorial.recorder@nova-ops.dev",
+  email: process.env.TUTORIAL_EMAIL || "tutorial.recorder@bylda-ops.dev",
   pass: process.env.TUTORIAL_PASSWORD,
 };
 const ONBOARD_USER = {
-  email: process.env.ONBOARDING_EMAIL || "tutorial.onboarding@nova-ops.dev",
+  email: process.env.ONBOARDING_EMAIL || "tutorial.onboarding@bylda-ops.dev",
   pass: process.env.TUTORIAL_PASSWORD,
 };
 if (!USER.pass) {
@@ -104,7 +104,7 @@ function kit(page) {
           textAlign: "center",
           padding: "0 60px",
         });
-        d.innerHTML = `<div style="color:#60A5FA;font:700 12px/1 Inter;letter-spacing:.32em;margin-bottom:18px">NOVA TUTORIAL</div>
+        d.innerHTML = `<div style="color:#60A5FA;font:700 12px/1 Inter;letter-spacing:.32em;margin-bottom:18px">BYLDA TUTORIAL</div>
           <div style="color:#fff;font:700 34px/1.25 Inter;max-width:820px">${t}</div>
           ${s ? `<div style="color:#A5B4CC;font:500 16px/1.5 Inter;margin-top:14px;max-width:680px">${s}</div>` : ""}`;
         document.documentElement.appendChild(d);
@@ -250,7 +250,7 @@ const S = {};
 
 S.welcome = {
   path: "/app/dashboard",
-  title: "Welcome to Nova — Platform Overview",
+  title: "Welcome to Bylda — Platform Overview",
   sub: "A quick tour of your AI operating system",
   async run(page, h) {
     await h.cap("This is Home — your daily command center", 2000);
@@ -261,8 +261,8 @@ S.welcome = {
     await h.click(h.link("Launch"), { after: 2400 });
     await h.cap("Grow — pipeline, campaigns and customers", 600);
     await h.click(h.link("Grow"), { after: 2400 });
-    await h.cap("Ask Nova anything, any time", 600);
-    await h.click(h.link("Ask Nova"), { after: 2400 });
+    await h.cap("Ask Bylda anything, any time", 600);
+    await h.click(h.link("Ask Bylda"), { after: 2400 });
     await h.cap("Back home — let's build something", 600);
     await h.click(h.link("Home"), { after: 2200 });
     await h.cap("You're ready. Pick a tutorial and dive in.", 1800);
@@ -285,7 +285,7 @@ S["account-setup"] = {
     await h.scrollMain(250);
     await h.cap("Set up your organization", 600);
     await h.click(h.btn("Organization"), { after: 1800 });
-    await h.type(page.locator('input:below(:text("Business name"))').first(), "Nova Demo Co", {
+    await h.type(page.locator('input:below(:text("Business name"))').first(), "Bylda Demo Co", {
       clear: true,
     });
     await h.click(h.btn("Save organization"), { after: 1600 });
@@ -302,7 +302,7 @@ S["dashboard-tour"] = {
     await h.move(page.locator("h1").first(), { pause: 900 });
     await h.cap("The sidebar is your map — five destinations", 900);
     await h.hoverPath(
-      [h.link("Home"), h.link("Build"), h.link("Launch"), h.link("Grow"), h.link("Ask Nova")],
+      [h.link("Home"), h.link("Build"), h.link("Launch"), h.link("Grow"), h.link("Ask Bylda")],
       650,
     );
     await h.cap("Search anything with ⌘K", 700);
@@ -311,7 +311,7 @@ S["dashboard-tour"] = {
     await h.hoverPath([h.link("CONTACTS"), h.link("TOOLS RUN")], 1000);
     await h.cap("Your guided next steps live here", 800);
     await h.scrollMain(350);
-    await h.hoverPath([h.link("Tell Nova about your business")], 1100);
+    await h.hoverPath([h.link("Tell Bylda about your business")], 1100);
     await h.scrollMain(-350, 700);
     await h.cap("That's the dashboard — everything one click away", 1800);
   },
@@ -320,12 +320,12 @@ S["dashboard-tour"] = {
 S["onboarding-wizard"] = {
   path: "/onboarding",
   title: "Completing Your Onboarding",
-  sub: "Personalize Nova for your business",
+  sub: "Personalize Bylda for your business",
   user: ONBOARD_USER,
   async run(page, h) {
     await h.cap("Pick what you're here to do", 1600);
     await h.click(page.locator('button:has-text("Operate a business")'), { after: 2500 });
-    await h.cap("Nova interviews you about your business", 1500);
+    await h.cap("Bylda interviews you about your business", 1500);
     const answers = [
       "Bright Brew Coffee",
       "Specialty coffee subscriptions for remote-first teams — monthly tasting boxes.",
@@ -345,10 +345,10 @@ S["onboarding-wizard"] = {
           .locator('button:has-text("E-commerce"), button:has-text("SaaS / software")')
           .first();
         if (!(await card.isVisible().catch(() => false))) break;
-        await h.cap("Or just pick from Nova's suggestions", 600);
+        await h.cap("Or just pick from Bylda's suggestions", 600);
         await h.click(card, { after: 1500 });
       }
-      // wait for Nova's next question to land
+      // wait for Bylda's next question to land
       for (let i = 0; i < 10; i++) {
         const en = await page
           .locator("textarea:visible, input:visible, button:has-text('E-commerce')")
@@ -366,7 +366,7 @@ S["onboarding-wizard"] = {
 };
 
 S["crm-intro"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "CRM Overview: Contacts, Deals & Pipeline",
   sub: "Create a deal and manage your pipeline",
   async run(page, h) {
@@ -396,7 +396,7 @@ S["crm-intro"] = {
 };
 
 S["kanban-dnd"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Drag & Drop Kanban Board",
   sub: "Move deals between stages",
   async run(page, h) {
@@ -428,7 +428,7 @@ S["kanban-dnd"] = {
 };
 
 S["tags-scoring"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Tags, Lead Scoring & Priority",
   sub: "Organize deals for better focus",
   async run(page, h) {
@@ -456,7 +456,7 @@ S["tags-scoring"] = {
 };
 
 S["pipeline-views"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Pipeline Views: Kanban, Table, List & Forecast",
   sub: "Four ways to see your deals",
   async run(page, h) {
@@ -476,7 +476,7 @@ S["pipeline-views"] = {
 };
 
 S["bulk-actions"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Bulk Actions & Team Operations",
   sub: "Update many deals at once",
   async run(page, h) {
@@ -495,7 +495,7 @@ S["bulk-actions"] = {
 };
 
 S["activity-timeline"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Activity Timeline & Deal History",
   sub: "Log calls, notes and meetings on a deal",
   async run(page, h) {
@@ -517,7 +517,7 @@ S["activity-timeline"] = {
 };
 
 S["forecast-view"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "Revenue Forecasting & Pipeline Analytics",
   sub: "Weighted pipeline value, by stage",
   async run(page, h) {
@@ -533,7 +533,7 @@ S["forecast-view"] = {
 };
 
 S["crm-settings"] = {
-  path: "/app/nova/crm",
+  path: "/app/bylda/crm",
   title: "CRM Display Settings & Custom Views",
   sub: "Choose what your pipeline shows",
   async run(page, h) {
@@ -639,7 +639,7 @@ S["multi-step"] = {
 S.integrations = {
   path: "/app/integrations",
   title: "Connecting Third-Party Integrations",
-  sub: "Plug your stack into Nova",
+  sub: "Plug your stack into Bylda",
   async run(page, h) {
     await h.cap("Browse the integration catalog", 1500);
     await h.click(h.btn("Communication"), { after: 1500 });
@@ -652,23 +652,23 @@ S.integrations = {
     const dlg = page.locator('[role="dialog"]');
     await h.type(
       dlg.locator("input").first(),
-      "https://hooks.slack.com/services/T0DEMO/B0DEMO/nova",
+      "https://hooks.slack.com/services/T0DEMO/B0DEMO/bylda",
       { delay: 18 },
     );
     await h.click(dlg.locator('button:has-text("Connect")').first(), { after: 2200 });
-    await h.cap("Connected — Nova can now use this tool", 1800);
+    await h.cap("Connected — Bylda can now use this tool", 1800);
   },
 };
 
 S.campaigns = {
   path: "/app/scale/campaigns",
   title: "Creating Your First Campaign",
-  sub: "Generate a real campaign asset with Nova",
+  sub: "Generate a real campaign asset with Bylda",
   async run(page, h) {
     await h.cap("Campaigns collects all your marketing assets", 1700);
     await h.cap("Create your first asset — a landing page", 900);
     await h.click(h.link("Landing Page"), { after: 3200 });
-    await h.cap("Brief Nova on the campaign", 1000);
+    await h.cap("Brief Bylda on the campaign", 1000);
     await h.type(h.ph("e.g. Northwind Labs — initial launch"), "Bright Brew launch", { delay: 26 });
     await h.type(
       page.locator("textarea:visible").first(),
@@ -685,7 +685,7 @@ S.campaigns = {
       "Boost remote team morale fast",
       { delay: 24 },
     );
-    await h.cap("Run the tool — Nova drafts the page for real", 800);
+    await h.cap("Run the tool — Bylda drafts the page for real", 800);
     await h.click(h.btn("Generate with AI"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
     h.mark("ffStart");
@@ -726,7 +726,7 @@ S["leads-capture"] = {
 S["email-sequences"] = {
   path: "/app/launchpad/email-sequence",
   title: "Email Sequences & Drip Campaigns",
-  sub: "A real multi-email nurture sequence, drafted by Nova",
+  sub: "A real multi-email nurture sequence, drafted by Bylda",
   async run(page, h) {
     await h.cap("The Email Sequence Writer builds full drip campaigns", 1700);
     await h.type(page.locator('input:below(:text("Business name"))').first(), "Bright Brew", {
@@ -752,7 +752,7 @@ S["email-sequences"] = {
       "Trial users who haven't upgraded yet",
       { delay: 20 },
     );
-    await h.cap("Run it — Nova writes every email in the drip", 800);
+    await h.cap("Run it — Bylda writes every email in the drip", 800);
     await h.click(h.btn("Generate with AI"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
     h.mark("ffStart");
@@ -766,7 +766,7 @@ S["email-sequences"] = {
 };
 
 S["reports-overview"] = {
-  path: "/app/nova/reports",
+  path: "/app/bylda/reports",
   title: "Reports Overview",
   sub: "Pipeline, activity and revenue at a glance",
   async run(page, h) {
@@ -789,7 +789,7 @@ S["ai-dashboard"] = {
   title: "AI Dashboard & Intelligence Metrics",
   sub: "A dashboard generated for your business",
   async run(page, h) {
-    await h.cap("Describe your business — Nova builds the dashboard", 1600);
+    await h.cap("Describe your business — Bylda builds the dashboard", 1600);
     await h.type(
       page.locator("textarea:visible").first(),
       "B2B SaaS that automates lead follow-up for coffee subscription brands",
@@ -799,7 +799,7 @@ S["ai-dashboard"] = {
     await h.type(h.ph("e.g. Get 10 paying customers, hit $5k MRR"), "Hit $5k MRR by September", {
       delay: 26,
     });
-    await h.cap("One click — Nova assembles your metrics", 900);
+    await h.cap("One click — Bylda assembles your metrics", 900);
     await h.click(h.btn("Generate My Dashboard"), { after: 1500 });
     await h.cap("Generating — fast-forward ≈1 minute", 500);
     h.mark("ffStart");
@@ -868,13 +868,13 @@ S["team-management"] = {
   },
 };
 
-S["nova-memory"] = {
+S["bylda-memory"] = {
   path: "/app/memory",
-  title: "Nova Memory & Personalization",
-  sub: "Teach Nova your business context",
+  title: "Bylda Memory & Personalization",
+  sub: "Teach Bylda your business context",
   async run(page, h) {
-    await h.cap("Nova Memory — your AI-queryable knowledge base", 1700);
-    await h.cap("Log a win so Nova learns what works", 800);
+    await h.cap("Bylda Memory — your AI-queryable knowledge base", 1700);
+    await h.cap("Log a win so Bylda learns what works", 800);
     await h.click(h.btn("Log a win"), { after: 1400 });
     await h.type(h.ph("e.g. Closed first $5K deal"), "Closed first $5K enterprise deal", {
       delay: 28,
@@ -892,7 +892,7 @@ S["nova-memory"] = {
     await h.cap("Sources and artifacts make memory searchable", 800);
     await h.click(h.btn("Sources"), { after: 2000 });
     await h.click(h.btn("Ask AI"), { after: 2000 });
-    await h.cap("Ask questions — Nova answers from your memory", 1800);
+    await h.cap("Ask questions — Bylda answers from your memory", 1800);
   },
 };
 
@@ -1015,7 +1015,7 @@ if (mainIds.length) {
   });
   await ctx.addInitScript(() => {
     try {
-      localStorage.setItem("nova-rail-open", "0");
+      localStorage.setItem("bylda-rail-open", "0");
     } catch {}
   });
   await ctx.addInitScript(OVERLAY_JS);
@@ -1033,7 +1033,7 @@ for (const id of ids.filter((i) => S[i].user)) {
   });
   await ctx.addInitScript(() => {
     try {
-      localStorage.setItem("nova-rail-open", "0");
+      localStorage.setItem("bylda-rail-open", "0");
     } catch {}
   });
   await ctx.addInitScript(OVERLAY_JS);

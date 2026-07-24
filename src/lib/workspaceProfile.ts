@@ -8,7 +8,7 @@
  * These map to the most common field keys across tool forms.
  */
 
-const STORAGE_KEY = "nova-workspace-profile";
+const STORAGE_KEY = "bylda-workspace-profile";
 
 export interface WorkspaceProfile {
   business_name?: string;
@@ -36,7 +36,7 @@ export function saveWorkspaceProfile(profile: WorkspaceProfile): void {
   }
 }
 
-/** A profile fact Nova picked up from a tool run, for the post-run receipt. */
+/** A profile fact Bylda picked up from a tool run, for the post-run receipt. */
 export interface LearnedFact {
   label: string;
   value: string;
@@ -57,7 +57,7 @@ const FACT_LABELS: Record<keyof WorkspaceProfile, string> = {
  * Call this after a successful tool run so the profile self-populates
  * without the user having to explicitly fill anything out. Returns the
  * facts that are new or changed by this run, so the UI can show the user
- * what Nova just learned.
+ * what Bylda just learned.
  */
 export function extractAndSaveProfileFromFields(fields: Record<string, string>): LearnedFact[] {
   const existing = loadWorkspaceProfile();

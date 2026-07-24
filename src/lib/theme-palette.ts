@@ -4,20 +4,20 @@
 // in both light and dark mode. Stored in localStorage; applied as inline
 // custom properties on <html>, which override the .light/.dark class tokens.
 
-export interface NovaPalette {
+export interface ByldaPalette {
   base: string;
   secondary: string;
   text: string;
 }
 
-const STORAGE_KEY = "nova-palette";
+const STORAGE_KEY = "bylda-palette";
 
 export const BASE_PRESETS = ["#ffffff", "#f7f5f0", "#0f172a", "#111111"];
 export const SECONDARY_PRESETS = ["#7c3aed", "#2563eb", "#059669", "#ea580c", "#db2777"];
 export const TEXT_PRESETS = ["#111827", "#334155", "#e5e7eb", "#f8fafc"];
 
 /** Tokens derived from the 3 picked colors. */
-function derivedTokens(p: NovaPalette): Record<string, string> {
+function derivedTokens(p: ByldaPalette): Record<string, string> {
   const mix = (a: string, pct: number, b: string) => `color-mix(in oklab, ${a} ${pct}%, ${b})`;
   return {
     "--background": p.base,
@@ -60,7 +60,7 @@ function derivedTokens(p: NovaPalette): Record<string, string> {
 
 const APPLIED = Object.keys(derivedTokens({ base: "#fff", secondary: "#fff", text: "#fff" }));
 
-export function applyPalette(p: NovaPalette): void {
+export function applyPalette(p: ByldaPalette): void {
   const root = document.documentElement;
   for (const [k, v] of Object.entries(derivedTokens(p))) root.style.setProperty(k, v);
 }
@@ -71,15 +71,15 @@ export function clearPalette(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-export function savePalette(p: NovaPalette): void {
+export function savePalette(p: ByldaPalette): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
 }
 
-export function loadPalette(): NovaPalette | null {
+export function loadPalette(): ByldaPalette | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const p = JSON.parse(raw) as NovaPalette;
+    const p = JSON.parse(raw) as ByldaPalette;
     if (
       typeof p?.base === "string" &&
       typeof p?.secondary === "string" &&
@@ -126,6 +126,6 @@ export function contrastRatio(a: string, b: string): number {
   }
 }
 
-export function isReadable(p: NovaPalette): boolean {
+export function isReadable(p: ByldaPalette): boolean {
   return contrastRatio(p.text, p.base) >= 4.5;
 }

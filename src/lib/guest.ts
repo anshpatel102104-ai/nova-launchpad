@@ -20,7 +20,7 @@ export function isDemoEmail(email: string | null | undefined): boolean {
   return !!email && email.toLowerCase() === DEMO_ACCOUNT_EMAIL;
 }
 
-const STORAGE_KEY = "nova-guest-mode";
+const STORAGE_KEY = "bylda-guest-mode";
 
 type GuestState = {
   isGuest: boolean;
@@ -103,7 +103,7 @@ const now = Date.now();
 const day = 86400000;
 const period = new Date().toISOString().slice(0, 7);
 
-// Deal / pipeline rows (read by the CRM at /app/nova/crm via leadsQuery).
+// Deal / pipeline rows (read by the CRM at /app/bylda/crm via leadsQuery).
 type GuestLead = {
   id: string;
   organization_id: string;

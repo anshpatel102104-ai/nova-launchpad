@@ -152,8 +152,8 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": [{ "name": "nova-ops" }, { "name": "qa-agent" }],
+  "tags": [{ "name": "bylda-ops" }, { "name": "qa-agent" }],
   "triggerCount": 1,
   "updatedAt": "2026-05-14T00:00:00.000Z",
-  "id": "nova-ops-qa-agent-v1"
+  "id": "bylda-ops-qa-agent-v1"
 }

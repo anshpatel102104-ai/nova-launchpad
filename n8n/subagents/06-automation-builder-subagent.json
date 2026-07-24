@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const user = $input.item.json;\nconst webhookBody = $('Webhook').item.json.body;\n\n// Check user exists\nif (!user || !user.user_id) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 404,\n        error: 'User not found.',\n        code: 'USER_NOT_FOUND'\n      }\n    }\n  ];\n}\n\nconst allowedTiers = ['149', '299'];\nconst tierStr = String(user.plan_tier || '').replace(/[^0-9]/g, '');\n\nif (!allowedTiers.includes(tierStr)) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 403,\n        error: 'Automation Builder requires the Growth ($149) or Scale ($299) plan.',\n        code: 'PLAN_UPGRADE_REQUIRED',\n        current_tier: user.plan_tier || 'free',\n        upgrade_url: 'https://nova-ops.space/upgrade',\n        upsell_message: 'Unlock Automation Builder + 5 more power tools starting at $149/mo. Upgrade now at nova-ops.space/upgrade'\n      }\n    }\n  ];\n}\n\n// Validate required body fields\nconst { user_id, process_description, integrations } = webhookBody;\n\nif (!process_description || process_description.trim().length < 20) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 400,\n        error: 'process_description must be at least 20 characters.',\n        code: 'INVALID_INPUT'\n      }\n    }\n  ];\n}\n\nconst integrationsArr = Array.isArray(integrations) ? integrations : (integrations ? [integrations] : []);\n\nreturn [\n  {\n    json: {\n      _gate: 'PASS',\n      user_id,\n      plan_tier: tierStr,\n      process_description: process_description.trim(),\n      integrations: integrationsArr\n    }\n  }\n];"
+        "jsCode": "const user = $input.item.json;\nconst webhookBody = $('Webhook').item.json.body;\n\n// Check user exists\nif (!user || !user.user_id) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 404,\n        error: 'User not found.',\n        code: 'USER_NOT_FOUND'\n      }\n    }\n  ];\n}\n\nconst allowedTiers = ['149', '299'];\nconst tierStr = String(user.plan_tier || '').replace(/[^0-9]/g, '');\n\nif (!allowedTiers.includes(tierStr)) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 403,\n        error: 'Automation Builder requires the Growth ($149) or Scale ($299) plan.',\n        code: 'PLAN_UPGRADE_REQUIRED',\n        current_tier: user.plan_tier || 'free',\n        upgrade_url: 'https://usebylda.com/upgrade',\n        upsell_message: 'Unlock Automation Builder + 5 more power tools starting at $149/mo. Upgrade now at usebylda.com/upgrade'\n      }\n    }\n  ];\n}\n\n// Validate required body fields\nconst { user_id, process_description, integrations } = webhookBody;\n\nif (!process_description || process_description.trim().length < 20) {\n  return [\n    {\n      json: {\n        _gate: 'BLOCK',\n        status: 400,\n        error: 'process_description must be at least 20 characters.',\n        code: 'INVALID_INPUT'\n      }\n    }\n  ];\n}\n\nconst integrationsArr = Array.isArray(integrations) ? integrations : (integrations ? [integrations] : []);\n\nreturn [\n  {\n    json: {\n      _gate: 'PASS',\n      user_id,\n      plan_tier: tierStr,\n      process_description: process_description.trim(),\n      integrations: integrationsArr\n    }\n  }\n];"
       },
       "id": "ff000001-0003-4000-8000-000000000003",
       "name": "Plan Gate Check",
@@ -543,7 +543,7 @@
   "staticData": null,
   "tags": [
     {
-      "name": "nova-ops",
+      "name": "bylda-ops",
       "createdAt": "2026-01-01T00:00:00.000Z",
       "updatedAt": "2026-01-01T00:00:00.000Z"
     },
@@ -555,5 +555,5 @@
   ],
   "triggerCount": 1,
   "updatedAt": "2026-04-29T00:00:00.000Z",
-  "id": "nova-ops-automation-builder-subagent-v1"
+  "id": "bylda-ops-automation-builder-subagent-v1"
 }
