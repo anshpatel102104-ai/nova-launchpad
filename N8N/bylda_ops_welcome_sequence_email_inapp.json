@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        500
-      ],
+      "position": [240, 500],
       "webhookId": "bylda-ops-welcome-sequence"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        500
-      ]
+      "position": [480, 500]
     },
     {
       "parameters": {
@@ -44,10 +38,7 @@
       "name": "GET user_profiles",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        320
-      ],
+      "position": [720, 320],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -68,10 +59,7 @@
       "name": "GET ai_operator_configs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        680
-      ],
+      "position": [720, 680],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -87,10 +75,7 @@
       "name": "Merge + Build Message Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        500
-      ]
+      "position": [960, 500]
     },
     {
       "parameters": {
@@ -100,10 +85,7 @@
       "name": "Build Email + Notification Content",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1200,
-        500
-      ]
+      "position": [1200, 500]
     },
     {
       "parameters": {
@@ -133,10 +115,7 @@
       "name": "Send Welcome Email (Resend)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        320
-      ]
+      "position": [1440, 320]
     },
     {
       "parameters": {
@@ -166,10 +145,7 @@
       "name": "INSERT notifications",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        680
-      ],
+      "position": [1440, 680],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -185,10 +161,7 @@
       "name": "Merge Send Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        500
-      ]
+      "position": [1700, 500]
     },
     {
       "parameters": {
@@ -218,10 +191,7 @@
       "name": "INSERT comms_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1940,
-        500
-      ],
+      "position": [1940, 500],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -241,10 +211,7 @@
       "name": "Return: Welcome Sent",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2180,
-        500
-      ]
+      "position": [2180, 500]
     }
   ],
   "connections": {

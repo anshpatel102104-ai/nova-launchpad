@@ -237,7 +237,10 @@ function CreateDealCard({
         </p>
       </div>
       {dealState === "done" ? (
-        <Link to="/app/bylda/crm" className="text-sm font-semibold text-[--success] hover:underline">
+        <Link
+          to="/app/bylda/crm"
+          className="text-sm font-semibold text-[--success] hover:underline"
+        >
           Deal created — view pipeline →
         </Link>
       ) : (

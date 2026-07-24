@@ -182,12 +182,20 @@
   ],
   "connections": {
     "Webhook": { "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]] },
-    "Validate Input": { "main": [[{ "node": "Load Existing Profile", "type": "main", "index": 0 }]] },
-    "Load Existing Profile": { "main": [[{ "node": "Fetch System Prompt", "type": "main", "index": 0 }]] },
+    "Validate Input": {
+      "main": [[{ "node": "Load Existing Profile", "type": "main", "index": 0 }]]
+    },
+    "Load Existing Profile": {
+      "main": [[{ "node": "Fetch System Prompt", "type": "main", "index": 0 }]]
+    },
     "Fetch System Prompt": { "main": [[{ "node": "Call Claude", "type": "main", "index": 0 }]] },
     "Call Claude": { "main": [[{ "node": "Parse Claude Response", "type": "main", "index": 0 }]] },
-    "Parse Claude Response": { "main": [[{ "node": "Upsert Operator Config", "type": "main", "index": 0 }]] },
-    "Upsert Operator Config": { "main": [[{ "node": "Upsert AI Config", "type": "main", "index": 0 }]] },
+    "Parse Claude Response": {
+      "main": [[{ "node": "Upsert Operator Config", "type": "main", "index": 0 }]]
+    },
+    "Upsert Operator Config": {
+      "main": [[{ "node": "Upsert AI Config", "type": "main", "index": 0 }]]
+    },
     "Upsert AI Config": { "main": [[{ "node": "Return Response", "type": "main", "index": 0 }]] },
     "Error Trigger": { "main": [[{ "node": "Log Error", "type": "main", "index": 0 }]] },
     "Log Error": { "main": [[{ "node": "Error Response", "type": "main", "index": 0 }]] }

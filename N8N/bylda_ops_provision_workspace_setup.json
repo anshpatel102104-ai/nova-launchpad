@@ -38,8 +38,8 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type",  "value": "application/json" },
-            { "name": "Prefer",        "value": "resolution=merge-duplicates,return=representation" }
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "resolution=merge-duplicates,return=representation" }
           ]
         },
         "sendBody": true,
@@ -73,7 +73,7 @@
         "headerParameters": {
           "parameters": [
             { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer",       "value": "return=representation" }
+            { "name": "Prefer", "value": "return=representation" }
           ]
         },
         "sendBody": true,
@@ -107,7 +107,7 @@
         "headerParameters": {
           "parameters": [
             { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer",       "value": "return=representation" }
+            { "name": "Prefer", "value": "return=representation" }
           ]
         },
         "sendBody": true,
@@ -129,9 +129,7 @@
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
-          ]
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
         },
         "sendBody": true,
         "specifyBody": "json",
@@ -152,9 +150,7 @@
         "nodeCredentialType": "supabaseApi",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
-          ]
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
         },
         "sendBody": true,
         "specifyBody": "json",

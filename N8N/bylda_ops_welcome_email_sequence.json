@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        500
-      ],
+      "position": [240, 500],
       "webhookId": "bylda-ops-welcome-sequence"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Build Email Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        500
-      ]
+      "position": [480, 500]
     },
     {
       "parameters": {
@@ -43,10 +37,7 @@
       "name": "Return: Sequence Queued",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        720,
-        280
-      ]
+      "position": [720, 280]
     },
     {
       "parameters": {
@@ -76,10 +67,7 @@
       "name": "Send Day 0: Welcome Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        700
-      ]
+      "position": [720, 700]
     },
     {
       "parameters": {
@@ -89,10 +77,7 @@
       "name": "Confirm Day 0 Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        700
-      ]
+      "position": [960, 700]
     },
     {
       "parameters": {
@@ -103,10 +88,7 @@
       "name": "Wait: 1 Day",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [
-        1200,
-        700
-      ],
+      "position": [1200, 700],
       "webhookId": "bylda-ops-wait-day1"
     },
     {
@@ -137,10 +119,7 @@
       "name": "Send Day 1: Tool Quick-Start",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        700
-      ]
+      "position": [1440, 700]
     },
     {
       "parameters": {
@@ -150,10 +129,7 @@
       "name": "Confirm Day 1 Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        700
-      ]
+      "position": [1700, 700]
     },
     {
       "parameters": {
@@ -164,10 +140,7 @@
       "name": "Wait: 2 Days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [
-        1940,
-        700
-      ],
+      "position": [1940, 700],
       "webhookId": "bylda-ops-wait-day3"
     },
     {
@@ -198,10 +171,7 @@
       "name": "Send Day 3: Setup Call CTA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2180,
-        700
-      ]
+      "position": [2180, 700]
     },
     {
       "parameters": {
@@ -211,10 +181,7 @@
       "name": "Confirm Day 3 Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2440,
-        700
-      ]
+      "position": [2440, 700]
     },
     {
       "parameters": {
@@ -244,10 +211,7 @@
       "name": "INSERT comms_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2680,
-        700
-      ],
+      "position": [2680, 700],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",

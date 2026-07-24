@@ -283,10 +283,7 @@ function ModuleWorkspace() {
                   Why this matters for your {businessLabel}
                 </span>
               </div>
-              <p
-                className="text-[13.5px] leading-relaxed"
-                style={{ color: "var(--foreground)" }}
-              >
+              <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--foreground)" }}>
                 {brief.why}
               </p>
               <div
@@ -317,7 +314,10 @@ function ModuleWorkspace() {
                     Build steps
                   </span>
                 </div>
-                <span className="text-[10px] font-mono" style={{ color: "var(--muted-foreground)" }}>
+                <span
+                  className="text-[10px] font-mono"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   {doneSteps.size}/{buildSteps.length} done
                 </span>
               </div>

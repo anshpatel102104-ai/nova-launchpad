@@ -2,7 +2,7 @@
 
 How the `/app/tutorials` videos are produced. There are two kinds of asset:
 
-1. **25 step-by-step tutorials** — real screen recordings that actually *operate*
+1. **25 step-by-step tutorials** — real screen recordings that actually _operate_
    the app (create a deal, drag the kanban, build an automation, connect Slack,
    generate real AI content), one per row in `public.tutorials`.
 2. **1 cinematic brand film** — the hero promo at the top of the tutorials page
@@ -29,6 +29,7 @@ How the `/app/tutorials` videos are produced. There are two kinds of asset:
   recording starts from clean, realistic data.
 
 ### Running it
+
 Env: `APP_BASE_URL` (default `http://127.0.0.1:8080`), `TUTORIAL_PASSWORD`,
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, plus a Chromium-capable
 `playwright`. Start the dev server (`bun run dev -- --host 127.0.0.1 --port 8080`),
@@ -36,6 +37,7 @@ then `node scripts/tutorial-videos/record.mjs all` and
 `bash scripts/tutorial-videos/upload.sh`.
 
 ### Capturing real screens
+
 - Sign in as a seeded confirmed demo user, then navigate client-side
   (`history.pushState` + `popstate`) — full-page `goto` loses the localStorage
   session and redirects to sign-in.

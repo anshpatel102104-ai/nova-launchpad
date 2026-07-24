@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "bylda-ops-onboarding-intake"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -59,10 +53,7 @@
       "name": "Upsert onboarding_responses",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        240
-      ],
+      "position": [720, 240],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -98,10 +89,7 @@
       "name": "PATCH users: onboarding_completed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        560
-      ],
+      "position": [720, 560],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -117,10 +105,7 @@
       "name": "Merge Parallel Writes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        400
-      ]
+      "position": [960, 400]
     },
     {
       "parameters": {
@@ -151,10 +136,7 @@
       "name": "Trigger: AI Profile Builder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1200,
-        400
-      ]
+      "position": [1200, 400]
     },
     {
       "parameters": {
@@ -164,10 +146,7 @@
       "name": "Confirm AI Builder Triggered",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1440,
-        400
-      ]
+      "position": [1440, 400]
     },
     {
       "parameters": {
@@ -197,10 +176,7 @@
       "name": "INSERT admin_audit_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1680,
-        400
-      ],
+      "position": [1680, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -220,10 +196,7 @@
       "name": "Return: Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1920,
-        400
-      ]
+      "position": [1920, 400]
     }
   ],
   "connections": {

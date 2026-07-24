@@ -5,7 +5,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "worker.ts",
   "vars": {
-    "SUPABASE_URL": "https://ipidfqwlszuhjgjygbvx.supabase.co"
+    "SUPABASE_URL": "https://ipidfqwlszuhjgjygbvx.supabase.co",
   },
   "queues": {
     "consumers": [
@@ -13,8 +13,8 @@
         "queue": "bylda-automation-queue",
         "max_batch_size": 10,
         "max_retries": 3,
-        "dead_letter_queue": "bylda-automation-dlq"
-      }
-    ]
-  }
+        "dead_letter_queue": "bylda-automation-dlq",
+      },
+    ],
+  },
 }

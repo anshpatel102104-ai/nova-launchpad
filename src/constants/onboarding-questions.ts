@@ -210,7 +210,12 @@ export const FOUNDER_QUESTIONS: IntakeQuestion[] = [
         desc: "Billed for work",
         emoji: "🧾",
       },
-      { id: "Not sure yet", label: "Not sure yet", desc: "Bylda will help you decide", emoji: "🤔" },
+      {
+        id: "Not sure yet",
+        label: "Not sure yet",
+        desc: "Bylda will help you decide",
+        emoji: "🤔",
+      },
     ],
   },
   {

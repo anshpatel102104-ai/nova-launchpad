@@ -16,12 +16,12 @@ the ability to **build an automation once and publish it, choosing who it's for*
 `PublishModal` in `src/routes/app.builder.tsx` lets an operator publish the current
 canvas as a reusable **template**, choosing an audience scope:
 
-| Scope          | Meaning                                                            |
-| -------------- | ----------------------------------------------------------------- |
-| `self`         | Private template only this workspace can install.                 |
-| `client`       | Published for one specific CRM contact (searchable client picker). |
-| `all_clients`  | Rolled out to every client the agency manages.                    |
-| `marketplace`  | Public — any other operator can install it.                       |
+| Scope         | Meaning                                                            |
+| ------------- | ------------------------------------------------------------------ |
+| `self`        | Private template only this workspace can install.                  |
+| `client`      | Published for one specific CRM contact (searchable client picker). |
+| `all_clients` | Rolled out to every client the agency manages.                     |
+| `marketplace` | Public — any other operator can install it.                        |
 
 Backed by two new tables (`supabase/migrations/20260619000001_automation_templates.sql`):
 
@@ -107,15 +107,15 @@ The Builder is no longer write-only — workflows actually run.
 
 ### What executes live vs. simulated
 
-| Step | Status | Credential |
-| --- | --- | --- |
-| AI (generate / classify / score) | **LIVE now** | `ANTHROPIC_API_KEY` — already set (powers `bylda-chat`) |
-| Outbound webhook | **LIVE now** | none needed |
-| CRM writes (add/remove tag, move stage, set field, add note, memory) | **LIVE now** | service role |
-| If/Else, A/B split | **LIVE now** — the engine takes only the chosen lane (waits are recorded; real delays need the queue) | none |
-| Send Email | simulated until key set | `SENDGRID_API_KEY` (+ `SENDGRID_FROM_EMAIL`) **or** operator connects SendGrid in Integrations |
-| Send SMS | simulated until keys set | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` **or** operator connects Twilio in Integrations |
-| Notify team (Slack) | simulated until set | `SLACK_WEBHOOK_URL` **or** operator connects Slack in Integrations |
+| Step                                                                 | Status                                                                                                | Credential                                                                                                      |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| AI (generate / classify / score)                                     | **LIVE now**                                                                                          | `ANTHROPIC_API_KEY` — already set (powers `bylda-chat`)                                                         |
+| Outbound webhook                                                     | **LIVE now**                                                                                          | none needed                                                                                                     |
+| CRM writes (add/remove tag, move stage, set field, add note, memory) | **LIVE now**                                                                                          | service role                                                                                                    |
+| If/Else, A/B split                                                   | **LIVE now** — the engine takes only the chosen lane (waits are recorded; real delays need the queue) | none                                                                                                            |
+| Send Email                                                           | simulated until key set                                                                               | `SENDGRID_API_KEY` (+ `SENDGRID_FROM_EMAIL`) **or** operator connects SendGrid in Integrations                  |
+| Send SMS                                                             | simulated until keys set                                                                              | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` **or** operator connects Twilio in Integrations |
+| Notify team (Slack)                                                  | simulated until set                                                                                   | `SLACK_WEBHOOK_URL` **or** operator connects Slack in Integrations                                              |
 
 Any step without credentials is clearly labelled `simulated` in the trace, so the
 engine works today and each channel goes live the instant its key is added.
@@ -139,12 +139,12 @@ credentials are encrypted (`pgp_sym_encrypt`) and decrypted only inside the
 priority over the platform secret fallback. Providers that need more than one value
 capture them as **multi-field** credentials (stored under separate keys):
 
-| Provider | Fields captured | Stored keys |
-| --- | --- | --- |
-| SendGrid | API key + verified from-email | `sendgrid`, `sendgrid_from` |
-| Twilio | Account SID + auth token + from-number | `twilio_sid`, `twilio`, `twilio_from` |
-| Slack | Incoming webhook URL | `slack` |
-| Anthropic (Claude) | API key | `anthropic` |
+| Provider           | Fields captured                        | Stored keys                           |
+| ------------------ | -------------------------------------- | ------------------------------------- |
+| SendGrid           | API key + verified from-email          | `sendgrid`, `sendgrid_from`           |
+| Twilio             | Account SID + auth token + from-number | `twilio_sid`, `twilio`, `twilio_from` |
+| Slack              | Incoming webhook URL                   | `slack`                               |
+| Anthropic (Claude) | API key                                | `anthropic`                           |
 
 So an agency operator can run client automations entirely on their own SendGrid /
 Twilio / Slack / Claude accounts without any platform-wide secret being set.
@@ -180,7 +180,7 @@ crons already need — they're currently dormant because these were never set:
    alter database postgres set app.settings.supabase_url = 'https://<ref>.supabase.co';
    alter database postgres set app.settings.service_role_key = '<service_role_key>';
    ```
-Re-running migration `20260619000003` then schedules `automation-dispatch-1min`.
+   Re-running migration `20260619000003` then schedules `automation-dispatch-1min`.
 
 ## Follow-ups / deferred
 

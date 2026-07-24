@@ -6,13 +6,13 @@ One intelligence layer, two distinct products. They share account, memory,
 business context, decisions, and AI intelligence — they never share
 navigation, home screens, shell, or mental model.
 
-|         | Launchpad                        | Bylda                                 |
+|         | Launchpad                        | Bylda                                |
 | ------- | -------------------------------- | ------------------------------------ |
 | Feeling | "I am building my business"      | "I am running my business"           |
 | Model   | Linear, staged, mission-based    | Modular, operational, command center |
 | Home    | Casefile mission control         | Operating system overview            |
-| Accent  | Violet (`--primary` default)     | Cyan (`--bylda-accent`)               |
-| Shell   | `LaunchpadSidebar` (staged rail) | `ByldaSidebar` (command rail)         |
+| Accent  | Violet (`--primary` default)     | Cyan (`--bylda-accent`)              |
+| Shell   | `LaunchpadSidebar` (staged rail) | `ByldaSidebar` (command rail)        |
 
 ## Non-negotiables (enforced in code)
 

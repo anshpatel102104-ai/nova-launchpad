@@ -40,20 +40,20 @@ It also documents the **two-view restructure** (Launchpad vs BYLDA) built in thi
 
 ## A. CRM gaps vs HubSpot (priority-ordered)
 
-| #   | Gap                                 | Evidence / Notes                                                                                                                                                          | Priority      |
-| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| #   | Gap                                 | Evidence / Notes                                                                                                                                                           | Priority      |
+| --- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | 1   | **No Contacts object**              | `contacts` table is absent from all 43 migrations, yet `src/routes/app.contacts.tsx` and `workers/bylda-contacts-api/` query it. Contacts is **broken at the data layer**. | P0 (blocking) |
-| 2   | **No Companies / Accounts object**  | No company records, no contact↔company link. HubSpot's core is Contacts + Companies + Deals + Tickets.                                                                    | P0            |
-| 3   | **Objects not linked**              | No Deal↔Contact↔Company associations — the relationship graph HubSpot is built on.                                                                                        | P1            |
-| 4   | **Email**                           | No 2-way sync, send-from-CRM, open/click tracking, or logging. `email` activity type is a stub.                                                                           | P1            |
-| 5   | **Calls / meetings / tasks**        | Activity types defined; no real objects or integrations (no telephony, no calendar sync).                                                                                 | P2            |
-| 6   | **Sequences / cadences**            | No object-aware multi-step outreach builder. n8n exists but isn't tied to CRM records.                                                                                    | P2            |
-| 7   | **Lead-scoring engine**             | `score` is a stored number; no rules, decay, or automatic recompute.                                                                                                      | P2            |
-| 8   | **Custom fields UI**                | `custom_fields` JSONB exists; no property manager / builder.                                                                                                              | P3            |
-| 9   | **Lists & segmentation**            | Only ad-hoc filters; no saved smart lists.                                                                                                                                | P3            |
-| 10  | **Import / export / dedupe**        | No CSV import, no bulk loader, no export, no merge.                                                                                                                       | P2            |
-| 11  | **Reporting builder**               | Only fixed ROI/weekly reports; no custom dashboards.                                                                                                                      | P3            |
-| 12  | **Forms / landing pages / capture** | No top-of-funnel lead ingestion into the CRM.                                                                                                                             | P3            |
+| 2   | **No Companies / Accounts object**  | No company records, no contact↔company link. HubSpot's core is Contacts + Companies + Deals + Tickets.                                                                     | P0            |
+| 3   | **Objects not linked**              | No Deal↔Contact↔Company associations — the relationship graph HubSpot is built on.                                                                                         | P1            |
+| 4   | **Email**                           | No 2-way sync, send-from-CRM, open/click tracking, or logging. `email` activity type is a stub.                                                                            | P1            |
+| 5   | **Calls / meetings / tasks**        | Activity types defined; no real objects or integrations (no telephony, no calendar sync).                                                                                  | P2            |
+| 6   | **Sequences / cadences**            | No object-aware multi-step outreach builder. n8n exists but isn't tied to CRM records.                                                                                     | P2            |
+| 7   | **Lead-scoring engine**             | `score` is a stored number; no rules, decay, or automatic recompute.                                                                                                       | P2            |
+| 8   | **Custom fields UI**                | `custom_fields` JSONB exists; no property manager / builder.                                                                                                               | P3            |
+| 9   | **Lists & segmentation**            | Only ad-hoc filters; no saved smart lists.                                                                                                                                 | P3            |
+| 10  | **Import / export / dedupe**        | No CSV import, no bulk loader, no export, no merge.                                                                                                                        | P2            |
+| 11  | **Reporting builder**               | Only fixed ROI/weekly reports; no custom dashboards.                                                                                                                       | P3            |
+| 12  | **Forms / landing pages / capture** | No top-of-funnel lead ingestion into the CRM.                                                                                                                              | P3            |
 
 ---
 

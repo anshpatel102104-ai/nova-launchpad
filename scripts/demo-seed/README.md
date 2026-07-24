@@ -10,14 +10,14 @@ tour the whole platform, and test the CRM in front of a client.
 
 ## What you get
 
-| Area | Seeded |
-| --- | --- |
-| **Access** | `onboarding_complete = true` (unlocks all of `/app`), **Scale** plan (every feature, unlimited, **free / no payment, non-expiring**), and the **admin** role (Admin hub + owner mode) |
-| **Workspace** | Operate-mode workspace at the **Scale** stage, with a first mission + steps |
-| **Business context** | Full Business Context Graph (the canonical record every AI surface reads) |
-| **CRM** | 8 companies, 14 scored contacts, 14 deals across every pipeline stage (~$272k open pipeline, OrbitCraft won), plus activity timelines |
-| **Activity** | 16 succeeded tool runs, 6 generated assets, 6 automations, current-period usage |
-| **Intelligence** | 6 mentor insights in the signals rail |
+| Area                 | Seeded                                                                                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Access**           | `onboarding_complete = true` (unlocks all of `/app`), **Scale** plan (every feature, unlimited, **free / no payment, non-expiring**), and the **admin** role (Admin hub + owner mode) |
+| **Workspace**        | Operate-mode workspace at the **Scale** stage, with a first mission + steps                                                                                                           |
+| **Business context** | Full Business Context Graph (the canonical record every AI surface reads)                                                                                                             |
+| **CRM**              | 8 companies, 14 scored contacts, 14 deals across every pipeline stage (~$272k open pipeline, OrbitCraft won), plus activity timelines                                                 |
+| **Activity**         | 16 succeeded tool runs, 6 generated assets, 6 automations, current-period usage                                                                                                       |
+| **Intelligence**     | 6 mentor insights in the signals rail                                                                                                                                                 |
 
 All numbers are fake but internally consistent (pipeline = sum of deal values,
 execution index from tool runs, etc.).

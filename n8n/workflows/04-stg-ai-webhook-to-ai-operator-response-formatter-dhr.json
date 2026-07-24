@@ -40,10 +40,7 @@
       "name": "Webhook - Receive Request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "path": "ai-operator-response-formatter",
         "httpMethod": "POST",
@@ -57,10 +54,7 @@
       "name": "Code - Format Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "jsCode": "const body        = $input.first().json.body;\\nconst user_id     = body.user_id     || '';\\nconst session_id  = body.session_id  || '';\\nconst tool_id     = body.tool_id     || 'general_question';\\nconst raw_output  = body.raw_output  || '';\\nconst output_type = (body.output_type || 'text').toLowerCase().trim();\\n\\n// \u2500\u2500 Format by type \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nlet formatted_output;\\nlet formatted_for_storage;\\n\\nswitch (output_type) {\\n\\n  case 'list':\\n    // Split on newline (or numbered lines), strip blanks\\n    formatted_output = raw_output\\n      .split('\\\\n')\\n      .map(l => l.replace(/^\\\\s*[\\\\-\\\\*\u2022\\\\d]+[.)\\\\s]+/, '').trim())\\n      .filter(Boolean);\\n    formatted_for_storage = JSON.stringify(formatted_output);\\n    break;\\n\\n  case 'json':\\n    try {\\n      const parsed = JSON.parse(raw_output);\\n      formatted_output      = JSON.stringify(parsed, null, 2);\\n      formatted_for_storage = formatted_output;\\n    } catch (_) {\\n      // Not valid JSON \u2014 store as-is with a warning prefix\\n      formatted_output      = raw_output.trim();\\n      formatted_for_storage = formatted_output;\\n    }\\n    break;\\n\\n  case 'email':\\n    // Preserve line breaks, trim leading/trailing whitespace on each line\\n    formatted_output = raw_output\\n      .split('\\\\n')\\n      .map(l => l.trimEnd())\\n      .join('\\\\n')\\n      .trim();\\n    formatted_for_storage = formatted_output;\\n    break;\\n\\n  case 'script':\\n    // Preserve exact content; just trim outer whitespace\\n    formatted_output      = raw_output.trim();\\n    formatted_for_storage = formatted_output;\\n    break;\\n\\n  case 'text':\\n  default:\\n    formatted_output      = raw_output.trim();\\n    formatted_for_storage = formatted_output;\\n    break;\\n}\\n\\n// \u2500\u2500 Tool name map for notification message \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nconst toolNames = {\\n  lead_gen:            'Lead Generation',\\n  copywriting:         'Copywriting',\\n  offer_building:      'Offer Builder',\\n  funnel_mapping:      'Funnel Mapper',\\n  content_calendar:    'Content Calendar',\\n  ad_strategy:         'Ad Strategy',\\n  email_sequence:      'Email Sequence',\\n  seo_brief:           'SEO Brief',\\n  competitor_research: 'Competitor Research',\\n  social_planning:     'Social Planning',\\n  sales_script:        'Sales Script',\\n  brand_voice:         'Brand Voice',\\n  analytics:           'Analytics',\\n  automation_build:    'Automation Builder',\\n  client_reporting:    'Client Reporting',\\n  general_question:    'AI Assistant'\\n};\\nconst tool_name = toolNames[tool_id] || tool_id;\\n\\nreturn [{\\n  json: {\\n    user_id,\\n    session_id,\\n    tool_id,\\n    tool_name,\\n    output_type,\\n    raw_output,\\n    formatted_output,\\n    formatted_for_storage,\\n    notification_message: `Your ${tool_name} output is ready.`,\\n    created_at: new Date().toISOString()\\n  }\\n}];"
       }
@@ -70,10 +64,7 @@
       "name": "HTTP - Store Tool Output",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        700,
-        220
-      ],
+      "position": [700, 220],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/tool_outputs",
@@ -116,10 +107,7 @@
       "name": "HTTP - Insert Notification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        700,
-        540
-      ],
+      "position": [700, 540],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/notifications",
@@ -162,10 +150,7 @@
       "name": "Merge - Await Both Writes",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [
-        940,
-        380
-      ],
+      "position": [940, 380],
       "parameters": {
         "mode": "combine",
         "combinationMode": "mergeByPosition",
@@ -177,10 +162,7 @@
       "name": "Respond - Return Formatted Output",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1160,
-        380
-      ],
+      "position": [1160, 380],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ success: true, tool_id: $('Code - Format Output').first().json.tool_id, output_type: $('Code - Format Output').first().json.output_type, formatted_output: $('Code - Format Output').first().json.formatted_output, notification: $('Code - Format Output').first().json.notification_message }) }}",
@@ -194,20 +176,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        680
-      ]
+      "position": [240, 680]
     },
     {
       "id": "d4000008-0000-0000-0000-000000000008",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        680
-      ],
+      "position": [460, 680],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

@@ -1,4 +1,5 @@
 # Bylda Operating System Redesign
+
 ## Strategic Transformation from Tool Marketplace to Business Operating System
 
 **Status:** Design Phase  
@@ -13,6 +14,7 @@
 ### What Currently Exists (as discovered in audit)
 
 **Current Architecture:**
+
 - Mission-based system ✅ (good foundation)
 - Multiple disconnected routes (40+ pages)
 - Tool-centric thinking (Launchpad tools list)
@@ -22,6 +24,7 @@
 - Multiple "sections" (Academy, Scale, Builder, etc.)
 
 **Current Navigation Structure:**
+
 ```
 /app/
 ├── dashboard (home)
@@ -42,6 +45,7 @@
 ```
 
 **Problems with Current Structure:**
+
 1. ❌ 40+ routes feels like browsing software
 2. ❌ "Launchpad" is tool-first (not outcome-first)
 3. ❌ Multiple entry points (dashboard vs mission-control vs launchpad)
@@ -51,6 +55,7 @@
 7. ❌ No operating system metaphor
 
 **What's Good:**
+
 - ✅ Mission system actually exists and works
 - ✅ Step-based execution guidance (just built!)
 - ✅ Founder progress tracking
@@ -65,6 +70,7 @@
 ### The New Mental Model
 
 **BEFORE (SaaS Mentality):**
+
 ```
 Tool Hub → Tool → Run → Output → Dashboard
          ↓
@@ -76,6 +82,7 @@ Tool Hub → Tool → Run → Output → Dashboard
 ```
 
 **AFTER (Operating System):**
+
 ```
 Mission Control
       ↓
@@ -89,9 +96,11 @@ What to Achieve? → Outcome Engine → Guided Execution → Business Graph Upda
 ### Core Components of the OS
 
 #### 1. Mission Control (The Central Dashboard)
+
 **NOT a traditional dashboard.**
 
 **IS:**
+
 - Command center for business progress
 - Shows what matters most
 - Shows what's blocking
@@ -158,6 +167,7 @@ MISSION CONTROL
 **WITH:** Outcome-driven workflows
 
 **Founder Mode Outcomes:**
+
 ```
 Build Your Offer
 - What: Package your idea into something sellable
@@ -189,6 +199,7 @@ Launch Productized Service
 ```
 
 **Operator Mode Outcomes:**
+
 ```
 Automate Key Process
 - What: Remove manual tasks from your business
@@ -224,6 +235,7 @@ Build Your Team Playbook
 #### 3. New Navigation Structure
 
 **BEFORE:**
+
 ```
 Bylda
 ├── Dashboard
@@ -239,6 +251,7 @@ Bylda
 ```
 
 **AFTER (Founder Mode):**
+
 ```
 ┌─ Mission Control (default, command center)
 │
@@ -265,6 +278,7 @@ Bylda
 ```
 
 **AFTER (Operator Mode):**
+
 ```
 ┌─ Mission Control (command center)
 │
@@ -290,6 +304,7 @@ Bylda
 ```
 
 **Key Changes:**
+
 - ✅ No "Launchpad" (tool-first)
 - ✅ No "Settings" on main nav (progressive disclosure)
 - ✅ No "Admin" on main nav
@@ -306,6 +321,7 @@ Bylda
 **NEW:** Single entry point—Mission Control, but reimagined as an OS
 
 **Flow:**
+
 ```
 User logs in
     ↓
@@ -446,6 +462,7 @@ Bylda OS
 **FILE:** `src/routes/__root.tsx` (or layout wrapper)
 
 **BEFORE:**
+
 ```typescript
 const ROUTES = [
   { label: "Dashboard", href: "/app/dashboard" },
@@ -461,6 +478,7 @@ const ROUTES = [
 ```
 
 **AFTER:**
+
 ```typescript
 // Determine mode (create vs operate) from workspace
 const mode = workspace?.mode === "operate" ? "operate" : "create";
@@ -544,7 +562,8 @@ const NAVIGATION_ITEMS =
 // They appear in context when needed, not in main nav
 ```
 
-**Result:** 
+**Result:**
+
 - 4-5 navigation items instead of 8+
 - Outcome-driven naming
 - Mode-aware (changes based on founder vs operator)
@@ -624,6 +643,7 @@ export function MissionControlPage() {
 ```
 
 **New Hooks Needed:**
+
 ```typescript
 // src/hooks/use-blockers.ts
 function useBlockers() {
@@ -901,6 +921,7 @@ if (!useProgressiveDisclosure().showIntegrations) {
 ### Change 6: Restructure Routes for OS Model
 
 **BEFORE:**
+
 ```
 /app/
 ├── /dashboard
@@ -913,6 +934,7 @@ if (!useProgressiveDisclosure().showIntegrations) {
 ```
 
 **AFTER:**
+
 ```
 /app/
 ├── /mission-control (command center)
@@ -1281,26 +1303,31 @@ Interaction:
 ### How to Transition Without Breaking Things
 
 **Phase 1 (Week 1): Set up new routes**
+
 - Create `/app/outcomes/` routes (inactive)
 - Create new Bylda interface (inactive)
 - Create Mission Control v2 (inactive)
 
 **Phase 2 (Week 2): Soft launch**
+
 - Redirect `/app/dashboard` → `/app/mission-control`
 - Add "Try New Navigation" experiment flag
 - Show navigation redesign to 10% of users
 
 **Phase 3 (Week 3): Monitor & iterate**
+
 - Measure completion rates
 - Gather feedback from experiment group
 - Fix bugs, improve messaging
 
 **Phase 4 (Week 4): Full rollout**
+
 - Roll out to all users
 - Hide old Launchpad in menu (progressive disclosure)
 - Archive old routes
 
 **Phase 5 (Week 5+): Deep integration**
+
 - Integrate business graph fully
 - Add AI recommendations
 - Optimize based on usage data
@@ -1310,18 +1337,21 @@ Interaction:
 ## PART 9: IMPLEMENTATION PRIORITY
 
 ### Must Have (Week 1-2)
+
 - [ ] Mission Control redesign (command center feel)
 - [ ] Navigation restructure (4-5 items, outcome-driven)
 - [ ] Outcome Engine framework (render outcomes)
 - [ ] Ask Bylda redesign (goal-oriented)
 
 ### Should Have (Week 2-3)
+
 - [ ] Progressive disclosure system
 - [ ] Business graph backend
 - [ ] Blocker detection
 - [ ] AI recommendations
 
 ### Nice to Have (Week 3+)
+
 - [ ] Advanced analytics
 - [ ] Team management
 - [ ] Detailed integrations UI
@@ -1332,6 +1362,7 @@ Interaction:
 ## FINAL: THE REALIZATION
 
 **Current State:** Bylda feels like a tool collection
+
 ```
 User: "I'm in Bylda"
 Means: "I'm browsing software"
@@ -1341,6 +1372,7 @@ User feels: Overwhelmed by options
 ```
 
 **Desired State:** Bylda feels like an OS
+
 ```
 User: "I'm in Bylda"
 Means: "I'm running my business"

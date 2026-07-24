@@ -36,13 +36,49 @@ export function inferBusinessArchetype(profile: WorkspaceProfile): BusinessArche
 
   const has = (...words: string[]) => words.some((w) => hay.includes(w));
 
-  if (has("ecommerce", "e-commerce", "store", "shopify", "product", "dropship", "brand", "retail", "sell physical", "merch"))
+  if (
+    has(
+      "ecommerce",
+      "e-commerce",
+      "store",
+      "shopify",
+      "product",
+      "dropship",
+      "brand",
+      "retail",
+      "sell physical",
+      "merch",
+    )
+  )
     return "ecommerce";
   if (has("saas", "software", "app", "platform", "subscription", "api", "tool", "dashboard", "mrr"))
     return "saas";
-  if (has("agency", "consult", "freelance", "service", "coaching", "done-for-you", "client", "contractor"))
+  if (
+    has(
+      "agency",
+      "consult",
+      "freelance",
+      "service",
+      "coaching",
+      "done-for-you",
+      "client",
+      "contractor",
+    )
+  )
     return "service";
-  if (has("content", "creator", "newsletter", "course", "audience", "youtube", "podcast", "influencer", "media"))
+  if (
+    has(
+      "content",
+      "creator",
+      "newsletter",
+      "course",
+      "audience",
+      "youtube",
+      "podcast",
+      "influencer",
+      "media",
+    )
+  )
     return "content";
   return "general";
 }
@@ -213,144 +249,400 @@ const BRIEFS: Record<string, PerArchetype<ModuleBrief>> = {
 const STEPS: Record<string, PerArchetype<BuildStep[]>> = {
   "idea-validation": {
     general: [
-      { title: "Write your idea in one sentence", detail: "‘I help [who] achieve [outcome] by [how].’ If you can't, the idea isn't clear enough yet." },
-      { title: "Run the Idea Validator", detail: "Get a scored GO/ITERATE/KILL verdict and a market read on demand and competition." },
-      { title: "Talk to 5 real potential buyers", detail: "Ask about the problem, not your solution. Listen for urgency and existing spend." },
-      { title: "Stress-test with Kill My Idea", detail: "Face the strongest objections now, while changing direction is still cheap." },
+      {
+        title: "Write your idea in one sentence",
+        detail:
+          "‘I help [who] achieve [outcome] by [how].’ If you can't, the idea isn't clear enough yet.",
+      },
+      {
+        title: "Run the Idea Validator",
+        detail: "Get a scored GO/ITERATE/KILL verdict and a market read on demand and competition.",
+      },
+      {
+        title: "Talk to 5 real potential buyers",
+        detail: "Ask about the problem, not your solution. Listen for urgency and existing spend.",
+      },
+      {
+        title: "Stress-test with Kill My Idea",
+        detail: "Face the strongest objections now, while changing direction is still cheap.",
+      },
     ],
     ecommerce: [
-      { title: "Pick the product and the buyer", detail: "One hero product, one specific customer. Note the pain it removes." },
-      { title: "Check demand & margin", detail: "Search volume, competitor reviews, and landed cost vs. sell price — you need room to profit after ads." },
-      { title: "Run the Idea Validator", detail: "Get a GO/ITERATE/KILL verdict on the niche before ordering inventory." },
-      { title: "Pre-sell or ad-test", detail: "A small ad or pre-order page tells you if strangers will actually pay." },
+      {
+        title: "Pick the product and the buyer",
+        detail: "One hero product, one specific customer. Note the pain it removes.",
+      },
+      {
+        title: "Check demand & margin",
+        detail:
+          "Search volume, competitor reviews, and landed cost vs. sell price — you need room to profit after ads.",
+      },
+      {
+        title: "Run the Idea Validator",
+        detail: "Get a GO/ITERATE/KILL verdict on the niche before ordering inventory.",
+      },
+      {
+        title: "Pre-sell or ad-test",
+        detail: "A small ad or pre-order page tells you if strangers will actually pay.",
+      },
     ],
   },
   "offer-creation": {
     general: [
-      { title: "Define the transformation", detail: "Before → after. What does life look like once your offer works?" },
-      { title: "Set the price", detail: "Use the Pricing tool to anchor price to the value of the outcome, not your costs." },
-      { title: "Generate your pitch", detail: "Run the Pitch Generator to turn the offer into a clear promise you can repeat." },
-      { title: "Add a risk-reversal", detail: "A guarantee or trial removes the fear that stops the ‘yes’." },
+      {
+        title: "Define the transformation",
+        detail: "Before → after. What does life look like once your offer works?",
+      },
+      {
+        title: "Set the price",
+        detail: "Use the Pricing tool to anchor price to the value of the outcome, not your costs.",
+      },
+      {
+        title: "Generate your pitch",
+        detail: "Run the Pitch Generator to turn the offer into a clear promise you can repeat.",
+      },
+      {
+        title: "Add a risk-reversal",
+        detail: "A guarantee or trial removes the fear that stops the ‘yes’.",
+      },
     ],
     ecommerce: [
-      { title: "Choose your hero offer", detail: "Lead product + price + the one benefit that matters most." },
-      { title: "Build a bundle or upsell", detail: "Raise average order value with a complementary add-on at checkout." },
-      { title: "Set pricing & margin", detail: "Confirm the price leaves margin after cost, shipping, and ad spend." },
-      { title: "Write the promise", detail: "One line a stranger understands in 3 seconds — run the Pitch Generator." },
+      {
+        title: "Choose your hero offer",
+        detail: "Lead product + price + the one benefit that matters most.",
+      },
+      {
+        title: "Build a bundle or upsell",
+        detail: "Raise average order value with a complementary add-on at checkout.",
+      },
+      {
+        title: "Set pricing & margin",
+        detail: "Confirm the price leaves margin after cost, shipping, and ad spend.",
+      },
+      {
+        title: "Write the promise",
+        detail: "One line a stranger understands in 3 seconds — run the Pitch Generator.",
+      },
     ],
     saas: [
-      { title: "Design 3 pricing tiers", detail: "Make the middle tier the obvious pick; tie price to a value metric." },
-      { title: "Name each tier's promise", detail: "What outcome does each unlock? Features are proof, not the promise." },
-      { title: "Set a value metric", detail: "Seats, usage, or workspaces — something that grows as the customer succeeds." },
-      { title: "Generate the pitch", detail: "Turn the tiers into a landing-ready promise with the Pitch Generator." },
+      {
+        title: "Design 3 pricing tiers",
+        detail: "Make the middle tier the obvious pick; tie price to a value metric.",
+      },
+      {
+        title: "Name each tier's promise",
+        detail: "What outcome does each unlock? Features are proof, not the promise.",
+      },
+      {
+        title: "Set a value metric",
+        detail: "Seats, usage, or workspaces — something that grows as the customer succeeds.",
+      },
+      {
+        title: "Generate the pitch",
+        detail: "Turn the tiers into a landing-ready promise with the Pitch Generator.",
+      },
     ],
   },
   branding: {
     general: [
-      { title: "Lock your core message", detail: "One sentence you'll repeat everywhere. Consistency builds recognition." },
-      { title: "Define your voice", detail: "Pick 3 adjectives for how you sound, then write to them every time." },
-      { title: "Create first content", detail: "Use the Blog/Content tool to publish your first on-brand piece." },
-      { title: "Set up your presence", detail: "Claim your handle on the one platform your buyers actually use." },
+      {
+        title: "Lock your core message",
+        detail: "One sentence you'll repeat everywhere. Consistency builds recognition.",
+      },
+      {
+        title: "Define your voice",
+        detail: "Pick 3 adjectives for how you sound, then write to them every time.",
+      },
+      {
+        title: "Create first content",
+        detail: "Use the Blog/Content tool to publish your first on-brand piece.",
+      },
+      {
+        title: "Set up your presence",
+        detail: "Claim your handle on the one platform your buyers actually use.",
+      },
     ],
     ecommerce: [
-      { title: "Design a recognizable look", detail: "Logo, palette, and packaging feel that reads premium at a glance." },
-      { title: "Tell the ‘who it's for’ story", detail: "Position around the customer's identity, not just the product specs." },
-      { title: "Shoot lifestyle imagery", detail: "Show the product in the customer's real life — social proof and desire in one." },
-      { title: "Publish your first content", detail: "Run the Content tool to launch an on-brand post or email." },
+      {
+        title: "Design a recognizable look",
+        detail: "Logo, palette, and packaging feel that reads premium at a glance.",
+      },
+      {
+        title: "Tell the ‘who it's for’ story",
+        detail: "Position around the customer's identity, not just the product specs.",
+      },
+      {
+        title: "Shoot lifestyle imagery",
+        detail: "Show the product in the customer's real life — social proof and desire in one.",
+      },
+      {
+        title: "Publish your first content",
+        detail: "Run the Content tool to launch an on-brand post or email.",
+      },
     ],
   },
   website: {
     general: [
-      { title: "Buy your domain", detail: "Grab a clean .com on Namecheap or Cloudflare. Short and memorable beats clever." },
-      { title: "Generate landing copy", detail: "Use the Landing Page tool: one promise, one CTA, proof, no distractions." },
-      { title: "Publish the page", detail: "Ship it on a simple builder and point your domain's DNS at it." },
-      { title: "Add lead capture", detail: "Wire the form to collect emails so no visitor is wasted." },
+      {
+        title: "Buy your domain",
+        detail: "Grab a clean .com on Namecheap or Cloudflare. Short and memorable beats clever.",
+      },
+      {
+        title: "Generate landing copy",
+        detail: "Use the Landing Page tool: one promise, one CTA, proof, no distractions.",
+      },
+      {
+        title: "Publish the page",
+        detail: "Ship it on a simple builder and point your domain's DNS at it.",
+      },
+      {
+        title: "Add lead capture",
+        detail: "Wire the form to collect emails so no visitor is wasted.",
+      },
     ],
     ecommerce: [
-      { title: "Buy your domain", detail: "Register a clean .com and connect it to your store platform (e.g. Shopify)." },
-      { title: "Set up the store & product pages", detail: "Fast pages, clear photos, reviews near the buy button." },
-      { title: "Connect a payment processor", detail: "Set up Stripe/Shop Pay so you can actually take money — test a live checkout." },
-      { title: "Add trust & a 2-click checkout", detail: "Trust badges, returns policy, and the shortest possible mobile checkout." },
+      {
+        title: "Buy your domain",
+        detail: "Register a clean .com and connect it to your store platform (e.g. Shopify).",
+      },
+      {
+        title: "Set up the store & product pages",
+        detail: "Fast pages, clear photos, reviews near the buy button.",
+      },
+      {
+        title: "Connect a payment processor",
+        detail: "Set up Stripe/Shop Pay so you can actually take money — test a live checkout.",
+      },
+      {
+        title: "Add trust & a 2-click checkout",
+        detail: "Trust badges, returns policy, and the shortest possible mobile checkout.",
+      },
     ],
     saas: [
-      { title: "Buy your domain", detail: "Register the .com and point DNS at your marketing page and app subdomain." },
-      { title: "Generate the landing page", detail: "Outcome headline, product screenshot, before/after, ‘Start free’ CTA." },
-      { title: "Wire up sign-up", detail: "Connect auth so a visitor can start a trial in one click." },
-      { title: "Add analytics", detail: "Drop in basic analytics so you can see where trials drop off." },
+      {
+        title: "Buy your domain",
+        detail: "Register the .com and point DNS at your marketing page and app subdomain.",
+      },
+      {
+        title: "Generate the landing page",
+        detail: "Outcome headline, product screenshot, before/after, ‘Start free’ CTA.",
+      },
+      {
+        title: "Wire up sign-up",
+        detail: "Connect auth so a visitor can start a trial in one click.",
+      },
+      {
+        title: "Add analytics",
+        detail: "Drop in basic analytics so you can see where trials drop off.",
+      },
     ],
     service: [
-      { title: "Buy your domain", detail: "Register a professional .com and a matching business email." },
-      { title: "Build a book-a-call page", detail: "Results, testimonials, and a single ‘Book a call’ CTA." },
-      { title: "Connect a scheduler", detail: "Wire Calendly/Cal.com so prospects can book without back-and-forth." },
-      { title: "Add one case study", detail: "A short before/after story does more than a long about-page." },
+      {
+        title: "Buy your domain",
+        detail: "Register a professional .com and a matching business email.",
+      },
+      {
+        title: "Build a book-a-call page",
+        detail: "Results, testimonials, and a single ‘Book a call’ CTA.",
+      },
+      {
+        title: "Connect a scheduler",
+        detail: "Wire Calendly/Cal.com so prospects can book without back-and-forth.",
+      },
+      {
+        title: "Add one case study",
+        detail: "A short before/after story does more than a long about-page.",
+      },
     ],
   },
   "lead-generation": {
     general: [
-      { title: "Pick ONE channel", detail: "Where do your buyers already hang out? Go deep on one before adding a second." },
-      { title: "Build a list of 50 prospects", detail: "Use First 10 Customers to find and qualify people with the problem." },
-      { title: "Write your outreach", detail: "A short, specific, relevant message — offer value, ask for a conversation." },
-      { title: "Track the funnel", detail: "Reached → replied → booked → bought. Fix the biggest drop-off first." },
+      {
+        title: "Pick ONE channel",
+        detail: "Where do your buyers already hang out? Go deep on one before adding a second.",
+      },
+      {
+        title: "Build a list of 50 prospects",
+        detail: "Use First 10 Customers to find and qualify people with the problem.",
+      },
+      {
+        title: "Write your outreach",
+        detail: "A short, specific, relevant message — offer value, ask for a conversation.",
+      },
+      {
+        title: "Track the funnel",
+        detail: "Reached → replied → booked → bought. Fix the biggest drop-off first.",
+      },
     ],
     ecommerce: [
-      { title: "Create 3 ad creatives", detail: "Different hooks for the same product — let the market pick the winner." },
-      { title: "Launch a small paid test", detail: "Set a modest daily budget on Meta/TikTok and measure cost-per-purchase." },
-      { title: "Compare CAC to margin", detail: "If a customer costs less than the margin they bring, you have an engine." },
-      { title: "Scale the winner", detail: "Kill losers fast, pour budget into the profitable creative and audience." },
+      {
+        title: "Create 3 ad creatives",
+        detail: "Different hooks for the same product — let the market pick the winner.",
+      },
+      {
+        title: "Launch a small paid test",
+        detail: "Set a modest daily budget on Meta/TikTok and measure cost-per-purchase.",
+      },
+      {
+        title: "Compare CAC to margin",
+        detail: "If a customer costs less than the margin they bring, you have an engine.",
+      },
+      {
+        title: "Scale the winner",
+        detail: "Kill losers fast, pour budget into the profitable creative and audience.",
+      },
     ],
     service: [
-      { title: "Define your ideal client", detail: "Industry, size, and the exact trigger that makes them need you now." },
-      { title: "Build a 50-prospect list", detail: "Use First 10 Customers to source and qualify targeted leads." },
-      { title: "Send personalized outreach", detail: "Reference something specific; offer a clear, relevant outcome — book calls, don't pitch." },
-      { title: "Follow up 3 times", detail: "Most replies come after the first message. Persistence (politely) wins deals." },
+      {
+        title: "Define your ideal client",
+        detail: "Industry, size, and the exact trigger that makes them need you now.",
+      },
+      {
+        title: "Build a 50-prospect list",
+        detail: "Use First 10 Customers to source and qualify targeted leads.",
+      },
+      {
+        title: "Send personalized outreach",
+        detail:
+          "Reference something specific; offer a clear, relevant outcome — book calls, don't pitch.",
+      },
+      {
+        title: "Follow up 3 times",
+        detail: "Most replies come after the first message. Persistence (politely) wins deals.",
+      },
     ],
   },
   automation: {
     general: [
-      { title: "List your repetitive tasks", detail: "Write down everything you do more than 3x a week — that's your automation backlog." },
-      { title: "Automate follow-up first", detail: "Use the GTM/automation tools to never let a lead go cold again." },
-      { title: "Connect your CRM pipeline", detail: "Every lead lands in one place with a clear next step and owner." },
-      { title: "Add lead capture triggers", detail: "New form fill → tagged, emailed, and queued automatically." },
+      {
+        title: "List your repetitive tasks",
+        detail:
+          "Write down everything you do more than 3x a week — that's your automation backlog.",
+      },
+      {
+        title: "Automate follow-up first",
+        detail: "Use the GTM/automation tools to never let a lead go cold again.",
+      },
+      {
+        title: "Connect your CRM pipeline",
+        detail: "Every lead lands in one place with a clear next step and owner.",
+      },
+      {
+        title: "Add lead capture triggers",
+        detail: "New form fill → tagged, emailed, and queued automatically.",
+      },
     ],
     ecommerce: [
-      { title: "Set up abandoned-cart flow", detail: "Recover the sales you already paid for the click on — usually the fastest ROI." },
-      { title: "Build a welcome series", detail: "New subscribers get a 3-email intro that drives a first purchase." },
-      { title: "Add post-purchase flow", detail: "Thank, cross-sell, and request a review to lift repeat rate and social proof." },
-      { title: "Connect email/SMS", detail: "Wire Klaviyo or similar so the flows run 24/7 without you." },
+      {
+        title: "Set up abandoned-cart flow",
+        detail: "Recover the sales you already paid for the click on — usually the fastest ROI.",
+      },
+      {
+        title: "Build a welcome series",
+        detail: "New subscribers get a 3-email intro that drives a first purchase.",
+      },
+      {
+        title: "Add post-purchase flow",
+        detail: "Thank, cross-sell, and request a review to lift repeat rate and social proof.",
+      },
+      {
+        title: "Connect email/SMS",
+        detail: "Wire Klaviyo or similar so the flows run 24/7 without you.",
+      },
     ],
     saas: [
-      { title: "Map the ‘aha’ moment", detail: "The action that makes a user get value — everything should push toward it." },
-      { title: "Automate onboarding emails", detail: "A behavior-triggered sequence that walks users to activation." },
-      { title: "Add in-app nudges", detail: "Prompt the next best action based on what the user has (and hasn't) done." },
-      { title: "Trigger by behavior", detail: "Fire messages on events, not just time, so they always feel relevant." },
+      {
+        title: "Map the ‘aha’ moment",
+        detail: "The action that makes a user get value — everything should push toward it.",
+      },
+      {
+        title: "Automate onboarding emails",
+        detail: "A behavior-triggered sequence that walks users to activation.",
+      },
+      {
+        title: "Add in-app nudges",
+        detail: "Prompt the next best action based on what the user has (and hasn't) done.",
+      },
+      {
+        title: "Trigger by behavior",
+        detail: "Fire messages on events, not just time, so they always feel relevant.",
+      },
     ],
   },
   sales: {
     general: [
-      { title: "Script the conversation", detail: "Use the Pitch Generator to structure: problem → offer → proof → close." },
-      { title: "List your top 3 objections", detail: "Write the honest answer to each so you're never caught flat-footed." },
-      { title: "Practice the close", detail: "Ask directly for the decision and a date. Silence after the ask is your friend." },
-      { title: "Review every lost deal", detail: "One note per loss reveals the pattern you can fix next week." },
+      {
+        title: "Script the conversation",
+        detail: "Use the Pitch Generator to structure: problem → offer → proof → close.",
+      },
+      {
+        title: "List your top 3 objections",
+        detail: "Write the honest answer to each so you're never caught flat-footed.",
+      },
+      {
+        title: "Practice the close",
+        detail: "Ask directly for the decision and a date. Silence after the ask is your friend.",
+      },
+      {
+        title: "Review every lost deal",
+        detail: "One note per loss reveals the pattern you can fix next week.",
+      },
     ],
     service: [
-      { title: "Build your call framework", detail: "Diagnose before prescribing; present the packaged offer, not a custom quote." },
-      { title: "Prepare ROI reframes", detail: "Translate your price into the return the client gets — handle price by value." },
-      { title: "Create a proposal template", detail: "Fixed scope, fixed price, clear next step — send within an hour of the call." },
-      { title: "Ask for the yes", detail: "End every call with a specific commitment and a start date." },
+      {
+        title: "Build your call framework",
+        detail: "Diagnose before prescribing; present the packaged offer, not a custom quote.",
+      },
+      {
+        title: "Prepare ROI reframes",
+        detail: "Translate your price into the return the client gets — handle price by value.",
+      },
+      {
+        title: "Create a proposal template",
+        detail: "Fixed scope, fixed price, clear next step — send within an hour of the call.",
+      },
+      {
+        title: "Ask for the yes",
+        detail: "End every call with a specific commitment and a start date.",
+      },
     ],
   },
   scaling: {
     general: [
-      { title: "Build your business plan", detail: "Use the Business Plan tool to turn the model into a document you can act on." },
-      { title: "Model revenue projections", detail: "Run the Revenue Projector to see the path and the assumptions behind it." },
-      { title: "Find the one constraint", detail: "Name the single bottleneck capping growth right now — fix that first." },
-      { title: "Check funding readiness", detail: "Run the Funding Score to see if (and when) outside capital makes sense." },
+      {
+        title: "Build your business plan",
+        detail: "Use the Business Plan tool to turn the model into a document you can act on.",
+      },
+      {
+        title: "Model revenue projections",
+        detail: "Run the Revenue Projector to see the path and the assumptions behind it.",
+      },
+      {
+        title: "Find the one constraint",
+        detail: "Name the single bottleneck capping growth right now — fix that first.",
+      },
+      {
+        title: "Check funding readiness",
+        detail: "Run the Funding Score to see if (and when) outside capital makes sense.",
+      },
     ],
     ecommerce: [
-      { title: "Nail your unit economics", detail: "Contribution margin and payback period per order — the numbers that gate scale." },
-      { title: "Project revenue & cash", detail: "Model inventory and ad spend against cash flow so growth doesn't starve you." },
-      { title: "Double down on winners", detail: "Reinvest into the best SKUs and channels; cut the rest." },
-      { title: "Assess funding readiness", detail: "Run the Funding Score to decide if capital would accelerate or distract." },
+      {
+        title: "Nail your unit economics",
+        detail: "Contribution margin and payback period per order — the numbers that gate scale.",
+      },
+      {
+        title: "Project revenue & cash",
+        detail: "Model inventory and ad spend against cash flow so growth doesn't starve you.",
+      },
+      {
+        title: "Double down on winners",
+        detail: "Reinvest into the best SKUs and channels; cut the rest.",
+      },
+      {
+        title: "Assess funding readiness",
+        detail: "Run the Funding Score to decide if capital would accelerate or distract.",
+      },
     ],
   },
 };

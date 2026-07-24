@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        500
-      ],
+      "position": [240, 500],
       "webhookId": "bylda-ops-user-deleted"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        500
-      ]
+      "position": [480, 500]
     },
     {
       "parameters": {
@@ -59,10 +53,7 @@
       "name": "Has Stripe Customer?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        720,
-        500
-      ]
+      "position": [720, 500]
     },
     {
       "parameters": {
@@ -85,10 +76,7 @@
       "name": "GET Stripe Subscription",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        960,
-        360
-      ]
+      "position": [960, 360]
     },
     {
       "parameters": {
@@ -98,10 +86,7 @@
       "name": "Extract Subscription ID",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1200,
-        360
-      ]
+      "position": [1200, 360]
     },
     {
       "parameters": {
@@ -130,10 +115,7 @@
       "name": "Has Active Subscription?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1440,
-        360
-      ]
+      "position": [1440, 360]
     },
     {
       "parameters": {
@@ -174,10 +156,7 @@
       "name": "DELETE Stripe Subscription",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1700,
-        260
-      ]
+      "position": [1700, 260]
     },
     {
       "parameters": {
@@ -187,10 +166,7 @@
       "name": "Skip: No Sub",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        460
-      ]
+      "position": [1700, 460]
     },
     {
       "parameters": {
@@ -200,10 +176,7 @@
       "name": "Skip: No Stripe Customer",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        640
-      ]
+      "position": [960, 640]
     },
     {
       "parameters": {
@@ -213,10 +186,7 @@
       "name": "Merge Stripe Paths",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1960,
-        500
-      ]
+      "position": [1960, 500]
     },
     {
       "parameters": {
@@ -231,10 +201,7 @@
       "name": "GET user_profiles (archive data)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2200,
-        500
-      ],
+      "position": [2200, 500],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -250,10 +217,7 @@
       "name": "Build Archive Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2440,
-        500
-      ]
+      "position": [2440, 500]
     },
     {
       "parameters": {
@@ -283,10 +247,7 @@
       "name": "INSERT deleted_users_archive",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2680,
-        500
-      ],
+      "position": [2680, 500],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -307,10 +268,7 @@
       "name": "DELETE user_entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2920,
-        300
-      ],
+      "position": [2920, 300],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -331,10 +289,7 @@
       "name": "DELETE user_credits",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2920,
-        480
-      ],
+      "position": [2920, 480],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -355,10 +310,7 @@
       "name": "DELETE user_profiles",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2920,
-        660
-      ],
+      "position": [2920, 660],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -394,10 +346,7 @@
       "name": "PATCH users: soft-delete",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2920,
-        840
-      ],
+      "position": [2920, 840],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -413,10 +362,7 @@
       "name": "Merge Deletion Steps",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        3180,
-        580
-      ]
+      "position": [3180, 580]
     },
     {
       "parameters": {
@@ -446,10 +392,7 @@
       "name": "Send Deletion Confirmation Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        3420,
-        580
-      ]
+      "position": [3420, 580]
     },
     {
       "parameters": {
@@ -459,10 +402,7 @@
       "name": "Confirm Email Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        3660,
-        580
-      ]
+      "position": [3660, 580]
     },
     {
       "parameters": {
@@ -492,10 +432,7 @@
       "name": "INSERT admin_audit_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        3900,
-        580
-      ],
+      "position": [3900, 580],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -515,10 +452,7 @@
       "name": "Return: Deleted",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        4140,
-        580
-      ]
+      "position": [4140, 580]
     }
   ],
   "connections": {

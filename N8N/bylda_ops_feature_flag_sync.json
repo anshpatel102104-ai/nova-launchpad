@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "bylda-ops-feature-flag-sync"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -133,10 +127,7 @@
       "name": "Switch: Plan Tier",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
-      "position": [
-        720,
-        400
-      ]
+      "position": [720, 400]
     },
     {
       "parameters": {
@@ -146,10 +137,7 @@
       "name": "Flags: Free",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        980,
-        160
-      ]
+      "position": [980, 160]
     },
     {
       "parameters": {
@@ -159,10 +147,7 @@
       "name": "Flags: Starter",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        980,
-        320
-      ]
+      "position": [980, 320]
     },
     {
       "parameters": {
@@ -172,10 +157,7 @@
       "name": "Flags: Pro",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        980,
-        480
-      ]
+      "position": [980, 480]
     },
     {
       "parameters": {
@@ -185,10 +167,7 @@
       "name": "Flags: Scale",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        980,
-        640
-      ]
+      "position": [980, 640]
     },
     {
       "parameters": {
@@ -198,10 +177,7 @@
       "name": "Merge Branches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1220,
-        400
-      ]
+      "position": [1220, 400]
     },
     {
       "parameters": {
@@ -231,10 +207,7 @@
       "name": "Upsert user_entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1460,
-        400
-      ],
+      "position": [1460, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -270,10 +243,7 @@
       "name": "Validate Upsert",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1700,
-        400
-      ]
+      "position": [1700, 400]
     },
     {
       "parameters": {
@@ -287,10 +257,7 @@
       "name": "Return Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1940,
-        280
-      ]
+      "position": [1940, 280]
     },
     {
       "parameters": {
@@ -304,10 +271,7 @@
       "name": "Return Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1940,
-        520
-      ]
+      "position": [1940, 520]
     }
   ],
   "connections": {

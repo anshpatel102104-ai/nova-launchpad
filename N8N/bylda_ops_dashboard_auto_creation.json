@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        500
-      ],
+      "position": [240, 500],
       "webhookId": "bylda-ops-dashboard-init"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        500
-      ]
+      "position": [480, 500]
     },
     {
       "parameters": {
@@ -44,10 +38,7 @@
       "name": "GET user_profiles",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        280
-      ],
+      "position": [720, 280],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -68,10 +59,7 @@
       "name": "GET user_entitlements",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        500
-      ],
+      "position": [720, 500],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -92,10 +80,7 @@
       "name": "GET user_credits",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        720
-      ],
+      "position": [720, 720],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -111,10 +96,7 @@
       "name": "Merge Parallel Fetches",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        500
-      ]
+      "position": [960, 500]
     },
     {
       "parameters": {
@@ -143,10 +125,7 @@
       "name": "Has AI Context?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1200,
-        500
-      ]
+      "position": [1200, 500]
     },
     {
       "parameters": {
@@ -156,10 +135,7 @@
       "name": "Use Pre-Passed AI Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1440,
-        320
-      ]
+      "position": [1440, 320]
     },
     {
       "parameters": {
@@ -174,10 +150,7 @@
       "name": "GET ai_operator_configs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        680
-      ],
+      "position": [1440, 680],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -193,10 +166,7 @@
       "name": "Extract AI Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        680
-      ]
+      "position": [1700, 680]
     },
     {
       "parameters": {
@@ -206,10 +176,7 @@
       "name": "Merge AI Context Paths",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1960,
-        500
-      ]
+      "position": [1960, 500]
     },
     {
       "parameters": {
@@ -219,10 +186,7 @@
       "name": "Build Dashboard Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2200,
-        500
-      ]
+      "position": [2200, 500]
     },
     {
       "parameters": {
@@ -252,10 +216,7 @@
       "name": "UPSERT user_dashboards",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2440,
-        360
-      ],
+      "position": [2440, 360],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -291,10 +252,7 @@
       "name": "PATCH users: dashboard_ready",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2440,
-        640
-      ],
+      "position": [2440, 640],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -310,10 +268,7 @@
       "name": "Merge Write Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2700,
-        500
-      ]
+      "position": [2700, 500]
     },
     {
       "parameters": {
@@ -344,10 +299,7 @@
       "name": "Trigger: Welcome Sequence",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2940,
-        500
-      ]
+      "position": [2940, 500]
     },
     {
       "parameters": {
@@ -357,10 +309,7 @@
       "name": "Confirm Welcome Triggered",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        3180,
-        500
-      ]
+      "position": [3180, 500]
     },
     {
       "parameters": {
@@ -374,10 +323,7 @@
       "name": "Return: Dashboard Created",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        3420,
-        500
-      ]
+      "position": [3420, 500]
     }
   ],
   "connections": {

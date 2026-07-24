@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "bylda-ops-operator-handoff"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -44,10 +38,7 @@
       "name": "GET users: pre-flight check",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        400
-      ],
+      "position": [720, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -63,10 +54,7 @@
       "name": "Pre-Flight Validation",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        400
-      ]
+      "position": [960, 400]
     },
     {
       "parameters": {
@@ -95,10 +83,7 @@
       "name": "Account Suspended?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1200,
-        260
-      ]
+      "position": [1200, 260]
     },
     {
       "parameters": {
@@ -112,10 +97,7 @@
       "name": "Return: 403 Suspended",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1440,
-        160
-      ]
+      "position": [1440, 160]
     },
     {
       "parameters": {
@@ -144,10 +126,7 @@
       "name": "Already Active?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1200,
-        540
-      ]
+      "position": [1200, 540]
     },
     {
       "parameters": {
@@ -161,10 +140,7 @@
       "name": "Return: Already Active (Early Exit)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1440,
-        440
-      ]
+      "position": [1440, 440]
     },
     {
       "parameters": {
@@ -194,10 +170,7 @@
       "name": "PATCH users: activate operator",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        700
-      ],
+      "position": [1440, 700],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -233,10 +206,7 @@
       "name": "INSERT operator_sessions",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        880
-      ],
+      "position": [1440, 880],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -252,10 +222,7 @@
       "name": "Merge Write Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        790
-      ]
+      "position": [1700, 790]
     },
     {
       "parameters": {
@@ -285,10 +252,7 @@
       "name": "INSERT notifications: operator_active",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1960,
-        790
-      ],
+      "position": [1960, 790],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -324,10 +288,7 @@
       "name": "INSERT admin_audit_log",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2220,
-        790
-      ],
+      "position": [2220, 790],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -347,10 +308,7 @@
       "name": "Return: Operator Active",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2480,
-        790
-      ]
+      "position": [2480, 790]
     }
   ],
   "connections": {

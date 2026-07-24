@@ -203,13 +203,12 @@
     "Every 5 Minutes": { "main": [[{ "node": "Fetch Pending Jobs", "type": "main", "index": 0 }]] },
     "Fetch Pending Jobs": { "main": [[{ "node": "Any Jobs?", "type": "main", "index": 0 }]] },
     "Any Jobs?": {
-      "main": [
-        [{ "node": "Mark Retrying", "type": "main", "index": 0 }],
-        []
-      ]
+      "main": [[{ "node": "Mark Retrying", "type": "main", "index": 0 }], []]
     },
     "Mark Retrying": { "main": [[{ "node": "Re-run via Operator", "type": "main", "index": 0 }]] },
-    "Re-run via Operator": { "main": [[{ "node": "Evaluate Result", "type": "main", "index": 0 }]] },
+    "Re-run via Operator": {
+      "main": [[{ "node": "Evaluate Result", "type": "main", "index": 0 }]]
+    },
     "Evaluate Result": { "main": [[{ "node": "Succeeded?", "type": "main", "index": 0 }]] },
     "Succeeded?": {
       "main": [
@@ -217,8 +216,12 @@
         [{ "node": "Backoff or Dead?", "type": "main", "index": 0 }]
       ]
     },
-    "Backoff or Dead?": { "main": [[{ "node": "Update Retry Schedule", "type": "main", "index": 0 }]] },
-    "Update Retry Schedule": { "main": [[{ "node": "Create Support Ticket", "type": "main", "index": 0 }]] },
+    "Backoff or Dead?": {
+      "main": [[{ "node": "Update Retry Schedule", "type": "main", "index": 0 }]]
+    },
+    "Update Retry Schedule": {
+      "main": [[{ "node": "Create Support Ticket", "type": "main", "index": 0 }]]
+    },
     "Error Trigger": { "main": [[{ "node": "Log Error", "type": "main", "index": 0 }]] }
   },
   "pinData": {},

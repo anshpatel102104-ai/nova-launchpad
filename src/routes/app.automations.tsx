@@ -671,8 +671,8 @@ function AutomationsPage() {
           </div>
           <p className="text-[12.5px] text-muted-foreground">
             After enabling an automation, use the <strong>Track outcome</strong> button on each card
-            to log results. Bylda remembers your results and suggests specific improvements each time
-            you check.
+            to log results. Bylda remembers your results and suggests specific improvements each
+            time you check.
           </p>
         </div>
       </div>

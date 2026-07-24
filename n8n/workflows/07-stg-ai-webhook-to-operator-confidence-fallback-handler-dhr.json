@@ -40,10 +40,7 @@
       "name": "Webhook - Receive Request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        380
-      ],
+      "position": [240, 380],
       "parameters": {
         "path": "operator-confidence-fallback",
         "httpMethod": "POST",
@@ -57,10 +54,7 @@
       "name": "HTTP - Claude Generate Clarification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        380
-      ],
+      "position": [460, 380],
       "parameters": {
         "method": "POST",
         "url": "https://api.anthropic.com/v1/messages",
@@ -103,10 +97,7 @@
       "name": "Code - Extract Clarification Text",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        680,
-        380
-      ],
+      "position": [680, 380],
       "parameters": {
         "jsCode": "const content = $input.first().json.content;\\nconst raw = Array.isArray(content)\\n  ? (content.find(b => b.type === 'text')?.text || '')\\n  : String(content || '');\\n\\n// Strip wrapping quotes Claude sometimes adds, then normalise whitespace\\nlet question = raw\\n  .trim()\\n  .replace(/^[\"'\"\"'']|[\"'\"\"'']$/g, '')\\n  .trim();\\n\\n// Ensure it ends with a question mark\\nif (question && !question.endsWith('?')) {\\n  question = question + '?';\\n}\\n\\n// Hard fallback \u2014 should never be needed if Claude follows instructions\\nif (!question) {\\n  question = 'Could you tell me a bit more about what you need help with?';\\n}\\n\\n// Pull original request fields for the Supabase update\\nconst body = $('Webhook - Receive Request').first().json.body;\\n\\nreturn [{\\n  json: {\\n    clarification_text: question,\\n    session_id:         body.session_id  || null,\\n    user_id:            body.user_id     || null,\\n    original_message:   body.original_message || '',\\n    confidence:         body.confidence  || 0,\\n    top_intents:        body.top_intents || []\\n  }\\n}];"
       }
@@ -116,10 +107,7 @@
       "name": "HTTP - Update Operator Session",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        900,
-        380
-      ],
+      "position": [900, 380],
       "parameters": {
         "method": "PATCH",
         "url": "=https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/operator_sessions?session_id=eq.{{ $json.session_id }}",
@@ -162,10 +150,7 @@
       "name": "Respond - Return Clarification",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1120,
-        380
-      ],
+      "position": [1120, 380],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ type: 'clarification', message: $('Code - Extract Clarification Text').first().json.clarification_text, session_id: $('Code - Extract Clarification Text').first().json.session_id, confidence: $('Code - Extract Clarification Text').first().json.confidence }) }}",
@@ -179,20 +164,14 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        620
-      ]
+      "position": [240, 620]
     },
     {
       "id": "g7000007-0000-0000-0000-000000000007",
       "name": "HTTP - Notify Error Router",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        460,
-        620
-      ],
+      "position": [460, 620],
       "parameters": {
         "method": "POST",
         "url": "https://ipidfqwlszuhjgjygbvx.supabase.co/rest/v1/n8n_error_log",

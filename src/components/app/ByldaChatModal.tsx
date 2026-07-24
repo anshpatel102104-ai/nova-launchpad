@@ -928,7 +928,9 @@ export function ByldaChatModal({ open, onClose, initialQuery }: Props) {
                           color: "#F97316",
                         }}
                       >
-                        <span style={{ animation: "bylda-pulse 1.4s ease-in-out infinite" }}>●</span>
+                        <span style={{ animation: "bylda-pulse 1.4s ease-in-out infinite" }}>
+                          ●
+                        </span>
                         <span style={{ animation: "bylda-pulse 1.4s ease-in-out 0.2s infinite" }}>
                           ●
                         </span>

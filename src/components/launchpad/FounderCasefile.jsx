@@ -23,15 +23,23 @@ function ScorePill({ label, value, color }) {
 
   // Map value to nearest Tailwind width class (steps of ~10)
   const widthClass = animated
-    ? value >= 90 ? "w-full"
-    : value >= 80 ? "w-4/5"
-    : value >= 70 ? "w-3/4"
-    : value >= 60 ? "w-3/5"
-    : value >= 50 ? "w-1/2"
-    : value >= 40 ? "w-2/5"
-    : value >= 30 ? "w-[30%]"
-    : value >= 20 ? "w-1/5"
-    : "w-[10%]"
+    ? value >= 90
+      ? "w-full"
+      : value >= 80
+        ? "w-4/5"
+        : value >= 70
+          ? "w-3/4"
+          : value >= 60
+            ? "w-3/5"
+            : value >= 50
+              ? "w-1/2"
+              : value >= 40
+                ? "w-2/5"
+                : value >= 30
+                  ? "w-[30%]"
+                  : value >= 20
+                    ? "w-1/5"
+                    : "w-[10%]"
     : "w-0";
 
   return (
@@ -42,7 +50,9 @@ function ScorePill({ label, value, color }) {
           className={`h-full rounded-full transition-all duration-700 ease-out ${twColor} ${widthClass}`}
         />
       </div>
-      <div className="text-[9px] font-semibold uppercase tracking-[0.8px] text-ink-faint">{label}</div>
+      <div className="text-[9px] font-semibold uppercase tracking-[0.8px] text-ink-faint">
+        {label}
+      </div>
     </div>
   );
 }
@@ -70,12 +80,18 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
         aria-controls={id}
         className={`w-full flex items-center gap-2.5 px-4 py-3.5 border-none cursor-pointer text-left transition-colors duration-150 ${open ? "bg-blueprint-signal-soft" : "bg-paper hover:bg-blueprint-signal-soft"}`}
       >
-        <span className="text-[13px]" aria-hidden="true">{icon}</span>
-        <span className={`text-[12px] font-semibold flex-1 transition-colors ${open ? "text-ink" : "text-ink-dim"}`}>
+        <span className="text-[13px]" aria-hidden="true">
+          {icon}
+        </span>
+        <span
+          className={`text-[12px] font-semibold flex-1 transition-colors ${open ? "text-ink" : "text-ink-dim"}`}
+        >
           {title}
         </span>
         {tag && (
-          <span className={`text-[9px] font-bold uppercase tracking-[0.8px] px-2 py-0.5 rounded-full border ${tagClasses}`}>
+          <span
+            className={`text-[9px] font-bold uppercase tracking-[0.8px] px-2 py-0.5 rounded-full border ${tagClasses}`}
+          >
             {tag}
           </span>
         )}
@@ -91,9 +107,7 @@ function Drawer({ icon, title, tag, tagColor, defaultOpen = false, children }) {
         id={id}
         className={`overflow-hidden transition-all duration-200 ease-in-out ${open ? "max-h-[600px]" : "max-h-0"}`}
       >
-        <div className="px-4 pt-1 pb-4 bg-paper">
-          {children}
-        </div>
+        <div className="px-4 pt-1 pb-4 bg-paper">{children}</div>
       </div>
     </div>
   );
@@ -147,20 +161,30 @@ function RiskRow({ level, title, pct }) {
   };
 
   const widthClass = animated
-    ? pct >= 90 ? "w-full"
-    : pct >= 80 ? "w-4/5"
-    : pct >= 70 ? "w-[70%]"
-    : pct >= 60 ? "w-3/5"
-    : pct >= 50 ? "w-1/2"
-    : pct >= 40 ? "w-2/5"
-    : pct >= 30 ? "w-[30%]"
-    : pct >= 20 ? "w-1/5"
-    : "w-[10%]"
+    ? pct >= 90
+      ? "w-full"
+      : pct >= 80
+        ? "w-4/5"
+        : pct >= 70
+          ? "w-[70%]"
+          : pct >= 60
+            ? "w-3/5"
+            : pct >= 50
+              ? "w-1/2"
+              : pct >= 40
+                ? "w-2/5"
+                : pct >= 30
+                  ? "w-[30%]"
+                  : pct >= 20
+                    ? "w-1/5"
+                    : "w-[10%]"
     : "w-0";
 
   return (
     <div className="flex items-center gap-2.5 mb-2.5">
-      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${cfg.badge}`}>
+      <span
+        className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${cfg.badge}`}
+      >
         {level}
       </span>
       <div className="text-[11px] text-ink-dim flex-1">{title}</div>
@@ -186,7 +210,9 @@ function StrengthRow({ title, desc }) {
         aria-controls={id}
         className="flex items-center gap-2 w-full bg-transparent border-none cursor-pointer text-left p-0"
       >
-        <span className="text-[10px] text-blueprint-seal" aria-hidden="true">✦</span>
+        <span className="text-[10px] text-blueprint-seal" aria-hidden="true">
+          ✦
+        </span>
         <span className="text-[12px] font-semibold text-ink flex-1">{title}</span>
         <span
           aria-hidden="true"
@@ -199,9 +225,7 @@ function StrengthRow({ title, desc }) {
         id={id}
         className={`overflow-hidden transition-all duration-200 ease-in-out ${open ? "max-h-[200px]" : "max-h-0"}`}
       >
-        <div className="text-[11px] text-ink-dim leading-relaxed mt-2 pl-[18px]">
-          {desc}
-        </div>
+        <div className="text-[11px] text-ink-dim leading-relaxed mt-2 pl-[18px]">{desc}</div>
       </div>
     </div>
   );
@@ -228,11 +252,22 @@ function MissionCard({ emoji, label, title, desc, locked }) {
         {emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[9px] font-bold uppercase tracking-[0.8px] text-ink-faint mb-0.5">{label}</div>
-        <div className={`text-[12px] font-semibold truncate ${locked ? "text-ink-faint" : "text-ink"}`}>{title}</div>
+        <div className="text-[9px] font-bold uppercase tracking-[0.8px] text-ink-faint mb-0.5">
+          {label}
+        </div>
+        <div
+          className={`text-[12px] font-semibold truncate ${locked ? "text-ink-faint" : "text-ink"}`}
+        >
+          {title}
+        </div>
         {!locked && <div className="text-[10px] text-ink-faint mt-0.5">{desc}</div>}
       </div>
-      <span aria-hidden="true" className={`text-base ${locked ? "text-ink-faint" : "text-ink-faint"}`}>›</span>
+      <span
+        aria-hidden="true"
+        className={`text-base ${locked ? "text-ink-faint" : "text-ink-faint"}`}
+      >
+        ›
+      </span>
     </div>
   );
 }
@@ -240,9 +275,13 @@ function MissionCard({ emoji, label, title, desc, locked }) {
 // ─── PLAYBOOK STEP ─────────────────────────────────────────────────────────
 function PbStep({ status, label }) {
   const cfg = {
-    done:   { dot: "bg-blueprint-seal", text: "text-ink-faint", extra: "line-through" },
-    active: { dot: "bg-blueprint-signal animate-pulse", text: "text-blueprint-signal font-semibold", extra: "" },
-    idle:   { dot: "bg-line", text: "text-ink-faint", extra: "" },
+    done: { dot: "bg-blueprint-seal", text: "text-ink-faint", extra: "line-through" },
+    active: {
+      dot: "bg-blueprint-signal animate-pulse",
+      text: "text-blueprint-signal font-semibold",
+      extra: "",
+    },
+    idle: { dot: "bg-line", text: "text-ink-faint", extra: "" },
   }[status] ?? { dot: "bg-line", text: "text-ink-faint", extra: "" };
 
   return (
@@ -285,27 +324,15 @@ export default function FounderCasefile() {
   const days = [
     {
       label: "Days 1–7",
-      tasks: [
-        "Talk to 5 target customers",
-        "Test willingness to pay",
-        "Document objections",
-      ],
+      tasks: ["Talk to 5 target customers", "Test willingness to pay", "Document objections"],
     },
     {
       label: "Days 8–14",
-      tasks: [
-        "Build landing page",
-        "Run 3 paid traffic tests",
-        "Capture 10 email leads",
-      ],
+      tasks: ["Build landing page", "Run 3 paid traffic tests", "Capture 10 email leads"],
     },
     {
       label: "Days 15–30",
-      tasks: [
-        "Close first pre-sale",
-        "Refine offer based on feedback",
-        "Ship MVP to paying user",
-      ],
+      tasks: ["Close first pre-sale", "Refine offer based on feedback", "Ship MVP to paying user"],
     },
   ];
 
@@ -322,10 +349,8 @@ export default function FounderCasefile() {
       className={`min-h-screen bg-blueprint-grid px-4 py-6 transition-opacity duration-500 ease-out ${visible ? "opacity-100" : "opacity-0"}`}
     >
       <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5">
-
         {/* ── MAIN COLUMN ── */}
         <div className="space-y-4">
-
           {/* Hero card */}
           <div className="bg-panel rounded-none border border-line shadow-md p-5">
             {/* Case header */}
@@ -359,9 +384,9 @@ export default function FounderCasefile() {
                 Bylda's Verdict
               </div>
               <p className="text-[13px] text-ink leading-relaxed font-medium">
-                This idea has strong market timing and high founder-fit. The biggest risk is customer
-                acquisition cost in a crowded wellness market. Validate willingness to pay before
-                building — a landing page test will tell you within 2 weeks.
+                This idea has strong market timing and high founder-fit. The biggest risk is
+                customer acquisition cost in a crowded wellness market. Validate willingness to pay
+                before building — a landing page test will tell you within 2 weeks.
               </p>
             </div>
           </div>
@@ -369,7 +394,10 @@ export default function FounderCasefile() {
           {/* Bylda's Take */}
           <div className="bg-panel rounded-none border border-line shadow-sm p-5 relative overflow-hidden">
             {/* Violet left-edge accent */}
-            <div className="absolute left-0 top-0 w-1 h-full bg-blueprint-signal rounded-l-xl" aria-hidden="true" />
+            <div
+              className="absolute left-0 top-0 w-1 h-full bg-blueprint-signal rounded-l-xl"
+              aria-hidden="true"
+            />
             <div className="pl-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.8px] text-blueprint-signal">
@@ -378,9 +406,9 @@ export default function FounderCasefile() {
                 <span className="text-[10px] text-ink-faint">· AI Analysis</span>
               </div>
               <p className="text-[13px] text-ink-dim leading-relaxed">
-                You're entering a real market with a real problem. Parents already spend money on meal
-                delivery — your challenge is proving they'll pay for planning instead of execution.
-                The fastest path to validation is a 48-hour paid test, not a full build.
+                You're entering a real market with a real problem. Parents already spend money on
+                meal delivery — your challenge is proving they'll pay for planning instead of
+                execution. The fastest path to validation is a 48-hour paid test, not a full build.
               </p>
             </div>
 
@@ -392,7 +420,10 @@ export default function FounderCasefile() {
                 Recommended Move
               </div>
               <div className="flex items-start gap-3 bg-blueprint-signal-soft rounded-none p-3">
-                <div className="w-6 h-6 rounded-none bg-blueprint-signal flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
+                <div
+                  className="w-6 h-6 rounded-none bg-blueprint-signal flex items-center justify-center shrink-0 mt-0.5"
+                  aria-hidden="true"
+                >
                   <span className="text-white text-[10px] font-bold">1</span>
                 </div>
                 <div>
@@ -464,10 +495,26 @@ export default function FounderCasefile() {
 
             <Drawer icon="⚠️" title="Risks" tag="2 high" tagColor="#dc2626">
               <div className="pt-3">
-                <RiskRow level="High" title="Customer acquisition cost exceeds LTV in early months" pct={80} />
-                <RiskRow level="High" title="Big tech (Google, Apple) could add this to health apps" pct={70} />
-                <RiskRow level="Medium" title="Content moderation for dietary restrictions" pct={50} />
-                <RiskRow level="Low" title="Technical complexity of meal database integration" pct={25} />
+                <RiskRow
+                  level="High"
+                  title="Customer acquisition cost exceeds LTV in early months"
+                  pct={80}
+                />
+                <RiskRow
+                  level="High"
+                  title="Big tech (Google, Apple) could add this to health apps"
+                  pct={70}
+                />
+                <RiskRow
+                  level="Medium"
+                  title="Content moderation for dietary restrictions"
+                  pct={50}
+                />
+                <RiskRow
+                  level="Low"
+                  title="Technical complexity of meal database integration"
+                  pct={25}
+                />
               </div>
             </Drawer>
           </div>
@@ -499,7 +546,9 @@ export default function FounderCasefile() {
             <ul className="space-y-2">
               {days[activeDay].tasks.map((task) => (
                 <li key={task} className="flex items-start gap-2.5 text-[12px] text-ink-dim">
-                  <span className="mt-0.5 text-blueprint-signal shrink-0" aria-hidden="true">▸</span>
+                  <span className="mt-0.5 text-blueprint-signal shrink-0" aria-hidden="true">
+                    ▸
+                  </span>
                   {task}
                 </li>
               ))}
@@ -508,11 +557,10 @@ export default function FounderCasefile() {
 
           {/* CTA */}
           <div className="bg-panel rounded-none border border-line shadow-sm p-5">
-            <div className="text-[13px] font-semibold text-ink mb-1">
-              Ready to move forward?
-            </div>
+            <div className="text-[13px] font-semibold text-ink mb-1">Ready to move forward?</div>
             <p className="text-[12px] text-ink-faint mb-4">
-              Accepting this move starts your first validation mission. Bylda will guide you step by step.
+              Accepting this move starts your first validation mission. Bylda will guide you step by
+              step.
             </p>
             <button
               onClick={handleAccept}
@@ -547,7 +595,6 @@ export default function FounderCasefile() {
 
         {/* ── SIDEBAR ── */}
         <div className="lg:sticky lg:top-[49px] self-start space-y-4">
-
           {/* Next Missions */}
           <div className="bg-panel rounded-none border border-line shadow-sm p-4">
             <SideLabel>Next Missions</SideLabel>
@@ -603,7 +650,6 @@ export default function FounderCasefile() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

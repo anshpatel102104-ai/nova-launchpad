@@ -139,10 +139,7 @@ function InvitePage() {
   }
 
   return (
-    <AuthShell
-      title="Join your team on Bylda"
-      subtitle="Set up your account to accept the invite."
-    >
+    <AuthShell title="Join your team on Bylda" subtitle="Set up your account to accept the invite.">
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
         <div className="space-y-1.5">
           <Label htmlFor="invite-name">Full name</Label>

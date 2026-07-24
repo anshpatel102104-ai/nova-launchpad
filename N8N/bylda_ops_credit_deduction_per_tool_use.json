@@ -12,10 +12,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        240,
-        400
-      ],
+      "position": [240, 400],
       "webhookId": "bylda-ops-credit-gate"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Parse & Validate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        400
-      ]
+      "position": [480, 400]
     },
     {
       "parameters": {
@@ -52,10 +46,7 @@
       "name": "GET user_credits",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        720,
-        400
-      ],
+      "position": [720, 400],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -71,10 +62,7 @@
       "name": "Evaluate Balance",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        960,
-        400
-      ]
+      "position": [960, 400]
     },
     {
       "parameters": {
@@ -103,10 +91,7 @@
       "name": "Balance Gate",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1200,
-        400
-      ]
+      "position": [1200, 400]
     },
     {
       "parameters": {
@@ -120,10 +105,7 @@
       "name": "Return: Insufficient Credits",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1440,
-        600
-      ]
+      "position": [1440, 600]
     },
     {
       "parameters": {
@@ -153,10 +135,7 @@
       "name": "PATCH user_credits (deduct)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1440,
-        260
-      ],
+      "position": [1440, 260],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -172,10 +151,7 @@
       "name": "Confirm Deduction",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1700,
-        260
-      ]
+      "position": [1700, 260]
     },
     {
       "parameters": {
@@ -205,10 +181,7 @@
       "name": "INSERT credit_events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1940,
-        260
-      ],
+      "position": [1940, 260],
       "credentials": {
         "supabaseApi": {
           "id": "xbPYfxBm7UismiBl",
@@ -224,10 +197,7 @@
       "name": "Check Low Balance",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2180,
-        260
-      ]
+      "position": [2180, 260]
     },
     {
       "parameters": {
@@ -256,10 +226,7 @@
       "name": "Low Balance Gate",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        2420,
-        260
-      ]
+      "position": [2420, 260]
     },
     {
       "parameters": {
@@ -273,10 +240,7 @@
       "name": "Return: Allowed (Low Balance Warning)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2680,
-        140
-      ]
+      "position": [2680, 140]
     },
     {
       "parameters": {
@@ -290,10 +254,7 @@
       "name": "Return: Allowed (Healthy Balance)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        2680,
-        380
-      ]
+      "position": [2680, 380]
     }
   ],
   "connections": {

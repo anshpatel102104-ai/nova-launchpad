@@ -22,7 +22,7 @@ Project: `ipidfqwlszuhjgjygbvx` · Branch: `claude/bylda-master-build-rqm60r`
 - ✅ **Edge functions** (22 ACTIVE): mentor-chat, crm-action, conversation-ai,
   workflow-engine, book-appointment, send-email, send-sms, send-campaign,
   process-reminders, receive-message, get-inbound-url, track-event (+ existing).
-- ✅ **Delivery graceful-degrade**: send-* no-op cleanly without provider keys;
+- ✅ **Delivery graceful-degrade**: send-\* no-op cleanly without provider keys;
   receive-message returns 503 without INBOUND_WEBHOOK_SECRET; track-event pixel
   (200 image/gif) + click (302) verified live.
 - ✅ **Realtime**: conversations, leads, notifications in the publication;

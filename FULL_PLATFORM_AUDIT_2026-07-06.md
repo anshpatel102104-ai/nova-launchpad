@@ -30,7 +30,7 @@ a stale npm lockfile that breaks `npm ci`, and 226 design-token lint warnings.
 | `vitest run`                              | ✅ 57/57 tests pass (7 files)                           |
 | `eslint .`                                | ⚠️ 0 errors, **226 warnings** (see §4.4)                |
 | `vite build` (production)                 | ✅ builds in ~20s                                       |
-| Live app `app.usebylda.com`   | ✅ HTTP 200                                             |
+| Live app `app.usebylda.com`               | ✅ HTTP 200                                             |
 | Live edge fn `track-event` (public pixel) | ✅ HTTP 200                                             |
 | `npm ci`                                  | ❌ **fails** — package-lock.json out of sync (see §2.2) |
 
