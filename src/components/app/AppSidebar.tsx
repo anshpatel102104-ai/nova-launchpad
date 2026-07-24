@@ -203,11 +203,7 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
   const nav = [isOperate ? HOME_OPERATE : HOME_CREATE, ...PRIMARY_NAV];
 
   return (
-    <SidebarChrome
-      brand="Bylda"
-      tagline="Run your business simply"
-      brandIcon={Rocket}
-    >
+    <SidebarChrome brand="Bylda" tagline="Run your business simply" brandIcon={Rocket}>
       {({ collapsed }) => (
         <>
           <div className={cn("px-2 space-y-px", collapsed && "px-1.5")}>
