@@ -261,17 +261,17 @@
 /* ─────────────────────────── Light theme (default): Clean White ─────────────────────────── */
 :root,
 .light {
-  /* ── Backgrounds — open daytime sky ── */
-  --background: #eef6ff;
-  --bg-elevated: #f7fbff;
-  --bg-panel: #e3f0fd;
+  /* ── Backgrounds — clean white and blue workspace ── */
+  --background: #f7faff;
+  --bg-elevated: #ffffff;
+  --bg-panel: #eff6ff;
 
   /* ── Surfaces — cloud-white layers floating over the sky ── */
   --surface: #ffffff;
-  --surface-2: #f2f8ff;
-  --surface-offset: #e6f1fd;
+  --surface-2: #f5f9ff;
+  --surface-offset: #edf5ff;
   --surface-secondary: #ffffff;
-  --surface-tertiary: #dbeafe;
+  --surface-tertiary: #e5f0ff;
 
   /* ── Text — deep sky navy ── */
   --foreground: #0f2744;
@@ -286,13 +286,13 @@
   --popover-foreground: var(--foreground);
 
   /* ── Primary — Sky azure ── */
-  --primary: #0284c7;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --primary-hover: #0369a1;
-  --primary-active: #075985;
-  --primary-soft: #e0f2fe;
-  --primary-glow: rgba(2, 132, 199, 0.18);
-  --primary-border: #bae6fd;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-soft: #eff6ff;
+  --primary-glow: rgba(37, 99, 235, 0.16);
+  --primary-border: #bfdbfe;
 
   /* ── Secondary ── */
   --secondary: #eaf3fc;
@@ -366,9 +366,9 @@
   --gradient-2: linear-gradient(180deg, #eef6ff 0%, #dbeafe 100%);
 
   /* ── Sidebar — airy sky rail ── */
-  --sidebar: #f7fbff;
+  --sidebar: #ffffff;
   --sidebar-foreground: #0f2744;
-  --sidebar-primary: #0284c7;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(2, 132, 199, 0.08);
   --sidebar-accent-foreground: #0f2744;

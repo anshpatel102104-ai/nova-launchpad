@@ -70,7 +70,7 @@ interface NavItem {
  * Bylda Home. The rest of the rail is shared. */
 const HOME_CREATE: NavItem = {
   id: "home",
-  label: "Mission Control",
+  label: "Home",
   to: "/app/mission-control",
   icon: Home,
   match: (p) => p === "/app/mission-control",
@@ -78,7 +78,7 @@ const HOME_CREATE: NavItem = {
 
 const HOME_OPERATE: NavItem = {
   id: "home",
-  label: "Bylda Home",
+  label: "Home",
   to: "/app/bylda-home",
   icon: Home,
   match: (p) => p === "/app/bylda-home",
@@ -87,14 +87,14 @@ const HOME_OPERATE: NavItem = {
 const PRIMARY_NAV: NavItem[] = [
   {
     id: "roadmap",
-    label: "Roadmap",
+    label: "Plan",
     to: "/app/roadmap",
     icon: Map,
     match: (p) => p === "/app/roadmap",
   },
   {
     id: "mentors",
-    label: "AI Mentors",
+    label: "AI Coach",
     to: "/app/launchpad/mentors",
     icon: GraduationCap,
     match: (p) => p === "/app/launchpad/mentors",
@@ -108,7 +108,7 @@ const PRIMARY_NAV: NavItem[] = [
   },
   {
     id: "projects",
-    label: "Projects",
+    label: "Tasks",
     to: "/app/launchpad/missions",
     icon: ClipboardList,
     match: (p) => p === "/app/launchpad/missions",
@@ -146,7 +146,7 @@ const PRIMARY_NAV: NavItem[] = [
   },
   {
     id: "knowledge",
-    label: "Knowledge",
+    label: "Guides",
     to: "/app/sop-library",
     icon: BookOpen,
     match: (p) => p === "/app/sop-library" || p === "/app/templates",
@@ -204,8 +204,8 @@ export function AppSidebar({ onOpenRail: _onOpenRail }: { onOpenRail?: () => voi
 
   return (
     <SidebarChrome
-      brand="Launchpad Bylda"
-      tagline="Your business operating system"
+      brand="Bylda"
+      tagline="Run your business simply"
       brandIcon={Rocket}
     >
       {({ collapsed }) => (
