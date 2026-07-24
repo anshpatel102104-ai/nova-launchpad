@@ -12,7 +12,7 @@
   "queues": {
     "producers": [
       {
-        "queue": "bylda-automation-queue",
+        "queue": "nova-automation-queue",
         "binding": "AUTOMATION_QUEUE",
       },
     ],
