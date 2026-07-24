@@ -24,7 +24,10 @@ import { WorkspaceStatusBanner } from "@/components/app/dashboard/WorkspaceStatu
 import { ModuleBoundary } from "@/components/app/ModuleBoundary";
 import { NovaHandoffCard } from "@/components/launchpad/NovaHandoffCard";
 import { CasefileSummary } from "@/components/launchpad/CasefileSummary";
+import { StageSpine } from "@/components/launchpad/StageSpine";
+import { nextBestMove, type NextMove } from "@/lib/next-move";
 import { MomentumRail } from "@/components/nova/MomentumRail";
+import { RecentWinChip } from "@/components/app/RecentWinChip";
 import { TitleBlock } from "@/components/launchpad/TitleBlock";
 import {
   BusinessSchematic,
@@ -40,9 +43,7 @@ import { ProgressRing } from "@/components/app/ProgressRing";
 import {
   ArrowRight,
   AlertTriangle,
-  Check,
   Clock,
-  Lock,
   Target,
   Zap,
   Trophy,
@@ -50,9 +51,9 @@ import {
   Map,
   FlaskConical,
   FileText,
-  Users,
   Bot,
   Radio,
+  GraduationCap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/mission-control")({
@@ -77,37 +78,9 @@ function HomePage() {
   const blocker = graph.blockers[0];
   const recs = graph.recommendations;
 
-  // The single most important next move — a blocker to fix always wins,
-  // otherwise the top recommendation, otherwise "continue this stage."
-  const hero: HeroMove = blocker
-    ? {
-        tone: "fix",
-        eyebrow: "Fix this first",
-        title: blocker.title,
-        sub: blocker.why,
-        to: blocker.resolveTo,
-        cta: blocker.resolveLabel,
-        minutes: blocker.estimatedMinutes,
-      }
-    : recs[0]
-      ? {
-          tone: "do",
-          eyebrow: "Do this next",
-          title: recs[0].title,
-          sub: recs[0].impact,
-          to: recs[0].to,
-          cta: "Start now",
-          minutes: recs[0].estimatedMinutes,
-        }
-      : {
-          tone: "do",
-          eyebrow: "Continue your mission",
-          title: progress.current.headline,
-          sub: progress.current.proof,
-          to: progress.current.to,
-          cta: "Continue",
-          minutes: 15,
-        };
+  // The single most important next move — shared with the app-wide
+  // NextBestActionBar so both surfaces always agree (src/lib/next-move.ts).
+  const hero = nextBestMove(graph, progress);
 
   // Task queue behind the hero — the recommendations we didn't surface above.
   const queue = (blocker ? recs.slice(0, 4) : recs.slice(1, 5)).filter(Boolean);
@@ -134,6 +107,9 @@ function HomePage() {
           <p className="mt-1 text-[13.5px]" style={{ color: "var(--muted-foreground)" }}>
             {graph.businessName} · you have one clear next move. Nova will guide you.
           </p>
+          <div className="mt-2.5">
+            <RecentWinChip />
+          </div>
         </div>
         <StatusChip tone={blocker ? "warning" : "success"}>
           {blocker ? "1 thing to fix" : "On track"}
@@ -422,16 +398,6 @@ function HomePage() {
 
 /* ─── Current Mission hero ──────────────────────────────────── */
 
-interface HeroMove {
-  tone: "fix" | "do";
-  eyebrow: string;
-  title: string;
-  sub: string;
-  to: string;
-  cta: string;
-  minutes: number;
-}
-
 function MissionHero({
   hero,
   stageLabel,
@@ -440,7 +406,7 @@ function MissionHero({
   stages,
   missionPercent,
 }: {
-  hero: HeroMove;
+  hero: NextMove;
   stageLabel: string;
   stageNumber: number;
   stageCount: number;
@@ -529,45 +495,21 @@ function MissionHero({
           </span>
         </div>
 
-        {/* stage stepper — the journey at a glance */}
-        <div className="mt-6 flex items-center gap-1.5">
-          {stages.map((s, i) => (
-            <React.Fragment key={s.id}>
-              <div
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10.5px] font-bold"
-                title={s.label}
-                style={
-                  s.done
-                    ? { background: "var(--success)", color: "var(--success-foreground)" }
-                    : s.current
-                      ? {
-                          background: "var(--primary)",
-                          color: "var(--primary-foreground)",
-                          boxShadow: "0 0 0 3px var(--primary-soft)",
-                        }
-                      : {
-                          background: "var(--surface-2)",
-                          color: "var(--text-faint)",
-                          border: "1px solid var(--border)",
-                        }
-                }
-              >
-                {s.done ? (
-                  <Check className="h-3 w-3" />
-                ) : s.upcoming ? (
-                  <Lock className="h-2.5 w-2.5" />
-                ) : (
-                  i + 1
-                )}
-              </div>
-              {i < stages.length - 1 && (
-                <div
-                  className="h-[2px] flex-1 rounded-full"
-                  style={{ background: s.done ? "var(--success)" : "var(--border)" }}
-                />
-              )}
-            </React.Fragment>
-          ))}
+        {/* stage stepper — the shared founder-journey spine, fed by the app's
+            canonical 6-stage progress model (same component as onboarding). */}
+        <div className="mt-6 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          <StageSpine
+            stages={stages.map((s) => ({ id: s.id, label: s.label }))}
+            currentIndex={Math.max(
+              0,
+              stages.findIndex((s) => s.current),
+            )}
+            accent="var(--primary)"
+            doneColor="var(--success)"
+            mutedColor="var(--text-faint)"
+            trackColor="var(--border)"
+            labelColor="var(--muted-foreground)"
+          />
         </div>
         {missionPercent > 0 && (
           <div className="mt-2 text-[11.5px] font-semibold" style={{ color: "var(--text-faint)" }}>
@@ -582,11 +524,11 @@ function MissionHero({
 /* ─── Supporting tools ──────────────────────────────────────── */
 
 const SUPPORT_TOOLS = [
+  { label: "Course", to: "/app/launchpad/course", icon: GraduationCap },
   { label: "Roadmap", to: "/app/roadmap", icon: Map },
   { label: "Research", to: "/app/research", icon: FlaskConical },
   { label: "Assets", to: "/app/assets", icon: FileText },
   { label: "Automations", to: "/app/automations", icon: Zap },
-  { label: "Contacts", to: "/app/contacts", icon: Users },
   { label: "Ask Nova", to: "/app/mentor", icon: Bot },
 ] as const;
 

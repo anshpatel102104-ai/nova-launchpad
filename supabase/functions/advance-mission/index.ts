@@ -340,6 +340,10 @@ Deno.serve(async (req) => {
           }
         }
 
+        // Founder Course: when a course module completes, the next locked module
+        // is unlocked by the `unlock_next_course_module` DB trigger on missions
+        // (migration 20260722000001) — DB-enforced, atomic, no logic here.
+
         return json({ ok: true, step_completed: true, mission_auto_completed: true });
       }
     }
