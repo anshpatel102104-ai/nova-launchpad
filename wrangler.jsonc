@@ -59,10 +59,15 @@
   //   supabase.com/dashboard → your project → Edge Functions → Manage secrets
 
   // ── Cloudflare Queue (replaces N8N for automation workflows) ──────────────
+  // NOTE: the Cloudflare Queue resource is still named "nova-automation-queue".
+  // Queues can't be renamed in place and wrangler won't auto-create one, so the
+  // binding keeps the existing resource name to avoid a failed deploy. To finish
+  // the rename: `wrangler queues create bylda-automation-queue`, migrate the
+  // consumer, then point these bindings at it.
   "queues": {
     "producers": [
       {
-        "queue": "bylda-automation-queue",
+        "queue": "nova-automation-queue",
         "binding": "AUTOMATION_QUEUE",
       },
     ],

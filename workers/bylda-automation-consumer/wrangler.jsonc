@@ -10,7 +10,7 @@
   "queues": {
     "consumers": [
       {
-        "queue": "bylda-automation-queue",
+        "queue": "nova-automation-queue",
         "max_batch_size": 10,
         "max_retries": 3,
         "dead_letter_queue": "bylda-automation-dlq",

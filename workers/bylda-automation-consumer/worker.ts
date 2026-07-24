@@ -1,5 +1,5 @@
 // bylda-automation-consumer — Cloudflare Queue consumer
-// Processes automation jobs from bylda-automation-queue.
+// Processes automation jobs from nova-automation-queue.
 // Routes by automation_slug to one of 6 handlers.
 
 export interface Env {
